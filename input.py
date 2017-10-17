@@ -58,6 +58,30 @@ def check_column_names(filename):
 
 # TODO: check column names, if same: new column names to columns, 
 # TODO: add filenames from 2017 and 2015 (sublimetext!!!)
+def get_dfs_and_rename_columns(new_names):
+    usecols = []
+    with open('column_names.txt') as file:
+            for line in file:
+                line = line.strip()
+                usecols.append(line)
+    with open('filenames.txt') as file:
+            for line in file:
+                name = line.strip()
+                df = read_data(name, usecols=usecols)
+
+
+new_names = [
+    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
+    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst', 'Goeser_P_W',
+    'Goeser_P_W_theo', 'Goeser_v_wind', 'Goeser_wind_dir', 'Goeser_P_W_inst',
+    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4919_v_wind',
+    'PPC_4919_wind_dir', 'PPC_4919_P_W_inst', 'PPC_4950_P_W',
+    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_4950_wind_dir',
+    'PPC_4950_P_W_inst', 'PPC_5598_P_W', 'PPC_5598_P_W_theo',
+    'PPC_5598_v_wind', 'PPC_5598_wind_dir', 'PPC_5598_P_W_inst']
+
+get_dfs_and_rename_columns(new_names)
+
 
 #df.to_csv('out_1.csv', sep='\t')
 #df2.to_csv('out.csv', sep='\t')
