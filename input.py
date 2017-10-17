@@ -17,6 +17,8 @@ def read_data(filename, **kwargs):
     ----------------
     datapath : string, optional
         Path where the data file is stored. Default: './data/ArgeNetz'
+    usecols : list of strings or list of integers, optional
+        .... Default: None
 
     Returns
     -------
@@ -26,9 +28,11 @@ def read_data(filename, **kwargs):
     if 'datapath' not in kwargs:
         kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
                                           'data/ArgeNetz')
+    if 'usecols' not in kwargs:
+        kwargs['usecols'] = None
 
     df = pd.read_csv(os.path.join(kwargs['datapath'], filename), sep=';',
-                     decimal=',', index_col=0)
+                     decimal=',', index_col=0, usecols=kwargs['usecols'])
     return df
 
 
