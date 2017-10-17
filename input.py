@@ -43,20 +43,18 @@ def restructure_data(filename):
 
 
 def check_column_names(filename):
-    # Extract all filenames from txt file
-    filenames = pd.read_csv(filename)
-    print(filenames)
     column_names_check = list(restructure_data('2016-02-01+00P1M_.csv'))
+    with open(filename) as file:
+        for line in file:
+            name = line.strip()
+            df = restructure_data(name)
+            column_names = list(df)
+            if column_names != column_names_check:
+                print(str(name) + ' columns:')
+#                print(column_names)
 
-    for name in filenames:
-        df = read_data(name)
-        df2 = df.dropna(axis='columns', how='all')
-        column_names = list(df2)
-        if column_names is not column_names_check:
-            print(str(name) + ' columns:')
-            print(list(df2))
 
-check_column_names('filenames.txt')
+#check_column_names('filenames.txt')
 
 # TODO: check column names, if same: new column names to columns, 
 # TODO: add filenames from 2017 and 2015 (sublimetext!!!)
