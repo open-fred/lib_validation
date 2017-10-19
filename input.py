@@ -36,9 +36,12 @@ def read_data(filename, **kwargs):
     return df
 
 
-def restructure_data(filename):
+def restructure_data(filename, filter_cols=None, drop_na=False):
     df = read_data(filename)
-    df2 = df.dropna(axis='columns', how='all')
+    if filter_cols:
+        df2 = df.filter(items=filter_cols, axis=1)
+    if drop_na:
+        df2 = df.dropna(axis='columns', how='all')
     return df2
 
 
@@ -61,13 +64,20 @@ def check_column_names(filename):
 def get_dfs_and_rename_columns(new_names):
     usecols = []
     with open('column_names.txt') as file:
+#        usecols = [0]
+#        with open(filename_column_names) as file:
+#            for line in file:
+#                line = line.strip()
+#                usecols.append(line)
+        filter_cols = []
+        with open(filename_column_names) as file:
             for line in file:
                 line = line.strip()
-                usecols.append(line)
     with open('filenames.txt') as file:
             for line in file:
                 name = line.strip()
-                df = read_data(name, usecols=usecols)
+#                df = read_data(name, usecols=usecols)
+                df = restructure_data(name, filter_cols)
 
 
 new_names = [
