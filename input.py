@@ -58,12 +58,27 @@ def check_column_names(filename):
 
 
 #check_column_names('filenames.txt')
+def data_evaluation(filename):
+    """
+    Evaluate the data in terms of which variables are given for each dataset.
 
-# TODO: check column names, if same: new column names to columns, 
-# TODO: add filenames from 2017 and 2015 (sublimetext!!!)
-def get_dfs_and_rename_columns(new_names):
-    usecols = []
-    with open('column_names.txt') as file:
+    Parameters:
+    -----------
+    filename : string
+        Name of file that contains names of files to be evaluated.
+    """
+    # Initialise pandas.DataFrame
+    df_compare = pd.DataFrame()
+    # Read file and add to DataFrame for each line (= filenames)
+    with open(filename) as file:
+            for line in file:
+                name = line.strip()
+                df = restructure_data(name)
+                df2 = pd.DataFrame(data=1, index=list(df),
+                                   columns=[name])
+                df_compare = pd.concat([df_compare, df2], axis=1)
+    df_compare.to_csv('evaluation.csv')
+    return df_compare
 #        usecols = [0]
 #        with open(filename_column_names) as file:
 #            for line in file:
