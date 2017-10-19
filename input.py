@@ -16,7 +16,7 @@ def read_data(filename, **kwargs):
     Other Parameters
     ----------------
     datapath : string, optional
-        Path where the data file is stored. Default: './data/ArgeNetz'
+        Path where the data file is stored. Default: './data'
     usecols : list of strings or list of integers, optional
         .... Default: None
 
@@ -27,7 +27,7 @@ def read_data(filename, **kwargs):
     """
     if 'datapath' not in kwargs:
         kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
-                                          'data/ArgeNetz')
+                                          'data')
     if 'usecols' not in kwargs:
         kwargs['usecols'] = None
 
