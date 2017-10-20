@@ -146,8 +146,8 @@ new_column_names_2015 = [
     'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
     'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
-#data = get_data('filenames_2015.txt', 'column_names_2015.txt',
-#                new_column_names_2015, 'data_2015.p', pickle_load=False)
+data_2015 = get_data('filenames_2015.txt', 'column_names_2015.txt',
+                     new_column_names_2015, 'data_2015.p', pickle_load=False)
 #x_limit = [10, 50]
 x_limit = None
 fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
