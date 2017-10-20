@@ -33,7 +33,8 @@ def read_data(filename, **kwargs):
         kwargs['usecols'] = None
 
     df = pd.read_csv(os.path.join(kwargs['datapath'], filename), sep=';',
-                     decimal=',', index_col=0, usecols=kwargs['usecols'])
+                     decimal=',', thousands='.', index_col=0,
+                     usecols=kwargs['usecols'])
     return df
 
 
