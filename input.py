@@ -102,7 +102,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
                 df = restructure_data(name, filter_cols)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
-    pickle.dump(data, open(filename_pickle, 'wb'))
+        pickle.dump(data, open(filename_pickle, 'wb'))
     if pickle_load:
         data = pickle.load(open(filename_pickle, 'rb'))
     return data
