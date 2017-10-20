@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import pickle
+from matplotlib import pyplot as plt
 #import numpy as np
 
 
@@ -108,6 +109,23 @@ def get_data(filename_files, filename_column_names, new_column_names,
         data = pickle.load(open(filename_pickle, 'rb'))
     return data
 
+
+def fast_plot(df, save_folder, y_limit=None, x_limit=None):
+    for column in df.columns:
+        if column == 'Bredstedt_P_W':
+            fig = plt.figure(figsize=(16, 12))
+            df[column].plot()
+            plt.title(column, fontsize=20)
+#            plt.xticks(rotation='vertical')
+            if y_limit:
+                plt.ylim(ymin=x_limit[0], ymax=y_limit[1])
+            if x_limit:
+                plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
+            plt.tight_layout()
+            fig.savefig(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                     '..', save_folder,
+                                                     str(save_folder+column))))
+
 #check_column_names('filenames_2015.txt')
 #df_compare = data_evaluation('filenames_all.txt')
 
@@ -131,13 +149,16 @@ new_column_names_2015 = [
 
 #data = get_data('filenames_2015.txt', 'column_names_2015.txt',
 #                new_column_names_2015, 'data_2015.p', pickle_load=False)
+#x_limit = [10, 50]
+x_limit = None
+fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
 
+#data_2016_2017 = get_data('filenames_2016_2017.txt',
+#                          'column_names_2016_2017.txt',
+#                          new_column_names_2016_2017, 'data_2016_2017.p',
+#                          pickle_load=True)
+#fast_plot(data_2016_2017, save_folder='Plots_2016_2017')
 
-data = get_data('filenames_2016_2017.txt', 'column_names_2016_2017.txt',
-                new_column_names_2016_2017, 'data_2016_2017.p',
-                pickle_load=False)
-data.to_csv('ergebnis.csv')
-#get_data(new_names, 'filenames_2015.txt')
 
 #df.to_csv('out_1.csv', sep='\t')
 #df2.to_csv('out.csv', sep='\t')
