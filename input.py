@@ -160,8 +160,3 @@ fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
 #fast_plot(data_2016_2017, save_folder='Plots_2016_2017')
 
 
-#df.to_csv('out_1.csv', sep='\t')
-#df2.to_csv('out.csv', sep='\t')
-
-#
-#print(list(df2))
