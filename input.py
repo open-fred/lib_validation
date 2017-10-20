@@ -124,7 +124,7 @@ new_column_names_2016_2017 = [
 new_column_names_2015 = [
     'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
     'Bredstedt_wind_dir', 'Bredstedt_P_W_inst',
-    'Nordstrand_P_W', 'Nordstrand_P_W_inst', 'Nordstrand_P_W_inst',
+    'Nordstrand_P_W', 'Nordstrand_P_W_theo', 'Nordstrand_P_W_inst',
     'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4950_P_W',
     'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
     'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
