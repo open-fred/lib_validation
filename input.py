@@ -112,19 +112,18 @@ def get_data(filename_files, filename_column_names, new_column_names,
 
 def fast_plot(df, save_folder, y_limit=None, x_limit=None):
     for column in df.columns:
-        if column == 'Bredstedt_P_W':
-            fig = plt.figure(figsize=(16, 12))
-            df[column].plot()
-            plt.title(column, fontsize=20)
-#            plt.xticks(rotation='vertical')
-            if y_limit:
-                plt.ylim(ymin=x_limit[0], ymax=y_limit[1])
-            if x_limit:
-                plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
-            plt.tight_layout()
-            fig.savefig(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                     '..', save_folder,
-                                                     str(save_folder+column))))
+        fig = plt.figure(figsize=(35, 12))
+        df[column].plot()
+        plt.title(column, fontsize=20)
+        plt.xticks(rotation='vertical')
+        if y_limit:
+            plt.ylim(ymin=x_limit[0], ymax=y_limit[1])
+        if x_limit:
+            plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
+        plt.tight_layout()
+        fig.savefig(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 '..', save_folder,
+                                                 str(save_folder+column))))
 
 #check_column_names('filenames_2015.txt')
 #df_compare = data_evaluation('filenames_all.txt')
