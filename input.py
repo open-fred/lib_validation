@@ -86,11 +86,6 @@ def data_evaluation(filename):
 def get_data(filename_files, filename_column_names, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
     if not pickle_load:
-#        usecols = [0]
-#        with open(filename_column_names) as file:
-#            for line in file:
-#                line = line.strip()
-#                usecols.append(line)
         filter_cols = []
         with open(filename_column_names) as file:
             for line in file:
@@ -100,7 +95,6 @@ def get_data(filename_files, filename_column_names, new_column_names,
             data = pd.DataFrame()
             for line in file:
                 name = line.strip()
-#                df = read_data(name, usecols=usecols)
                 df = restructure_data(name, filter_cols)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
