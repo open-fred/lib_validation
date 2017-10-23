@@ -61,3 +61,7 @@
 /data/2017-04-01+00P1M_.csv
 /data/2017-05-01+00P1M_.csv
 /data/2017-06-01+00P1M_.csv
+/dumps/arge_data_2015.p
+/dumps/arge_data_2016_2017.p
+/__pycache__/small_tools.cpython-34.pyc
+/__pycache__/input.cpython-34.pyc
