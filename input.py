@@ -100,6 +100,8 @@ def get_data(filename_files, new_column_names,
     """
     Fetches data of the requested files and renames columns.
     """
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        'dumps', filename_pickle))
     if not pickle_load:
         with open(filename_files) as file:
             data = pd.DataFrame()
@@ -109,9 +111,9 @@ def get_data(filename_files, new_column_names,
                                       filter_cols=True)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
-        pickle.dump(data, open(filename_pickle, 'wb'))
+        pickle.dump(data, open(path, 'wb'))
     if pickle_load:
-        data = pickle.load(open(filename_pickle, 'rb'))
+        data = pickle.load(open(path, 'rb'))
     return data
 
 
@@ -162,17 +164,17 @@ new_column_names_2015 = [
 
 # Get the data of 2015 (and 2016/2017) and plot the results
 x_limit = None
-data_2015 = get_data('filenames_2015.txt',
-                     new_column_names_2015, 'data_2015.p', pickle_load=False)
-fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
+data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
+                     'arge_data_2015.p', pickle_load=True)
+#fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
 #data_2016_2017 = get_data('filenames_2016_2017.txt',
 #                          'column_names_2016_2017.txt',
-#                          new_column_names_2016_2017, 'data_2016_2017.p',
+#                          new_column_names_2016_2017, 'arge_data_2016_2017.p',
 #                          pickle_load=True)
 #fast_plot(data_2016_2017, save_folder='Plots_2016_2017', x_limit=x_limit)
 
 # Sample for period of 2015 (possible mistakes in data)
 #data = get_data('filenames.txt', 'column_names_2015.txt',
-#                 new_column_names_2015, 'data_2015.p', pickle_load=False)
+#                 new_column_names_2015, 'arge_data_2015.p', pickle_load=True)
 #x_limit = [10, 50]
 #fast_plot(data, save_folder='Plots_2015_period', x_limit=x_limit)
