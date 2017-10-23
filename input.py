@@ -48,18 +48,6 @@ def restructure_data(filename, filter_cols=None, drop_na=False):
     return df2
 
 
-def check_column_names(filename):
-    column_names_check = list(restructure_data('2016-02-01+00P1M_.csv'))
-    with open(filename) as file:
-        for line in file:
-            name = line.strip()
-            df = restructure_data(name)
-            column_names = list(df)
-            if column_names != column_names_check:
-                print(str(name) + ' columns:')
-#                print(column_names)
-
-
 def data_evaluation(filename):
     """
     Evaluate the data in terms of which variables are given for each dataset.
@@ -119,7 +107,6 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
                                                  '..', save_folder,
                                                  str(save_folder+column))))
 
-#check_column_names('filenames_2015.txt')
 #df_compare = data_evaluation('filenames_all.txt')
 
 new_column_names_2016_2017 = [
