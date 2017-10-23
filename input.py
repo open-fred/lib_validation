@@ -106,7 +106,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
 
 def fast_plot(df, save_folder, y_limit=None, x_limit=None):
     for column in df.columns:
-        fig = plt.figure(figsize=(35, 12))
+        fig = plt.figure(figsize=(16, 12))
         df[column].plot()
         plt.title(column, fontsize=20)
         plt.xticks(rotation='vertical')
