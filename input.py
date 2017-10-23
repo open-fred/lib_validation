@@ -39,9 +39,15 @@ def read_data(filename, **kwargs):
     return df
 
 
-def restructure_data(filename, filter_cols=None, drop_na=False):
+def restructure_data(filename, filename_column_names=None, filter_cols=False,
+                     drop_na=False):
     df = read_data(filename)
     if filter_cols:
+        filter_cols = []
+        with open(filename_column_names) as file:
+            for line in file:
+                line = line.strip()
+                filter_cols.append(line)
         df2 = df.filter(items=filter_cols, axis=1)
     if drop_na:
         df2 = df.dropna(axis='columns', how='all')
@@ -63,7 +69,7 @@ def data_evaluation(filename):
     with open(filename) as file:
             for line in file:
                 name = line.strip()
-                df = restructure_data(name)
+                df = restructure_data(name, drop_na=True)
                 df2 = pd.DataFrame(data=1, index=list(df),
                                    columns=[name])
                 df_compare = pd.concat([df_compare, df2], axis=1)
@@ -71,19 +77,15 @@ def data_evaluation(filename):
     return df_compare
 
 
-def get_data(filename_files, filename_column_names, new_column_names,
+def get_data(filename_files, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
     if not pickle_load:
-        filter_cols = []
-        with open(filename_column_names) as file:
-            for line in file:
-                line = line.strip()
-                filter_cols.append(line)
         with open(filename_files) as file:
             data = pd.DataFrame()
             for line in file:
                 name = line.strip()
-                df = restructure_data(name, filter_cols)
+                df = restructure_data(name, 'column_names_2015.txt',
+                                      filter_cols=True)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
         pickle.dump(data, open(filename_pickle, 'wb'))
@@ -129,7 +131,7 @@ new_column_names_2015 = [
 
 # Get the data of 2015 (and 2016/2017) and plot the results
 x_limit = None
-data_2015 = get_data('filenames_2015.txt', 'column_names_2015.txt',
+data_2015 = get_data('filenames_2015.txt',
                      new_column_names_2015, 'data_2015.p', pickle_load=False)
 fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
 #data_2016_2017 = get_data('filenames_2016_2017.txt',
