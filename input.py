@@ -12,8 +12,7 @@ def read_data(filename, **kwargs):
     Parameters
     ----------
     filename : string, optional
-        Name of data file. Provided data files are 'power_curves.csv' and
-        'power_coefficient_curves.csv'. Default: 'power_curves.csv'.
+        Name of data file.
 
     Other Parameters
     ----------------
@@ -41,6 +40,25 @@ def read_data(filename, **kwargs):
 
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
                      drop_na=False):
+    """
+    Restructures data read from a csv file.
+
+    Create a DataFrama. Data can be filtered (if filter_cols is not None) and
+    Nan's can be droped (if drop_na is not None).
+
+    Parameters:
+    -----------
+    filename : string
+        Name of data file.
+    filename_column_names : string, optional
+        Name of file that contains column names to be filtered for.
+        Default: None.
+    filter_cols : list
+        Column names to filter for. Default: None.
+    drop_na : boolean
+        If True: Nan's are droped from DataFrame with method how='any'.
+        Default: None.
+    """
     df = read_data(filename)
     if filter_cols:
         filter_cols = []
@@ -79,6 +97,9 @@ def data_evaluation(filename):
 
 def get_data(filename_files, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
+    """
+    Fetches data of the requested files and renames columns.
+    """
     if not pickle_load:
         with open(filename_files) as file:
             data = pd.DataFrame()
@@ -95,6 +116,16 @@ def get_data(filename_files, new_column_names,
 
 
 def fast_plot(df, save_folder, y_limit=None, x_limit=None):
+    """
+    Plot all data from DataFrame to single plots and save them.
+
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Contains data to be plotted.
+    y_limit, x_limit : list of floats or integers
+        Values for ymin, ymax, xmin and xmax
+    """
     for column in df.columns:
         fig = plt.figure(figsize=(16, 12))
         df[column].plot()
