@@ -17,6 +17,8 @@ enerconE66 = {
     'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
 }
 
+# TODO: scale power curves
+
 # Initialise WindTurbine objects
 e70 = wind_turbine.WindTurbine(**enerconE70)
 e66 = wind_turbine.WindTurbine(**enerconE66)
