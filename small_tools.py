@@ -5,6 +5,13 @@ except ImportError:
     plt = None
 
 
+def return_lats_lons(df):
+    # Returns all latitudes and longitudes of DataFrame
+    lats = df.lat.unique()
+    lons = df.lon.unique()
+    return lats, lons
+
+
 def print_all_turbine_types(df):
     pd.set_option('display.max_rows', len(df))
     print(df)
