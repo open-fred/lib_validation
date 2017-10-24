@@ -9,12 +9,12 @@ small_tools.print_all_turbine_types(turbines)
 enerconE70 = {
     'turbine_name': 'ENERCON E 70 2300',  # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
     'hub_height': 64,  # in m
-    'rotor_diameter': 71  # in m
+    'rotor_diameter': 71  # in m    source: www.wind-turbine-models.com
 }
 enerconE66 = {
     'turbine_name': 'ENERCON E 66 1800',  # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
     'hub_height': 65,  # in m
-    'rotor_diameter': 70  # in m    Quelle: www.wind-turbine-models.com
+    'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
 }
 
 # Initialise WindTurbine objects
