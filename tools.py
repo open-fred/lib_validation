@@ -115,17 +115,3 @@ def power_output_sum(wind_turbines, number_of_turbines, weather, data_height):
 
 
 
-# Bredstedt (54.578219, 8.978092)
-br_coor = [55, 8.75]
-# Get weather
-pickle_path = os.path.join(os.path.dirname(__file__),
-                               'dumps/weather', 'weather_df_merra_2015.p')
-## Initialise WindTurbine objects
-#e70 = wind_turbine.WindTurbine(**enerconE70)
-#e66 = wind_turbine.WindTurbine(**enerconE66)
-#
-#wind_turbines = e70
-#number_of_turbines = 16
-
-#mc = ModelChain(wind_turbines).run_model(weather)
-#power_output = mc.power_output * number_of_turbines
