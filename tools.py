@@ -5,7 +5,8 @@ from windpowerlib import (power_output, wind_speed)
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
-                     weather_data=None, year=None, coordinates=None):
+                     weather_data=None, year=None, coordinates=None,
+                     data_frame=None):
     """
     Helper function to load pickled weather data or retrieve data and dump it.
 
@@ -39,9 +40,13 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
             # # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
         elif weather_data == 'merra':
-            data = create_merra_df(os.path.join(
-                os.path.dirname(__file__), 'data/Merra',
-                'weather_data_GER_{0}.csv'.format(year)), coordinates) # TODO: make folder individual
+            if data_frame is None:
+                # Load data from csv
+                data_frame = pd.read_csv(os.path.join(
+                    os.path.dirname(__file__), 'data/Merra', # TODO: make folder individua
+                    'weather_data_GER_{0}.csv'.format(year)),
+                    sep=',', decimal='.', index_col=0)
+            data = create_merra_df(data_frame, coordinates)
             filename = 'weather_df_merra_{0}.p'.format(year)
         pickle.dump(data, open(os.path.join(os.path.dirname(__file__),
                                'dumps/weather', filename), 'wb'))
