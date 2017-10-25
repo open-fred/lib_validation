@@ -4,7 +4,7 @@ import small_tools
 import tools
 import os
 import pandas as pd
-# TODO: rename to main.py
+
 # Get all turbine types of windpowerlib
 #turbines = wind_turbine.get_turbine_types(print_out=False)
 #small_tools.print_all_turbine_types(turbines)
