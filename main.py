@@ -41,37 +41,37 @@ bredstedt = {
     'wind_farm_name': 'Bredstedt',
     'wind_turbine_fleet': [{'wind_turbine': e70,
                             'number_of_turbines': 16}],
-    'coordinates': [55, 8.75]
+    'coordinates': [54.5, 8.75]
 }
-# Nordstrand 
+# Nordstrand (54.509708, 8.9007)
 nordstrand = {
     'wind_farm_name': 'Nordstrand',
     'wind_turbine_fleet': [{'wind_turbine': e70,
                             'number_of_turbines': 6}],
-    'coordinates': [55, 8.75]
+    'coordinates': [54.5, 8.75]
 }
-# PPC_4919
+# PPC_4919 (54.629167, 9.0625)
 PPC_4919 = {
     'wind_farm_name': 'PPC_4919',
     'wind_turbine_fleet': [{'wind_turbine': e70,
                             'number_of_turbines': 13},
                            {'wind_turbine': e66,
                             'number_of_turbines': 4}],
-    'coordinates': [55, 8.75]
+    'coordinates': [55, 8.75] # NOTE: lon exactly in between two coordinates
 }
-# PPC_4950
+# PPC_4950 (54.629608, 9.029239)
 PPC_4950 = {
     'wind_farm_name': 'PPC_4950',
     'wind_turbine_fleet': [{'wind_turbine': e70,
                             'number_of_turbines': 22}],
-    'coordinates': [55, 8.75]
+    'coordinates': [54.5, 8.75]
 }
-# PPC_5598
+# PPC_5598 (54.596603, 8.968139)
 PPC_5598 = {
     'wind_farm_name': 'PPC_5598',
     'wind_turbine_fleet': [{'wind_turbine': e70,
                             'number_of_turbines': 14}],
-    'coordinates': [55, 8.75]
+    'coordinates': [54.5, 8.75]
 }
 
 # Create data frame from csv if pickle_load == False
