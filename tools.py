@@ -48,7 +48,7 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
     return data
 
 
-def create_merra_df(filename, coordinates):
+def create_merra_df(dataframe, coordinates):
     """
     Parameters
     ----------
@@ -66,9 +66,8 @@ def create_merra_df(filename, coordinates):
         wind speed as columns.
 
     """
-    merra_df = pd.read_csv(filename, sep=',', decimal='.', index_col=0)
-    merra_df = merra_df.loc[(merra_df['lat'] == coordinates[0]) &
-                            (merra_df['lon'] == coordinates[1])]
+    merra_df = dataframe.loc[(dataframe['lat'] == coordinates[0]) &
+                             (dataframe['lon'] == coordinates[1])]
     merra_df = merra_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
                               'SWTDN', 'SWGDN'], axis=1)
     merra_df = merra_df.rename(
