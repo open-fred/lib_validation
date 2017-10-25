@@ -40,11 +40,12 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
             # # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
         elif weather_data == 'merra':
-            data = create_merra_df(os.path.join(os.path.dirname(__file__),
-                                                'dumps/weather',
-                                                'weather_data_GER_{0}.csv'.format(year))) # TODO check this
+            data = create_merra_df(os.path.join(
+                os.path.dirname(__file__), 'data/Merra',
+                'weather_data_GER_{0}.csv'.format(year)), coordinates) # TODO: make folder individual
             filename = 'weather_df_merra_{0}.p'.format(year)
-        pickle.dump(data, open(filename, 'wb'))
+        pickle.dump(data, open(os.path.join(os.path.dirname(__file__),
+                               'dumps/weather', filename), 'wb'))
     return data
 
 
