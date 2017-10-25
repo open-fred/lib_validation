@@ -19,18 +19,22 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
     pickle_load : Boolean
         True if data has already been dumped before.
     filename : String
-        Name (including path) of file to load data from or if
-        MERRA data is retrieved using function 'create_merra_multi_weather'
-        to get data from. Default: 'pickle_dump.p'.
+        Name (including path) of file to load data from or if MERRA data is
+        retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
     weather_data : String
-        String specifying if coastdat or MERRA data is retrieved in case
-        `pickle_load` is False. Default: None. # TODO: add open_FRED
+        String specifying if open_FRED or MERRA data is retrieved in case
+        `pickle_load` is False. Default: None.
     year : int
         Specifies which year the weather data is retrieved for. Default: None.
+    coordinates : List
+        List of coordinates [lat, lon] of location. For loading data.
+        Default: None
 
     Returns
     -------
-
+    data : pandas.DataFrame
+        Weather data with time series as index and data like temperature and
+        wind speed as columns.
 
     """
     if pickle_load:
@@ -51,10 +55,20 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
 
 def create_merra_df(filename, coordinates):
     """
-    Parameters:
-    -----------
-    coordinates : list
-        ...
+    Parameters
+    ----------
+    filename : String
+        Name (including path) of file to load data from or if MERRA data is
+        retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
+    coordinates : List
+        List of coordinates [lat, lon] of location. For loading data.
+        Default: None
+    Returns
+    -------
+    merra_df : pandas.DataFrame
+        Weather data with time series as index and data like temperature and
+        wind speed as columns.
+
     """
     merra_df = pd.read_csv(filename, sep=',', decimal='.', index_col=0)
     merra_df = merra_df.loc[(merra_df['lat'] == coordinates[0]) &
@@ -75,14 +89,15 @@ def power_output_sum(wind_turbines, number_of_turbines, weather):
     Simplest way to calculate the power output of a wind farm or other
     gathering of wind turbines.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     wind_turbines : list
         Contains wind turbine objects.
     number_of_turbines : list
         Contains number of turbines in wind farm for each wind turbine object.
-    weather : object
-        ... TODO
+    weather :pandas.DataFrame
+        Weather data with time series as index and data like temperature and
+        wind speed as columns. # TODO: specifiy
 
     """
 
