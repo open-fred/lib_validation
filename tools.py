@@ -1,8 +1,6 @@
 import pandas as pd
 import os
 import pickle
-from windpowerlib import (wind_turbine, density,
-                          power_output, temperature, wind_speed)
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
@@ -59,6 +57,7 @@ def create_merra_df(filename, coordinates):
     coordinates : List
         List of coordinates [lat, lon] of location. For loading data.
         Default: None
+
     Returns
     -------
     merra_df : pandas.DataFrame
@@ -76,42 +75,3 @@ def create_merra_df(filename, coordinates):
                  'z0': 'roughness_length', 'T': 'temperature',
                  'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
     return merra_df
-
-
-def power_output_sum(wind_turbines, number_of_turbines, weather, data_height):
-    """
-    Calculate power output of several wind turbines by summation.
-
-    Simplest way to calculate the power output of a wind farm or other
-    gathering of wind turbines.
-    For the power_output of the single turbines a power_curve without density
-    correction is used. The wind speed at hub height is calculated by the
-    logarithmic wind profile.
-
-    Parameters
-    ----------
-    wind_turbines : list
-        Contains wind turbine objects.
-    number_of_turbines : list
-        Contains number of turbines in wind farm for each wind turbine object.
-    weather :pandas.DataFrame
-        Weather data with time series as index and data like temperature and
-        wind speed as columns. # TODO: specifiy
-    data_height : dictionary
-        Contains the heights of the weather measurements or weather
-        model in meters with the keys of the data parameter.
-
-    """
-    for turbine in wind_turbines:
-        wind_speed_hub = wind_speed.logarithmic_profile(
-            weather.wind_speed, data_height['wind_speed'], turbine.hub_height,
-            weather.roughness_length, obstacle_height=0.0)
-        cluster_power_output = power_output.power_curve(
-            wind_speed_hub, turbine.power_curve['wind_speed'],
-            turbine.power_curve['values']) * number_of_turbines # TODO: this should be in wind farm class..
-        
-    return
-
-
-
-
