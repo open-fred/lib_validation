@@ -74,3 +74,5 @@
 /data/Merra/weather_data_GER_2015.csv
 /data/Merra/weather_data_GER_2016.csv
 /filenames.txt
+/dumps/weather/weather_df_merra_2015.p
+/dumps/weather/weather_df_merra_2016.p
