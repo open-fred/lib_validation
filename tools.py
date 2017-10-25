@@ -60,6 +60,10 @@ def create_merra_df(filename, coordinates):
                             (merra_df['lon'] == coordinates[1])]
     merra_df = merra_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
                               'SWTDN', 'SWGDN'], axis=1)
+    merra_df = merra_df.rename(
+        columns={'v_50m': 'wind_speed', 'h1': 'wind_speed_height',
+                 'z0': 'roughness_length', 'T': 'temperature',
+                 'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
     return merra_df
 
 
