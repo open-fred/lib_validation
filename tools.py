@@ -1,12 +1,6 @@
-from windpowerlib.modelchain import ModelChain
 import pandas as pd
 import os
 import pickle
-from windpowerlib import wind_turbine
-
-
-year = 2015
-filename = 'weather_data_GER_2015.csv'
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
