@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import pickle
+from windpowerlib import (power_output, wind_speed)
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
@@ -75,3 +76,40 @@ def create_merra_df(filename, coordinates):
                  'z0': 'roughness_length', 'T': 'temperature',
                  'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
     return merra_df
+
+
+def power_output_sum(wind_turbine_fleet, weather_df, data_height):
+    """
+    Calculate power output of several wind turbines by summation.
+
+    Simplest way to calculate the power output of a wind farm or other
+    gathering of wind turbines. For the power_output of the single turbines
+    a power_curve without density correction is used. The wind speed at hub
+    height is calculated by the logarithmic wind profile.
+
+    Parameters
+    ----------
+    wind_turbine_fleet : List of Dictionaries
+        Wind turbines of wind farm. Dictionaries must have 'wind_turbine'
+        (contains wind turbine object) and 'number_of_turbines' (number of
+        turbine type in wind farm) as keys.
+    weather_df : pandas.DataFrame
+        DataFrame with time series for wind speed `wind_speed` in m/s and
+        roughness length `roughness_length` in m.
+    data_height : Dictionary
+        Contains the heights of the weather measurements or weather
+        model in meters with the keys of the data parameter.
+
+    """
+    farm_power_output = 0
+    for turbine_type in wind_turbine_fleet:
+        wind_speed_hub = wind_speed.logarithmic_profile(
+            weather_df.wind_speed, data_height['wind_speed'],
+            turbine_type['wind_turbine'].hub_height,
+            weather_df.roughness_length, obstacle_height=0.0)
+        farm_power_output += (power_output.power_curve(
+            wind_speed_hub,
+            turbine_type['wind_turbine'].power_curve['wind_speed'],
+            turbine_type['wind_turbine'].power_curve['values'])
+            * turbine_type['number_of_turbines'])
+    return farm_power_output
