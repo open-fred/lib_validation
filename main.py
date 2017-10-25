@@ -83,6 +83,8 @@ else:
         os.path.dirname(__file__), 'data/Merra',
         'weather_data_GER_{0}.csv'.format(year)),
         sep=',', decimal='.', index_col=0)
+#    lat, lon = small_tools.return_lats_lons(data_frame)
+#    print(lat, lon)
 farms = []
 wind_farm_data = [bredstedt, nordstrand, PPC_4919, PPC_4950, PPC_5598]
 for description in wind_farm_data:
