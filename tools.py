@@ -10,7 +10,7 @@ filename = 'weather_data_GER_2015.csv'
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
-                     weather_data=None, year=None):
+                     weather_data=None, year=None, coordinates=None):
     """
     Helper function to load pickled weather data or retrieve data and dump it.
 
