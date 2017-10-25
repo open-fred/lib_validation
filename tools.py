@@ -33,8 +33,6 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
 
 
     """
-    pickle_path = os.path.join(os.path.dirname(__file__),
-                               'dumps/weather', filename) # todo move to other function
     if pickle_load:
         data = pickle.load(open(filename, 'rb'))
     else:
@@ -57,7 +55,6 @@ def create_merra_df(filename, coordinates):
     coordinates : list
         ...
     """
-    path = os.path.join(os.path.dirname(__file__), 'data/Merra', filename) # todo move to other function
     merra_df = pd.read_csv(filename, sep=',', decimal='.', index_col=0)
     merra_df = merra_df.loc[(merra_df['lat'] == coordinates[0]) & (merra_df['lon'] == coordinates[1])]
     merra_df = merra_df.drop(['v1', 'v2', 'h2', 'cumulated hours', 'SWTDN', 'SWGDN'], 1)
@@ -87,6 +84,9 @@ def power_output_sum(wind_turbines, number_of_turbines, weather):
 
 # Bredstedt (54.578219, 8.978092)
 br_coor = [55, 8.75]
+# Get weather
+pickle_path = os.path.join(os.path.dirname(__file__),
+                               'dumps/weather', 'weather_df_merra_2015.p')
 ## Initialise WindTurbine objects
 #e70 = wind_turbine.WindTurbine(**enerconE70)
 #e66 = wind_turbine.WindTurbine(**enerconE66)
