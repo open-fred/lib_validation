@@ -33,7 +33,8 @@ enerconE66 = {
 # Initialize WindTurbine objects
 e70 = wt.WindTurbine(**enerconE70)
 e66 = wt.WindTurbine(**enerconE66)
-#small_tools.plot_or_print(e70, e66)
+#small_tools.plot_or_print(e70)
+#small_tools.plot_or_print(e66)
 
 # ----------------------------- Wind farm data ------------------------------ #
 # Bredstedt (54.578219, 8.978092)
