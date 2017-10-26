@@ -3,7 +3,10 @@ from matplotlib import pyplot as plt
 
 
 def return_lats_lons(df):
-    # Returns all latitudes and longitudes of DataFrame
+    r"""
+    Returns all latitudes and longitudes of DataFrame.
+
+    """
     lats = df.lat.unique()
     lons = df.lon.unique()
     return lats, lons
