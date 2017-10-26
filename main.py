@@ -33,8 +33,8 @@ enerconE66 = {
 # Initialize WindTurbine objects
 e70 = wt.WindTurbine(**enerconE70)
 e66 = wt.WindTurbine(**enerconE66)
-#small_tools.plot_or_print(e70)
-#small_tools.plot_or_print(e66)
+#small_tools.plot_or_print_turbine(e70)
+#small_tools.plot_or_print_turbine(e66)
 
 # ----------------------------- Wind farm data ------------------------------ #
 # Bredstedt (54.578219, 8.978092)
@@ -108,3 +108,7 @@ for description in wind_farm_data:
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height)
     farms.append(wind_farm)
+#small_tools.plot_or_print_farm(
+#    farms, save_folder='Merra_power_output/{0}'.format(year),
+#    y_limit=[0, 6 * 10 ** 7])
+
