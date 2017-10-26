@@ -75,6 +75,11 @@ PPC_5598 = {
     'coordinates': [54.5, 8.75]
 }
 
+# TODO: put the following in function and only execute when weather_data == 'merra'
+# TODO: actually only for more complex caluclations like this.. for simple calculations
+#       modelchain can be used (if temperature is not beeing used)
+# TODO: weather for all the ArgeNetz wind farms identical - if change: save
+#first for eventual other time series
 # Create data frame from csv if pickle_load == False
 if pickle_load:
         data_frame = None
