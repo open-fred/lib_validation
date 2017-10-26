@@ -96,7 +96,7 @@ def data_evaluation(filename):
     return df_compare
 
 
-def get_data(filename_files, new_column_names,
+def get_data(filename_files, filename_column_names, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
     r"""
     Fetches data of the requested files and renames columns.
@@ -109,7 +109,7 @@ def get_data(filename_files, new_column_names,
             data = pd.DataFrame()
             for line in file:
                 name = line.strip()
-                df = restructure_data(name, 'column_names_2015.txt',
+                df = restructure_data(name, filename_column_names,
                                       filter_cols=True)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
