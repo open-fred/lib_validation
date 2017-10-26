@@ -6,8 +6,8 @@ import os
 import pandas as pd
 
 # Get all turbine types of windpowerlib
-#turbines = wind_turbine.get_turbine_types(print_out=False)
-#small_tools.print_all_turbine_types(turbines)
+#turbines = wt.get_turbine_types(print_out=False)
+#small_tools.print_whole_dataframe(turbines)
 
 # ----------------------------- Set parameters ------------------------------ #
 pickle_load = True

@@ -9,7 +9,11 @@ def return_lats_lons(df):
     return lats, lons
 
 
-def print_all_turbine_types(df):
+def print_whole_dataframe(df):
+    r"""
+    Prints all entries of a pandas.DataFrame.
+
+    """
     pd.set_option('display.max_rows', len(df))
     print(df)
     pd.reset_option('display.max_rows')
