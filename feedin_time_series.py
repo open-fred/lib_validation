@@ -142,8 +142,8 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
             plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
         plt.tight_layout()
         fig.savefig(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 '..', save_folder,
-                                                 str(save_folder+column))))
+                                                 '../Plots', save_folder,
+                                                 str(column) + '.pdf')))
 
 #df_compare = data_evaluation('filenames_all.txt')
 
