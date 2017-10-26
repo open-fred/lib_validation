@@ -165,16 +165,39 @@ new_column_names_2015 = [
     'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
     'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
+
+def get_and_plot_feedin(year, plot=False, x_limit=None):
+    r"""
+    Fetches feedin data from multiple years and plots the data.
+
+    """
+    if year == 2015:
+        filename_column_names = 'column_names_2015.txt'
+        new_column_names = new_column_names_2015
+    if (year == 2016 or year == 2017):
+        filename_column_names = 'column_names_2016_2017.txt'
+        new_column_names = new_column_names_2016_2017
+    data = get_data('filenames_{0}.txt'.format(year),
+                    filename_column_names, new_column_names,
+                    'arge_data_{0}.p'.format(year), pickle_load=True)
+    if plot:
+        fast_plot(
+            data, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
+                year), x_limit=x_limit)
+    return data
+
 # Get the data of 2015 (and 2016/2017) and plot the results
-x_limit = None
-data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
-                     'arge_data_2015.p', pickle_load=True)
-#fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
+#x_limit = None
+#data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
+#                     'arge_data_2015.p', pickle_load=True)
+#fast_plot(data_2015, save_folder='ArgeNetz_power_output/Plots_2015',
+#          x_limit=x_limit)
 #data_2016_2017 = get_data('filenames_2016_2017.txt',
 #                          'column_names_2016_2017.txt',
 #                          new_column_names_2016_2017, 'arge_data_2016_2017.p',
 #                          pickle_load=True)
-#fast_plot(data_2016_2017, save_folder='Plots_2016_2017', x_limit=x_limit)
+#fast_plot(data_2016_2017, save_folder='ArgeNetz_power_output/Plots_2016_2017',
+#          x_limit=x_limit)
 
 # Sample for period of 2015 (possible mistakes in data)
 #data = get_data('filenames.txt', 'column_names_2015.txt',
