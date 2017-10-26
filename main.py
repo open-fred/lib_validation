@@ -11,10 +11,11 @@ import pandas as pd
 
 # ----------------------------- Set parameters ------------------------------ #
 pickle_load = True
-filename = os.path.join(os.path.dirname(__file__),
-                        'dumps/weather', 'weather_df_merra_2015.p')
 weather_data = 'merra'
-year = 2015
+year = 2016
+filename = os.path.join(os.path.dirname(__file__),
+                        'dumps/weather', 'weather_df_merra_{0}.p'.format(year))
+
 
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??
