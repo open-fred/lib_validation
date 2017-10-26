@@ -46,5 +46,6 @@ def plot_or_print(turbine_or_farm, plot=True, print_out=False):
         if turbine_or_farm.power_curve is not None:
             print(turbine_or_farm.power_curve)
         if turbine_or_farm.power_output is not None:
+            print(turbine_or_farm.power_output)
 # TODO: write small tool for display of all turbines of a wind farm
 # TODO: tool for plot and save
