@@ -132,7 +132,7 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
 
     """
     for column in df.columns:
-        fig = plt.figure(figsize=(16, 12))
+        fig = plt.figure(figsize=(8, 6))
         df[column].plot()
         plt.title(column, fontsize=20)
         plt.xticks(rotation='vertical')
