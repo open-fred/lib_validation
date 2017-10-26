@@ -40,7 +40,7 @@ def read_data(filename, **kwargs):
 
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
                      drop_na=False):
-    """
+    r"""
     Restructures data read from a csv file.
 
     Create a DataFrama. Data can be filtered (if filter_cols is not None) and
@@ -58,6 +58,7 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     drop_na : boolean
         If True: Nan's are droped from DataFrame with method how='any'.
         Default: None.
+
     """
     df = read_data(filename)
     if filter_cols:
@@ -97,8 +98,9 @@ def data_evaluation(filename):
 
 def get_data(filename_files, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
-    """
+    r"""
     Fetches data of the requested files and renames columns.
+
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps', filename_pickle))
@@ -118,7 +120,7 @@ def get_data(filename_files, new_column_names,
 
 
 def fast_plot(df, save_folder, y_limit=None, x_limit=None):
-    """
+    r"""
     Plot all data from DataFrame to single plots and save them.
 
     Parameters:
@@ -127,6 +129,7 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
         Contains data to be plotted.
     y_limit, x_limit : list of floats or integers
         Values for ymin, ymax, xmin and xmax
+
     """
     for column in df.columns:
         fig = plt.figure(figsize=(16, 12))
