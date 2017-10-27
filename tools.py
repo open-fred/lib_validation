@@ -143,4 +143,21 @@ def annual_energy_output(power_output, temporal_resolution):
     energy = power_output * temporal_resolution / 60
     return energy.sum()
 
+
+def hourly_energy_output(power_output, temporal_resolution):
+    r"""
+
+    """
+    energy_output_series = power_output * temporal_resolution / 60
+    energy_output = pd.Series()
+    start = 0
+#    for i in range(len(power_output) - int(60 / temporal_resolution) * 2):
+    while start < len(power_output):
+        entry = pd.Series(energy_output_series.iloc[
+                          start:start + 60 / temporal_resolution].sum(),
+                          index=[power_output.index[start]])
+        energy_output = energy_output.append(entry)
+        start = start + 60 / temporal_resolution
+    return energy_output
+
 # TODO: possible: split tools module to power_output, weather, comparison...
