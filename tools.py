@@ -120,3 +120,25 @@ def power_output_sum(wind_turbine_fleet, weather_df, data_height):
             turbine_type['wind_turbine'].power_curve['values'])
             * turbine_type['number_of_turbines'])
     return farm_power_output
+
+def annual_energy_output(power_output, temporal_resolution):
+    r"""
+    Calculate annual energy output from power output time series.
+
+    Parameters
+    ----------
+    power_output : pd.Series
+        Power output time series of wind turbine or wind farm.
+    temporal_resolution : Integer
+        Temporal resolution of power output time series in minutes.
+
+    Return
+    ------
+    Float
+        Annual energy output in Wh, kWh or MWh depending on the
+        unit of `power_output`.
+
+    """
+    energy = power_output * temporal_resolution / 60
+    return energy.sum()
+
