@@ -146,6 +146,22 @@ def annual_energy_output(power_output, temporal_resolution):
 
 def hourly_energy_output(power_output, temporal_resolution):
     r"""
+    Converts power output time series to hourly energy output time series.
+
+    Power output time series of different temporal resolutions are converted to
+    energy output time series with a temporal resolution of one hour.
+
+    Parameters
+    ----------
+    power_output : pd.Series
+        Power output of wind turbine or wind farm.
+    temporal_resolution : Integer
+        Temporal resolution of time series in minutes.
+
+    Returns
+    -------
+    energy_output : pd.Series
+        Energy output time series with a temporal resolution of one hour.
 
     """
     energy_output_series = power_output * temporal_resolution / 60
