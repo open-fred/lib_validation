@@ -168,7 +168,7 @@ new_column_names_2015 = [
 
 def get_and_plot_feedin(year, plot=False, x_limit=None):
     r"""
-    Fetches feedin data from multiple years and plots the data.
+    Fetches ArgeNetz data for specified year and plots feedin.
 
     """
     if year == 2015:
