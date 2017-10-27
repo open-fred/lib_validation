@@ -5,8 +5,9 @@ from windpowerlib import (power_output, wind_speed)
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
-                     weather_data=None, year=None, coordinates=None):
-    """
+                     weather_data=None, year=None, coordinates=None,
+                     data_frame=None):
+    r"""
     Helper function to load pickled weather data or retrieve data and dump it.
 
     Parameters
@@ -22,8 +23,11 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
     year : int
         Specifies which year the weather data is retrieved for. Default: None.
     coordinates : List
-        List of coordinates [lat, lon] of location. For loading data.
+        List of coordinates [lat, lon] of location for loading data.
         Default: None
+    data_frame : pandas.DataFrame
+        Contains MERRA or open_FRED data. Makes function faster if it is used
+        in a loop. Default: None.
 
     Returns
     -------
@@ -39,17 +43,21 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
             # # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
         elif weather_data == 'merra':
-            data = create_merra_df(os.path.join(
-                os.path.dirname(__file__), 'data/Merra',
-                'weather_data_GER_{0}.csv'.format(year)), coordinates) # TODO: make folder individual
+            if data_frame is None:
+                # Load data from csv
+                data_frame = pd.read_csv(os.path.join(
+                    os.path.dirname(__file__), 'data/Merra', # TODO: make folder individua
+                    'weather_data_GER_{0}.csv'.format(year)),
+                    sep=',', decimal='.', index_col=0)
+            data = create_merra_df(data_frame, coordinates)
             filename = 'weather_df_merra_{0}.p'.format(year)
         pickle.dump(data, open(os.path.join(os.path.dirname(__file__),
                                'dumps/weather', filename), 'wb'))
     return data
 
 
-def create_merra_df(filename, coordinates):
-    """
+def create_merra_df(dataframe, coordinates):
+    r"""
     Parameters
     ----------
     filename : String
@@ -66,9 +74,8 @@ def create_merra_df(filename, coordinates):
         wind speed as columns.
 
     """
-    merra_df = pd.read_csv(filename, sep=',', decimal='.', index_col=0)
-    merra_df = merra_df.loc[(merra_df['lat'] == coordinates[0]) &
-                            (merra_df['lon'] == coordinates[1])]
+    merra_df = dataframe.loc[(dataframe['lat'] == coordinates[0]) &
+                             (dataframe['lon'] == coordinates[1])]
     merra_df = merra_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
                               'SWTDN', 'SWGDN'], axis=1)
     merra_df = merra_df.rename(
@@ -79,7 +86,7 @@ def create_merra_df(filename, coordinates):
 
 
 def power_output_sum(wind_turbine_fleet, weather_df, data_height):
-    """
+    r"""
     Calculate power output of several wind turbines by summation.
 
     Simplest way to calculate the power output of a wind farm or other

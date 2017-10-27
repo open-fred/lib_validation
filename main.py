@@ -4,8 +4,6 @@ import small_tools
 import tools
 import os
 import pandas as pd
-import feedin_time_series
-from matplotlib import pyplot as plt
 
 # Get all turbine types of windpowerlib
 #turbines = wt.get_turbine_types(print_out=False)
@@ -18,7 +16,7 @@ year = 2016
 filename = os.path.join(os.path.dirname(__file__),
                         'dumps/weather', 'weather_df_merra_{0}.p'.format(year))
 
-plot_arge_feedin = False  # If True ...
+
 plot_wind_farms = False  # If True usage of plot_or_print_farm() in small_tools
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 # --------------------- Turbine data and initialization --------------------- #
@@ -120,9 +118,3 @@ if plot_wind_farms:
         farms, save_folder='Merra_power_output/{0}'.format(year),
         y_limit=[0, 6 * 10 ** 7])
 
-arge_feedin_data = feedin_time_series.get_and_plot_feedin(
-    year, plot=plot_arge_feedin)
-fig = plt.figure(figsize=(8, 6))
-arge_feedin_data['Bredstedt_P_W'].plot()
-#farms[0].power_output.plot()
-plt.xticks(rotation='vertical')
