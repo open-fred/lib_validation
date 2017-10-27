@@ -40,7 +40,7 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
         data = pickle.load(open(filename, 'rb'))
     else:
         if weather_data == 'open_FRED':
-            # # TODO: add open_FRED weather data
+            # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
         elif weather_data == 'merra':
             if data_frame is None:
@@ -121,6 +121,7 @@ def power_output_sum(wind_turbine_fleet, weather_df, data_height):
             * turbine_type['number_of_turbines'])
     return farm_power_output
 
+
 def annual_energy_output(power_output, temporal_resolution):
     r"""
     Calculate annual energy output from power output time series.
@@ -142,3 +143,4 @@ def annual_energy_output(power_output, temporal_resolution):
     energy = power_output * temporal_resolution / 60
     return energy.sum()
 
+# TODO: possible: split tools module to power_output, weather, comparison...
