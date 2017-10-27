@@ -146,10 +146,10 @@ arge_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
-    # Power output in kW
+    # Power output in W
     wind_farm.power_output = arge_netz_data[description['wind_farm_name']
-                                            + '_P_W']
-    # Annual energy output in kWh
+                                            + '_P_W'] * 1000
+    # Annual energy output in Wh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
