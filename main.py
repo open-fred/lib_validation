@@ -22,7 +22,7 @@ plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
 if weather_data == 'merra':
-    temporal_resolution = 60
+    temporal_resolution_weather = 60
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??
 # Turbine data
@@ -122,7 +122,7 @@ for description in wind_farm_data:
         wind_farm.wind_turbine_fleet, weather, data_height)
     # Annual energy output in Wh
     wind_farm.annual_energy_output = tools.annual_energy_output(
-        wind_farm.power_output, temporal_resolution)
+        wind_farm.power_output, temporal_resolution_weather)
     farms.append(wind_farm)
 
 
@@ -135,9 +135,9 @@ if plot_wind_farms:
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
 if year == 2015:
-    temporal_resolution = 5
+    temporal_resolution_arge = 5
 if (year == 2016 or year == 2017):
-    temporal_resolution = 1
+    temporal_resolution_arge = 1
 arge_netz_data = feedin_time_series.get_and_plot_feedin(
     year, plot=plot_arge_feedin)
 power_output_series = []
@@ -151,5 +151,5 @@ for description in wind_farm_data:
                                             + '_P_W']
     # Annual energy output in kWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
-        wind_farm.power_output, temporal_resolution)
+        wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
