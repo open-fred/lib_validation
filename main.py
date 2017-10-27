@@ -19,6 +19,9 @@ filename = os.path.join(os.path.dirname(__file__),
 
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
+
+if weather_data == 'merra':
+    temporal_resolution = 60
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??
 # Turbine data
@@ -113,9 +116,12 @@ for description in wind_farm_data:
                    'temperature': weather.temperature_height,
                    'density': 0,
                    'pressure': 0}
-    # Get power output
+    # Power output in W
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height)
+    # Annual energy output in Wh
+    wind_farm.annual_energy_output = tools.annual_energy_output(
+        wind_farm.power_output, temporal_resolution)
     farms.append(wind_farm)
 
 if plot_wind_farms:
