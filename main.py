@@ -66,7 +66,7 @@ PPC_4919 = {
                             'number_of_turbines': 13},
                            {'wind_turbine': e66,
                             'number_of_turbines': 4}],
-    'coordinates': [55, 8.75] # NOTE: lon exactly in between two coordinates
+    'coordinates': [55, 8.75]  # NOTE: lon exactly in between two coordinates
 }
 # PPC_4950 (54.629608, 9.029239)
 PPC_4950 = {
