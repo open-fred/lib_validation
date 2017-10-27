@@ -4,6 +4,7 @@ import visualization_tools
 import tools
 import os
 import pandas as pd
+import feedin_time_series
 
 # Get all turbine types of windpowerlib
 #turbines = wt.get_turbine_types(print_out=False)
@@ -16,7 +17,7 @@ year = 2016
 filename = os.path.join(os.path.dirname(__file__),
                         'dumps/weather', 'weather_df_merra_{0}.p'.format(year))
 
-
+plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
@@ -129,3 +130,23 @@ if plot_wind_farms:
         farms, save_folder='Merra_power_output/{0}'.format(year),
         y_limit=[0, 6 * 10 ** 7])
 
+# --------------------------- ArgeNetz Feedin Data -------------------------- #
+if year == 2015:
+    temporal_resolution = 5
+if (year == 2016 or year == 2017):
+    temporal_resolution = 1
+arge_netz_data = feedin_time_series.get_and_plot_feedin(
+    year, plot=plot_arge_feedin)
+power_output_series = []
+
+arge_farms = []
+for description in wind_farm_data:
+    # Initialise wind farm
+    wind_farm = wf.WindFarm(**description)
+    # Power output in kW
+    wind_farm.power_output = arge_netz_data[description['wind_farm_name']
+                                            + '_P_W']
+    # Annual energy output in kWh
+    wind_farm.annual_energy_output = tools.annual_energy_output(
+        wind_farm.power_output, temporal_resolution)
+    arge_farms.append(wind_farm)
