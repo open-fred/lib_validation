@@ -1,13 +1,13 @@
 from windpowerlib import wind_turbine as wt
 from windpowerlib import wind_farm as wf
-import small_tools
+import visualization_tools
 import tools
 import os
 import pandas as pd
 
 # Get all turbine types of windpowerlib
 #turbines = wt.get_turbine_types(print_out=False)
-#small_tools.print_whole_dataframe(turbines)
+#visualization_tools.print_whole_dataframe(turbines)
 
 # ----------------------------- Set parameters ------------------------------ #
 pickle_load = True
@@ -17,7 +17,7 @@ filename = os.path.join(os.path.dirname(__file__),
                         'dumps/weather', 'weather_df_merra_{0}.p'.format(year))
 
 
-plot_wind_farms = False  # If True usage of plot_or_print_farm() in small_tools
+plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??
@@ -37,8 +37,8 @@ enerconE66 = {
 e70 = wt.WindTurbine(**enerconE70)
 e66 = wt.WindTurbine(**enerconE66)
 if plot_wind_turbines:
-    small_tools.plot_or_print_turbine(e70)
-    small_tools.plot_or_print_turbine(e66)
+    visualization_tools.plot_or_print_turbine(e70)
+    visualization_tools.plot_or_print_turbine(e66)
 
 # ----------------------------- Wind farm data ------------------------------ #
 # Bredstedt (54.578219, 8.978092)
@@ -93,7 +93,7 @@ else:
         os.path.dirname(__file__), 'data/Merra',
         'weather_data_GER_{0}.csv'.format(year)),
         sep=',', decimal='.', index_col=0)
-#    lat, lon = small_tools.return_lats_lons(data_frame)
+#    lat, lon = visualization_tools.return_lats_lons(data_frame)
 #    print(lat, lon)
 farms = []
 wind_farm_data = [bredstedt, nordstrand, PPC_4919, PPC_4950, PPC_5598]
@@ -114,7 +114,7 @@ for description in wind_farm_data:
     farms.append(wind_farm)
 
 if plot_wind_farms:
-    small_tools.plot_or_print_farm(
+    visualization_tools.plot_or_print_farm(
         farms, save_folder='Merra_power_output/{0}'.format(year),
         y_limit=[0, 6 * 10 ** 7])
 
