@@ -79,6 +79,11 @@ PPC_5598 = {
     'coordinates': [54.5, 8.75]
 }
 
+if year == 2015:
+    wind_farm_data = [bredstedt, nordstrand, PPC_4919, PPC_4950, PPC_5598]
+if (year == 2016 or year == 2017):
+    wind_farm_data = [bredstedt, PPC_4919, PPC_4950, PPC_5598]
+
 # ------------------------- Power output simulation ------------------------- #
 # TODO: put the following in function and only execute when weather_data == 'merra'
 # TODO: actually only for more complex caluclations like this.. for simple calculations
@@ -97,7 +102,6 @@ else:
 #    lat, lon = visualization_tools.return_lats_lons(data_frame)
 #    print(lat, lon)
 farms = []
-wind_farm_data = [bredstedt, nordstrand, PPC_4919, PPC_4950, PPC_5598]
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
