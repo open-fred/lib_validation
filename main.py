@@ -89,7 +89,7 @@ if (year == 2016 or year == 2017):
     wind_farm_data = [bredstedt, PPC_4919, PPC_4950, PPC_5598]
 
 # ------------------------- Power output simulation ------------------------- #
-# TODO: put the following in function and only execute when weather_data == 'merra'
+# TODO: new section: weather (for different weather sources)
 # TODO: actually only for more complex caluclations like this.. for simple calculations
 #       modelchain can be used (if temperature is not beeing used)
 # TODO: weather for all the ArgeNetz wind farms identical - if change: save
@@ -124,6 +124,9 @@ for description in wind_farm_data:
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution)
     farms.append(wind_farm)
+
+
+# TODO: weather object? with temporal_resultion attribute
 
 if plot_wind_farms:
     visualization_tools.plot_or_print_farm(
