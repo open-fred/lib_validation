@@ -76,3 +76,6 @@
 /filenames.txt
 /dumps/weather/weather_df_merra_2015.p
 /dumps/weather/weather_df_merra_2016.p
+/dumps/arge_data_2016.p
+/dumps/arge_data_2017.p
+/__pycache__/feedin_time_series.cpython-34.pyc
