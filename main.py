@@ -79,6 +79,7 @@ PPC_5598 = {
     'coordinates': [54.5, 8.75]
 }
 
+# ------------------------- Power output simulation ------------------------- #
 # TODO: put the following in function and only execute when weather_data == 'merra'
 # TODO: actually only for more complex caluclations like this.. for simple calculations
 #       modelchain can be used (if temperature is not beeing used)
