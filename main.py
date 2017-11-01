@@ -105,7 +105,7 @@ else:
         sep=',', decimal='.', index_col=0)
 #    lat, lon = visualization_tools.return_lats_lons(data_frame)
 #    print(lat, lon)
-farms = []
+merra_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
@@ -123,14 +123,14 @@ for description in wind_farm_data:
     # Annual energy output in Wh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
-    farms.append(wind_farm)
+    merra_farms.append(wind_farm)
 
 
 # TODO: weather object? with temporal_resultion attribute
 
 if plot_wind_farms:
     visualization_tools.plot_or_print_farm(
-        farms, save_folder='Merra_power_output/{0}'.format(year),
+        merra_farms, save_folder='Merra_power_output/{0}'.format(year),
         y_limit=[0, 6 * 10 ** 7])
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
