@@ -146,6 +146,7 @@ def annual_energy_output(power_output, temporal_resolution):
 
 
 def hourly_energy_output(power_output, temporal_resolution):
+    # NOTE: This function could be enhanced to different output temporal resolutions
     r"""
     Converts power output time series to hourly energy output time series.
 

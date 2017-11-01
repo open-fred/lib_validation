@@ -191,3 +191,4 @@ path_latex_tables = os.path.join(os.path.dirname(__file__),
 name = os.path.join(path_latex_tables, 'name_of_table.tex')
 # TODO: make fully customized table
 df.to_latex(buf=name)
+#index=pd.date_range('1/1/2012', periods=2, freq='H') # for date index!!
