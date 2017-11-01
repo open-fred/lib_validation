@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import pickle
 from windpowerlib import (power_output, wind_speed)
@@ -176,4 +177,27 @@ def hourly_energy_output(power_output, temporal_resolution):
         start = start + 60 / temporal_resolution
     return energy_output
 
+
+def standard_deviation(data_series):
+    r"""
+    Calculate standard deviation of a data series.
+
+    Parameters
+    ----------
+    data_series : list or pandas.Series
+        Input data series of which the standard deviation will be calculated.
+
+    Return
+    ------
+    float
+        Standard deviation of the input data series.
+
+    """
+    average = sum(data_series) / len(data_series)
+    variance = sum((data_series[i] - average)**2
+                   for i in range(len(data_series))) / len(data_series)
+    return np.sqrt(variance)
+
+#dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
+#dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test
 # TODO: possible: split tools module to power_output, weather, comparison...
