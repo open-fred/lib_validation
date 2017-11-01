@@ -4,6 +4,7 @@ import visualization_tools
 import tools
 import os
 import pandas as pd
+import numpy as np
 import feedin_time_series
 
 # Get all turbine types of windpowerlib
@@ -192,3 +193,7 @@ name = os.path.join(path_latex_tables, 'name_of_table.tex')
 # TODO: make fully customized table
 df.to_latex(buf=name)
 #index=pd.date_range('1/1/2012', periods=2, freq='H') # for date index!!
+
+deviation = tools.compare_series_std_deviation(arge_farms[0].power_output,
+                                               merra_farms[0].power_output)
+

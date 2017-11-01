@@ -199,6 +199,19 @@ def standard_deviation(data_series):
                    for i in range(len(data_series))) / len(data_series)
     return np.sqrt(variance)
 
+
+def compare_series_std_deviation(series_measured, series_simulated):
+    r"""
+
+
+    """
+    differences = pd.Series.subtract(series_measured, series_simulated)
+    print(differences)
+    std_deviation = standard_deviation(differences)
+    # Add box plots
+    # Add visualization
+    return std_deviation
+
 #dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
 #dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test
 # TODO: possible: split tools module to power_output, weather, comparison...
