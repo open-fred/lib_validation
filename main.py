@@ -14,8 +14,10 @@ import feedin_time_series
 pickle_load = True
 weather_data = 'merra'
 year = 2016
-filename = os.path.join(os.path.dirname(__file__),
-                        'dumps/weather', 'weather_df_merra_{0}.p'.format(year))
+year = 2015
+filename_weather = os.path.join(os.path.dirname(__file__),
+                                'dumps/weather',
+                                'weather_df_merra_{0}.p'.format(year))
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
@@ -110,8 +112,9 @@ for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
     # Get weather
-    weather = tools.get_weather_data(pickle_load, filename, weather_data,
-                                     year, wind_farm.coordinates, data_frame)
+    weather = tools.get_weather_data(pickle_load, filename_weather,
+                                     weather_data, year,
+                                     wind_farm.coordinates, data_frame)
     data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
                    'roughness_length': 0,  # TODO: is this specified?
                    'temperature': weather.temperature_height,
