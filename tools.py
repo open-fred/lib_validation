@@ -213,8 +213,9 @@ def compare_series_std_deviation(series_measured, series_simulated):
         Standard deviation of simulated series concerning vaildation series.
 
     """
-    differences = pd.Series.subtract(series_measured, series_simulated)
-    print(differences)
+    differences = pd.Series(data=(series_measured.values -
+                                  series_simulated.values),
+                            index=series_simulated.index)
     std_deviation = standard_deviation(differences)
     # Add box plots
     # Add visualization
