@@ -171,7 +171,7 @@ new_column_names_2015 = [
     'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
 
-def get_and_plot_feedin(year, plot=False, x_limit=None):
+def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
 
@@ -184,7 +184,7 @@ def get_and_plot_feedin(year, plot=False, x_limit=None):
         new_column_names = new_column_names_2016_2017
     data = get_data('filenames_{0}.txt'.format(year),
                     filename_column_names, new_column_names,
-                    'arge_data_{0}.p'.format(year), pickle_load=True)
+                    'arge_data_{0}.p'.format(year), pickle_load=pickle_load)
     if plot:
         fast_plot(
             data, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
