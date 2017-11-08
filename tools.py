@@ -223,6 +223,27 @@ def compare_series_std_deviation(series_measured, series_simulated):
     # Add box plots
     # Add visualization
     return std_deviation
+    
+
+def get_indices_for_series(year, temporal_resolution):
+    r"""
+    Create indices for annual time series in a certain frequency and form.
+    
+    Parameters
+    ----------
+    year : integer
+        Year of the time series.
+    temporal_resolution : integer
+        Intended temporal resolution of time series index in min.
+
+    Returns
+    -------
+        Date range index in intended temporal resolution.
+
+    """
+    frequency = '{0}min'.format(temporal_resolution)
+    return (pd.date_range('1/1/{0}'.format(year), '1/1/{0}'.format(year + 1),
+                          freq=frequency, tz='Europe/Berlin', closed='left'))
 
 #dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
 #dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test

@@ -147,8 +147,8 @@ if (year == 2016 or year == 2017):
 # Get ArgeNetz Data
 arge_netz_data = feedin_time_series.get_and_plot_feedin(
     year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
-power_output_series = []
-
+# Create indices for DataFrame in standardized form
+indices = tools.get_indices_for_series(year, temporal_resolution_arge)
 arge_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
