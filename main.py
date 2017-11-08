@@ -153,9 +153,11 @@ arge_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
-    # Power output in W
-    wind_farm.power_output = arge_netz_data[description['wind_farm_name']
-                                            + '_P_W'] * 1000
+    # Power output in W with standard indices
+    wind_farm.power_output = pd.Series(
+        data=(arge_netz_data[description['wind_farm_name'] + 
+                             '_P_W'].values * 1000),
+        index=indices)
     # Annual energy output in Wh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_arge)
