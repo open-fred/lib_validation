@@ -191,6 +191,36 @@ def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
                 year), x_limit=x_limit)
     return data
 
+
+def get_energy_map_data(plz, place=None, peak_power=None,
+                        pickle_load=False, pickle_path=None):
+    if not pickle_load:
+        df_energymap = pd.read_csv(
+            os.path.join(os.path.join(os.path.dirname(__file__),
+                                      'data/Energymap'),
+                         'eeg_anlagenregister_2015.08.utf8.csv'),
+            skiprows=[0, 1, 2, 4], sep=';', decimal=',', thousands='.')
+        df_energymap['PLZ'] == plz
+        pickle.dump(df_energymap, open(os.path.join(pickle_path,
+                                                    'energy_map'), 'wb'))
+    if pickle_load:
+            df_energymap = pickle.load(open(pickle_path, 'rb'))
+    df_energymap = df_energymap.loc[df_energymap['Ort'] == place]
+    df_energymap = df_energymap.loc[df_energymap['Anlagentyp'] == 'Windkraft']
+    df_energymap = df_energymap.loc[
+        df_energymap['Nennleistung(kWp_el)'] == peak_power]
+    return df_energymap
+
+## Evaluate WEA data from Energymap
+#pickle_load = False
+#pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dumps'))
+#plz = 25821
+#place = 'Struckum'
+#peak_power = 2300
+#df_energymap = get_energy_map_data(plz, place, peak_power,
+#                                   pickle_load, pickle_path)
+#print(df_energymap)
+
 # Get the data of 2015 (and 2016/2017) and plot the results
 #x_limit = None
 #data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
