@@ -39,7 +39,7 @@ def read_data(filename, **kwargs):
 
 
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
-                     drop_na=False):
+                     drop_na=False, **kwargs):
     r"""
     Restructures data read from a csv file.
 
@@ -59,8 +59,13 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
         If True: Nan's are droped from DataFrame with method how='any'.
         Default: None.
 
+    Other Parameters
+    ----------------
+    datapath : string, optional
+        Path where the data file is stored. (for read_data()) Default: './data'
+
     """
-    df = read_data(filename)
+    df = read_data(filename, **kwargs)
     if filter_cols:
         filter_cols = []
         with open(filename_column_names) as file:
