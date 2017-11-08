@@ -139,10 +139,12 @@ if plot_wind_farms:
         y_limit=[0, 6 * 10 ** 7])
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
+# Set temporal resolution
 if year == 2015:
-    temporal_resolution_arge = 5
+    temporal_resolution_arge = 5  # minutes
 if (year == 2016 or year == 2017):
-    temporal_resolution_arge = 1
+    temporal_resolution_arge = 1  # minutes
+# Get ArgeNetz Data
 arge_netz_data = feedin_time_series.get_and_plot_feedin(
     year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
 power_output_series = []

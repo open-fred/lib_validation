@@ -202,7 +202,19 @@ def standard_deviation(data_series):
 
 def compare_series_std_deviation(series_measured, series_simulated):
     r"""
-
+    Compare two series concerning their standard deviation.
+    
+    Parameters
+    ----------
+    series_measured : pandas.Series
+        Validation power output time series.
+    series_simulated : pandas.Series
+        Simulated power output time series.
+    
+    Returns
+    -------
+    std_deviation : float
+        Standard deviation of simulated series concerning vaildation series.
 
     """
     differences = pd.Series.subtract(series_measured, series_simulated)
