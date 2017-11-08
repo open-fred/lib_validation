@@ -145,7 +145,7 @@ def annual_energy_output(power_output, temporal_resolution):
     return energy.sum()
 
 
-def hourly_energy_output(power_output, temporal_resolution):
+def energy_output_series(power_output, temporal_resolution, output_resolution):
     # NOTE: This function could be enhanced to different output temporal resolutions
     r"""
     Converts power output time series to hourly energy output time series.
@@ -158,7 +158,10 @@ def hourly_energy_output(power_output, temporal_resolution):
     power_output : pd.Series
         Power output of wind turbine or wind farm.
     temporal_resolution : Integer
-        Temporal resolution of time series in minutes.
+        Temporal resolution of power output time series in minutes.
+    output_resolution : String
+        Intended resolution of output series: 'H' for hourly, 'M' for monthly,
+        etc. see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
 
     Returns
     -------
@@ -167,20 +170,13 @@ def hourly_energy_output(power_output, temporal_resolution):
 
     """
     energy_output_series = power_output * temporal_resolution / 60
-    energy_output = pd.Series()
-    start = 0
-#    for i in range(len(power_output) - int(60 / temporal_resolution) * 2):
-    while start < len(power_output):
-        entry = pd.Series(energy_output_series.iloc[
-                          start:int(start + 60 / temporal_resolution)].sum(),
-                          index=[power_output.index[start]])
-        energy_output = energy_output.append(entry)
-        start = int(start + 60 / temporal_resolution)
+    energy_output = energy_output_series.resample(output_resolution).sum()
     return energy_output
 
 
 def standard_deviation(data_series):
     r"""
+
     Calculate standard deviation of a data series.
 
     Parameters
