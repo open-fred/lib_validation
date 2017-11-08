@@ -41,9 +41,9 @@ def read_data(filename, **kwargs):
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
                      drop_na=False, **kwargs):
     r"""
-    Restructures data read from a csv file.
+    Restructure data read from a csv file.
 
-    Create a DataFrama. Data can be filtered (if filter_cols is not None) and
+    Create a DataFrame. Data can be filtered (if filter_cols is not None) and
     Nan's can be droped (if drop_na is not None).
 
     Parameters:
