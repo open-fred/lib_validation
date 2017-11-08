@@ -12,7 +12,8 @@ import feedin_time_series
 #visualization_tools.print_whole_dataframe(turbines)
 
 # ----------------------------- Set parameters ------------------------------ #
-pickle_load = True
+pickle_load_weather = True
+pickle_load_arge = True
 weather_data = 'merra'
 year = 2016
 year = 2015
@@ -97,8 +98,8 @@ if (year == 2016 or year == 2017):
 #       modelchain can be used (if temperature is not beeing used)
 # TODO: weather for all the ArgeNetz wind farms identical - if change: save
 #first for eventual other time series
-# Create data frame from csv if pickle_load == False
-if pickle_load:
+# Create data frame from csv if pickle_load_weather == False
+if pickle_load_weather:
         data_frame = None
 else:
     print('Read MERRA data from csv...')
@@ -113,7 +114,7 @@ for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
     # Get weather
-    weather = tools.get_weather_data(pickle_load, filename_weather,
+    weather = tools.get_weather_data(pickle_load_weather, filename_weather,
                                      weather_data, year,
                                      wind_farm.coordinates, data_frame)
     data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
@@ -143,7 +144,7 @@ if year == 2015:
 if (year == 2016 or year == 2017):
     temporal_resolution_arge = 1
 arge_netz_data = feedin_time_series.get_and_plot_feedin(
-    year, plot=plot_arge_feedin)
+    year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
 power_output_series = []
 
 arge_farms = []
