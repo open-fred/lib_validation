@@ -172,10 +172,10 @@ def hourly_energy_output(power_output, temporal_resolution):
 #    for i in range(len(power_output) - int(60 / temporal_resolution) * 2):
     while start < len(power_output):
         entry = pd.Series(energy_output_series.iloc[
-                          start:start + 60 / temporal_resolution].sum(),
+                          start:int(start + 60 / temporal_resolution)].sum(),
                           index=[power_output.index[start]])
         energy_output = energy_output.append(entry)
-        start = start + 60 / temporal_resolution
+        start = int(start + 60 / temporal_resolution)
     return energy_output
 
 
