@@ -106,6 +106,11 @@ def get_data(filename_files, filename_column_names, new_column_names,
     r"""
     Fetches data of the requested files and renames columns.
 
+    Returns
+    -------
+    data : pandas.DataFrame
+        Data of ArgeNetz wind farms with readable column names
+
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps', filename_pickle))
@@ -174,7 +179,12 @@ new_column_names_2015 = [
 def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
-
+    
+    Returns
+    -------
+    data : pandas.DataFrame
+        Data of ArgeNetz wind farms with readable column names (see function
+        get_data()).
     """
     if year == 2015:
         filename_column_names = 'column_names_2015.txt'
