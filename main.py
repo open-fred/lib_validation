@@ -139,16 +139,20 @@ if plot_wind_farms:
         y_limit=[0, 6 * 10 ** 7])
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
-# Set temporal resolution
+# Set temporal resolution and create indices for DataFrame in standardized form
 if year == 2015:
     temporal_resolution_arge = 5  # minutes
+    indices = tools.get_indices_for_series(temporal_resolution_arge,
+                                           start='5/1/2015' , end='1/1/2016')
 if (year == 2016 or year == 2017):
     temporal_resolution_arge = 1  # minutes
+    indices = tools.get_indices_for_series(temporal_resolution_arge, year=year)
+
 # Get ArgeNetz Data
 arge_netz_data = feedin_time_series.get_and_plot_feedin(
     year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
-# Create indices for DataFrame in standardized form
-indices = tools.get_indices_for_series(year, temporal_resolution_arge)
+
+# Initialise Arge wind farms with power output and annual energy output
 arge_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
