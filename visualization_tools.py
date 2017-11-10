@@ -69,7 +69,7 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
     """
     if plot:
         for farm in wind_farms:
-            fig = plt.figure(figsize=(8, 6))
+            fig = plt.figure()
             farm.power_output.plot()
             plt.xticks(rotation='vertical')
             plt.title(farm.wind_farm_name, fontsize=20)
