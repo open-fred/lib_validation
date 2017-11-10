@@ -202,7 +202,8 @@ if evaluate_hourly_energy_output:
     visualization_tools.box_plots_deviation_df(
         deviation_df, save_folder='ArgeNetz',
         filename='Boxplot_{0}_{1}_hourly_energy_output.pdf'.format(
-            year, weather_data))
+            year, weather_data), title='Deviation of MERRA hourly energy ' +
+            'output from ArgeNetz.')
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:

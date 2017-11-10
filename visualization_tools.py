@@ -87,7 +87,8 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
             print(farm.power_output)
 
 
-def box_plots_deviation_df(df, save_folder='Tests', filename='test.pdf'):
+def box_plots_deviation_df(df, save_folder='Tests',
+                           filename='test.pdf', title='Test'):
     r"""
 
     Parameters
@@ -95,14 +96,17 @@ def box_plots_deviation_df(df, save_folder='Tests', filename='test.pdf'):
     df : pd.DataFrame
         Columns contain Series to be plotted as Box plots.
     save_folder : String
-        Name of Folder for saving the plots. Default: 'Tests'
+        Name of Folder for saving the plots. Default: 'Tests'.
     filename : String
         Name of filename.
+    title : String
+        Title of figure.
 
     """
     fig = plt.figure()
     g = sns.boxplot(data=df, palette='Set3')
-    g.set_ylabel('Deviation')
+    g.set_ylabel('Deviation in MW')
+    g.set_title(title)
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots/Boxplots', save_folder,
                 filename)))
