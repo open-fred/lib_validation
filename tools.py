@@ -199,30 +199,32 @@ def standard_deviation(data_series):
     return np.sqrt(variance)
 
 
-def compare_series_std_deviation(series_measured, series_simulated):
+def compare_series_std_deviation(series_validation, series_simulated):
     r"""
-    Compare two series concerning their standard deviation.
+    Compare two series concerning their deviation and standard deviation.
     
     Parameters
     ----------
-    series_measured : pandas.Series
+    series_validation : pandas.Series
         Validation power output time series.
     series_simulated : pandas.Series
         Simulated power output time series.
     
     Returns
     -------
+    deviation : pd.Series
+        Deviation of simulated series from validation series.
     std_deviation : float
-        Standard deviation of simulated series concerning vaildation series.
+        Standard deviation of simulated series from validation series.
 
     """
-    differences = pd.Series(data=(series_measured.values -
-                                  series_simulated.values),
-                            index=series_simulated.index)
-    std_deviation = standard_deviation(differences)
+    deviation = pd.Series(data=(series_validation.values -
+                                series_simulated.values),
+                          index=series_simulated.index)
+    std_deviation = standard_deviation(deviation)
     # Add box plots
     # Add visualization
-    return std_deviation
+    return deviation, std_deviation
     
 
 def get_indices_for_series(temporal_resolution, year=None,
