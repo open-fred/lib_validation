@@ -38,7 +38,7 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
 
     """
     if pickle_load:
-        data = pickle.load(open(filename, 'rb'))
+        weather_df = pickle.load(open(filename, 'rb'))
     else:
         if weather_data == 'open_FRED':
             # TODO: add open_FRED weather data
@@ -50,14 +50,14 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
                     os.path.dirname(__file__), 'data/Merra', # TODO: make folder individua
                     'weather_data_GER_{0}.csv'.format(year)),
                     sep=',', decimal='.', index_col=0)
-            data = create_merra_df(data_frame, coordinates)
+            weather_df = create_merra_df(data_frame, coordinates)
             # Set indices to standardized form
             weather_df.index = tools.get_indices_for_series(60, year=year)
 #            visualization_tools.print_whole_dataframe(weather_df.lat)
             filename = 'weather_df_merra_{0}.p'.format(year)
-        pickle.dump(data, open(os.path.join(os.path.dirname(__file__),
-                               'dumps/weather', filename), 'wb'))
-    return data
+        pickle.dump(weather_df, open(os.path.join(os.path.dirname(__file__),
+                                     'dumps/weather', filename), 'wb'))
+    return weather_df
 
 
 def create_merra_df(dataframe, coordinates):
