@@ -178,6 +178,13 @@ for description in wind_farm_data:
         wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
 
+if plot_arge_feedin:
+#    y_limit = [0, 60]
+    y_limit = None
+    visualization_tools.plot_or_print_farm(
+        arge_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
+        y_limit=y_limit)
+
 # ------------------------------ Data Evaluation ---------------------------- #
 if evaluate_hourly_energy_output:
     # Compare hourly energy ouput
