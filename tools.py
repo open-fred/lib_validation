@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pickle
 from windpowerlib import (power_output, wind_speed)
+import tools
 
 
 def get_weather_data(pickle_load=None, filename='pickle_dump.p',
@@ -226,6 +227,47 @@ def compare_series_std_deviation(series_validation, series_simulated):
     # Add visualization
     return deviation, std_deviation
     
+
+def compare_series_std_deviation_multiple(series_validation, series_simulated,
+                                          column_names):
+    r"""
+    Compare multiple series concerning their deviation and standard deviation.
+
+    Multiple series are being compared to their validation series by using the
+    function compare_series_std_deviation(). 
+
+    Parameters
+    ----------
+    series_validation : List of pd.Series
+        List of validation series.
+    series_simulated : List of pd.Series
+        List of simulated series that should be validated. Must be in the same
+        order as `series_validation`.
+    column_names : List of Strings
+        Desired column names in the same order as `series_validation` and
+        `series_simulated`.
+
+    Returns
+    -------
+    deviation_df : pd.DataFrame
+        The columns contain deviations of simulated series from validation
+        series.
+    standard_deviations : List
+        Contains standard deviations (floats) of simulated series concerning
+        their validation series.
+
+    """
+    deviation_df = pd.DataFrame()
+    standard_deviations = []
+    for farm_number in range(len(series_validation)):
+        deviation, std_deviation = compare_series_std_deviation(
+            series_validation[farm_number], series_simulated[farm_number])
+        deviation_df_part = pd.DataFrame(
+            data=deviation, index=series_validation[farm_number].index,
+            columns=[column_names[farm_number]])
+        deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
+        standard_deviations.append(std_deviation)
+    return deviation_df, standard_deviations
 
 def get_indices_for_series(temporal_resolution, year=None,
                            start=None, end=None):
