@@ -79,3 +79,5 @@
 /dumps/arge_data_2016.p
 /dumps/arge_data_2017.p
 /__pycache__/feedin_time_series.cpython-34.pyc
+/dumps/energy_map
+/data/Energymap/eeg_anlagenregister_2015.08.utf8.csv
