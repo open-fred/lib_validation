@@ -51,6 +51,9 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
                     'weather_data_GER_{0}.csv'.format(year)),
                     sep=',', decimal='.', index_col=0)
             data = create_merra_df(data_frame, coordinates)
+            # Set indices to standardized form
+            weather_df.index = tools.get_indices_for_series(60, year=year)
+#            visualization_tools.print_whole_dataframe(weather_df.lat)
             filename = 'weather_df_merra_{0}.p'.format(year)
         pickle.dump(data, open(os.path.join(os.path.dirname(__file__),
                                'dumps/weather', filename), 'wb'))
