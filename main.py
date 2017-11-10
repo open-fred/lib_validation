@@ -173,10 +173,17 @@ for description in wind_farm_data:
         wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
 
-# ---------------------------  -------------------------- #
-#out = tools.hourly_energy_output(arge_farms[0].power_output,
-#                                 temporal_resolution_arge)
-
+# ------------------------------ Data Evaluation ---------------------------- #
+# Compare hourly energy ouput
+validation_list = [tools.energy_output_series(
+    farm.power_output,temporal_resolution_arge, 'H') for farm in arge_farms]
+simulation_list = [farm.power_output for farm in merra_farms]
+column_names = [farm.wind_farm_name for farm in merra_farms]
+deviation_df, std_deviation_list = tools.compare_series_std_deviation_multiple(
+    validation_list, simulation_list, column_names)
+#print(visualization_tools.print_whole_dataframe(deviation_df['Bredstedt']))
+print(deviation_df)
+#print(std_deviation_list)
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
@@ -209,8 +216,3 @@ if latex_output:
     name = os.path.join(path_latex_tables, 'name_of_table.tex')
     # TODO: make fully customized table
     df.to_latex(buf=name)
-
-
-deviation = tools.compare_series_std_deviation(arge_farms[0].power_output,
-                                               merra_farms[0].power_output)
-
