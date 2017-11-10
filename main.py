@@ -111,8 +111,10 @@ else:
         os.path.dirname(__file__), 'data/Merra',
         'weather_data_GER_{0}.csv'.format(year)),
         sep=',', decimal='.', index_col=0)
+    # Visualize latitudes and longitudes of DataFrame
 #    lat, lon = visualization_tools.return_lats_lons(data_frame)
 #    print(lat, lon)
+
 merra_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
