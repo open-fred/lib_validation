@@ -25,6 +25,8 @@ plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
+latex_output = False  # If True Latex tables will be created
+
 if weather_data == 'merra':
     temporal_resolution_weather = 60
 # --------------------- Turbine data and initialization --------------------- #
@@ -173,35 +175,37 @@ for description in wind_farm_data:
 
 
 # ---------------------------------- LaTeX Output --------------------------- #
-all_farm_lists = [arge_farms, merra_farms]
-column_names = ['ArgeNetz', 'MERRA']  # evtl als if abfrage in funktion
-df = pd.DataFrame()
-i = 0
-for farm_list in all_farm_lists:
-    index = [farm.wind_farm_name for farm in farm_list]
-    # Annual energy output in GWh
-    data = [round(farm.annual_energy_output / 10 ** 9, 3)
-            for farm in farm_list]
-    df_temp = pd.DataFrame(data=data, index=index,
-                           columns=[[column_names[i]],
-                                    ['Energy Output [GWh]']])
-    df = pd.concat([df, df_temp], axis=1)
-    if i != 0:
-        data = [round((farm_list[j].annual_energy_output -
-                      all_farm_lists[0][j].annual_energy_output) /
-                      all_farm_lists[0][j].annual_energy_output * 100, 3)
-                for j in range(len(arge_farms))]
+if latex_output:
+    all_farm_lists = [arge_farms, merra_farms]
+    column_names = ['ArgeNetz', 'MERRA']  # evtl als if abfrage in funktion
+    df = pd.DataFrame()
+    i = 0
+    for farm_list in all_farm_lists:
+        index = [farm.wind_farm_name for farm in farm_list]
+        # Annual energy output in GWh
+        data = [round(farm.annual_energy_output / 10 ** 9, 3)
+                for farm in farm_list]
         df_temp = pd.DataFrame(data=data, index=index,
-                               columns=[[column_names[i]], ['Deviation [%]']])
+                               columns=[[column_names[i]],
+                                        ['Energy Output [GWh]']])
         df = pd.concat([df, df_temp], axis=1)
-    i += 1
+        if i != 0:
+            data = [round((farm_list[j].annual_energy_output -
+                          all_farm_lists[0][j].annual_energy_output) /
+                          all_farm_lists[0][j].annual_energy_output * 100, 3)
+                    for j in range(len(arge_farms))]
+            df_temp = pd.DataFrame(
+                data=data, index=index,
+                columns=[[column_names[i]], ['Deviation [%]']])
+            df = pd.concat([df, df_temp], axis=1)
+        i += 1
+    
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     '../../../tubCloud/Latex/Tables/')
+    name = os.path.join(path_latex_tables, 'name_of_table.tex')
+    # TODO: make fully customized table
+    df.to_latex(buf=name)
 
-path_latex_tables = os.path.join(os.path.dirname(__file__),
-                                 '../../../tubCloud/Latex/Tables/')
-name = os.path.join(path_latex_tables, 'name_of_table.tex')
-# TODO: make fully customized table
-df.to_latex(buf=name)
-#index=pd.date_range('1/1/2012', periods=2, freq='H') # for date index!!
 
 deviation = tools.compare_series_std_deviation(arge_farms[0].power_output,
                                                merra_farms[0].power_output)
