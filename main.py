@@ -119,6 +119,10 @@ for description in wind_farm_data:
     weather = tools.get_weather_data(pickle_load_weather, filename_weather,
                                      weather_data, year,
                                      wind_farm.coordinates, data_frame)
+    if year == 2015:
+#        visualization_tools.print_whole_dataframe(weather.lat)
+        weather = weather.loc[weather.index >= '2015-05-01']
+#        visualization_tools.print_whole_dataframe(weather.lat) # TODO: check time zone (sometimes +1h sometimes +2h)
     data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
                    'roughness_length': 0,  # TODO: is this specified?
                    'temperature': weather.temperature_height,
