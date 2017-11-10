@@ -223,8 +223,6 @@ def compare_series_std_deviation(series_validation, series_simulated):
                                 series_simulated.values),
                           index=series_simulated.index)
     std_deviation = standard_deviation(deviation)
-    # Add box plots
-    # Add visualization
     return deviation, std_deviation
     
 

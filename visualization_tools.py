@@ -1,6 +1,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 import os
+import seaborn as sns
 
 
 def return_lats_lons(df):
@@ -83,5 +84,25 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
     if print_out:
         for farm in wind_farms:
             print(farm.power_output)
+
+
+def box_plots_deviation_df(df, save_folder='Tests', filename='test.pdf'):
+    r"""
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Columns contain Series to be plotted as Box plots.
+    save_folder : String
+        Name of Folder for saving the plots. Default: 'Tests'
+    filename : String
+        Name of filename.
+
+    """
+    fig = plt.figure()
+    g = sns.boxplot(data=df, palette='Set3')
+    g.set_ylabel('Deviation')
+    fig.savefig(os.path.abspath(os.path.join(
+                os.path.dirname(__file__), '../Plots/Boxplots', save_folder,
+                filename)))
 # TODO: write small tool for display of all turbines of a wind farm
-# TODO: tool for plot and save

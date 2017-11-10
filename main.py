@@ -189,6 +189,10 @@ if evaluate_hourly_energy_output:
     #print(visualization_tools.print_whole_dataframe(deviation_df['Bredstedt']))
     #print(deviation_df)
     #print(std_deviation_list)
+    visualization_tools.box_plots_deviation_df(
+        deviation_df, save_folder='ArgeNetz',
+        filename='Boxplot_{0}_{1}_hourly_energy_output.pdf'.format(
+            year, weather_data))
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
