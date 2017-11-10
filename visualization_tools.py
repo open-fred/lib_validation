@@ -73,6 +73,7 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
             farm.power_output.plot()
             plt.xticks(rotation='vertical')
             plt.title(farm.wind_farm_name, fontsize=20)
+            plt.ylabel('Power output in MW')
             if y_limit:
                 plt.ylim(ymin=y_limit[0], ymax=y_limit[1])
             if x_limit:
