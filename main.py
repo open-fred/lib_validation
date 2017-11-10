@@ -132,10 +132,10 @@ for description in wind_farm_data:
                    'temperature': weather.temperature_height,
                    'density': 0,
                    'pressure': 0}
-    # Power output in W
+    # Power output in MW
     wind_farm.power_output = tools.power_output_sum(
-        wind_farm.wind_turbine_fleet, weather, data_height)
-    # Annual energy output in Wh
+        wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+    # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
     merra_farms.append(wind_farm)
@@ -144,9 +144,10 @@ for description in wind_farm_data:
 # TODO: weather object? with temporal_resultion attribute
 
 if plot_wind_farms:
+    y_limit = [0, 60]
     visualization_tools.plot_or_print_farm(
         merra_farms, save_folder='Merra_power_output/{0}'.format(year),
-        y_limit=[0, 6 * 10 ** 7])
+        y_limit=y_limit)
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
 # Set temporal resolution and create indices for DataFrame in standardized form
@@ -167,12 +168,12 @@ arge_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
-    # Power output in W with standard indices
+    # Power output in MW with standard indices
     wind_farm.power_output = pd.Series(
         data=(arge_netz_data[description['wind_farm_name'] + 
-                             '_P_W'].values * 1000),
+                             '_P_W'].values / 1000),
         index=indices)
-    # Annual energy output in Wh
+    # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
