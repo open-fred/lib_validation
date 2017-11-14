@@ -82,6 +82,7 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
             fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots', save_folder,
                 str(farm.wind_farm_name) + '.pdf')))
+            plt.close()
     if print_out:
         for farm in wind_farms:
             print(farm.power_output)
@@ -110,4 +111,5 @@ def box_plots_deviation_df(df, save_folder='Tests',
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots/Boxplots', save_folder,
                 filename)))
+    plt.close()
 # TODO: write small tool for display of all turbines of a wind farm
