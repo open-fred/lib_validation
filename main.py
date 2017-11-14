@@ -236,3 +236,5 @@ if latex_output:
     name = os.path.join(path_latex_tables, 'name_of_table.tex')
     # TODO: make fully customized table
     df.to_latex(buf=name)
+
+print('# ----------- Done ----------- #')
