@@ -49,8 +49,8 @@ def compare_series_std_deviation(series_validation, series_simulated):
     return deviation, std_deviation
     
 
-def compare_series_std_deviation_multiple(series_validation, series_simulated,
-                                          column_names):
+def compare_series_std_deviation_multiple(series_validation_list,
+                                          series_simulated_list, column_names):
     r"""
     Compare multiple series concerning their deviation and standard deviation.
 
@@ -59,9 +59,9 @@ def compare_series_std_deviation_multiple(series_validation, series_simulated,
 
     Parameters
     ----------
-    series_validation : List of pd.Series
+    series_validation_list : List of pd.Series
         List of validation series.
-    series_simulated : List of pd.Series
+    series_simulated_list : List of pd.Series
         List of simulated series that should be validated. Must be in the same
         order as `series_validation`.
     column_names : List of Strings
@@ -80,11 +80,12 @@ def compare_series_std_deviation_multiple(series_validation, series_simulated,
     """
     deviation_df = pd.DataFrame()
     standard_deviations = []
-    for farm_number in range(len(series_validation)):
+    for farm_number in range(len(series_validation_list)):
         deviation, std_deviation = compare_series_std_deviation(
-            series_validation[farm_number], series_simulated[farm_number])
+            series_validation_list[farm_number],
+            series_simulated_list[farm_number])
         deviation_df_part = pd.DataFrame(
-            data=deviation, index=series_validation[farm_number].index,
+            data=deviation, index=series_validation_list[farm_number].index,
             columns=[column_names[farm_number]])
         deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
         standard_deviations.append(std_deviation)
