@@ -23,6 +23,7 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'weather_df_merra_{0}.p'.format(year))
 
 evaluate_hourly_energy_output = True
+evaluate_power_output = False
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
@@ -209,6 +210,21 @@ if evaluate_hourly_energy_output:
     # Pearson's correlation coefficient
     analysis_tools.pearson_s_coefficient(arge_farms[0].power_output, merra_farms[0].power_output)
     ## ACHTUNG auch gleich für Liste und energy output umsetzen (series haben nicht die gleiche Länge!!)
+
+if evaluate_power_output:
+    # Compare power output
+    series = merra_farms[0].power_output
+    index = pd.date_range('1/1/{0}'.format(year+1), tz='Europe/Berlin', closed='left', periods=1)
+    series2 = pd.Series(10, index=index)
+    merra_farm = pd.concat([series, series2])
+    out = merra_farm.resample(
+        '{0}min'.format(temporal_resolution_arge)).pad()
+    pd.options.display.max_rows = 500
+    print(out)
+#    print(out[436400:436400])
+#    print(out.tail(1).index)
+    out = out.drop(out.index[-1])
+    
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
