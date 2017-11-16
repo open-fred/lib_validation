@@ -206,6 +206,10 @@ if evaluate_hourly_energy_output:
             year, weather_data), title='Deviation of MERRA hourly energy ' +
             'output from ArgeNetz.')
 
+    # Pearson's correlation coefficient
+    analysis_tools.pearson_s_coefficient(arge_farms[0].power_output, merra_farms[0].power_output)
+    ## ACHTUNG auch gleich für Liste und energy output umsetzen (series haben nicht die gleiche Länge!!)
+
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
     all_farm_lists = [arge_farms, merra_farms]

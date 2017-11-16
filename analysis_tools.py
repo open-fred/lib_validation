@@ -90,3 +90,25 @@ def compare_series_std_deviation_multiple(series_validation_list,
         deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
         standard_deviations.append(std_deviation)
     return deviation_df, standard_deviations
+
+
+def pearson_s_coefficient(series_validation, series_simulated): # TODO: check English name (pearson's r)
+    r"""
+    ...
+
+    Parameters
+    ----------
+    series_validation : pandas.Series
+        Validation power output time series.
+    series_simulated : pandas.Series
+        Simulated power output time series.
+
+    Returns
+    -------
+    
+
+    """
+    return (((series_validation - series_validation.mean()) *
+             (series_simulated - series_simulated.mean())).sum() / 
+            np.sqrt(((series_validation - series_validation.mean())**2).sum() * 
+                    ((series_simulated - series_simulated.mean())**2).sum()))
