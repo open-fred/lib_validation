@@ -194,7 +194,7 @@ if evaluate_hourly_energy_output:
     simulation_list = [farm.power_output for farm in merra_farms]
     column_names = [farm.wind_farm_name for farm in merra_farms]
     deviation_df, std_deviation_list = (
-        tools.compare_series_std_deviation_multiple(
+        analysis_tools.compare_series_std_deviation_multiple(
             validation_list, simulation_list, column_names))
     #print(visualization_tools.print_whole_dataframe(deviation_df['Bredstedt']))
     #print(deviation_df)
