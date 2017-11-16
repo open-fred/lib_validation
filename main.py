@@ -190,7 +190,7 @@ if plot_arge_feedin:
 if evaluate_hourly_energy_output:
     # Compare hourly energy ouput
     validation_list = [
-        tools.energy_output_series(farm.power_output,temporal_resolution_arge,
+        tools.energy_output_series(farm.power_output, temporal_resolution_arge,
                                    'H') for farm in arge_farms]
     simulation_list = [farm.power_output for farm in merra_farms]
     column_names = [farm.wind_farm_name for farm in merra_farms]
