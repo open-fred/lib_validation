@@ -20,7 +20,7 @@ class ValidationObject(object):
         self.pearson_s_r = None
         self.rmse = None
 
-    def standard_deviation(data_series):
+    def get_standard_deviation(data_series):
         r"""
     
         Calculate standard deviation of a data series.
@@ -65,7 +65,7 @@ class ValidationObject(object):
                          index=series_simulation.index)
     
     
-    def pearson_s_r(series_validation, series_simulation):
+    def get_pearson_s_r(series_validation, series_simulation):
         r"""
         Calculates the Pearson's correlation coeffiecient of two series.
     
