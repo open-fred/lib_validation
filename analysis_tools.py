@@ -43,6 +43,30 @@ def get_bias(series_validation, series_simulated):
     return pd.Series(data=(series_simulated.values - series_validation.values),
                            index=series_simulated.index)
 
+
+def pearson_s_r(series_validation, series_simulated):
+    r"""
+    Calculates the Pearson's correlation coeffiecient of two series.
+
+    Parameters
+    ----------
+    series_validation : pandas.Series
+        Validation power output time series.
+    series_simulated : pandas.Series
+        Simulated power output time series.
+
+    Returns
+    -------
+    float
+        Pearson's correlation coeffiecient (Pearson's R) of the input series.
+
+    """
+    return (((series_validation - series_validation.mean()) *
+             (series_simulated - series_simulated.mean())).sum() /
+            np.sqrt(((series_validation - series_validation.mean())**2).sum() *
+                    ((series_simulated - series_simulated.mean())**2).sum()))
+
+
 def compare_series_std_deviation_multiple(series_validation_list,
                                           series_simulated_list, column_names):
     r"""
@@ -84,26 +108,3 @@ def compare_series_std_deviation_multiple(series_validation_list,
         deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
         standard_deviations.append(standard_deviation(deviation))
     return deviation_df, standard_deviations
-
-
-def pearson_s_r(series_validation, series_simulated):
-    r"""
-    Calculates the Pearson's correlation coeffiecient of two series.
-
-    Parameters
-    ----------
-    series_validation : pandas.Series
-        Validation power output time series.
-    series_simulated : pandas.Series
-        Simulated power output time series.
-
-    Returns
-    -------
-    float
-        Pearson's correlation coeffiecient (Pearson's R) of the input series.
-
-    """
-    return (((series_validation - series_validation.mean()) *
-             (series_simulated - series_simulated.mean())).sum() / 
-            np.sqrt(((series_validation - series_validation.mean())**2).sum() * 
-                    ((series_simulated - series_simulated.mean())**2).sum()))
