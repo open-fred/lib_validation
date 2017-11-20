@@ -23,9 +23,9 @@ def standard_deviation(data_series):
     return np.sqrt(variance)
 
 
-def compare_series_std_deviation(series_validation, series_simulated):
+def get_bias(series_validation, series_simulated):
     r"""
-    Compare two series concerning their deviation and standard deviation.
+    Compare two series concerning their deviation (bias).
     
     Parameters
     ----------
@@ -36,18 +36,12 @@ def compare_series_std_deviation(series_validation, series_simulated):
     
     Returns
     -------
-    deviation : pd.Series
+    pd.Series
         Deviation of simulated series from validation series.
-    std_deviation : float
-        Standard deviation of simulated series from validation series.
 
     """
-    deviation = pd.Series(data=(series_simulated.values -
-                                series_validation.values),
-                          index=series_simulated.index)
-    std_deviation = standard_deviation(deviation)
-    return deviation, std_deviation
-    
+    return pd.Series(data=(series_simulated.values - series_validation.values),
+                           index=series_simulated.index)
 
 def compare_series_std_deviation_multiple(series_validation_list,
                                           series_simulated_list, column_names):
@@ -81,14 +75,14 @@ def compare_series_std_deviation_multiple(series_validation_list,
     deviation_df = pd.DataFrame()
     standard_deviations = []
     for farm_number in range(len(series_validation_list)):
-        deviation, std_deviation = compare_series_std_deviation(
+        deviation = get_bias(
             series_validation_list[farm_number],
             series_simulated_list[farm_number])
         deviation_df_part = pd.DataFrame(
             data=deviation, index=series_validation_list[farm_number].index,
             columns=[column_names[farm_number]])
         deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
-        standard_deviations.append(std_deviation)
+        standard_deviations.append(standard_deviation(deviation))
     return deviation_df, standard_deviations
 
 
