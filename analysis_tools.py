@@ -92,9 +92,9 @@ def compare_series_std_deviation_multiple(series_validation_list,
     return deviation_df, standard_deviations
 
 
-def pearson_s_coefficient(series_validation, series_simulated): # TODO: check English name (pearson's r)
+def pearson_s_r(series_validation, series_simulated):
     r"""
-    ...
+    Calculates the Pearson's correlation coeffiecient of two series.
 
     Parameters
     ----------
@@ -105,7 +105,8 @@ def pearson_s_coefficient(series_validation, series_simulated): # TODO: check En
 
     Returns
     -------
-    
+    float
+        Pearson's correlation coeffiecient (Pearson's R) of the input series.
 
     """
     return (((series_validation - series_validation.mean()) *

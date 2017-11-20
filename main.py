@@ -208,7 +208,7 @@ if evaluate_hourly_energy_output:
             'output from ArgeNetz.')
 
     # Pearson's correlation coefficient
-    analysis_tools.pearson_s_coefficient(arge_farms[0].power_output, merra_farms[0].power_output)
+    analysis_tools.pearson_s_r(arge_farms[0].power_output, merra_farms[0].power_output)
     ## ACHTUNG auch gleich für Liste und energy output umsetzen (series haben nicht die gleiche Länge!!)
 
 if evaluate_power_output:
