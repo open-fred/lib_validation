@@ -9,7 +9,8 @@ def standard_deviation(data_series):
     Parameters
     ----------
     data_series : list or pandas.Series
-        Input data series of which the standard deviation will be calculated.
+        Input data series (data points) of which the standard deviation will
+        be calculated.
 
     Return
     ------
