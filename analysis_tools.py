@@ -1,72 +1,94 @@
 import numpy as np
 import pandas as pd
 
-def standard_deviation(data_series):
+
+class ValidationObject(object):
     r"""
 
-    Calculate standard deviation of a data series.
-
-    Parameters
-    ----------
-    data_series : list or pandas.Series
-        Input data series (data points) of which the standard deviation will
-        be calculated.
-
-    Return
-    ------
-    float
-        Standard deviation of the input data series.
 
     """
-    average = sum(data_series) / len(data_series)
-    variance = sum((data_series[i] - average)**2
-                   for i in range(len(data_series))) / len(data_series)
-    return np.sqrt(variance)
+    def __init__(self, weather_name, validation_name, wind_farm_name,
+                 series_validation, series_simulation):
+        self.weather_name = weather_name
+        self.validation_name = validation_name
+        self.wind_farm_name = wind_farm_name
+        self.series_validation = series_validation
+        self.series_simulation = series_simulation
+        
+        self.bias = self.get_bias(series_validation, series_simulation)
+        self.mean_bias = self.bias.mean()
+        self.pearson_s_r = None
+        self.rmse = None
 
-
-def get_bias(series_validation, series_simulation):
-    r"""
-    Compare two series concerning their deviation (bias).
+    def standard_deviation(data_series):
+        r"""
     
-    Parameters
-    ----------
-    series_validation : pandas.Series
-        Validation power output time series.
-    series_simulated : pandas.Series
-        Simulated power output time series.
+        Calculate standard deviation of a data series.
     
-    Returns
-    -------
-    pd.Series
-        Deviation of simulated series from validation series.
-
-    """
-    return pd.Series(data=(series_simulation.values -
-                           series_validation.values),
-                     index=series_simulation.index)
-
-
-def pearson_s_r(series_validation, series_simulation):
-    r"""
-    Calculates the Pearson's correlation coeffiecient of two series.
-
-    Parameters
-    ----------
-    series_validation : pandas.Series
-        Validation power output time series.
-    series_simulated : pandas.Series
-        Simulated power output time series.
-
-    Returns
-    -------
-    float
-        Pearson's correlation coeffiecient (Pearson's R) of the input series.
-
-    """
-    return (((series_validation - series_validation.mean()) *
-             (series_simulation - series_simulation.mean())).sum() /
-            np.sqrt(((series_validation - series_validation.mean())**2).sum() *
-                    ((series_simulation - series_simulation.mean())**2).sum()))
+        Parameters
+        ----------
+        data_series : list or pandas.Series
+            Input data series (data points) of which the standard deviation
+            will be calculated.
+    
+        Return
+        ------
+        float
+            Standard deviation of the input data series.
+    
+        """
+        average = sum(data_series) / len(data_series)
+        variance = sum((data_series[i] - average)**2
+                       for i in range(len(data_series))) / len(data_series)
+        return np.sqrt(variance)
+    
+    
+    def get_bias(series_validation, series_simulation):
+        r"""
+        Compare two series concerning their deviation (bias).
+        
+        Parameters
+        ----------
+        series_validation : pandas.Series
+            Validation power output time series.
+        series_simulated : pandas.Series
+            Simulated power output time series.
+        
+        Returns
+        -------
+        pd.Series
+            Deviation of simulated series from validation series.
+    
+        """
+        return pd.Series(data=(series_simulation.values -
+                               series_validation.values),
+                         index=series_simulation.index)
+    
+    
+    def pearson_s_r(series_validation, series_simulation):
+        r"""
+        Calculates the Pearson's correlation coeffiecient of two series.
+    
+        Parameters
+        ----------
+        series_validation : pandas.Series
+            Validation power output time series.
+        series_simulated : pandas.Series
+            Simulated power output time series.
+    
+        Returns
+        -------
+        float
+            Pearson's correlation coeffiecient (Pearson's R)
+            of the input series.
+    
+        """
+        return (((series_validation - series_validation.mean()) *
+                 (series_simulation - series_simulation.mean())).sum() /
+                np.sqrt(((series_validation -
+                          series_validation.mean())**2).sum() *
+                        ((series_simulation -
+                          series_simulation.mean())**2).sum()))
 
 
 def compare_series_std_deviation_multiple(series_validation_list,
