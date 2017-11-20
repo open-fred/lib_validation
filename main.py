@@ -235,11 +235,11 @@ if latex_output:
     for farm_list in all_farm_lists:
         index = [farm.wind_farm_name for farm in farm_list]
         # Annual energy output in GWh
-        data = [round(farm.annual_energy_output / 10 ** 9, 3)
+        data = [round(farm.annual_energy_output, 3)
                 for farm in farm_list]
         df_temp = pd.DataFrame(data=data, index=index,
                                columns=[[column_names[i]],
-                                        ['Energy Output [GWh]']])
+                                        ['Energy Output [MWh]']])
         df = pd.concat([df, df_temp], axis=1)
         if i != 0:
             data = [round((farm_list[j].annual_energy_output -
