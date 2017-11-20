@@ -17,8 +17,10 @@ class ValidationObject(object):
         
         self.bias = self.get_bias(series_validation, series_simulation)
         self.mean_bias = self.bias.mean()
-        self.pearson_s_r = None
+        self.pearson_s_r = self.get_pearson_s_r(series_validation,
+                                                series_simulation)
         self.rmse = None
+        self.standard_deviation = self.get_standard_deviation(self.bias)
 
     def get_standard_deviation(data_series):
         r"""
