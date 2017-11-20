@@ -39,11 +39,11 @@ def read_data(filename, **kwargs):
 
 
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
-                     drop_na=False):
-    """
-    Restructures data read from a csv file.
+                     drop_na=False, **kwargs):
+    r"""
+    Restructure data read from a csv file.
 
-    Create a DataFrama. Data can be filtered (if filter_cols is not None) and
+    Create a DataFrame. Data can be filtered (if filter_cols is not None) and
     Nan's can be droped (if drop_na is not None).
 
     Parameters:
@@ -58,8 +58,14 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     drop_na : boolean
         If True: Nan's are droped from DataFrame with method how='any'.
         Default: None.
+
+    Other Parameters
+    ----------------
+    datapath : string, optional
+        Path where the data file is stored. (for read_data()) Default: './data'
+
     """
-    df = read_data(filename)
+    df = read_data(filename, **kwargs)
     if filter_cols:
         filter_cols = []
         with open(filename_column_names) as file:
@@ -95,10 +101,16 @@ def data_evaluation(filename):
     return df_compare
 
 
-def get_data(filename_files, new_column_names,
+def get_data(filename_files, filename_column_names, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
-    """
+    r"""
     Fetches data of the requested files and renames columns.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        Data of ArgeNetz wind farms with readable column names
+
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps', filename_pickle))
@@ -107,7 +119,7 @@ def get_data(filename_files, new_column_names,
             data = pd.DataFrame()
             for line in file:
                 name = line.strip()
-                df = restructure_data(name, 'column_names_2015.txt',
+                df = restructure_data(name, filename_column_names,
                                       filter_cols=True)
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
@@ -118,7 +130,7 @@ def get_data(filename_files, new_column_names,
 
 
 def fast_plot(df, save_folder, y_limit=None, x_limit=None):
-    """
+    r"""
     Plot all data from DataFrame to single plots and save them.
 
     Parameters:
@@ -127,9 +139,10 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
         Contains data to be plotted.
     y_limit, x_limit : list of floats or integers
         Values for ymin, ymax, xmin and xmax
+
     """
     for column in df.columns:
-        fig = plt.figure(figsize=(16, 12))
+        fig = plt.figure(figsize=(8, 6))
         df[column].plot()
         plt.title(column, fontsize=20)
         plt.xticks(rotation='vertical')
@@ -139,8 +152,9 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
             plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
         plt.tight_layout()
         fig.savefig(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 '..', save_folder,
-                                                 str(save_folder+column))))
+                                                 '../Plots', save_folder,
+                                                 str(column) + '.pdf')))
+    plt.close()
 
 #df_compare = data_evaluation('filenames_all.txt')
 
@@ -162,16 +176,74 @@ new_column_names_2015 = [
     'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
     'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
+
+def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
+    r"""
+    Fetches ArgeNetz data for specified year and plots feedin.
+    
+    Returns
+    -------
+    data : pandas.DataFrame
+        Data of ArgeNetz wind farms with readable column names (see function
+        get_data()).
+    """
+    if year == 2015:
+        filename_column_names = 'column_names_2015.txt'
+        new_column_names = new_column_names_2015
+    if (year == 2016 or year == 2017):
+        filename_column_names = 'column_names_2016_2017.txt'
+        new_column_names = new_column_names_2016_2017
+    data = get_data('filenames_{0}.txt'.format(year),
+                    filename_column_names, new_column_names,
+                    'arge_data_{0}.p'.format(year), pickle_load=pickle_load)
+    if plot:
+        fast_plot(
+            data, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
+                year), x_limit=x_limit)
+    return data
+
+
+def get_energy_map_data(plz, place=None, peak_power=None,
+                        pickle_load=False, pickle_path=None):
+    if not pickle_load:
+        df_energymap = pd.read_csv(
+            os.path.join(os.path.join(os.path.dirname(__file__),
+                                      'data/Energymap'),
+                         'eeg_anlagenregister_2015.08.utf8.csv'),
+            skiprows=[0, 1, 2, 4], sep=';', decimal=',', thousands='.')
+        df_energymap['PLZ'] == plz
+        pickle.dump(df_energymap, open(os.path.join(pickle_path,
+                                                    'energy_map'), 'wb'))
+    if pickle_load:
+            df_energymap = pickle.load(open(pickle_path, 'rb'))
+    df_energymap = df_energymap.loc[df_energymap['Ort'] == place]
+    df_energymap = df_energymap.loc[df_energymap['Anlagentyp'] == 'Windkraft']
+    df_energymap = df_energymap.loc[
+        df_energymap['Nennleistung(kWp_el)'] == peak_power]
+    return df_energymap
+
+## Evaluate WEA data from Energymap
+#pickle_load = False
+#pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dumps'))
+#plz = 25821
+#place = 'Struckum'
+#peak_power = 2300
+#df_energymap = get_energy_map_data(plz, place, peak_power,
+#                                   pickle_load, pickle_path)
+#print(df_energymap)
+
 # Get the data of 2015 (and 2016/2017) and plot the results
-x_limit = None
-data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
-                     'arge_data_2015.p', pickle_load=True)
-#fast_plot(data_2015, save_folder='Plots_2015', x_limit=x_limit)
+#x_limit = None
+#data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
+#                     'arge_data_2015.p', pickle_load=True)
+#fast_plot(data_2015, save_folder='ArgeNetz_power_output/Plots_2015',
+#          x_limit=x_limit)
 #data_2016_2017 = get_data('filenames_2016_2017.txt',
 #                          'column_names_2016_2017.txt',
 #                          new_column_names_2016_2017, 'arge_data_2016_2017.p',
 #                          pickle_load=True)
-#fast_plot(data_2016_2017, save_folder='Plots_2016_2017', x_limit=x_limit)
+#fast_plot(data_2016_2017, save_folder='ArgeNetz_power_output/Plots_2016_2017',
+#          x_limit=x_limit)
 
 # Sample for period of 2015 (possible mistakes in data)
 #data = get_data('filenames.txt', 'column_names_2015.txt',

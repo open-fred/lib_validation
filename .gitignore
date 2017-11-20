@@ -76,3 +76,22 @@
 /filenames.txt
 /dumps/weather/weather_df_merra_2015.p
 /dumps/weather/weather_df_merra_2016.p
+/dumps/arge_data_2016.p
+/dumps/arge_data_2017.p
+/__pycache__/feedin_time_series.cpython-34.pyc
+/dumps/energy_map
+/data/Energymap/eeg_anlagenregister_2015.08.utf8.csv
+/data/Renewables_ninja_capacity_factors/Meta Data for Wind Farms.xlsx
+/data/Renewables_ninja_capacity_factors/Ninja-Wind-Readme-v1.1.pdf
+/data/Renewables_ninja_capacity_factors/ninja_wind_europe_v1.1_current_national.csv
+/data/Renewables_ninja_capacity_factors/ninja_wind_europe_v1.1_current_on-offshore.csv
+/data/Renewables_ninja_capacity_factors/ninja_wind_europe_v1.1_future_longterm_national.csv
+/data/Renewables_ninja_capacity_factors/ninja_wind_europe_v1.1_future_nearterm_national.csv
+/data/Renewables_ninja_capacity_factors/ninja_wind_europe_v1.1_future_nearterm_on-offshore.csv
+/table.tex
+/table_2.tex
+/untitled1.py
+/__pycache__/visualization_tools.cpython-34.pyc
+/__pycache__/test_analysis_tools.cpython-34-PYTEST.pyc
+/__pycache__/analysis_tools.cpython-34.pyc
+/.cache/v/cache/lastfailed
