@@ -42,8 +42,8 @@ def compare_series_std_deviation(series_validation, series_simulated):
         Standard deviation of simulated series from validation series.
 
     """
-    deviation = pd.Series(data=(series_validation.values -
-                                series_simulated.values),
+    deviation = pd.Series(data=(series_simulated.values -
+                                series_validation.values),
                           index=series_simulated.index)
     std_deviation = standard_deviation(deviation)
     return deviation, std_deviation
