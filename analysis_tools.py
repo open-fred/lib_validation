@@ -24,7 +24,7 @@ def standard_deviation(data_series):
     return np.sqrt(variance)
 
 
-def get_bias(series_validation, series_simulated):
+def get_bias(series_validation, series_simulation):
     r"""
     Compare two series concerning their deviation (bias).
     
@@ -41,11 +41,12 @@ def get_bias(series_validation, series_simulated):
         Deviation of simulated series from validation series.
 
     """
-    return pd.Series(data=(series_simulated.values - series_validation.values),
-                           index=series_simulated.index)
+    return pd.Series(data=(series_simulation.values -
+                           series_validation.values),
+                     index=series_simulation.index)
 
 
-def pearson_s_r(series_validation, series_simulated):
+def pearson_s_r(series_validation, series_simulation):
     r"""
     Calculates the Pearson's correlation coeffiecient of two series.
 
@@ -63,13 +64,13 @@ def pearson_s_r(series_validation, series_simulated):
 
     """
     return (((series_validation - series_validation.mean()) *
-             (series_simulated - series_simulated.mean())).sum() /
+             (series_simulation - series_simulation.mean())).sum() /
             np.sqrt(((series_validation - series_validation.mean())**2).sum() *
-                    ((series_simulated - series_simulated.mean())**2).sum()))
+                    ((series_simulation - series_simulation.mean())**2).sum()))
 
 
 def compare_series_std_deviation_multiple(series_validation_list,
-                                          series_simulated_list, column_names):
+                                          series_simulation_list, column_names):
     r"""
     Compare multiple series concerning their deviation and standard deviation.
 
@@ -102,7 +103,7 @@ def compare_series_std_deviation_multiple(series_validation_list,
     for farm_number in range(len(series_validation_list)):
         deviation = get_bias(
             series_validation_list[farm_number],
-            series_simulated_list[farm_number])
+            series_simulation_list[farm_number])
         deviation_df_part = pd.DataFrame(
             data=deviation, index=series_validation_list[farm_number].index,
             columns=[column_names[farm_number]])
