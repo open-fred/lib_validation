@@ -21,6 +21,7 @@ class ValidationObject(object):
         
         self.weather_data_name = None
         self.validation_name = None
+        self.output_method = None
 
     def get_standard_deviation(self, data_series):
         r"""
