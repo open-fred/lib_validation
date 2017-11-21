@@ -222,9 +222,10 @@ for validation_set in validation_sets:
         # All bias time series of a validation set in one DataFrame for Boxplot
         bias_df = pd.DataFrame()
         for validation_object in validation_set:
-            df_part = pd.DataFrame(data=validation_object.bias,
-                                   columns=[validation_object.wind_farm_name])
-            bias_df = pd.concat([bias_df, df_part], axis=1)
+            if 'all' not in validation_object.object_name:
+                df_part = pd.DataFrame(data=validation_object.bias,
+                                       columns=[validation_object.object_name])
+                bias_df = pd.concat([bias_df, df_part], axis=1)
         # Specify filename
         filename = save_folder + '{0}_Boxplot_{1}_{2}_{3}.pdf'.format(
                 validation_set[0].output_method, year,
