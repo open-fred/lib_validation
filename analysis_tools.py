@@ -4,11 +4,17 @@ import pandas as pd
 
 class ValidationObject(object):
     r"""
+    
+    Parameters
+    ----------    
+    object_name : String
+        Name of ValidationObject (name of wind farm or region).
+    
 
 
     """
-    def __init__(self, wind_farm_name, validation_series, simulation_series):
-        self.wind_farm_name = wind_farm_name
+    def __init__(self, object_name, validation_series, simulation_series):
+        self.object_name = object_name
         self.validation_series = validation_series
         self.simulation_series = simulation_series
         
