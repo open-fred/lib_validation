@@ -39,11 +39,9 @@ class ValidationObject(object):
             Standard deviation of the input data series.
     
         """
-        average = sum(data_series) / len(data_series)
-        variance = sum((data_series[i] - average)**2
-                       for i in range(len(data_series))) / len(data_series)
-        return np.sqrt(variance)
-    
+        average = data_series.sum() / len(data_series)
+        variance = ((data_series - average)**2).sum() / len(data_series)
+        return np.sqrt(variance)  
     
     def get_bias(series_validation, series_simulation):
         r"""
