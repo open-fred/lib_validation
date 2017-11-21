@@ -15,8 +15,8 @@ import feedin_time_series
 # ----------------------------- Set parameters ------------------------------ #
 pickle_load_weather = True
 pickle_load_arge = True
-weather_data = 'merra'
-year = 2016
+weather_data = 'MERRA'
+validation_data = 'ArgeNetz'
 year = 2015
 filename_weather = os.path.join(os.path.dirname(__file__),
                                 'dumps/weather',
@@ -31,7 +31,7 @@ plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
 latex_output = False  # If True Latex tables will be created
 
-if weather_data == 'merra':
+if weather_data == 'MERRA':
     temporal_resolution_weather = 60
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??

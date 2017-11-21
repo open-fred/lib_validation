@@ -43,7 +43,7 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
         if weather_data == 'open_FRED':
             # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
-        elif weather_data == 'merra':
+        elif weather_data == 'MERRA':
             if data_frame is None:
                 # Load data from csv
                 data_frame = pd.read_csv(os.path.join(
