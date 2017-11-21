@@ -90,18 +90,20 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
 
 def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     r"""
+    Creates boxplots of the columns of a DataFrame.
+
+    This function is mainly used for creating boxplots of the biases of time
+    series.
 
     Parameters
     ----------
     df : pd.DataFrame
         Columns contain Series to be plotted as Box plots.
-    save_folder : String
-        Name of Folder for saving the plots. Default: 'Tests'.
     filename : String
-        Filename inclusive path relatively to the active folder for saving
-        the figure.
+        Filename including path relatively to the active folder for saving
+        the figure. Default: 'Tests/test.pdf'.
     title : String
-        Title of figure.
+        Title of figure. Default: 'Test'.
 
     """
     fig = plt.figure()
@@ -117,16 +119,24 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None):
     r"""
+    Plots simulation and validation feedin time series.
+
+    These time series are extracted from a
+    :class:`~.analysis_tools.ValidationObject` object.
 
     Parameters
     ----------
-    validation_object :
-        
+    validation_object : Object
+        A :class:`~.analysis_tools.ValidationObject` object representing the
+        comparison of simulated feedin time series with validation feedin time
+        series.
     filename : String
         Filename including path relatively to the active folder for saving
-        the figure.
+        the figure. Default: 'Tests/feedin_test.pdf'.
     title : String
-        Title of figure.
+        Title of figure. Default: 'Test'.
+    tick_label : List
+        Tick labels for x-ticks. Default: None.
 
     """
     # TODO: start end point for period default: 1 year

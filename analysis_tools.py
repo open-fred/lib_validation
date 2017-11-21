@@ -9,8 +9,35 @@ class ValidationObject(object):
     ----------    
     object_name : String
         Name of ValidationObject (name of wind farm or region).
-    
+    validation_series : pandas.Series
+            Validation feedin output time series.
+    simulation_series : pandas.Series
+            Simulated feedin output time series.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
 
+    Attributes
+    ----------
+    object_name : String
+        Name of ValidationObject (name of wind farm or region).
+    validation_series : pandas.Series
+            Validation feedin output time series.
+    simulation_series : pandas.Series
+            Simulated feedin output time series.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
 
     """
     def __init__(self, object_name, validation_series, simulation_series,
@@ -31,7 +58,6 @@ class ValidationObject(object):
 
     def get_standard_deviation(self, data_series):
         r"""
-    
         Calculate standard deviation of a data series.
     
         Parameters
@@ -58,9 +84,9 @@ class ValidationObject(object):
         Parameters
         ----------
         validation_series : pandas.Series
-            Validation power output time series.
-        series_simulated : pandas.Series
-            Simulated power output time series.
+            Validation feedin output time series.
+        simulation_series : pandas.Series
+            Simulated feedin output time series.
         
         Returns
         -------
@@ -106,10 +132,14 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     #       + power output
     #       + possibility of selecting time periods (only mornings, evenings...)
     r"""
-    Evaluate feedin time series concerning a validation feedin time series.
+    Evaluate feedin time series concerning validation feedin time series.
 
-    Multiple series are being compared to their validation series by using the
-    validation methods specified in the parameters. 
+    The simulated time series of each farm in `simulation_farm_list` is being
+    compared to the corresponding validation time series of the farm in
+    `validation_farm_list`. For later usage for each of these pairs a
+    :class:`~.analysis_tools.ValidationObject` object is created. Finally, a
+    :class:`~.analysis_tools.ValidationObject` object of the sum of the feedin
+    time series is created.
 
     Parameters
     ----------
@@ -119,22 +149,31 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     simulation_farm_list : List of objects
         List of :class:`~.wind_farm.WindFarm` objects representing simulated
         wind farms. Must be in the same order as `validation_farm_list`.
-    temp_resolution_val :
-    
-    temp_resolution_sim :
-    
-    temporal_output_resolution : 
-    
-    output_method : 
-        
-    validation_data : 
-    
-    weather_data : 
+    temp_resolution_val : Float or Integer
+        Temporal resolution of valdation time series in minutes.
+    temp_resolution_sim : Float or Integer
+        Temporal resolution of simulation time series in minutes.
+    temporal_output_resolution : String
+        Specification of temporal ouput resolution in the form of 'H', 'M', ...
+        For more information see function energy_output_series() in the
+        ``tools`` module.
+    output_method : String
+        Specification of form of time series to be validated. For example:
+        'hourly_energy_output'. This parameter will be set as an attribute of
+        ValidationObject and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
 
     Returns
     -------
     validation_object_set : List of objects
-        ...
+        A set of :class:`~.analysis_tools.ValidationObject` objects.
 
     """
     validation_object_set = []
