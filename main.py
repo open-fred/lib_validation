@@ -222,9 +222,9 @@ for validation_set in validation_sets:
         visualization_tools.box_plots_bias(
             bias_df, save_folder='Boxplots/{0}'.format(weather_data + '_' +
                                                        validation_data),
-            filename='Boxplot_{0}_{1}_{2}_{3}.pdf'.format(
-                year, validation_data, weather_data,
-                validation_set[0].output_method),
+            filename='{0}_Boxplot_{1}_{2}_{3}.pdf'.format(
+                validation_set[0].output_method, year,
+                validation_data, weather_data),
             title='Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year))
