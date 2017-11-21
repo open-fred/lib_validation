@@ -93,44 +93,56 @@ class ValidationObject(object):
                           series_simulation.mean())**2).sum()))
 
 
-def compare_series_std_deviation_multiple(series_validation_list,
-                                          series_simulation_list, column_names):
+def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
+                                temp_resolution_val, temp_resolution_sim,
+                                temporal_output_resolution, output_method): #  time_period, temporal_output_resolution
+    # TODO: first only hourly energy output -  then add other scales (months, days?) 
+    #       + power output
+    #       + possibility of selecting time periods (only mornings, evenings...)
     r"""
-    Compare multiple series concerning their deviation and standard deviation.
+    Evaluate feedin time series concerning a validation feedin time series.
 
     Multiple series are being compared to their validation series by using the
-    function compare_series_std_deviation(). 
+    validation methods specified in the parameters. 
 
     Parameters
     ----------
-    series_validation_list : List of pd.Series
-        List of validation series.
-    series_simulated_list : List of pd.Series
-        List of simulated series that should be validated. Must be in the same
-        order as `series_validation`.
-    column_names : List of Strings
-        Desired column names in the same order as `series_validation` and
-        `series_simulated`.
+    validation_farm_list : List of objects
+        List of :class:`~.wind_farm.WindFarm` objects representing wind farms
+        for validation.
+    simulation_farm_list : List of objects
+        List of :class:`~.wind_farm.WindFarm` objects representing simulated
+        wind farms. Must be in the same order as `validation_farm_list`.
+    temp_resolution_val :
+    
+    temp_resolution_sim :
+    
+    temporal_output_resolution : 
+    
+    output_method : 
+        
+ 
 
     Returns
     -------
-    deviation_df : pd.DataFrame
-        The columns contain deviations of simulated series from validation
-        series.
-    standard_deviations : List
-        Contains standard deviations (floats) of simulated series concerning
-        their validation series.
+    validation_object_set : List of objects
+        ...
 
     """
-    deviation_df = pd.DataFrame()
-    standard_deviations = []
-    for farm_number in range(len(series_validation_list)):
-        deviation = get_bias(
-            series_validation_list[farm_number],
-            series_simulation_list[farm_number])
-        deviation_df_part = pd.DataFrame(
-            data=deviation, index=series_validation_list[farm_number].index,
-            columns=[column_names[farm_number]])
-        deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
-        standard_deviations.append(standard_deviation(deviation))
-    return deviation_df, standard_deviations
+    validation_object_set = []
+    for farm_number in range(len(validation_farm_list)):
+        # Get Series for validation in certain time scale
+        series_validation = tools.energy_output_series(
+            validation_farm_list[farm_number].power_output,
+            temp_resolution_val, temporal_output_resolution)
+        # Get simulated Series in certain time scale
+        series_simulation = tools.energy_output_series(
+            simulation_farm_list[farm_number].power_output,
+            temp_resolution_sim, temporal_output_resolution)
+        # Initialize validation objects and append to list
+        validation_object = ValidationObject(
+            validation_farm_list[farm_number].wind_farm_name,
+            series_validation, series_simulation)
+        validation_object.output_method = output_method
+        validation_object_set.append(validation_object)
+    return validation_object_set
