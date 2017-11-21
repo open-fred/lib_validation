@@ -7,15 +7,15 @@ class ValidationObject(object):
 
 
     """
-    def __init__(self, wind_farm_name, series_validation, series_simulation):
+    def __init__(self, wind_farm_name, validation_series, simulation_series):
         self.wind_farm_name = wind_farm_name
-        self.series_validation = series_validation
-        self.series_simulation = series_simulation
+        self.validation_series = validation_series
+        self.simulation_series = simulation_series
         
-        self.bias = self.get_bias(series_validation, series_simulation)
+        self.bias = self.get_bias(validation_series, simulation_series)
         self.mean_bias = self.bias.mean()
-        self.pearson_s_r = self.get_pearson_s_r(series_validation,
-                                                series_simulation)
+        self.pearson_s_r = self.get_pearson_s_r(validation_series,
+                                                simulation_series)
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
         
@@ -45,13 +45,13 @@ class ValidationObject(object):
         variance = ((data_series - average)**2).sum() / len(data_series)
         return np.sqrt(variance) 
     
-    def get_bias(self, series_validation, series_simulation):
+    def get_bias(self, validation_series, simulation_series):
         r"""
         Compare two series concerning their deviation (bias).
         
         Parameters
         ----------
-        series_validation : pandas.Series
+        validation_series : pandas.Series
             Validation power output time series.
         series_simulated : pandas.Series
             Simulated power output time series.
@@ -62,18 +62,17 @@ class ValidationObject(object):
             Deviation of simulated series from validation series.
     
         """
-        return pd.Series(data=(series_simulation.values -
-                               series_validation.values),
-                         index=series_simulation.index)
+        return pd.Series(data=(simulation_series.values -
+                               validation_series.values),
+                         index=simulation_series.index)
     
-    
-    def get_pearson_s_r(self, series_validation, series_simulation):
+    def get_pearson_s_r(self, validation_series, simulation_series):
         r"""
         Calculates the Pearson's correlation coeffiecient of two series.
     
         Parameters
         ----------
-        series_validation : pandas.Series
+        validation_series : pandas.Series
             Validation power output time series.
         series_simulated : pandas.Series
             Simulated power output time series.
@@ -85,12 +84,12 @@ class ValidationObject(object):
             of the input series.
     
         """
-        return (((series_validation - series_validation.mean()) *
-                 (series_simulation - series_simulation.mean())).sum() /
-                np.sqrt(((series_validation -
-                          series_validation.mean())**2).sum() *
-                        ((series_simulation -
-                          series_simulation.mean())**2).sum()))
+        return (((validation_series - validation_series.mean()) *
+                 (simulation_series - simulation_series.mean())).sum() /
+                np.sqrt(((validation_series -
+                          validation_series.mean())**2).sum() *
+                        ((simulation_series -
+                          simulation_series.mean())**2).sum()))
 
 
 def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
@@ -132,17 +131,17 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     validation_object_set = []
     for farm_number in range(len(validation_farm_list)):
         # Get Series for validation in certain time scale
-        series_validation = tools.energy_output_series(
+        validation_series = tools.energy_output_series(
             validation_farm_list[farm_number].power_output,
             temp_resolution_val, temporal_output_resolution)
         # Get simulated Series in certain time scale
-        series_simulation = tools.energy_output_series(
+        simulation_series = tools.energy_output_series(
             simulation_farm_list[farm_number].power_output,
             temp_resolution_sim, temporal_output_resolution)
         # Initialize validation objects and append to list
         validation_object = ValidationObject(
             validation_farm_list[farm_number].wind_farm_name,
-            series_validation, series_simulation)
+            validation_series, simulation_series)
         validation_object.output_method = output_method
         validation_object_set.append(validation_object)
     return validation_object_set
