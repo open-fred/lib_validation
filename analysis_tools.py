@@ -39,6 +39,17 @@ class ValidationObject(object):
         Indicates the origin of the validation feedin time series.
         This parameter will be set as an attribute of ValidationObject and is
         used for giving filenames etc.
+    bias : 
+    
+    mean_bias :
+    
+    pearson_s_r : 
+    
+    rmse : 
+    
+    standard_deviation : 
+    
+    output_method : String
 
     """
     def __init__(self, object_name, validation_series, simulation_series,
