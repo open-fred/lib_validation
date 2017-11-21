@@ -22,7 +22,7 @@ class ValidationObject(object):
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
 
-    def get_standard_deviation(data_series):
+    def get_standard_deviation(self, data_series):
         r"""
     
         Calculate standard deviation of a data series.
@@ -44,7 +44,7 @@ class ValidationObject(object):
         variance = ((data_series - average)**2).sum() / len(data_series)
         return np.sqrt(variance) 
     
-    def get_bias(series_validation, series_simulation):
+    def get_bias(self, series_validation, series_simulation):
         r"""
         Compare two series concerning their deviation (bias).
         
@@ -66,7 +66,7 @@ class ValidationObject(object):
                          index=series_simulation.index)
     
     
-    def get_pearson_s_r(series_validation, series_simulation):
+    def get_pearson_s_r(self, series_validation, series_simulation):
         r"""
         Calculates the Pearson's correlation coeffiecient of two series.
     
