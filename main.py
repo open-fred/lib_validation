@@ -211,6 +211,25 @@ if 'monthly_energy_output' in output_methods:
         temporal_resolution_weather, 'M', 'monthly_energy_output') # time_period, temporal_output_resolution
     validation_sets.append(val_set_monthly_energy)
 
+for validation_set in validation_sets:
+    if 'box_plots' in visualization_methods:
+        # All bias time series of a validation set in one DataFrame for Boxplot
+        bias_df = pd.DataFrame()
+        for validation_object in validation_set:
+            df_part = pd.DataFrame(data=validation_object.bias,
+                                   columns=[validation_object.wind_farm_name])
+            bias_df = pd.concat([bias_df, df_part], axis=1)
+        visualization_tools.box_plots_bias(
+            bias_df, save_folder='Boxplots/{0}'.format(weather_data + '_' +
+                                                       validation_data),
+            filename='Boxplot_{0}_{1}_{2}_{3}.pdf'.format(
+                year, validation_data, weather_data,
+                validation_set[0].output_method),
+            title='Deviation of {0} {1} from {2} in {3}.'.format(
+                weather_data, validation_set[0].output_method.replace('_',' '),
+                validation_data, year))
+    if '...' in visualization_methods:
+        pass
 
 if evaluate_power_output:
     # Compare power output
