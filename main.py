@@ -202,13 +202,15 @@ if 'hourly_energy_output' in output_methods:
     # ValidationObjects!!!!!
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'H', 'hourly_energy_output') # time_period, temporal_output_resolution
+        temporal_resolution_weather, 'H', 'hourly_energy_output',
+        validation_data, weather_data) # time_period
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'M', 'monthly_energy_output') # time_period, temporal_output_resolution
+        temporal_resolution_weather, 'M', 'monthly_energy_output',
+        validation_data, weather_data) # time_period
     validation_sets.append(val_set_monthly_energy)
 
 # Specify folder for saving the plots

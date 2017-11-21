@@ -94,7 +94,8 @@ class ValidationObject(object):
 
 def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
                                 temp_resolution_val, temp_resolution_sim,
-                                temporal_output_resolution, output_method): #  time_period, temporal_output_resolution
+                                temporal_output_resolution, output_method,
+                                validation_name, weather_data_name): #  time_period, temporal_output_resolution
     # TODO: first only hourly energy output -  then add other scales (months, days?) 
     #       + power output
     #       + possibility of selecting time periods (only mornings, evenings...)
@@ -120,7 +121,9 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     
     output_method : 
         
- 
+    validation_data : 
+    
+    weather_data : 
 
     Returns
     -------
@@ -143,5 +146,7 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
             validation_farm_list[farm_number].wind_farm_name,
             validation_series, simulation_series)
         validation_object.output_method = output_method
+        validation_object.weather_data_name = weather_data_name
+        validation_object.validation_name = validation_name
         validation_object_set.append(validation_object)
     return validation_object_set
