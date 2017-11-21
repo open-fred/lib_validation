@@ -22,8 +22,16 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'dumps/weather',
                                 'weather_df_merra_{0}.p'.format(year))
 
-evaluate_hourly_energy_output = True
-evaluate_power_output = False
+
+evaluate_power_output = False # delete
+output_methods = [
+    'hourly_energy_output',
+    'monthly_energy_output'
+    ]
+visualization_methods = [
+    'box_plots',
+    'test'
+    ]
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
@@ -188,28 +196,21 @@ if plot_arge_feedin:
         y_limit=y_limit)
 
 # ------------------------------ Data Evaluation ---------------------------- #
-if evaluate_hourly_energy_output:
-    # Compare hourly energy ouput
-    validation_list = [
-        tools.energy_output_series(farm.power_output, temporal_resolution_arge,
-                                   'H') for farm in arge_farms]
-    simulation_list = [farm.power_output for farm in merra_farms]
-    column_names = [farm.wind_farm_name for farm in merra_farms]
-    deviation_df, std_deviation_list = (
-        analysis_tools.compare_series_std_deviation_multiple(
-            validation_list, simulation_list, column_names))
-    #print(visualization_tools.print_whole_dataframe(deviation_df['Bredstedt']))
-    #print(deviation_df)
-    #print(std_deviation_list)
-    visualization_tools.box_plots_deviation_df(
-        deviation_df, save_folder='ArgeNetz',
-        filename='Boxplot_{0}_{1}_hourly_energy_output.pdf'.format(
-            year, weather_data), title='Deviation of MERRA hourly energy ' +
-            'output from ArgeNetz.')
+# TODO: statt arge_farms, merra_farms more generic: validation_farms, simulation_farms
+validation_sets= []
+if 'hourly_energy_output' in output_methods:
+    # ValidationObjects!!!!!
+    val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
+        arge_farms, merra_farms, temporal_resolution_arge,
+        temporal_resolution_weather, 'H', 'hourly_energy_output') # time_period, temporal_output_resolution
+    validation_sets.append(val_set_hourly_energy)
 
-    # Pearson's correlation coefficient
-    analysis_tools.pearson_s_r(arge_farms[0].power_output, merra_farms[0].power_output)
-    ## ACHTUNG auch gleich für Liste und energy output umsetzen (series haben nicht die gleiche Länge!!)
+if 'monthly_energy_output' in output_methods:
+    val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
+        arge_farms, merra_farms, temporal_resolution_arge,
+        temporal_resolution_weather, 'M', 'monthly_energy_output') # time_period, temporal_output_resolution
+    validation_sets.append(val_set_monthly_energy)
+
 
 if evaluate_power_output:
     # Compare power output
