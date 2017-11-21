@@ -13,10 +13,13 @@ class ValidationObject(object):
 
 
     """
-    def __init__(self, object_name, validation_series, simulation_series):
+    def __init__(self, object_name, validation_series, simulation_series,
+                 weather_data_name=None, validation_name=None):
         self.object_name = object_name
         self.validation_series = validation_series
         self.simulation_series = simulation_series
+        self.weather_data_name = weather_data_name
+        self.validation_name = validation_name
         
         self.bias = self.get_bias(validation_series, simulation_series)
         self.mean_bias = self.bias.mean()
@@ -24,9 +27,6 @@ class ValidationObject(object):
                                                 simulation_series)
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
-        
-        self.weather_data_name = None
-        self.validation_name = None
         self.output_method = None
 
     def get_standard_deviation(self, data_series):
@@ -150,19 +150,16 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         # Initialize validation objects and append to list
         validation_object = ValidationObject(
             validation_farm_list[farm_number].wind_farm_name,
-            validation_series, simulation_series)
+            validation_series, simulation_series, weather_data_name,
+            validation_name)
         validation_object.output_method = output_method
-        validation_object.weather_data_name = weather_data_name
-        validation_object.validation_name = validation_name
         validation_object_set.append(validation_object)
     # Initialize validation object for sum of wind farms
     validation_object = ValidationObject(
         'all {0} farms'.format(validation_name),
         sum([val_obj.validation_series for val_obj in validation_object_set]),
-        sum([val_obj.simulation_series for val_obj in validation_object_set]))
-    # TODO: these attributes should be paramters for less lines!!
+        sum([val_obj.simulation_series for val_obj in validation_object_set]),
+        weather_data_name, validation_name)
     validation_object.output_method = output_method
-    validation_object.weather_data_name = weather_data_name
-    validation_object.validation_name = validation_name
     validation_object_set.append(validation_object)
     return validation_object_set
