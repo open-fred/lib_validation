@@ -20,8 +20,7 @@ class ValidationObject(object):
         self.pearson_s_r = self.get_pearson_s_r(series_validation,
                                                 series_simulation)
         self.rmse = None
-        self.standard_deviation, self.average_deviation = (
-            self.get_standard_deviation(self.bias))
+        self.standard_deviation = self.get_standard_deviation(self.bias)
 
     def get_standard_deviation(data_series):
         r"""
@@ -43,7 +42,7 @@ class ValidationObject(object):
         """
         average = data_series.sum() / len(data_series)
         variance = ((data_series - average)**2).sum() / len(data_series)
-        return np.sqrt(variance), average 
+        return np.sqrt(variance) 
     
     def get_bias(series_validation, series_simulation):
         r"""
