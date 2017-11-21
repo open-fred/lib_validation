@@ -155,4 +155,14 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         validation_object.weather_data_name = weather_data_name
         validation_object.validation_name = validation_name
         validation_object_set.append(validation_object)
+    # Initialize validation object for sum of wind farms
+    validation_object = ValidationObject(
+        'all {0} farms'.format(validation_name),
+        sum([val_obj.validation_series for val_obj in validation_object_set]),
+        sum([val_obj.simulation_series for val_obj in validation_object_set]))
+    # TODO: these attributes should be paramters for less lines!!
+    validation_object.output_method = output_method
+    validation_object.weather_data_name = weather_data_name
+    validation_object.validation_name = validation_name
+    validation_object_set.append(validation_object)
     return validation_object_set
