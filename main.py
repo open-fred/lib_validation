@@ -160,6 +160,7 @@ if plot_wind_farms:
         y_limit=y_limit)
 
 # --------------------------- ArgeNetz Feedin Data -------------------------- #
+# TODO: Validation and Simulation (weather) set optional!!
 # Set temporal resolution and create indices for DataFrame in standardized form
 if year == 2015:
     temporal_resolution_arge = 5  # minutes
