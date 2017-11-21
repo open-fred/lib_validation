@@ -7,10 +7,7 @@ class ValidationObject(object):
 
 
     """
-    def __init__(self, weather_name, validation_name, wind_farm_name,
-                 series_validation, series_simulation):
-        self.weather_name = weather_name
-        self.validation_name = validation_name
+    def __init__(self, wind_farm_name, series_validation, series_simulation):
         self.wind_farm_name = wind_farm_name
         self.series_validation = series_validation
         self.series_simulation = series_simulation
@@ -21,6 +18,9 @@ class ValidationObject(object):
                                                 series_simulation)
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
+        
+        self.weather_data_name = None
+        self.validation_name = None
 
     def get_standard_deviation(self, data_series):
         r"""
