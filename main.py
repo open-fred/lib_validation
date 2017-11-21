@@ -220,8 +220,8 @@ for validation_set in validation_sets:
                                    columns=[validation_object.wind_farm_name])
             bias_df = pd.concat([bias_df, df_part], axis=1)
         visualization_tools.box_plots_bias(
-            bias_df, save_folder='Boxplots/{0}'.format(weather_data + '_' +
-                                                       validation_data),
+            bias_df, save_folder='../Plots/{0}/{1}'.format(
+                year, weather_data + '_' + validation_data),
             filename='{0}_Boxplot_{1}_{2}_{3}.pdf'.format(
                 validation_set[0].output_method, year,
                 validation_data, weather_data),

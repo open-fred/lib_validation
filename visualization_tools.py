@@ -108,7 +108,7 @@ def box_plots_bias(df, save_folder='Tests', filename='test.pdf', title='Test'):
     g.set_ylabel('Deviation in MW')
     g.set_title(title)
     fig.savefig(os.path.abspath(os.path.join(
-                os.path.dirname(__file__), '../Plots', save_folder,
+                os.path.dirname(__file__), save_folder,
                 filename)))
     plt.close()
 # TODO: write small tool for display of all turbines of a wind farm
