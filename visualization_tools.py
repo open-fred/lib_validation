@@ -88,7 +88,7 @@ def plot_or_print_farm(wind_farms, save_folder, plot=True,
             print(farm.power_output)
 
 
-def box_plots_bias(df, save_folder='Tests', filename='test.pdf', title='Test'):
+def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     r"""
 
     Parameters
@@ -98,7 +98,8 @@ def box_plots_bias(df, save_folder='Tests', filename='test.pdf', title='Test'):
     save_folder : String
         Name of Folder for saving the plots. Default: 'Tests'.
     filename : String
-        Name of filename.
+        Filename inclusive path relatively to the active folder for saving
+        the figure.
     title : String
         Title of figure.
 
@@ -108,7 +109,6 @@ def box_plots_bias(df, save_folder='Tests', filename='test.pdf', title='Test'):
     g.set_ylabel('Deviation in MW')
     g.set_title(title)
     fig.savefig(os.path.abspath(os.path.join(
-                os.path.dirname(__file__), save_folder,
-                filename)))
+                os.path.dirname(__file__), filename)))
     plt.close()
 # TODO: write small tool for display of all turbines of a wind farm

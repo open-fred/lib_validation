@@ -211,6 +211,10 @@ if 'monthly_energy_output' in output_methods:
         temporal_resolution_weather, 'M', 'monthly_energy_output') # time_period, temporal_output_resolution
     validation_sets.append(val_set_monthly_energy)
 
+# Specify folder for saving the plots
+save_folder='../Plots/{0}/{1}/'.format(
+                year, weather_data + '_' + validation_data) # TODO: maybe move up
+
 for validation_set in validation_sets:
     if 'box_plots' in visualization_methods:
         # All bias time series of a validation set in one DataFrame for Boxplot
@@ -219,12 +223,12 @@ for validation_set in validation_sets:
             df_part = pd.DataFrame(data=validation_object.bias,
                                    columns=[validation_object.wind_farm_name])
             bias_df = pd.concat([bias_df, df_part], axis=1)
-        visualization_tools.box_plots_bias(
-            bias_df, save_folder='../Plots/{0}/{1}'.format(
-                year, weather_data + '_' + validation_data),
-            filename='{0}_Boxplot_{1}_{2}_{3}.pdf'.format(
+        # Specify filename
+        filename = save_folder + '{0}_Boxplot_{1}_{2}_{3}.pdf'.format(
                 validation_set[0].output_method, year,
-                validation_data, weather_data),
+                validation_data, weather_data)
+        visualization_tools.box_plots_bias(
+            bias_df, filename=filename,
             title='Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year))
