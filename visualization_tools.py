@@ -112,3 +112,49 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
                 os.path.dirname(__file__), filename)))
     plt.close()
 # TODO: write small tool for display of all turbines of a wind farm
+
+
+def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
+                           title='Test', tick_label=None):
+    r"""
+
+    Parameters
+    ----------
+    validation_object :
+        
+    filename : String
+        Filename including path relatively to the active folder for saving
+        the figure.
+    title : String
+        Title of figure.
+
+    """
+    # TODO: start end point for period default: 1 year
+    fig = plt.figure()
+    if 'energy' in validation_object.output_method:
+        label_part = 'MWh'
+    if 'power' in validation_object.output_method:
+        label_part = 'MW'
+    if 'monthly' in validation_object.output_method:
+        sim = plt.bar(validation_object.simulation_series.index,
+                      validation_object.simulation_series.values,
+                      width=5, align='edge', tick_label=tick_label,
+                      label=validation_object.weather_data_name)
+        val = plt.bar(validation_object.validation_series.index,
+                      validation_object.validation_series.values,
+                      width=-5, align='edge',
+                      label=validation_object.validation_name)
+    else:
+        sim, = plt.plot(validation_object.simulation_series,
+                        label=validation_object.weather_data_name)
+        val, = plt.plot(validation_object.validation_series,
+                    label=validation_object.validation_name)
+    plt.ylabel('{0} in {1}'.format(
+        validation_object.output_method.replace('_',' '), label_part))
+    plt.xticks(rotation='vertical')
+    plt.legend(handles=[val, sim])
+    plt.title(title)
+    plt.tight_layout()
+    fig.savefig(os.path.abspath(os.path.join(
+                os.path.dirname(__file__), filename)))
+    plt.close()

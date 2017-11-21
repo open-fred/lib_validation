@@ -30,7 +30,7 @@ output_methods = [
     ]
 visualization_methods = [
     'box_plots',
-    'test'
+    'feedin_comparison'
     ]
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
@@ -234,8 +234,25 @@ for validation_set in validation_sets:
             title='Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year))
-    if '...' in visualization_methods:
-        pass
+
+    if 'feedin_comparison' in visualization_methods:
+#        if year == 2015 and validation_data == 'ArgeNetz':
+#            tick_label=['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+#        else:
+#            tick_label=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+#                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        for validation_object in validation_set:
+            filename = save_folder + '{0}_{1}_Feedin_{2}_{3}_{4}.pdf'.format(
+                validation_set[0].output_method, 
+                validation_object.wind_farm_name, year,
+                validation_data, weather_data)
+            visualization_tools.plot_feedin_comparison(
+                validation_object, filename=filename,
+                title='{0} of {1} and {2} in {3} {4}'.format(
+                    validation_set[0].output_method.replace('_',' '),
+                    weather_data, validation_data,
+                    validation_object.wind_farm_name, year))
+#                    , tick_label=tick_label)
 
 if evaluate_power_output:
     # Compare power output
