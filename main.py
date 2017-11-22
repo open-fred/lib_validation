@@ -146,6 +146,9 @@ for description in wind_farm_data:
     # Power output in MW
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+    # Convert indices to datetime UTC
+    wind_farm.power_output.index = pd.to_datetime(
+        wind_farm.power_output.index).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
@@ -185,6 +188,8 @@ for description in wind_farm_data:
         data=(arge_netz_data[description['wind_farm_name'] +
                              '_P_W'].values / 1000),
         index=indices)
+    # Convert indices to datetime UTC
+    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_arge)
