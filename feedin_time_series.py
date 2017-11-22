@@ -94,7 +94,7 @@ def data_evaluation(filename):
             for line in file:
                 name = line.strip()
                 df = restructure_data(name, drop_na=True)
-                df2 = pd.DataFrame(data=1, index=list(df),
+                df2 = pd.DataFrame(data=df, index=list(df),
                                    columns=[name])
                 df_compare = pd.concat([df_compare, df2], axis=1)
     df_compare.to_csv('evaluation.csv')
