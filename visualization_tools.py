@@ -214,6 +214,14 @@ def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
     plt.plot([0, maximum * 2], [0, maximum], color='purple', linestyle='--')
     plt.title(title)
     plt.legend(handles=[ideal, deviation_100])
+    # Add certain values to plot as text
+    plt.annotate('Pr = {0} \n mean bias = {1}{2} \n std dev = {3}'.format(
+                 round(validation_object.pearson_s_r, 2),
+                 round(validation_object.mean_bias, 2), label_part,
+                 round(validation_object.standard_deviation, 2)),
+                 xy=(1, 1), xycoords='axes fraction',
+                 xytext=(-6, -6), textcoords='offset points',
+                 ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
