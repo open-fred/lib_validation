@@ -119,7 +119,7 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None):
     r"""
-    Plots simulation and validation feedin time series.
+    Plot simulation and validation feedin time series.
 
     These time series are extracted from a
     :class:`~.analysis_tools.ValidationObject` object.
@@ -164,6 +164,56 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     plt.xticks(rotation='vertical')
     plt.legend(handles=[val, sim])
     plt.title(title)
+    plt.tight_layout()
+    fig.savefig(os.path.abspath(os.path.join(
+                os.path.dirname(__file__), filename)))
+    plt.close()
+
+
+def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
+                     title='Test'):
+    r"""
+    Visualize the correlation between two feedin time series.
+
+    Parameters
+    ----------
+    validation_object : Object
+        A :class:`~.analysis_tools.ValidationObject` object representing the
+        comparison of simulated feedin time series with validation feedin time
+        series.
+    filename : String
+        Filename including path relatively to the active folder for saving
+        the figure. Default: 'Tests/correlation_test.pdf'.
+    title : String
+        Title of figure. Default: 'Test'.
+
+    """
+    # TODO: think of bins.. maybe like in Shap's phd
+    if 'energy' in validation_object.output_method:
+        label_part = 'MWh'
+    if 'power' in validation_object.output_method:
+        label_part = 'MW'
+    fig = plt.figure()
+    plt.scatter(validation_object.validation_series,
+                validation_object.simulation_series)
+    plt.ylabel('{0} of {1} in {2}'.format(
+        validation_object.output_method.replace('_', ' '),
+        validation_object.validation_name, label_part))
+    plt.xlabel('{0} of {1} in {2}'.format(
+        validation_object.output_method.replace('_', ' '),
+        validation_object.weather_data_name, label_part))
+    # Maximum value for xlim and ylim and line
+    maximum = max(validation_object.validation_series.max(),
+                  validation_object.simulation_series.max()) + 5
+    plt.xlim(xmin=0, xmax=maximum)
+    plt.ylim(ymin=0, ymax=maximum)
+    ideal, = plt.plot([0, maximum], [0, maximum], color='black',
+                      linestyle='--', label='ideal correlation')
+    deviation_100, = plt.plot([0, maximum], [0, maximum * 2], color='purple',
+                              linestyle='--', label='100 % deviation')
+    plt.plot([0, maximum * 2], [0, maximum], color='purple', linestyle='--')
+    plt.title(title)
+    plt.legend(handles=[ideal, deviation_100])
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))

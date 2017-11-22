@@ -30,7 +30,8 @@ output_methods = [
     ]
 visualization_methods = [
     'box_plots',
-    'feedin_comparison'
+    'feedin_comparison',
+    'plot_correlation'
     ]
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
@@ -238,6 +239,7 @@ for validation_set in validation_sets:
                 validation_data, year))
 
     if 'feedin_comparison' in visualization_methods:
+    # TODO: rename this method for better understanding
 #        if year == 2015 and validation_data == 'ArgeNetz':
 #            tick_label=['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 #        else:
@@ -255,6 +257,22 @@ for validation_set in validation_sets:
                     weather_data, validation_data,
                     validation_object.object_name, year))
 #                    , tick_label=tick_label)
+
+    if 'plot_correlation' in visualization_methods:
+        for validation_object in validation_set:
+            filename = (save_folder +
+                        '{0}_{1}_Correlation_{2}_{3}_{4}.pdf'.format(
+                                validation_set[0].output_method,
+                                validation_object.object_name, year,
+                                validation_data, weather_data))
+            visualization_tools.plot_correlation(
+                    validation_object, filename=filename,
+                    title='{0} of {1} and {2} in {3} {4}'.format(
+                        validation_set[0].output_method.replace('_', ' '),
+                        weather_data, validation_data,
+                        validation_object.object_name, year))
+
+
 
 if evaluate_power_output:
     # Compare power output
