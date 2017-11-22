@@ -86,6 +86,7 @@ def data_evaluation(filename):
     -----------
     filename : string
         Name of file that contains names of files to be evaluated.
+
     """
     # Initialise pandas.DataFrame
     df_compare = pd.DataFrame()
