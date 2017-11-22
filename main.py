@@ -22,11 +22,10 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'dumps/weather',
                                 'weather_df_merra_{0}.p'.format(year))
 
-
-evaluate_power_output = False  # delete
 output_methods = [
     'hourly_energy_output',
-    'monthly_energy_output'
+    'monthly_energy_output',
+    'power_output'
     ]
 visualization_methods = [
     'box_plots',
@@ -209,16 +208,26 @@ if 'hourly_energy_output' in output_methods:
     # ValidationObjects!!!!!
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'H', 'hourly_energy_output',
-        validation_data, weather_data)  # time_period
+        temporal_resolution_weather, 'hourly_energy_output',
+        validation_data, weather_data, 'H')  # time_period
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'M', 'monthly_energy_output',
-        validation_data, weather_data)  # time_period
+        temporal_resolution_weather, 'monthly_energy_output',
+        validation_data, weather_data, 'M')  # time_period
     validation_sets.append(val_set_monthly_energy)
+
+if 'power_output' in output_methods:
+    for farm in merra_farms:
+        farm.power_output = tools.power_output_fill(
+            farm.power_output, temporal_resolution_arge, year)
+    val_set_power = analysis_tools.evaluate_feedin_time_series(
+        arge_farms, merra_farms, temporal_resolution_arge,
+        temporal_resolution_weather, 'power_output',
+        validation_data, weather_data)  # time_period
+    validation_sets.append(val_set_power)
 
 # Specify folder for saving the plots
 save_folder = '../Plots/{0}/{1}/'.format(
@@ -276,23 +285,6 @@ for validation_set in validation_sets:
                         validation_set[0].output_method.replace('_', ' '),
                         weather_data, validation_data,
                         validation_object.object_name, year))
-
-
-
-if evaluate_power_output:
-    # Compare power output
-    series = merra_farms[0].power_output
-    index = pd.date_range('1/1/{0}'.format(year+1), tz='Europe/Berlin', closed='left', periods=1)
-    series2 = pd.Series(10, index=index)
-    merra_farm = pd.concat([series, series2])
-    out = merra_farm.resample(
-        '{0}min'.format(temporal_resolution_arge)).pad()
-    pd.options.display.max_rows = 500
-    print(out)
-#    print(out[436400:436400])
-#    print(out.tail(1).index)
-    out = out.drop(out.index[-1])
-
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:

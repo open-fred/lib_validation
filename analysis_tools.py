@@ -164,11 +164,11 @@ class ValidationObject(object):
 
 def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
                                 temp_resolution_val, temp_resolution_sim,
-                                temporal_output_resolution, output_method,
-                                validation_name, weather_data_name): #  time_period, temporal_output_resolution
-    # TODO: first only hourly energy output -  then add other scales (months, days?) 
-    #       + power output
-    #       + possibility of selecting time periods (only mornings, evenings...)
+                                output_method, validation_name,
+                                weather_data_name,
+                                temporal_output_resolution=None): #  time_period
+    # TODO: possibility of selecting time periods (only mornings, evenings...)
+    # + other scales? months?
     r"""
     Evaluate feedin time series concerning validation feedin time series.
 
@@ -191,10 +191,6 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         Temporal resolution of valdation time series in minutes.
     temp_resolution_sim : Float or Integer
         Temporal resolution of simulation time series in minutes.
-    temporal_output_resolution : String
-        Specification of temporal ouput resolution in the form of 'H', 'M', ...
-        For more information see function energy_output_series() in the
-        ``tools`` module.
     output_method : String
         Specification of form of time series to be validated. For example:
         'hourly_energy_output'. This parameter will be set as an attribute of
@@ -207,6 +203,11 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         Indicates the origin of the weather data of the simulated feedin time
         series. This parameter will be set as an attribute of ValidationObject
         and is used for giving filenames etc.
+    temporal_output_resolution : String
+        Specification of temporal ouput resolution in the form of 'H', 'M',
+        etc. for energy output series. Not needed for power_output_series.
+        For more information see function energy_output_series() in the
+        ``tools`` module. Default: None.
 
     Returns
     -------
@@ -216,14 +217,18 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     """
     validation_object_set = []
     for farm_number in range(len(validation_farm_list)):
-        # Get Series for validation in certain time scale
-        validation_series = tools.energy_output_series(
-            validation_farm_list[farm_number].power_output,
-            temp_resolution_val, temporal_output_resolution)
-        # Get simulated Series in certain time scale
-        simulation_series = tools.energy_output_series(
-            simulation_farm_list[farm_number].power_output,
-            temp_resolution_sim, temporal_output_resolution)
+        if 'energy' in output_method:
+            # Get validation energy output series in certain temp. resolution
+            validation_series = tools.energy_output_series(
+                validation_farm_list[farm_number].power_output,
+                temp_resolution_val, temporal_output_resolution)
+            # Get simulated energy output series in certain temp. resolution
+            simulation_series = tools.energy_output_series(
+                simulation_farm_list[farm_number].power_output,
+                temp_resolution_sim, temporal_output_resolution)
+        if 'power' in output_method:
+            validation_series = validation_farm_list[farm_number].power_output
+            simulation_series = simulation_farm_list[farm_number].power_output
         # Initialize validation objects and append to list
         validation_object = ValidationObject(
             validation_farm_list[farm_number].wind_farm_name,
