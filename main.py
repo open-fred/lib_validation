@@ -23,7 +23,7 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'weather_df_merra_{0}.p'.format(year))
 
 
-evaluate_power_output = False # delete
+evaluate_power_output = False  # delete
 output_methods = [
     'hourly_energy_output',
     'monthly_energy_output'
@@ -198,24 +198,24 @@ if plot_arge_feedin:
 
 # ------------------------------ Data Evaluation ---------------------------- #
 # TODO: statt arge_farms, merra_farms more generic: validation_farms, simulation_farms
-validation_sets= []
+validation_sets = []
 if 'hourly_energy_output' in output_methods:
     # ValidationObjects!!!!!
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
         temporal_resolution_weather, 'H', 'hourly_energy_output',
-        validation_data, weather_data) # time_period
+        validation_data, weather_data)  # time_period
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
         temporal_resolution_weather, 'M', 'monthly_energy_output',
-        validation_data, weather_data) # time_period
+        validation_data, weather_data)  # time_period
     validation_sets.append(val_set_monthly_energy)
 
 # Specify folder for saving the plots
-save_folder='../Plots/{0}/{1}/'.format(
+save_folder = '../Plots/{0}/{1}/'.format(
                 year, weather_data + '_' + validation_data) # TODO: maybe move up
 
 for validation_set in validation_sets:
@@ -233,7 +233,7 @@ for validation_set in validation_sets:
                 validation_data, weather_data)
         visualization_tools.box_plots_bias(
             bias_df, filename=filename,
-            title='Deviation of {0} {1} from {2} in {3}.'.format(
+            title = 'Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year))
 
@@ -245,13 +245,13 @@ for validation_set in validation_sets:
 #                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         for validation_object in validation_set:
             filename = save_folder + '{0}_{1}_Feedin_{2}_{3}_{4}.pdf'.format(
-                validation_set[0].output_method, 
+                validation_set[0].output_method,
                 validation_object.object_name, year,
                 validation_data, weather_data)
             visualization_tools.plot_feedin_comparison(
                 validation_object, filename=filename,
                 title='{0} of {1} and {2} in {3} {4}'.format(
-                    validation_set[0].output_method.replace('_',' '),
+                    validation_set[0].output_method.replace('_', ' '),
                     weather_data, validation_data,
                     validation_object.object_name, year))
 #                    , tick_label=tick_label)
