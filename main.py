@@ -30,7 +30,7 @@ output_methods = [
 visualization_methods = [
     'box_plots',
     'feedin_comparison',
-    'plot_correlation'
+    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
