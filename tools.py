@@ -176,6 +176,35 @@ def energy_output_series(power_output, temporal_resolution, output_resolution):
     return energy_output
 
 
+def power_output_fill(power_output, output_resolution, year):
+    r"""
+    Change temporal resolution of power output by filling with pad().
+
+    Parameters
+    ----------
+    power_output : pd.Series
+        Power output of wind turbine or wind farm.
+    output_resolution : Integer
+        Temporal resolution of output time series in minutes.
+    year : Integer
+        Year of the power output series.
+
+    Returns
+    -------
+    output_series : pd.Series
+        Power output of wind turbine or wind farm in the temporal resolution of
+        `output_resolution`.
+
+    """
+    index = pd.to_datetime(pd.datetime(
+            year + 1, 1, 1, 0)).tz_localize('Europe/Berlin').tz_convert('UTC')
+    output_series = pd.concat([power_output, pd.Series(10, index=[index])])
+    output_series = output_series.resample(
+        '{0}min'.format(output_resolution)).pad()
+    output_series = output_series.drop(output_series.index[-1])
+    return output_series
+
+
 def get_indices_for_series(temporal_resolution, year=None,
                            start=None, end=None):
     r"""
