@@ -85,8 +85,8 @@ class ValidationObject(object):
         ------
         float
             Standard deviation of the input data series.
-        average : float
-            Arithmetric average of `data_series`.
+
+        """
         """
         average = data_series.mean()
         variance = ((data_series - average)**2).sum() / len(data_series)
