@@ -165,7 +165,7 @@ if plot_wind_farms:
 if year == 2015:
     temporal_resolution_arge = 5  # minutes
     indices = tools.get_indices_for_series(temporal_resolution_arge,
-                                           start='5/1/2015' , end='1/1/2016')
+                                           start='5/1/2015', end='1/1/2016')
 if (year == 2016 or year == 2017):
     temporal_resolution_arge = 1  # minutes
     indices = tools.get_indices_for_series(temporal_resolution_arge, year=year)
@@ -181,7 +181,7 @@ for description in wind_farm_data:
     wind_farm = wf.WindFarm(**description)
     # Power output in MW with standard indices
     wind_farm.power_output = pd.Series(
-        data=(arge_netz_data[description['wind_farm_name'] + 
+        data=(arge_netz_data[description['wind_farm_name'] +
                              '_P_W'].values / 1000),
         index=indices)
     # Annual energy output in MWh
@@ -190,7 +190,7 @@ for description in wind_farm_data:
     arge_farms.append(wind_farm)
 
 if plot_arge_feedin:
-#    y_limit = [0, 60]
+    # y_limit = [0, 60]
     y_limit = None
     visualization_tools.plot_or_print_farm(
         arge_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
@@ -233,7 +233,7 @@ for validation_set in validation_sets:
                 validation_data, weather_data)
         visualization_tools.box_plots_bias(
             bias_df, filename=filename,
-            title = 'Deviation of {0} {1} from {2} in {3}.'.format(
+            title='Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year))
 
@@ -269,7 +269,7 @@ if evaluate_power_output:
 #    print(out[436400:436400])
 #    print(out.tail(1).index)
     out = out.drop(out.index[-1])
-    
+
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
@@ -296,7 +296,7 @@ if latex_output:
                 columns=[[column_names[i]], ['Deviation [%]']])
             df = pd.concat([df, df_temp], axis=1)
         i += 1
-    
+
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      '../../../tubCloud/Latex/Tables/')
     name = os.path.join(path_latex_tables, 'name_of_table.tex')

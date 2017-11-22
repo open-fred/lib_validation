@@ -121,8 +121,8 @@ def power_output_sum(wind_turbine_fleet, weather_df, data_height):
         farm_power_output += (power_output.power_curve(
             wind_speed_hub,
             turbine_type['wind_turbine'].power_curve['wind_speed'],
-            turbine_type['wind_turbine'].power_curve['values'])
-            * turbine_type['number_of_turbines'])
+            turbine_type['wind_turbine'].power_curve['values']) *
+            turbine_type['number_of_turbines'])
     return farm_power_output
 
 
@@ -181,7 +181,7 @@ def get_indices_for_series(temporal_resolution, year=None,
                            start=None, end=None):
     r"""
     Create indices for annual time series in a certain frequency and form.
-    
+
     Parameters
     ----------
     temporal_resolution : integer

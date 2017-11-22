@@ -158,9 +158,9 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         sim, = plt.plot(validation_object.simulation_series,
                         label=validation_object.weather_data_name)
         val, = plt.plot(validation_object.validation_series,
-                    label=validation_object.validation_name)
+                        label=validation_object.validation_name)
     plt.ylabel('{0} in {1}'.format(
-        validation_object.output_method.replace('_',' '), label_part))
+        validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
     plt.legend(handles=[val, sim])
     plt.title(title)
