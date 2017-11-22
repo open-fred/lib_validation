@@ -69,6 +69,8 @@ class ValidationObject(object):
                                                 simulation_series)
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
+        self.standard_deviation_from_zero = (
+            self.get_standard_deviation_from_zero(self.bias))
         self.output_method = None
 
     def get_standard_deviation(self, data_series):
@@ -87,15 +89,36 @@ class ValidationObject(object):
             Standard deviation of the input data series.
 
         """
-        """
         average = data_series.mean()
         variance = ((data_series - average)**2).sum() / len(data_series)
+        return np.sqrt(variance)
+
+    def get_standard_deviation_from_zero(self, data_series):
+        r"""
+        Calculate standard deviation of a data series from the value zero.
+
+        This makes sense for the purpose of validating a time series as
+        positive values might compensate negative values.
+
+        Parameters
+        ----------
+        data_series : list or pandas.Series
+            Input data series (data points) of which the standard deviation
+            will be calculated.
+
+        Return
+        ------
+        float
+            Standard deviation from zero of the input data series.
+
+        """
+        variance = ((data_series - 0)**2).sum() / len(data_series)
         return np.sqrt(variance)
 
     def get_bias(self, validation_series, simulation_series):
         r"""
         Compare two series concerning their deviation (bias).
-    
+
         Parameters
         ----------
         validation_series : pandas.Series
