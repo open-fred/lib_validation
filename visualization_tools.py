@@ -146,23 +146,21 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     if 'power' in validation_object.output_method:
         label_part = 'MW'
     if 'monthly' in validation_object.output_method:
-        sim = plt.bar(validation_object.simulation_series.index,
-                      validation_object.simulation_series.values,
-                      width=5, align='edge', tick_label=tick_label,
-                      label=validation_object.weather_data_name)
-        val = plt.bar(validation_object.validation_series.index,
-                      validation_object.validation_series.values,
-                      width=-5, align='edge',
-                      label=validation_object.validation_name)
+        validation_object.simulation_series.plot(
+            kind='bar', width=0.25, align='edge', tick_label=tick_label,
+            color='blue', legend=True,
+            label=validation_object.weather_data_name)
+        validation_object.validation_series.plot(
+            kind='bar', width=-0.25, align='edge', color='orange',
+            legend=True, label=validation_object.validation_name)
     else:
-        sim, = plt.plot(validation_object.simulation_series,
-                        label=validation_object.weather_data_name)
-        val, = plt.plot(validation_object.validation_series,
-                        label=validation_object.validation_name)
+        validation_object.simulation_series.plot(
+            legend=True, label=validation_object.weather_data_name)
+        validation_object.validation_series.plot(
+            legend=True, label=validation_object.validation_name)
     plt.ylabel('{0} in {1}'.format(
         validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
-    plt.legend(handles=[val, sim])
     plt.title(title)
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
