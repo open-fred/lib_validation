@@ -5,9 +5,9 @@ import tools
 
 class ValidationObject(object):
     r"""
-    
+
     Parameters
-    ----------    
+    ----------
     object_name : String
         Name of ValidationObject (name of wind farm or region).
     validation_series : pandas.Series
@@ -39,18 +39,21 @@ class ValidationObject(object):
         Indicates the origin of the validation feedin time series.
         This parameter will be set as an attribute of ValidationObject and is
         used for giving filenames etc.
-    bias : 
-    
-    mean_bias :
-    
-    pearson_s_r : 
-    
-    rmse : 
-    
-    standard_deviation : 
-    
+    bias : pd.Series
+        Deviation of a simulated feedin time series from a validation time
+        series.
+    mean_bias : Float
+        Mean deviation of a simulated feedin time series from a validation time
+        series.
+    pearson_s_r : Float
+         Pearson's correlation coeffiecient (Pearson's R) of two time series.
+    rmse : Float
+        Root mean square error ...... # TODO: implement rmse
+    standard_deviation : Float
+        Standard deviation of the bias (deviation) time series.
     output_method : String
-
+        Specification of form of time series to be validated. For example:
+        'hourly_energy_output'.
     """
     def __init__(self, object_name, validation_series, simulation_series,
                  weather_data_name=None, validation_name=None):
