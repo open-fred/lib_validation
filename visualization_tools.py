@@ -117,7 +117,8 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
 
 
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
-                           title='Test', tick_label=None):
+                           title='Test', tick_label=None,
+                           start=None, end=None):
     r"""
     Plot simulation and validation feedin time series.
 
@@ -137,6 +138,13 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         Title of figure. Default: 'Test'.
     tick_label : List
         Tick labels for x-ticks. Default: None.
+    start : String
+        Start date of time period to be plotted in the format 'yyyy-mm-dd'.
+        Default: None.
+    end : String
+        End date of time period to be plotted in the format 'yyyy-mm-dd'. If
+        `start` and/or `end` is None the whole time series is plotted.
+        Default: None.
 
     """
     # TODO: start end point for period default: 1 year
@@ -161,6 +169,8 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     plt.ylabel('{0} in {1}'.format(
         validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
+    if (start is not None and end is not None):
+        plt.xlim(pd.Timestamp(start), pd.Timestamp(end))
     plt.title(title)
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(

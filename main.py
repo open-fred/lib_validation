@@ -33,6 +33,13 @@ visualization_methods = [
     'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
+# Start and end date for time period to be plotted
+# Attention: only for 'feedin_comparison' and not for monthly output
+start = '{0}-10-01 11:00:00+00:00'.format(year)
+end = '{0}-10-01 16:00:00+00:00'.format(year)
+#start = None
+#end = None
+
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
@@ -269,7 +276,7 @@ for validation_set in validation_sets:
                 title='{0} of {1} and {2} in {3} {4}'.format(
                     validation_set[0].output_method.replace('_', ' '),
                     weather_data, validation_data,
-                    validation_object.object_name, year))
+                    validation_object.object_name, year), start=start, end=end)
 #                    , tick_label=tick_label)
 
     if 'plot_correlation' in visualization_methods:
