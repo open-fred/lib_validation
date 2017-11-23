@@ -35,8 +35,10 @@ visualization_methods = [
 
 # Start and end date for time period to be plotted
 # Attention: only for 'feedin_comparison' and not for monthly output
-start = '{0}-10-01 11:00:00+00:00'.format(year)
-end = '{0}-10-01 16:00:00+00:00'.format(year)
+#start = '{0}-10-01 11:00:00+00:00'.format(year)
+#end = '{0}-10-01 16:00:00+00:00'.format(year)
+start = '{0}-10-01'.format(year)
+end = '{0}-10-02'.format(year)
 #start = None
 #end = None
 

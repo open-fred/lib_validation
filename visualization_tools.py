@@ -139,12 +139,13 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     tick_label : List
         Tick labels for x-ticks. Default: None.
     start : String
-        Start date of time period to be plotted in the format 'yyyy-mm-dd'.
+        Start date of time period to be plotted in the format 'yyyy-mm-dd' or
+        'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'.
         Default: None.
     end : String
-        End date of time period to be plotted in the format 'yyyy-mm-dd'. If
-        `start` and/or `end` is None the whole time series is plotted.
-        Default: None.
+        End date of time period to be plotted in the format 'yyyy-mm-dd' or
+        'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'. If `start`
+        and/or `end` is None the whole time series is plotted. Default: None.
 
     """
     # TODO: start end point for period default: 1 year
