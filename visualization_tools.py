@@ -170,7 +170,8 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     plt.ylabel('{0} in {1}'.format(
         validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
-    if (start is not None and end is not None):
+    if (start is not None and end is not None and
+            'monthly' not in validation_object.output_method):
         plt.xlim(pd.Timestamp(start), pd.Timestamp(end))
     plt.title(title)
     plt.tight_layout()
