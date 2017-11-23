@@ -177,7 +177,7 @@ class ValidationObject(object):
 def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
                                 temp_resolution_val, temp_resolution_sim,
                                 output_method, validation_name,
-                                weather_data_name,
+                                weather_data_name, time_period=None,
                                 temporal_output_resolution=None): #  time_period
     # TODO: possibility of selecting time periods (only mornings, evenings...)
     # + other scales? months?
@@ -215,6 +215,9 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         Indicates the origin of the weather data of the simulated feedin time
         series. This parameter will be set as an attribute of ValidationObject
         and is used for giving filenames etc.
+    time_period : Tuple (Int, Int)
+        Hourly time period to be selected from time series (h, h).
+        Default: None.
     temporal_output_resolution : String
         Specification of temporal ouput resolution in the form of 'H', 'M',
         etc. for energy output series. Not needed for power_output_series.
@@ -229,6 +232,16 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
     """
     validation_object_set = []
     for farm_number in range(len(validation_farm_list)):
+        # Select time period from series
+        if time_period is not None:
+            validation_series = validation_farm_list[farm_number].power_output
+            validation_farm_list[farm_number].power_output = validation_series[
+                (time_period[0] <= validation_series.index.hour) &
+                (validation_series.index.hour <= time_period[1])]
+            simulation_series = simulation_farm_list[farm_number].power_output
+            simulation_farm_list[farm_number].power_output = simulation_series[
+                (time_period[0] <= simulation_series.index.hour) &
+                (simulation_series.index.hour <= time_period[1])]
         if 'energy' in output_method:
             # Get validation energy output series in certain temp. resolution
             validation_series = tools.energy_output_series(
@@ -239,6 +252,7 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
                 simulation_farm_list[farm_number].power_output,
                 temp_resolution_sim, temporal_output_resolution)
         if 'power' in output_method:
+            # TODO: check if this works with time_period- gaps might be filled to far
             validation_series = validation_farm_list[farm_number].power_output
             simulation_series = simulation_farm_list[farm_number].power_output
         # Initialize validation objects and append to list

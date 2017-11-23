@@ -22,6 +22,12 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'dumps/weather',
                                 'weather_df_merra_{0}.p'.format(year))
 
+# Select time of day you want to observe or None for all day
+time_period = (
+        8, 12  # time of day to be selected (from h to h)
+#        None   # complete time series will be observed
+        ) 
+
 output_methods = [
     'hourly_energy_output',
     'monthly_energy_output',
@@ -218,14 +224,14 @@ if 'hourly_energy_output' in output_methods:
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
         temporal_resolution_weather, 'hourly_energy_output',
-        validation_data, weather_data, 'H')  # time_period
+        validation_data, weather_data, time_period, 'H')
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
         temporal_resolution_weather, 'monthly_energy_output',
-        validation_data, weather_data, 'M')  # time_period
+        validation_data, weather_data, time_period, 'M')
     validation_sets.append(val_set_monthly_energy)
 
 if 'power_output' in output_methods:
@@ -235,7 +241,7 @@ if 'power_output' in output_methods:
     val_set_power = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
         temporal_resolution_weather, 'power_output',
-        validation_data, weather_data)  # time_period
+        validation_data, weather_data, time_period)
     validation_sets.append(val_set_power)
 
 # Specify folder for saving the plots
