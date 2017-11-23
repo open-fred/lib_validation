@@ -53,7 +53,8 @@ if time_period is not None:
     save_folder = '../Plots/{0}/{1}/CertainTimeOfDay/{2}_{3}/'.format(
                     year, weather_data + '_' + validation_data,
                     time_period[0], time_period[1])
-    title_add_on = ' ({0}:00 - {1}:00)'.format(time_period[0], time_period[1])
+    title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+        time_period[0], time_period[1])
 else:
     save_folder = '../Plots/{0}/{1}/'.format(
                     year, weather_data + '_' + validation_data) # TODO: maybe move up
@@ -270,7 +271,7 @@ for validation_set in validation_sets:
                 validation_data, weather_data)
         visualization_tools.box_plots_bias(
             bias_df, filename=filename,
-            title='Deviation of {0} {1} from {2} in {3}.'.format(
+            title='Deviation of {0} {1} from {2}\n in {3}'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
                 validation_data, year) + title_add_on)
 
@@ -288,7 +289,7 @@ for validation_set in validation_sets:
                 validation_data, weather_data)
             visualization_tools.plot_feedin_comparison(
                 validation_object, filename=filename,
-                title='{0} of {1} and {2} in {3} {4}'.format(
+                title='{0} of {1} and {2} of {3}\n {4}'.format(
                     validation_set[0].output_method.replace('_', ' '),
                     weather_data, validation_data,
                     validation_object.object_name, year) + title_add_on,
@@ -304,7 +305,7 @@ for validation_set in validation_sets:
                                 validation_data, weather_data))
             visualization_tools.plot_correlation(
                     validation_object, filename=filename,
-                    title='{0} of {1} and {2} in {3} {4}'.format(
+                    title='{0} of {1} and {2} of {3}\n {4}'.format(
                         validation_set[0].output_method.replace('_', ' '),
                         weather_data, validation_data,
                         validation_object.object_name, year) + title_add_on)
