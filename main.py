@@ -64,12 +64,6 @@ else:
                     year, weather_data_name + '_' + validation_data_name)
     title_add_on = ''
 
-if weather_data_name == 'MERRA':
-    temporal_resolution_weather = 60
-    filename_weather = os.path.join(os.path.dirname(__file__),
-                                    'dumps/weather',
-                                    'weather_df_merra_{0}.p'.format(year))
-
 # --------------------- Turbine data and initialization --------------------- #
 # TODO: scale power curves??
 # Turbine data
@@ -155,7 +149,7 @@ if validation_data_name == '...':
 
 
 # Initialise validation wind farms with power output and annual energy output
-arge_farms = []
+validation_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
@@ -169,13 +163,13 @@ for description in wind_farm_data:
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_validation)
-    arge_farms.append(wind_farm)
+    validation_farms.append(wind_farm)
 
 #if plot_arge_feedin:
 #    # y_limit = [0, 60]
 #    y_limit = None
 #    visualization_tools.plot_or_print_farm(
-#        arge_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
+#        validation_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
 #        y_limit=y_limit)
 
 # ------------------------- Power output simulation ------------------------- #
@@ -184,20 +178,26 @@ for description in wind_farm_data:
 #       modelchain can be used (if temperature is not beeing used)
 # TODO: weather for all the ArgeNetz wind farms identical - if change: save
 #first for eventual other time series
-# Create data frame from csv if pickle_load_weather == False
-if pickle_load_weather:
-        data_frame = None
-else:
-    print('Read MERRA data from csv...')
-    data_frame = pd.read_csv(os.path.join(
-        os.path.dirname(__file__), 'data/Merra',
-        'weather_data_GER_{0}.csv'.format(year)),
-        sep=',', decimal='.', index_col=0)
+
+if weather_data_name == 'MERRA':
+    temporal_resolution_weather = 60
+    filename_weather = os.path.join(os.path.dirname(__file__),
+                                    'dumps/weather',
+                                    'weather_df_merra_{0}.p'.format(year))
+    # Create data frame from csv if pickle_load_weather == False
+    if pickle_load_weather:
+            data_frame = None
+    else:
+        print('Read MERRA data from csv...')
+        data_frame = pd.read_csv(os.path.join(
+            os.path.dirname(__file__), 'data/Merra',
+            'weather_data_GER_{0}.csv'.format(year)),
+            sep=',', decimal='.', index_col=0)
     # Visualize latitudes and longitudes of DataFrame
 #    lat, lon = visualization_tools.return_lats_lons(data_frame)
 #    print(lat, lon)
 
-merra_farms = []
+simulation_farms = []
 for description in wind_farm_data:
     # Initialise wind farm
     wind_farm = wf.WindFarm(**description)
@@ -205,15 +205,16 @@ for description in wind_farm_data:
     weather = tools.get_weather_data(pickle_load_weather, filename_weather,
                                      weather_data_name, year,
                                      wind_farm.coordinates, data_frame)
-    if year == 2015:
-#        visualization_tools.print_whole_dataframe(weather.lat)
+    if (validation_data_name == 'ArgeNetz' and year == 2015):
         weather = weather.loc[weather.index >= '2015-05-01']
-#        visualization_tools.print_whole_dataframe(weather.lat) # TODO: check time zone (sometimes +1h sometimes +2h)
-    data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
-                   'roughness_length': 0,  # TODO: is this specified?
-                   'temperature': weather.temperature_height,
-                   'density': 0,
-                   'pressure': 0}
+    if weather_data_name == 'MERRA':
+        data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
+                       'roughness_length': 0,  # TODO: is this specified?
+                       'temperature': weather.temperature_height,
+                       'density': 0,
+                       'pressure': 0}
+    if weather_data_name == 'open_FRED':
+        pass  # TODO: data_height = ...
     # Power output in MW
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
@@ -223,45 +224,42 @@ for description in wind_farm_data:
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
-    merra_farms.append(wind_farm)
-
-
-# TODO: weather object? with temporal_resultion attribute
+    simulation_farms.append(wind_farm)
 
 if plot_wind_farms:
     y_limit = [0, 60]
     visualization_tools.plot_or_print_farm(
-        merra_farms, save_folder='Merra_power_output/{0}'.format(year),
+        simulation_farms, save_folder='Merra_power_output/{0}'.format(year),
         y_limit=y_limit)
 
 # ------------------------------ Data Evaluation ---------------------------- #
-# TODO: statt arge_farms, merra_farms more generic: validation_farms, simulation_farms
 validation_sets = []
 if 'hourly_energy_output' in output_methods:
     # ValidationObjects!!!!!
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
-        arge_farms, merra_farms, temporal_resolution_validation,
+        validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'hourly_energy_output',
         validation_data_name, weather_data_name, time_period, 'H')
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
-        arge_farms, merra_farms, temporal_resolution_validation,
+        validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'monthly_energy_output',
         validation_data_name, weather_data_name, time_period, 'M')
     validation_sets.append(val_set_monthly_energy)
 
 if 'power_output' in output_methods:
-    for farm in merra_farms:
+    for farm in simulation_farms:
         farm.power_output = tools.power_output_fill(
             farm.power_output, temporal_resolution_validation, year)
     val_set_power = analysis_tools.evaluate_feedin_time_series(
-        arge_farms, merra_farms, temporal_resolution_validation,
+        validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'power_output',
         validation_data_name, weather_data_name, time_period)
     validation_sets.append(val_set_power)
 
+# Visualization of data evaluation
 for validation_set in validation_sets:
     if 'box_plots' in visualization_methods:
         # All bias time series of a validation set in one DataFrame for Boxplot
@@ -319,7 +317,7 @@ for validation_set in validation_sets:
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
-    all_farm_lists = [arge_farms, merra_farms]
+    all_farm_lists = [validation_farms, simulation_farms]
     column_names = ['ArgeNetz', 'MERRA']  # evtl als if abfrage in funktion
     df = pd.DataFrame()
     i = 0
@@ -336,7 +334,7 @@ if latex_output:
             data = [round((farm_list[j].annual_energy_output -
                           all_farm_lists[0][j].annual_energy_output) /
                           all_farm_lists[0][j].annual_energy_output * 100, 3)
-                    for j in range(len(arge_farms))]
+                    for j in range(len(validation_farms))]
             df_temp = pd.DataFrame(
                 data=data, index=index,
                 columns=[[column_names[i]], ['Deviation [%]']])
