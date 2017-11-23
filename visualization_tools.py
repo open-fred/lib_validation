@@ -148,13 +148,23 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         and/or `end` is None the whole time series is plotted. Default: None.
 
     """
-    # TODO: start end point for period default: 1 year
+#    def autolabel(bar, labels):
+#        r"""
+#        Attach a text label above each bar displaying its height
+#
+#        """
+#        height = bar.get_height()
+#        plt.text(bar.get_x() + bar.get_width()/2.,  height + 3, labels,
+##                 '%d' % int(height),
+#                ha='center', va='bottom')
     fig = plt.figure()
     if 'energy' in validation_object.output_method:
         label_part = 'MWh'
     if 'power' in validation_object.output_method:
         label_part = 'MW'
     if 'monthly' in validation_object.output_method:
+#        print(validation_object.get_monthly_mean_biases())
+# TODO: point mean biases to bars
         validation_object.simulation_series.plot(
             kind='bar', width=0.25, align='edge', tick_label=tick_label,
             color='blue', legend=True,
@@ -162,6 +172,7 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         validation_object.validation_series.plot(
             kind='bar', width=-0.25, align='edge', color='orange',
             legend=True, label=validation_object.validation_name)
+#        autolabel(sim, validation_object.get_monthly_mean_biases())
     else:
         validation_object.simulation_series.plot(
             legend=True, label=validation_object.weather_data_name)
