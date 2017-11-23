@@ -136,6 +136,18 @@ class ValidationObject(object):
                                validation_series.values),
                          index=simulation_series.index)
 
+    def get_monthly_mean_biases(self):
+        r"""
+
+
+        """
+        mean_biases = []
+        for month in range(12):
+            mean_bias = self.bias['{0}-{1}'.format(
+                self.bias.index[10].year, month + 1)].mean()
+            mean_biases.append(mean_bias)
+        return mean_biases
+
     def get_pearson_s_r(self, validation_series, simulation_series):
         r"""
         Calculates the Pearson's correlation coeffiecient of two series.
