@@ -48,6 +48,17 @@ end = '{0}-10-02'.format(year)
 #start = None
 #end = None
 
+# Specify folder and title add on for saving the plots
+if time_period is not None:
+    save_folder = '../Plots/{0}/{1}/CertainTimeOfDay/{2}_{3}/'.format(
+                    year, weather_data + '_' + validation_data,
+                    time_period[0], time_period[1])
+    title_add_on = ' ({0}:00 - {1}:00)'.format(time_period[0], time_period[1])
+else:
+    save_folder = '../Plots/{0}/{1}/'.format(
+                    year, weather_data + '_' + validation_data) # TODO: maybe move up
+    title_add_on = ''
+
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
@@ -244,10 +255,6 @@ if 'power_output' in output_methods:
         validation_data, weather_data, time_period)
     validation_sets.append(val_set_power)
 
-# Specify folder for saving the plots
-save_folder = '../Plots/{0}/{1}/'.format(
-                year, weather_data + '_' + validation_data) # TODO: maybe move up
-
 for validation_set in validation_sets:
     if 'box_plots' in visualization_methods:
         # All bias time series of a validation set in one DataFrame for Boxplot
@@ -265,7 +272,7 @@ for validation_set in validation_sets:
             bias_df, filename=filename,
             title='Deviation of {0} {1} from {2} in {3}.'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
-                validation_data, year))
+                validation_data, year) + title_add_on)
 
     if 'feedin_comparison' in visualization_methods:
     # TODO: rename this method for better understanding
@@ -284,7 +291,8 @@ for validation_set in validation_sets:
                 title='{0} of {1} and {2} in {3} {4}'.format(
                     validation_set[0].output_method.replace('_', ' '),
                     weather_data, validation_data,
-                    validation_object.object_name, year), start=start, end=end)
+                    validation_object.object_name, year) + title_add_on,
+                start=start, end=end)
 #                    , tick_label=tick_label)
 
     if 'plot_correlation' in visualization_methods:
@@ -299,7 +307,7 @@ for validation_set in validation_sets:
                     title='{0} of {1} and {2} in {3} {4}'.format(
                         validation_set[0].output_method.replace('_', ' '),
                         weather_data, validation_data,
-                        validation_object.object_name, year))
+                        validation_object.object_name, year) + title_add_on)
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
