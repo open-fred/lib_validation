@@ -247,3 +247,12 @@ def get_indices_for_series(temporal_resolution, year=None,
 #dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
 #dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test
 # TODO: possible: split tools module to power_output, weather, comparison...
+
+
+def select_certain_time_steps(series, time_period):
+    r"""
+
+
+    """
+    return series[(time_period[0] <= series.index.hour) &
+                  (series.index.hour <= time_period[1])]
