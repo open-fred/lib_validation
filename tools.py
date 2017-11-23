@@ -251,7 +251,15 @@ def get_indices_for_series(temporal_resolution, year=None,
 
 def select_certain_time_steps(series, time_period):
     r"""
+    Selects certain time steps from series by a specified time period.
 
+    Parameters
+    ----------
+    series : pd.Series
+        Time series of which will be selected certain time steps.
+    time_period : Tuple (Int, Int)
+        Indicates time period for selection. Format (h, h) example (9, 12) will
+        select all time steps whose time lies between 9 and 12 o'clock.
 
     """
     return series[(time_period[0] <= series.index.hour) &
