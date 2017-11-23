@@ -171,9 +171,7 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
                                 temp_resolution_val, temp_resolution_sim,
                                 output_method, validation_name,
                                 weather_data_name, time_period=None,
-                                temporal_output_resolution=None): #  time_period
-    # TODO: possibility of selecting time periods (only mornings, evenings...)
-    # + other scales? months?
+                                temporal_output_resolution=None):
     r"""
     Evaluate feedin time series concerning validation feedin time series.
 
