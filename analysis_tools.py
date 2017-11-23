@@ -230,31 +230,29 @@ def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
         A set of :class:`~.analysis_tools.ValidationObject` objects.
 
     """
+    # TODO check power output graphs (feedin comparison) - why interpolation?
     validation_object_set = []
     for farm_number in range(len(validation_farm_list)):
-        # Select time period from series
+        # Select certain time steps from series
         if time_period is not None:
+            validation_series = tools.select_certain_time_steps(
+                    validation_farm_list[farm_number].power_output,
+                    time_period)
+            simulation_series = tools.select_certain_time_steps(
+                    simulation_farm_list[farm_number].power_output,
+                    time_period)
+        else:
             validation_series = validation_farm_list[farm_number].power_output
-            validation_farm_list[farm_number].power_output = validation_series[
-                (time_period[0] <= validation_series.index.hour) &
-                (validation_series.index.hour <= time_period[1])]
             simulation_series = simulation_farm_list[farm_number].power_output
-            simulation_farm_list[farm_number].power_output = simulation_series[
-                (time_period[0] <= simulation_series.index.hour) &
-                (simulation_series.index.hour <= time_period[1])]
         if 'energy' in output_method:
             # Get validation energy output series in certain temp. resolution
             validation_series = tools.energy_output_series(
-                validation_farm_list[farm_number].power_output,
-                temp_resolution_val, temporal_output_resolution)
+                validation_series, temp_resolution_val,
+                temporal_output_resolution)
             # Get simulated energy output series in certain temp. resolution
             simulation_series = tools.energy_output_series(
-                simulation_farm_list[farm_number].power_output,
-                temp_resolution_sim, temporal_output_resolution)
-        if 'power' in output_method:
-            # TODO: check if this works with time_period- gaps might be filled to far
-            validation_series = validation_farm_list[farm_number].power_output
-            simulation_series = simulation_farm_list[farm_number].power_output
+                simulation_series, temp_resolution_sim,
+                temporal_output_resolution)
         # Initialize validation objects and append to list
         validation_object = ValidationObject(
             validation_farm_list[farm_number].wind_farm_name,
