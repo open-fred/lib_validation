@@ -63,10 +63,9 @@ class ValidationObject(object):
         self.weather_data_name = weather_data_name
         self.validation_name = validation_name
 
-        self.bias = self.get_bias(validation_series, simulation_series)
+        self.bias = self.get_bias()
         self.mean_bias = self.bias.mean()
-        self.pearson_s_r = self.get_pearson_s_r(validation_series,
-                                                simulation_series)
+        self.pearson_s_r = self.get_pearson_s_r()
         self.rmse = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
         self.standard_deviation_from_zero = (
@@ -115,16 +114,9 @@ class ValidationObject(object):
         variance = ((data_series - 0)**2).sum() / len(data_series)
         return np.sqrt(variance)
 
-    def get_bias(self, validation_series, simulation_series):
+    def get_bias(self):
         r"""
         Compare two series concerning their deviation (bias).
-
-        Parameters
-        ----------
-        validation_series : pandas.Series
-            Validation feedin output time series.
-        simulation_series : pandas.Series
-            Simulated feedin output time series.
 
         Returns
         -------
@@ -132,9 +124,9 @@ class ValidationObject(object):
             Deviation of simulated series from validation series.
 
         """
-        return pd.Series(data=(simulation_series.values -
-                               validation_series.values),
-                         index=simulation_series.index)
+        return pd.Series(data=(self.simulation_series.values -
+                               self.validation_series.values),
+                         index=self.simulation_series.index)
 
     def get_monthly_mean_biases(self):
         r"""
@@ -148,7 +140,7 @@ class ValidationObject(object):
             mean_biases.append(mean_bias)
         return mean_biases
 
-    def get_pearson_s_r(self, validation_series, simulation_series):
+    def get_pearson_s_r(self):
         r"""
         Calculates the Pearson's correlation coeffiecient of two series.
 
@@ -166,12 +158,13 @@ class ValidationObject(object):
             of the input series.
 
         """
-        return (((validation_series - validation_series.mean()) *
-                 (simulation_series - simulation_series.mean())).sum() /
-                np.sqrt(((validation_series -
-                          validation_series.mean())**2).sum() *
-                        ((simulation_series -
-                          simulation_series.mean())**2).sum()))
+        return (((self.validation_series - self.validation_series.mean()) *
+                 (self.simulation_series -
+                  self.simulation_series.mean())).sum() /
+                np.sqrt(((self.validation_series -
+                          self.validation_series.mean())**2).sum() *
+                        ((self.simulation_series -
+                          self.simulation_series.mean())**2).sum()))
 
 
 def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
