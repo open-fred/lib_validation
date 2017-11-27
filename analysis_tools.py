@@ -130,7 +130,12 @@ class ValidationObject(object):
 
     def get_monthly_mean_biases(self):
         r"""
+        Calculate mean biases for each month of the year.
 
+        Returns
+        -------
+        mean_biases : List
+            Contains the mean biases (floats) for each month of the year.
 
         """
         mean_biases = []
