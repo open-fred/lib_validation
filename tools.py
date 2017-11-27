@@ -173,6 +173,7 @@ def energy_output_series(power_output, temporal_resolution, output_resolution):
     """
     energy_output_series = power_output * temporal_resolution / 60
     energy_output = energy_output_series.resample(output_resolution).sum()
+    energy_output = energy_output.dropna()
     return energy_output
 
 
