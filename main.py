@@ -22,8 +22,8 @@ year = 2016
 
 # Select time of day you want to observe or None for all day
 time_period = (
-        8, 12  # time of day to be selected (from h to h)
-#        None   # complete time series will be observed
+#        12, 15  # time of day to be selected (from h to h)
+        None   # complete time series will be observed
         ) 
 
 output_methods = [
@@ -41,10 +41,10 @@ visualization_methods = [
 # Attention: only for 'feedin_comparison' and not for monthly output
 #start = '{0}-10-01 11:00:00+00:00'.format(year)
 #end = '{0}-10-01 16:00:00+00:00'.format(year)
-start = '{0}-10-01'.format(year)
-end = '{0}-10-02'.format(year)
-#start = None
-#end = None
+#start = '{0}-10-01'.format(year)
+#end = '{0}-10-03'.format(year)
+start = None
+end = None
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
