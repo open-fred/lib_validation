@@ -22,16 +22,43 @@ filename_weather = os.path.join(os.path.dirname(__file__),
                                 'dumps/weather',
                                 'weather_df_merra_{0}.p'.format(year))
 
+# Select time of day you want to observe or None for all day
+time_period = (
+#        12, 15  # time of day to be selected (from h to h)
+        None   # complete time series will be observed
+        ) 
 
-evaluate_power_output = False # delete
 output_methods = [
     'hourly_energy_output',
-    'monthly_energy_output'
+    'monthly_energy_output',
+    'power_output'
     ]
 visualization_methods = [
     'box_plots',
-    'feedin_comparison'
+    'feedin_comparison',
+    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
+
+# Start and end date for time period to be plotted
+# Attention: only for 'feedin_comparison' and not for monthly output
+#start = '{0}-10-01 11:00:00+00:00'.format(year)
+#end = '{0}-10-01 16:00:00+00:00'.format(year)
+#start = '{0}-10-01'.format(year)
+#end = '{0}-10-03'.format(year)
+start = None
+end = None
+
+# Specify folder and title add on for saving the plots
+if time_period is not None:
+    save_folder = '../Plots/{0}/{1}/CertainTimeOfDay/{2}_{3}/'.format(
+                    year, weather_data + '_' + validation_data,
+                    time_period[0], time_period[1])
+    title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+        time_period[0], time_period[1])
+else:
+    save_folder = '../Plots/{0}/{1}/'.format(
+                    year, weather_data + '_' + validation_data) # TODO: maybe move up
+    title_add_on = ''
 
 plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
@@ -145,6 +172,9 @@ for description in wind_farm_data:
     # Power output in MW
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+    # Convert indices to datetime UTC
+    wind_farm.power_output.index = pd.to_datetime(
+        wind_farm.power_output.index).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
@@ -165,7 +195,7 @@ if plot_wind_farms:
 if year == 2015:
     temporal_resolution_arge = 5  # minutes
     indices = tools.get_indices_for_series(temporal_resolution_arge,
-                                           start='5/1/2015' , end='1/1/2016')
+                                           start='5/1/2015', end='1/1/2016')
 if (year == 2016 or year == 2017):
     temporal_resolution_arge = 1  # minutes
     indices = tools.get_indices_for_series(temporal_resolution_arge, year=year)
@@ -181,16 +211,18 @@ for description in wind_farm_data:
     wind_farm = wf.WindFarm(**description)
     # Power output in MW with standard indices
     wind_farm.power_output = pd.Series(
-        data=(arge_netz_data[description['wind_farm_name'] + 
+        data=(arge_netz_data[description['wind_farm_name'] +
                              '_P_W'].values / 1000),
         index=indices)
+    # Convert indices to datetime UTC
+    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_arge)
     arge_farms.append(wind_farm)
 
 if plot_arge_feedin:
-#    y_limit = [0, 60]
+    # y_limit = [0, 60]
     y_limit = None
     visualization_tools.plot_or_print_farm(
         arge_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
@@ -198,25 +230,31 @@ if plot_arge_feedin:
 
 # ------------------------------ Data Evaluation ---------------------------- #
 # TODO: statt arge_farms, merra_farms more generic: validation_farms, simulation_farms
-validation_sets= []
+validation_sets = []
 if 'hourly_energy_output' in output_methods:
     # ValidationObjects!!!!!
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'H', 'hourly_energy_output',
-        validation_data, weather_data) # time_period
+        temporal_resolution_weather, 'hourly_energy_output',
+        validation_data, weather_data, time_period, 'H')
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         arge_farms, merra_farms, temporal_resolution_arge,
-        temporal_resolution_weather, 'M', 'monthly_energy_output',
-        validation_data, weather_data) # time_period
+        temporal_resolution_weather, 'monthly_energy_output',
+        validation_data, weather_data, time_period, 'M')
     validation_sets.append(val_set_monthly_energy)
 
-# Specify folder for saving the plots
-save_folder='../Plots/{0}/{1}/'.format(
-                year, weather_data + '_' + validation_data) # TODO: maybe move up
+if 'power_output' in output_methods:
+    for farm in merra_farms:
+        farm.power_output = tools.power_output_fill(
+            farm.power_output, temporal_resolution_arge, year)
+    val_set_power = analysis_tools.evaluate_feedin_time_series(
+        arge_farms, merra_farms, temporal_resolution_arge,
+        temporal_resolution_weather, 'power_output',
+        validation_data, weather_data, time_period)
+    validation_sets.append(val_set_power)
 
 for validation_set in validation_sets:
     if 'box_plots' in visualization_methods:
@@ -233,11 +271,12 @@ for validation_set in validation_sets:
                 validation_data, weather_data)
         visualization_tools.box_plots_bias(
             bias_df, filename=filename,
-            title='Deviation of {0} {1} from {2} in {3}.'.format(
+            title='Deviation of {0} {1} from {2}\n in {3}'.format(
                 weather_data, validation_set[0].output_method.replace('_',' '),
-                validation_data, year))
+                validation_data, year) + title_add_on)
 
     if 'feedin_comparison' in visualization_methods:
+    # TODO: rename this method for better understanding
 #        if year == 2015 and validation_data == 'ArgeNetz':
 #            tick_label=['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 #        else:
@@ -245,31 +284,31 @@ for validation_set in validation_sets:
 #                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         for validation_object in validation_set:
             filename = save_folder + '{0}_{1}_Feedin_{2}_{3}_{4}.pdf'.format(
-                validation_set[0].output_method, 
+                validation_set[0].output_method,
                 validation_object.object_name, year,
                 validation_data, weather_data)
             visualization_tools.plot_feedin_comparison(
                 validation_object, filename=filename,
-                title='{0} of {1} and {2} in {3} {4}'.format(
-                    validation_set[0].output_method.replace('_',' '),
+                title='{0} of {1} and {2} of {3}\n {4}'.format(
+                    validation_set[0].output_method.replace('_', ' '),
                     weather_data, validation_data,
-                    validation_object.object_name, year))
+                    validation_object.object_name, year) + title_add_on,
+                start=start, end=end)
 #                    , tick_label=tick_label)
 
-if evaluate_power_output:
-    # Compare power output
-    series = merra_farms[0].power_output
-    index = pd.date_range('1/1/{0}'.format(year+1), tz='Europe/Berlin', closed='left', periods=1)
-    series2 = pd.Series(10, index=index)
-    merra_farm = pd.concat([series, series2])
-    out = merra_farm.resample(
-        '{0}min'.format(temporal_resolution_arge)).pad()
-    pd.options.display.max_rows = 500
-    print(out)
-#    print(out[436400:436400])
-#    print(out.tail(1).index)
-    out = out.drop(out.index[-1])
-    
+    if 'plot_correlation' in visualization_methods:
+        for validation_object in validation_set:
+            filename = (save_folder +
+                        '{0}_{1}_Correlation_{2}_{3}_{4}.pdf'.format(
+                                validation_set[0].output_method,
+                                validation_object.object_name, year,
+                                validation_data, weather_data))
+            visualization_tools.plot_correlation(
+                    validation_object, filename=filename,
+                    title='{0} of {1} and {2} of {3}\n {4}'.format(
+                        validation_set[0].output_method.replace('_', ' '),
+                        weather_data, validation_data,
+                        validation_object.object_name, year) + title_add_on)
 
 # ---------------------------------- LaTeX Output --------------------------- #
 if latex_output:
@@ -296,7 +335,7 @@ if latex_output:
                 columns=[[column_names[i]], ['Deviation [%]']])
             df = pd.concat([df, df_temp], axis=1)
         i += 1
-    
+
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      '../../../tubCloud/Latex/Tables/')
     name = os.path.join(path_latex_tables, 'name_of_table.tex')

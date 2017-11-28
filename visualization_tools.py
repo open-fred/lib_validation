@@ -117,9 +117,10 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
 
 
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
-                           title='Test', tick_label=None):
+                           title='Test', tick_label=None,
+                           start=None, end=None):
     r"""
-    Plots simulation and validation feedin time series.
+    Plot simulation and validation feedin time series.
 
     These time series are extracted from a
     :class:`~.analysis_tools.ValidationObject` object.
@@ -137,33 +138,111 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         Title of figure. Default: 'Test'.
     tick_label : List
         Tick labels for x-ticks. Default: None.
+    start : String
+        Start date of time period to be plotted in the format 'yyyy-mm-dd' or
+        'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'.
+        Default: None.
+    end : String
+        End date of time period to be plotted in the format 'yyyy-mm-dd' or
+        'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'. If `start`
+        and/or `end` is None the whole time series is plotted. Default: None.
 
     """
-    # TODO: start end point for period default: 1 year
+#    def autolabel(bar, labels):
+#        r"""
+#        Attach a text label above each bar displaying its height
+#
+#        """
+#        height = bar.get_height()
+#        plt.text(bar.get_x() + bar.get_width()/2.,  height + 3, labels,
+##                 '%d' % int(height),
+#                ha='center', va='bottom')
     fig = plt.figure()
     if 'energy' in validation_object.output_method:
         label_part = 'MWh'
     if 'power' in validation_object.output_method:
         label_part = 'MW'
     if 'monthly' in validation_object.output_method:
-        sim = plt.bar(validation_object.simulation_series.index,
-                      validation_object.simulation_series.values,
-                      width=5, align='edge', tick_label=tick_label,
-                      label=validation_object.weather_data_name)
-        val = plt.bar(validation_object.validation_series.index,
-                      validation_object.validation_series.values,
-                      width=-5, align='edge',
-                      label=validation_object.validation_name)
+#        print(validation_object.get_monthly_mean_biases())
+# TODO: point mean biases to bars
+        validation_object.simulation_series.plot(
+            kind='bar', width=0.25, align='edge', tick_label=tick_label,
+            color='blue', legend=True,
+            label=validation_object.weather_data_name)
+        validation_object.validation_series.plot(
+            kind='bar', width=-0.25, align='edge', color='orange',
+            legend=True, label=validation_object.validation_name)
+#        autolabel(sim, validation_object.get_monthly_mean_biases())
     else:
-        sim, = plt.plot(validation_object.simulation_series,
-                        label=validation_object.weather_data_name)
-        val, = plt.plot(validation_object.validation_series,
-                    label=validation_object.validation_name)
+        validation_object.simulation_series.plot(
+            legend=True, label=validation_object.weather_data_name)
+        validation_object.validation_series.plot(
+            legend=True, label=validation_object.validation_name)
     plt.ylabel('{0} in {1}'.format(
-        validation_object.output_method.replace('_',' '), label_part))
+        validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
-    plt.legend(handles=[val, sim])
+    if (start is not None and end is not None and
+            'monthly' not in validation_object.output_method):
+        plt.xlim(pd.Timestamp(start), pd.Timestamp(end))
     plt.title(title)
+    plt.tight_layout()
+    fig.savefig(os.path.abspath(os.path.join(
+                os.path.dirname(__file__), filename)))
+    plt.close()
+
+
+def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
+                     title='Test'):
+    r"""
+    Visualize the correlation between two feedin time series.
+
+    Parameters
+    ----------
+    validation_object : Object
+        A :class:`~.analysis_tools.ValidationObject` object representing the
+        comparison of simulated feedin time series with validation feedin time
+        series.
+    filename : String
+        Filename including path relatively to the active folder for saving
+        the figure. Default: 'Tests/correlation_test.pdf'.
+    title : String
+        Title of figure. Default: 'Test'.
+
+    """
+    # TODO: think of bins.. maybe like in Shap's phd
+    if 'energy' in validation_object.output_method:
+        label_part = 'MWh'
+    if 'power' in validation_object.output_method:
+        label_part = 'MW'
+    fig = plt.figure()
+    plt.scatter(validation_object.validation_series,
+                validation_object.simulation_series)
+    plt.ylabel('{0} of {1} in {2}'.format(
+        validation_object.output_method.replace('_', ' '),
+        validation_object.validation_name, label_part))
+    plt.xlabel('{0} of {1} in {2}'.format(
+        validation_object.output_method.replace('_', ' '),
+        validation_object.weather_data_name, label_part))
+    # Maximum value for xlim and ylim and line
+    maximum = max(validation_object.validation_series.max(),
+                  validation_object.simulation_series.max()) + 5
+    plt.xlim(xmin=0, xmax=maximum)
+    plt.ylim(ymin=0, ymax=maximum)
+    ideal, = plt.plot([0, maximum], [0, maximum], color='black',
+                      linestyle='--', label='ideal correlation')
+    deviation_100, = plt.plot([0, maximum], [0, maximum * 2], color='purple',
+                              linestyle='--', label='100 % deviation')
+    plt.plot([0, maximum * 2], [0, maximum], color='purple', linestyle='--')
+    plt.title(title)
+    plt.legend(handles=[ideal, deviation_100])
+    # Add certain values to plot as text
+    plt.annotate('Pr = {0} \n mean bias = {1}{2} \n std dev = {3}'.format(
+                 round(validation_object.pearson_s_r, 2),
+                 round(validation_object.mean_bias, 2), label_part,
+                 round(validation_object.standard_deviation, 2)),
+                 xy=(1, 1), xycoords='axes fraction',
+                 xytext=(-6, -6), textcoords='offset points',
+                 ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
