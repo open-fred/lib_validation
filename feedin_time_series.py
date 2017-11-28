@@ -157,7 +157,7 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
                                                  str(column) + '.pdf')))
     plt.close()
 
-#df_compare = data_evaluation('filenames_all.txt')
+#df_compare = data_evaluation('helper_files/filenames_all.txt')
 
 new_column_names_2016_2017 = [
     'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
@@ -189,12 +189,12 @@ def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
         get_data()).
     """
     if year == 2015:
-        filename_column_names = 'column_names_2015.txt'
+        filename_column_names = 'helper_files/column_names_2015.txt'
         new_column_names = new_column_names_2015
     if (year == 2016 or year == 2017):
-        filename_column_names = 'column_names_2016_2017.txt'
+        filename_column_names = 'helper_files/column_names_2016_2017.txt'
         new_column_names = new_column_names_2016_2017
-    data = get_data('filenames_{0}.txt'.format(year),
+    data = get_data('helper_files/filenames_{0}.txt'.format(year),
                     filename_column_names, new_column_names,
                     'arge_data_{0}.p'.format(year), pickle_load=pickle_load)
     if plot:
