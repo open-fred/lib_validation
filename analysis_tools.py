@@ -1,115 +1,262 @@
 import numpy as np
 import pandas as pd
+import tools
 
-def standard_deviation(data_series):
+
+class ValidationObject(object):
     r"""
-
-    Calculate standard deviation of a data series.
 
     Parameters
     ----------
-    data_series : list or pandas.Series
-        Input data series of which the standard deviation will be calculated.
+    object_name : String
+        Name of ValidationObject (name of wind farm or region).
+    validation_series : pandas.Series
+            Validation feedin output time series.
+    simulation_series : pandas.Series
+            Simulated feedin output time series.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
 
-    Return
-    ------
-    float
-        Standard deviation of the input data series.
-
-    """
-    average = sum(data_series) / len(data_series)
-    variance = sum((data_series[i] - average)**2
-                   for i in range(len(data_series))) / len(data_series)
-    return np.sqrt(variance)
-
-
-def compare_series_std_deviation(series_validation, series_simulated):
-    r"""
-    Compare two series concerning their deviation and standard deviation.
-    
-    Parameters
+    Attributes
     ----------
-    series_validation : pandas.Series
-        Validation power output time series.
-    series_simulated : pandas.Series
-        Simulated power output time series.
-    
-    Returns
-    -------
-    deviation : pd.Series
-        Deviation of simulated series from validation series.
-    std_deviation : float
-        Standard deviation of simulated series from validation series.
-
-    """
-    deviation = pd.Series(data=(series_simulated.values -
-                                series_validation.values),
-                          index=series_simulated.index)
-    std_deviation = standard_deviation(deviation)
-    return deviation, std_deviation
-    
-
-def compare_series_std_deviation_multiple(series_validation_list,
-                                          series_simulated_list, column_names):
-    r"""
-    Compare multiple series concerning their deviation and standard deviation.
-
-    Multiple series are being compared to their validation series by using the
-    function compare_series_std_deviation(). 
-
-    Parameters
-    ----------
-    series_validation_list : List of pd.Series
-        List of validation series.
-    series_simulated_list : List of pd.Series
-        List of simulated series that should be validated. Must be in the same
-        order as `series_validation`.
-    column_names : List of Strings
-        Desired column names in the same order as `series_validation` and
-        `series_simulated`.
-
-    Returns
-    -------
-    deviation_df : pd.DataFrame
-        The columns contain deviations of simulated series from validation
+    object_name : String
+        Name of ValidationObject (name of wind farm or region).
+    validation_series : pandas.Series
+            Validation feedin output time series.
+    simulation_series : pandas.Series
+            Simulated feedin output time series.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
+    bias : pd.Series
+        Deviation of a simulated feedin time series from a validation time
         series.
-    standard_deviations : List
-        Contains standard deviations (floats) of simulated series concerning
-        their validation series.
-
+    mean_bias : Float
+        Mean deviation of a simulated feedin time series from a validation time
+        series.
+    pearson_s_r : Float
+         Pearson's correlation coeffiecient (Pearson's R) of two time series.
+    rmse : Float
+        Root mean square error ...... # TODO: implement rmse
+    standard_deviation : Float
+        Standard deviation of the bias (deviation) time series.
+    output_method : String
+        Specification of form of time series to be validated. For example:
+        'hourly_energy_output'.
     """
-    deviation_df = pd.DataFrame()
-    standard_deviations = []
-    for farm_number in range(len(series_validation_list)):
-        deviation, std_deviation = compare_series_std_deviation(
-            series_validation_list[farm_number],
-            series_simulated_list[farm_number])
-        deviation_df_part = pd.DataFrame(
-            data=deviation, index=series_validation_list[farm_number].index,
-            columns=[column_names[farm_number]])
-        deviation_df = pd.concat([deviation_df, deviation_df_part], axis=1)
-        standard_deviations.append(std_deviation)
-    return deviation_df, standard_deviations
+    def __init__(self, object_name, validation_series, simulation_series,
+                 weather_data_name=None, validation_name=None):
+        self.object_name = object_name
+        self.validation_series = validation_series
+        self.simulation_series = simulation_series
+        self.weather_data_name = weather_data_name
+        self.validation_name = validation_name
+
+        self.bias = self.get_bias()
+        self.mean_bias = self.bias.mean()
+        self.pearson_s_r = self.get_pearson_s_r()
+        self.rmse = None
+        self.standard_deviation = self.get_standard_deviation(self.bias)
+        self.standard_deviation_from_zero = (
+            self.get_standard_deviation_from_zero(self.bias))
+        self.output_method = None
+
+    def get_standard_deviation(self, data_series):
+        r"""
+        Calculate standard deviation of a data series.
+
+        Parameters
+        ----------
+        data_series : list or pandas.Series
+            Input data series (data points) of which the standard deviation
+            will be calculated.
+
+        Return
+        ------
+        float
+            Standard deviation of the input data series.
+
+        """
+        average = data_series.mean()
+        variance = ((data_series - average)**2).sum() / len(data_series)
+        return np.sqrt(variance)
+
+    def get_standard_deviation_from_zero(self, data_series):
+        r"""
+        Calculate standard deviation of a data series from the value zero.
+
+        This makes sense for the purpose of validating a time series as
+        positive values might compensate negative values.
+
+        Parameters
+        ----------
+        data_series : list or pandas.Series
+            Input data series (data points) of which the standard deviation
+            will be calculated.
+
+        Return
+        ------
+        float
+            Standard deviation from zero of the input data series.
+
+        """
+        variance = ((data_series - 0)**2).sum() / len(data_series)
+        return np.sqrt(variance)
+
+    def get_bias(self):
+        r"""
+        Compare two series concerning their deviation (bias).
+
+        Returns
+        -------
+        pd.Series
+            Deviation of simulated series from validation series.
+
+        """
+        return pd.Series(data=(self.simulation_series.values -
+                               self.validation_series.values),
+                         index=self.simulation_series.index)
+
+    def get_monthly_mean_biases(self):
+        r"""
 
 
-def pearson_s_r(series_validation, series_simulated):
+        """
+        mean_biases = []
+        for month in range(12):
+            mean_bias = self.bias['{0}-{1}'.format(
+                self.bias.index[10].year, month + 1)].mean()
+            mean_biases.append(mean_bias)
+        return mean_biases
+
+    def get_pearson_s_r(self):
+        r"""
+        Calculates the Pearson's correlation coeffiecient of two series.
+
+        Parameters
+        ----------
+        validation_series : pandas.Series
+            Validation power output time series.
+        series_simulated : pandas.Series
+            Simulated power output time series.
+
+        Returns
+        -------
+        float
+            Pearson's correlation coeffiecient (Pearson's R)
+            of the input series.
+
+        """
+        return (((self.validation_series - self.validation_series.mean()) *
+                 (self.simulation_series -
+                  self.simulation_series.mean())).sum() /
+                np.sqrt(((self.validation_series -
+                          self.validation_series.mean())**2).sum() *
+                        ((self.simulation_series -
+                          self.simulation_series.mean())**2).sum()))
+
+
+def evaluate_feedin_time_series(validation_farm_list, simulation_farm_list,
+                                temp_resolution_val, temp_resolution_sim,
+                                output_method, validation_name,
+                                weather_data_name, time_period=None,
+                                temporal_output_resolution=None):
     r"""
-    Calculates the Pearson's correlation coeffiecient of two series.
+    Evaluate feedin time series concerning validation feedin time series.
+
+    The simulated time series of each farm in `simulation_farm_list` is being
+    compared to the corresponding validation time series of the farm in
+    `validation_farm_list`. For later usage for each of these pairs a
+    :class:`~.analysis_tools.ValidationObject` object is created. Finally, a
+    :class:`~.analysis_tools.ValidationObject` object of the sum of the feedin
+    time series is created.
 
     Parameters
     ----------
-    series_validation : pandas.Series
-        Validation power output time series.
-    series_simulated : pandas.Series
-        Simulated power output time series.
+    validation_farm_list : List of objects
+        List of :class:`~.wind_farm.WindFarm` objects representing wind farms
+        for validation.
+    simulation_farm_list : List of objects
+        List of :class:`~.wind_farm.WindFarm` objects representing simulated
+        wind farms. Must be in the same order as `validation_farm_list`.
+    temp_resolution_val : Float or Integer
+        Temporal resolution of valdation time series in minutes.
+    temp_resolution_sim : Float or Integer
+        Temporal resolution of simulation time series in minutes.
+    output_method : String
+        Specification of form of time series to be validated. For example:
+        'hourly_energy_output'. This parameter will be set as an attribute of
+        ValidationObject and is used for giving filenames etc.
+    validation_name : String
+        Indicates the origin of the validation feedin time series.
+        This parameter will be set as an attribute of ValidationObject and is
+        used for giving filenames etc.
+    weather_data_name : String
+        Indicates the origin of the weather data of the simulated feedin time
+        series. This parameter will be set as an attribute of ValidationObject
+        and is used for giving filenames etc.
+    time_period : Tuple (Int, Int)
+        Hourly time period to be selected from time series (h, h).
+        Default: None.
+    temporal_output_resolution : String
+        Specification of temporal ouput resolution in the form of 'H', 'M',
+        etc. for energy output series. Not needed for power_output_series.
+        For more information see function energy_output_series() in the
+        ``tools`` module. Default: None.
 
     Returns
     -------
-    float
-        Pearson's correlation coeffiecient (Pearson's R) of the input series.
+    validation_object_set : List of objects
+        A set of :class:`~.analysis_tools.ValidationObject` objects.
 
     """
-    return (((series_validation - series_validation.mean()) *
-             (series_simulated - series_simulated.mean())).sum() / 
-            np.sqrt(((series_validation - series_validation.mean())**2).sum() * 
-                    ((series_simulated - series_simulated.mean())**2).sum()))
+    # TODO check power output graphs (feedin comparison) - why interpolation?
+    validation_object_set = []
+    for farm_number in range(len(validation_farm_list)):
+        # Select certain time steps from series
+        if time_period is not None:
+            validation_series = tools.select_certain_time_steps(
+                    validation_farm_list[farm_number].power_output,
+                    time_period)
+            simulation_series = tools.select_certain_time_steps(
+                    simulation_farm_list[farm_number].power_output,
+                    time_period)
+        else:
+            validation_series = validation_farm_list[farm_number].power_output
+            simulation_series = simulation_farm_list[farm_number].power_output
+        if 'energy' in output_method:
+            # Get validation energy output series in certain temp. resolution
+            validation_series = tools.energy_output_series(
+                validation_series, temp_resolution_val,
+                temporal_output_resolution)
+            # Get simulated energy output series in certain temp. resolution
+            simulation_series = tools.energy_output_series(
+                simulation_series, temp_resolution_sim,
+                temporal_output_resolution)
+        # Initialize validation objects and append to list
+        validation_object = ValidationObject(
+            validation_farm_list[farm_number].wind_farm_name,
+            validation_series, simulation_series, weather_data_name,
+            validation_name)
+        validation_object.output_method = output_method
+        validation_object_set.append(validation_object)
+    # Initialize validation object for sum of wind farms
+    validation_object = ValidationObject(
+        'all {0} farms'.format(validation_name),
+        sum([val_obj.validation_series for val_obj in validation_object_set]),
+        sum([val_obj.simulation_series for val_obj in validation_object_set]),
+        weather_data_name, validation_name)
+    validation_object.output_method = output_method
+    validation_object_set.append(validation_object)
+    return validation_object_set

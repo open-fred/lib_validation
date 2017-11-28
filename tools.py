@@ -43,7 +43,7 @@ def get_weather_data(pickle_load=None, filename='pickle_dump.p',
         if weather_data == 'open_FRED':
             # TODO: add open_FRED weather data
             filename = 'weather_df_open_FRED_{0}.p'.format(year)
-        elif weather_data == 'merra':
+        elif weather_data == 'MERRA':
             if data_frame is None:
                 # Load data from csv
                 data_frame = pd.read_csv(os.path.join(
@@ -121,8 +121,8 @@ def power_output_sum(wind_turbine_fleet, weather_df, data_height):
         farm_power_output += (power_output.power_curve(
             wind_speed_hub,
             turbine_type['wind_turbine'].power_curve['wind_speed'],
-            turbine_type['wind_turbine'].power_curve['values'])
-            * turbine_type['number_of_turbines'])
+            turbine_type['wind_turbine'].power_curve['values']) *
+            turbine_type['number_of_turbines'])
     return farm_power_output
 
 
@@ -149,7 +149,6 @@ def annual_energy_output(power_output, temporal_resolution):
 
 
 def energy_output_series(power_output, temporal_resolution, output_resolution):
-    # NOTE: This function could be enhanced to different output temporal resolutions
     r"""
     Converts power output time series to hourly energy output time series.
 
@@ -177,11 +176,40 @@ def energy_output_series(power_output, temporal_resolution, output_resolution):
     return energy_output
 
 
+def power_output_fill(power_output, output_resolution, year):
+    r"""
+    Change temporal resolution of power output by filling with pad().
+
+    Parameters
+    ----------
+    power_output : pd.Series
+        Power output of wind turbine or wind farm.
+    output_resolution : Integer
+        Temporal resolution of output time series in minutes.
+    year : Integer
+        Year of the power output series.
+
+    Returns
+    -------
+    output_series : pd.Series
+        Power output of wind turbine or wind farm in the temporal resolution of
+        `output_resolution`.
+
+    """
+    index = pd.to_datetime(pd.datetime(
+            year + 1, 1, 1, 0)).tz_localize('Europe/Berlin').tz_convert('UTC')
+    output_series = pd.concat([power_output, pd.Series(10, index=[index])])
+    output_series = output_series.resample(
+        '{0}min'.format(output_resolution)).pad()
+    output_series = output_series.drop(output_series.index[-1])
+    return output_series
+
+
 def get_indices_for_series(temporal_resolution, year=None,
                            start=None, end=None):
     r"""
     Create indices for annual time series in a certain frequency and form.
-    
+
     Parameters
     ----------
     temporal_resolution : integer
@@ -219,3 +247,20 @@ def get_indices_for_series(temporal_resolution, year=None,
 #dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
 #dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test
 # TODO: possible: split tools module to power_output, weather, comparison...
+
+
+def select_certain_time_steps(series, time_period):
+    r"""
+    Selects certain time steps from series by a specified time period.
+
+    Parameters
+    ----------
+    series : pd.Series
+        Time series of which will be selected certain time steps.
+    time_period : Tuple (Int, Int)
+        Indicates time period for selection. Format (h, h) example (9, 12) will
+        select all time steps whose time lies between 9 and 12 o'clock.
+
+    """
+    return series[(time_period[0] <= series.index.hour) &
+                  (series.index.hour <= time_period[1])]
