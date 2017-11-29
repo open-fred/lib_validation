@@ -163,7 +163,7 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     if validation_object.simulation_series.index.tz == 'UTC':
         validation_object.simulation_series.index = (
             validation_object.simulation_series.index.tz_convert(time_zone))
-    fig = plt.figure()
+    fig, ax = plt.subplots()
     if 'energy' in validation_object.output_method:
         label_part = 'MWh'
     if 'power' in validation_object.output_method:
@@ -171,19 +171,22 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     if 'monthly' in validation_object.output_method:
 #        print(validation_object.get_monthly_mean_biases())
 # TODO: point mean biases to bars - or rmse
-        validation_object.simulation_series.plot(
-            kind='bar', width=0.25, align='edge', tick_label=tick_label,
-            color='blue', legend=True,
-            label=validation_object.weather_data_name)
-        validation_object.validation_series.plot(
-            kind='bar', width=-0.25, align='edge', color='orange',
-            legend=True, label=validation_object.validation_name)
+        # Create DataFrame for bar plot
+        index = pd.Series(validation_object.simulation_series.index).dt.strftime('%b')
+        df = pd.concat([
+            pd.DataFrame(data=validation_object.simulation_series.values,
+                         index=index,
+                         columns=[validation_object.weather_data_name]),
+            pd.DataFrame(data=validation_object.validation_series.values,
+                         index=index,
+                         columns=[validation_object.validation_name])], axis=1)
+        df.plot(kind='bar', ax=ax)
 #        autolabel(sim, validation_object.get_monthly_mean_biases())
     else:
         validation_object.simulation_series.plot(
-            legend=True, label=validation_object.weather_data_name)
+            legend=True, label=validation_object.weather_data_name, ax=ax)
         validation_object.validation_series.plot(
-            legend=True, label=validation_object.validation_name)
+            legend=True, label=validation_object.validation_name, ax=ax)
     plt.ylabel('{0} in {1}'.format(
         validation_object.output_method.replace('_', ' '), label_part))
     plt.xticks(rotation='vertical')
