@@ -287,6 +287,7 @@ if __name__ == "__main__":
     arge_netz_data = get_and_plot_feedin(
         year, pickle_load=True, plot=False)
     check_arge_netz_data(arge_netz_data, year, start, end)
+    print('Done')
 #    print(arge_netz_data)
 
 ## Evaluate WEA data from Energymap
