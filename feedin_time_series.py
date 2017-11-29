@@ -3,6 +3,12 @@ import os
 import pickle
 from matplotlib import pyplot as plt
 #import numpy as np
+from windpowerlib import wind_turbine as wt
+from windpowerlib import wind_farm as wf
+from windpowerlib import power_output
+import visualization_tools
+import analysis_tools
+import tools
 
 
 def read_data(filename, **kwargs):
@@ -222,6 +228,66 @@ def get_energy_map_data(plz, place=None, peak_power=None,
     df_energymap = df_energymap.loc[
         df_energymap['Nennleistung(kWp_el)'] == peak_power]
     return df_energymap
+
+
+def check_arge_netz_data(df, year, start, end):
+    r"""
+
+
+    """
+    wind_farm_names = ['Bredstedt', 'PPC_4919', 'PPC_4950', 'PPC_5598']
+    wind_turbine_amount = [(0, 16), (4, 13), (0, 22), (0, 14)]
+    # Turbine data
+    enerconE70 = {
+        'turbine_name': 'ENERCON E 70 2300',
+        'hub_height': 64,  # in m
+        'rotor_diameter': 71  # in m
+    }
+    enerconE66 = {
+        'turbine_name': 'ENERCON E 66 1800',
+        'hub_height': 65,  # in m
+        'rotor_diameter': 70  # in m
+        }
+    # Initialize WindTurbine objects
+    e70 = wt.WindTurbine(**enerconE70)
+    e66 = wt.WindTurbine(**enerconE66)
+    for name, turbine_amount in zip(wind_farm_names, wind_turbine_amount):
+        indices = tools.get_indices_for_series(1, year)
+        power_output_theo = df[name + '_P_W_theo'] / 1000
+        power_output_theo = pd.Series(data=power_output_theo.values,
+                                      index=indices)
+        power_output_by_wind_speed = (turbine_amount[0] * power_output.power_curve(
+            df[name + '_v_wind'], e66.power_curve['wind_speed'],
+            e66.power_curve['values']) +
+            turbine_amount[1] * power_output.power_curve(
+            df[name + '_v_wind'], e70.power_curve['wind_speed'],
+            e70.power_curve['values'])) / (1*10**6)
+        power_output_by_wind_speed = pd.Series(
+            data=power_output_by_wind_speed.values, index=indices)
+        val_obj = analysis_tools.ValidationObject(
+            'validate_arge_4919', power_output_theo,
+            power_output_by_wind_speed,
+            weather_data_name='calculated by wind speed',
+            validation_name='P_W theoretical')
+        val_obj.output_method = 'power_output'
+        visualization_tools.plot_feedin_comparison(
+            val_obj, filename='../Plots/Test_Arge/{0}_{1}_feedin'.format(
+                year, name),
+            title='{0}'.format(name), start=start, end=end)
+        visualization_tools.plot_correlation(
+            val_obj, filename='../Plots/Test_Arge/{0}_{1}_corr'.format(
+                year, name),
+            title='{0}'.format(name))
+
+if __name__ == "__main__":
+    year = 2016  # dont use 2015 - no wind speed!
+    start = None
+    end = None
+    # Get ArgeNetz Data
+    arge_netz_data = get_and_plot_feedin(
+        year, pickle_load=True, plot=False)
+    check_arge_netz_data(arge_netz_data, year, start, end)
+#    print(arge_netz_data)
 
 ## Evaluate WEA data from Energymap
 #pickle_load = False

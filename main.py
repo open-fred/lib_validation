@@ -131,7 +131,7 @@ PPC_5598 = {
 if validation_data_name == 'ArgeNetz':
     if year == 2015:
         wind_farm_data = [bredstedt, nordstrand, PPC_4919, PPC_4950, PPC_5598]
-        temporal_resolution_validation = 5  # minutes # TODO: rename!!!!!
+        temporal_resolution_validation = 5  # minutes
         # Create indices for DataFrame in standardized form
         indices = tools.get_indices_for_series(
             temporal_resolution_validation, start='5/1/2015', end='1/1/2016')
@@ -158,8 +158,8 @@ for description in wind_farm_data:
         data=(validation_data[description['wind_farm_name'] +
                               '_P_W'].values / 1000),
         index=indices)
-    # Convert indices to datetime UTC
-    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
+#    # Convert indices to datetime UTC
+#    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_validation)
@@ -218,9 +218,9 @@ for description in wind_farm_data:
     # Power output in MW
     wind_farm.power_output = tools.power_output_sum(
         wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
-    # Convert indices to datetime UTC
-    wind_farm.power_output.index = pd.to_datetime(
-        wind_farm.power_output.index).tz_convert('UTC')
+#    # Convert indices to datetime UTC
+#    wind_farm.power_output.index = pd.to_datetime(
+#        wind_farm.power_output.index).tz_convert('UTC')
     # Annual energy output in MWh
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
