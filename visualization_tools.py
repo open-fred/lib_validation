@@ -115,10 +115,9 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     plt.close()
 # TODO: write small tool for display of all turbines of a wind farm
 
-# TODO: Add convertion to location time_zone..
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
-                           start=None, end=None):
+                           start=None, end=None, time_zone=None):
     r"""
     Plot simulation and validation feedin time series.
 
@@ -146,6 +145,10 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         End date of time period to be plotted in the format 'yyyy-mm-dd' or
         'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'. If `start`
         and/or `end` is None the whole time series is plotted. Default: None.
+    time_zone : String
+        Time zone information of the location of the time series of
+        `validation_object`. Not necessary if they carry this information.
+        Set to 'UTC' if plot is wanted in UTC time zone. Default: None.
 
     """
 #    def autolabel(bar, labels):
@@ -157,6 +160,9 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
 #        plt.text(bar.get_x() + bar.get_width()/2.,  height + 3, labels,
 ##                 '%d' % int(height),
 #                ha='center', va='bottom')
+    if validation_object.simulation_series.index.tz == 'UTC':
+        validation_object.simulation_series.index = (
+            validation_object.simulation_series.index.tz_convert(time_zone))
     fig = plt.figure()
     if 'energy' in validation_object.output_method:
         label_part = 'MWh'
@@ -164,7 +170,7 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         label_part = 'MW'
     if 'monthly' in validation_object.output_method:
 #        print(validation_object.get_monthly_mean_biases())
-# TODO: point mean biases to bars
+# TODO: point mean biases to bars - or rmse
         validation_object.simulation_series.plot(
             kind='bar', width=0.25, align='edge', tick_label=tick_label,
             color='blue', legend=True,
