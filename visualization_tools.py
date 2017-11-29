@@ -115,7 +115,7 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     plt.close()
 # TODO: write small tool for display of all turbines of a wind farm
 
-
+# TODO: Add convertion to location time_zone..
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
                            start=None, end=None):
