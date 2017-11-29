@@ -2,8 +2,8 @@ import pandas as pd
 import analysis_tools
 
 
-class TestPearson:
-    def test_pearson_s_r(self):
+class TestValidationObject:
+    def test_functions(self):
         series_1 = pd.Series([1., 2., 3.])
         series_2 = pd.Series([1., 2., 3.])
         series_3 = pd.Series([3., 4., 5.])
@@ -14,28 +14,34 @@ class TestPearson:
         r_exp = 1.0
         mean_bias_exp = 0
         std_dev_exp = 0
+        rmse_exp = 0
         assert r_exp == val_obj_1.pearson_s_r
         assert mean_bias_exp == val_obj_1.mean_bias
         assert std_dev_exp == val_obj_1.standard_deviation
+        assert rmse_exp == val_obj_1.rmse
 
         # Simulated series fully correlate but with bias
         val_obj_2 = analysis_tools.ValidationObject('Test', series_1, series_3)
         r_exp = 1.0
         mean_bias_exp = 2.0
         std_dev_exp = 0
+        rmse_exp = 2.0
         assert r_exp == val_obj_2.pearson_s_r
         assert mean_bias_exp == val_obj_2.mean_bias
         assert std_dev_exp == val_obj_2.standard_deviation
+        assert rmse_exp == val_obj_2.rmse
 
         # Simulated series = 2 * validation series
         val_obj_3 = analysis_tools.ValidationObject('Test', series_1, series_4)
         r_exp = 1.0
         mean_bias_exp = 2.0
         std_dev_exp = 0.81649658092772603
+        rmse_exp = 2.1602468994692869
         assert r_exp == val_obj_3.pearson_s_r
         assert mean_bias_exp == val_obj_3.mean_bias
         assert std_dev_exp == val_obj_3.standard_deviation
-
+        assert rmse_exp == val_obj_3.rmse
+     
 #        # Not linear
 #        val_obj_4 = analysis_tools.ValidationObject('Test', series_1, series_5)
 #        r_exp = 1.0
