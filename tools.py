@@ -148,12 +148,20 @@ def annual_energy_output(power_output, temporal_resolution):
     return energy.sum()
 
 
-def energy_output_series(power_output, temporal_resolution, output_resolution):
+def energy_output_series(power_output, temporal_resolution, output_resolution,
+                         time_zone=None):
     r"""
     Converts power output time series to hourly energy output time series.
 
     Power output time series of different temporal resolutions are converted to
-    energy output time series with a temporal resolution of one hour.
+    energy output time series with a temporal resolution of the parameter
+    `output_resolution`. For correct resampling UCT-format `power_output` time
+    series will be converted to the original time zone but converted back
+    before the return. Set to `time_zone` to 'UTC' if resampling is wanted in
+    UTC time zone.
+
+    # TODO: Check if this is necessary for hourly resampling. if not: don't
+    convert then!
 
     Parameters
     ----------
@@ -164,23 +172,42 @@ def energy_output_series(power_output, temporal_resolution, output_resolution):
     output_resolution : String
         Intended resolution of output series: 'H' for hourly, 'M' for monthly,
         etc. see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+    time_zone : String
+        Time zone information of the location of `power_output`. Not necessary
+        if the `power_output` carries this information. Set to 'UTC' if
+        resampling is wanted in UTC time zone. Default: None.
 
     Returns
     -------
     energy_output : pd.Series
         Energy output time series with a temporal resolution of one hour.
+        Time zone is the time zone of `power_output`.
 
     """
+    # Convert time series to original time zone
+    
+    if power_output.index.tz == 'UTC':
+        convert = True
+        power_output.index = power_output.index.tz_convert(time_zone)
+    else:
+        convert = False
     energy_output_series = power_output * temporal_resolution / 60
     energy_output = energy_output_series.resample(output_resolution).sum()
     energy_output = energy_output.dropna()
+    if convert:
+        power_output.index = power_output.index.tz_convert('UTC')
     return energy_output
 
 
 def power_output_fill(power_output, output_resolution, year):
     r"""
     Change temporal resolution of power output by filling with pad().
-
+    
+    The input time series (`power_output`) is for calculations converted to UTC
+    and back to the original time zone before the return. Consequently, if
+    `power_output` time series is not in UTC form it needs to carry a time zone
+    information.
+    
     Parameters
     ----------
     power_output : pd.Series
@@ -194,22 +221,34 @@ def power_output_fill(power_output, output_resolution, year):
     -------
     output_series : pd.Series
         Power output of wind turbine or wind farm in the temporal resolution of
-        `output_resolution`.
+        `output_resolution`. Time zone is the time zone of `power_output`.
 
     """
+    # Convert time series to UTC
+    if power_output.index.tz is not 'UTC':
+        time_zone = power_output.index.tz
+        power_output.index = power_output.index.tz_convert('UTC')
     index = pd.to_datetime(pd.datetime(
             year + 1, 1, 1, 0)).tz_localize('Europe/Berlin').tz_convert('UTC')
     output_series = pd.concat([power_output, pd.Series(10, index=[index])])
     output_series = output_series.resample(
         '{0}min'.format(output_resolution)).pad()
     output_series = output_series.drop(output_series.index[-1])
+    try:
+        # Convert back to original time zone
+        output_series.index = output_series.index.tz_convert(str(time_zone))
+    except Exception:
+        pass
     return output_series
 
 
 def get_indices_for_series(temporal_resolution, year=None,
                            start=None, end=None):
+    # TODO: possibile add on: add time_zone parameter
     r"""
     Create indices for annual time series in a certain frequency and form.
+    
+    The indices are created for the time zone of 'Europe/Berlin'.
 
     Parameters
     ----------
