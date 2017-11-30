@@ -40,20 +40,23 @@ class ValidationObject(object):
         This parameter will be set as an attribute of ValidationObject and is
         used for giving filenames etc.
     bias : pd.Series
-        Deviation of a simulated feedin time series from a validation time
-        series.
+        Bias of `simulation_series` from `validation_series`.
     mean_bias : Float
-        Mean deviation of a simulated feedin time series from a validation time
-        series.
+        Mean bias of `simulation_series` from `validation_series`.
     pearson_s_r : Float
-         Pearson's correlation coeffiecient (Pearson's R) of two time series.
+         Pearson's correlation coeffiecient (Pearson's R) of
+         `simulation_series` and `validation_series`.
     rmse : Float
-        Root mean square error ...... # TODO: implement rmse
+        Root mean square error of `simulation_series` concerning
+        `validation_series`.
+    rmse_monthly : List
+        Root mean square error for each month.
     standard_deviation : Float
-        Standard deviation of the bias (deviation) time series.
+        Standard deviation of the bias time series (`bias`).
     output_method : String
-        Specification of form of time series to be validated. For example:
-        'hourly_energy_output'.
+        Specifies the form of the time series (`simulation_series` and
+        `validation_series`) for the validation.
+        For example: 'hourly_energy_output'.
     """
     def __init__(self, object_name, validation_series, simulation_series,
                  weather_data_name=None, validation_name=None):
@@ -67,9 +70,10 @@ class ValidationObject(object):
         self.mean_bias = self.bias.mean()
         self.pearson_s_r = self.get_pearson_s_r()
         self.rmse = self.get_rmse()
+        self.rmse_monthly = self.get_rmse('monthly')
         self.standard_deviation = self.get_standard_deviation(self.bias)
         self.output_method = None
-
+# TODO: add some kind of percentage bias/rmse
     def get_standard_deviation(self, data_series):
         r"""
         Calculate standard deviation of a data series.
@@ -90,19 +94,37 @@ class ValidationObject(object):
         variance = ((data_series - average)**2).sum() / len(data_series)
         return np.sqrt(variance)
 
-    def get_rmse(self):
+    def get_rmse(self, time_scale=None):
         r"""
-        Calculate root mean square error of ........
+        Calculate root mean square error of simulation from validation series.
 
-        Return
-        ------
-        float
-            Root mean square error.
+        Parameters
+        ----------
+        time_scale : String
+            The time scale the RMSE will be calculated for. Options: 'annual',
+            'monthly'. Add other options if needed.
+
+        Returns
+        -------
+        rmse : float or list
+            Root mean square error in the time scale specified in `time_scale`.
 
         """
-        return np.sqrt(((self.simulation_series -
-                         self.validation_series)**2).sum() /
-                       len(self.simulation_series))
+        if (time_scale is None or time_scale == 'annual'):
+            rmse = np.sqrt(((self.simulation_series -
+                             self.validation_series)**2).sum() /
+                            len(self.simulation_series))
+        if time_scale == 'monthly':
+            rmse = []
+            for month in range(12):
+                sim_series = self.simulation_series['{0}-{1}'.format(
+                    self.simulation_series.index[-1].year, month + 1)]
+                val_series = self.validation_series['{0}-{1}'.format(
+                    self.simulation_series.index[-1].year, month + 1)]
+                monthly_rmse = np.sqrt(((sim_series - val_series)**2).sum() /
+                                       len(self.simulation_series))
+                rmse.append(monthly_rmse)
+        return rmse
 
     def get_bias(self):
         r"""
@@ -165,7 +187,7 @@ class ValidationObject(object):
 def evaluate_feedin_time_series(
         validation_farm_list, simulation_farm_list, temp_resolution_val,
         temp_resolution_sim, output_method, validation_name, weather_data_name,
-        time_period=None, temporal_output_resolution=None):
+        time_period=None, time_zone=None, temporal_output_resolution=None):
     r"""
     Evaluate feedin time series concerning validation feedin time series.
 
@@ -203,6 +225,11 @@ def evaluate_feedin_time_series(
     time_period : Tuple (Int, Int)
         Hourly time period to be selected from time series (h, h).
         Default: None.
+    time_zone : String
+        Time zone information of the location of the feed-in time series of
+        `validation_farm_list` and `simulation_farm_list`. Not necessary
+        if the feed-in time series carry this information. Set to 'UTC' if
+        time period selection is wanted in UTC time zone. Default: None.
     temporal_output_resolution : String
         Specification of temporal ouput resolution in the form of 'H', 'M',
         etc. for energy output series. Not needed for power_output_series.
@@ -217,18 +244,32 @@ def evaluate_feedin_time_series(
     """
     # TODO check power output graphs (feedin comparison) - why interpolation?
     validation_object_set = []
-    for farm_number in range(len(validation_farm_list)):
-        # Select certain time steps from series
+    for validation_farm, simulation_farm in zip(validation_farm_list,
+                                                simulation_farm_list):
+        # Select certain time steps from series if time_period is not None
         if time_period is not None:
+            # Convert time series to local time zone and back after selection
+            validation_series, converted_v = tools.convert_time_zone_of_index(
+                validation_farm.power_output, output_time_zone='local',
+                local_time_zone=time_zone)
+            simulation_series, converted_s = tools.convert_time_zone_of_index(
+                simulation_farm.power_output, output_time_zone='local',
+                local_time_zone=time_zone)
+            # Selecet time steps
             validation_series = tools.select_certain_time_steps(
-                    validation_farm_list[farm_number].power_output,
-                    time_period)
+                    validation_series, time_period)
             simulation_series = tools.select_certain_time_steps(
-                    simulation_farm_list[farm_number].power_output,
-                    time_period)
+                    simulation_series, time_period)
+            # Convert back to UTC (if there was conversion)
+            if converted_v:
+                validation_series.index = validation_series.index.tz_convert(
+                    'UTC')
+            if converted_s:
+                simulation_series.index = simulation_series.index.tz_convert(
+                    'UTC')
         else:
-            validation_series = validation_farm_list[farm_number].power_output
-            simulation_series = simulation_farm_list[farm_number].power_output
+            validation_series = validation_farm.power_output
+            simulation_series = simulation_farm.power_output
         if 'energy' in output_method:
             # Get validation energy output series in certain temp. resolution
             validation_series = tools.energy_output_series(
@@ -240,17 +281,8 @@ def evaluate_feedin_time_series(
                 temporal_output_resolution)
         # Initialize validation objects and append to list
         validation_object = ValidationObject(
-            validation_farm_list[farm_number].wind_farm_name,
-            validation_series, simulation_series, weather_data_name,
-            validation_name)
+            validation_farm.wind_farm_name, validation_series,
+            simulation_series, weather_data_name, validation_name)
         validation_object.output_method = output_method
         validation_object_set.append(validation_object)
-    # Initialize validation object for sum of wind farms
-    validation_object = ValidationObject(
-        'all {0} farms'.format(validation_name),
-        sum([val_obj.validation_series for val_obj in validation_object_set]),
-        sum([val_obj.simulation_series for val_obj in validation_object_set]),
-        weather_data_name, validation_name)
-    validation_object.output_method = output_method
-    validation_object_set.append(validation_object)
     return validation_object_set

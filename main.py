@@ -18,7 +18,7 @@ pickle_load_arge = True
 weather_data_name = 'MERRA'  # 'MERRA' or 'open_FRED'
 validation_data_name = 'ArgeNetz'  # 'ArgeNetz' or ... # TODO
 year = 2016
-
+time_zone = 'Europe/Berlin'
 
 # Select time of day you want to observe or None for all day
 time_period = (
@@ -51,6 +51,10 @@ plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
 latex_output = False  # If True Latex tables will be created
+# relative path to latex tables folder
+# latex_tables_folder = '../../../UserShares/tubCloud/Latex/Tables/'
+#latex_tables_folder = '../../../../../../../../../E/Daten/Studium/Master/Masterarbeit/Latex/Tables/'
+latex_tables_folder = '../../Test_it/'
 
 # Specify folder and title add on for saving the plots
 if time_period is not None:
@@ -164,6 +168,8 @@ for description in wind_farm_data:
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_validation)
     validation_farms.append(wind_farm)
+# Add a summary of the wind farms to validation_farms
+validation_farms.append(tools.summarize_output_of_farms(validation_farms))
 
 #if plot_arge_feedin:
 #    # y_limit = [0, 60]
@@ -225,6 +231,8 @@ for description in wind_farm_data:
     wind_farm.annual_energy_output = tools.annual_energy_output(
         wind_farm.power_output, temporal_resolution_weather)
     simulation_farms.append(wind_farm)
+# Add a summary of the wind farms to simulation_farms
+simulation_farms.append(tools.summarize_output_of_farms(simulation_farms))
 
 if plot_wind_farms:
     y_limit = [0, 60]
@@ -239,14 +247,14 @@ if 'hourly_energy_output' in output_methods:
     val_set_hourly_energy = analysis_tools.evaluate_feedin_time_series(
         validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'hourly_energy_output',
-        validation_data_name, weather_data_name, time_period, 'H')
+        validation_data_name, weather_data_name, time_period, time_zone, 'H')
     validation_sets.append(val_set_hourly_energy)
 
 if 'monthly_energy_output' in output_methods:
     val_set_monthly_energy = analysis_tools.evaluate_feedin_time_series(
         validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'monthly_energy_output',
-        validation_data_name, weather_data_name, time_period, 'M')
+        validation_data_name, weather_data_name, time_period, time_zone, 'M')
     validation_sets.append(val_set_monthly_energy)
 
 if 'power_output' in output_methods:
@@ -256,7 +264,7 @@ if 'power_output' in output_methods:
     val_set_power = analysis_tools.evaluate_feedin_time_series(
         validation_farms, simulation_farms, temporal_resolution_validation,
         temporal_resolution_weather, 'power_output',
-        validation_data_name, weather_data_name, time_period)
+        validation_data_name, weather_data_name, time_period, time_zone)
     validation_sets.append(val_set_power)
 
 # Visualization of data evaluation
@@ -282,11 +290,6 @@ for validation_set in validation_sets:
 
     if 'feedin_comparison' in visualization_methods:
     # TODO: rename this method for better understanding
-#        if year == 2015 and validation_data_name == 'ArgeNetz':
-#            tick_label=['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-#        else:
-#            tick_label=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-#                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         for validation_object in validation_set:
             filename = save_folder + '{0}_{1}_Feedin_{2}_{3}_{4}.pdf'.format(
                 validation_set[0].output_method,
@@ -299,7 +302,6 @@ for validation_set in validation_sets:
                     weather_data_name, validation_data_name,
                     validation_object.object_name, year) + title_add_on,
                 start=start, end=end)
-#                    , tick_label=tick_label)
 
     if 'plot_correlation' in visualization_methods:
         for validation_object in validation_set:
@@ -324,16 +326,16 @@ if latex_output:
     for farm_list in all_farm_lists:
         index = [farm.wind_farm_name for farm in farm_list]
         # Annual energy output in GWh
-        data = [round(farm.annual_energy_output, 3)
+        data = [round(farm.annual_energy_output, 2)
                 for farm in farm_list]
         df_temp = pd.DataFrame(data=data, index=index,
                                columns=[[column_names[i]],
-                                        ['Energy Output [MWh]']])
+                                        ['Energy [MWh]']])
         df = pd.concat([df, df_temp], axis=1)
         if i != 0:
             data = [round((farm_list[j].annual_energy_output -
                           all_farm_lists[0][j].annual_energy_output) /
-                          all_farm_lists[0][j].annual_energy_output * 100, 3)
+                          all_farm_lists[0][j].annual_energy_output * 100, 2)
                     for j in range(len(validation_farms))]
             df_temp = pd.DataFrame(
                 data=data, index=index,
@@ -342,9 +344,11 @@ if latex_output:
         i += 1
 
     path_latex_tables = os.path.join(os.path.dirname(__file__),
-                                     '../../../tubCloud/Latex/Tables/')
-    name = os.path.join(path_latex_tables, 'name_of_table.tex')
+                                     latex_tables_folder)
+    filename_table = os.path.join(path_latex_tables, 'name_of_table.tex')
+#    df.index.names = ['farm']
     # TODO: make fully customized table
-    df.to_latex(buf=name)
+    df.to_latex(buf=filename_table, column_format='lccc',
+                multicolumn_format='c')
 
 print('# ----------- Done ----------- #')

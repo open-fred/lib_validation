@@ -151,15 +151,23 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         Set to 'UTC' if plot is wanted in UTC time zone. Default: None.
 
     """
-#    def autolabel(bar, labels):
-#        r"""
-#        Attach a text label above each bar displaying its height
-#
-#        """
-#        height = bar.get_height()
-#        plt.text(bar.get_x() + bar.get_width()/2.,  height + 3, labels,
-##                 '%d' % int(height),
-#                ha='center', va='bottom')
+    def label_bars(bars, labels):
+        r"""
+        Attach a label above each bar.
+
+        Parameters
+        ----------
+        bars : List
+            Contains the patches of the axis (ax.patches).
+        labels : List
+            Contains the labels.
+
+        """
+        for bar, label in zip(bars, labels):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2.,  height + 3, label,
+                    ha='center', va='bottom', fontsize=6)
+
     if validation_object.simulation_series.index.tz == 'UTC':
         validation_object.simulation_series.index = (
             validation_object.simulation_series.index.tz_convert(time_zone))
@@ -169,10 +177,9 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
     if 'power' in validation_object.output_method:
         label_part = 'MW'
     if 'monthly' in validation_object.output_method:
-#        print(validation_object.get_monthly_mean_biases())
-# TODO: point mean biases to bars - or rmse
         # Create DataFrame for bar plot
-        index = pd.Series(validation_object.simulation_series.index).dt.strftime('%b')
+        index = pd.Series(
+            validation_object.simulation_series.index).dt.strftime('%b')
         df = pd.concat([
             pd.DataFrame(data=validation_object.simulation_series.values,
                          index=index,
@@ -181,7 +188,10 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                          index=index,
                          columns=[validation_object.validation_name])], axis=1)
         df.plot(kind='bar', ax=ax)
-#        autolabel(sim, validation_object.get_monthly_mean_biases())
+        # Add RMSE labels to bars
+        rmse_labels = ['RMSE [{0}]\n{1}'.format(label_part, round(entry, 2))
+                       for entry in validation_object.rmse_monthly]
+        label_bars(ax.patches[:12], rmse_labels)
     else:
         validation_object.simulation_series.plot(
             legend=True, label=validation_object.weather_data_name, ax=ax)

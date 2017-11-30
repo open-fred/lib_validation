@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import pickle
 from windpowerlib import (power_output, wind_speed)
+from windpowerlib import wind_farm as wf
 import tools
 
 
@@ -184,17 +185,13 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
         Time zone is the time zone of `power_output`.
 
     """
-    # Convert time series to original time zone
-    
-    if power_output.index.tz == 'UTC':
-        convert = True
-        power_output.index = power_output.index.tz_convert(time_zone)
-    else:
-        convert = False
+    # Convert time series to local time zone if necessary
+    power_output, converted = tools.convert_time_zone_of_index(
+        power_output, 'local', local_time_zone=time_zone)
     energy_output_series = power_output * temporal_resolution / 60
     energy_output = energy_output_series.resample(output_resolution).sum()
     energy_output = energy_output.dropna()
-    if convert:
+    if converted:
         power_output.index = power_output.index.tz_convert('UTC')
     return energy_output
 
@@ -202,12 +199,12 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
 def power_output_fill(power_output, output_resolution, year):
     r"""
     Change temporal resolution of power output by filling with pad().
-    
+
     The input time series (`power_output`) is for calculations converted to UTC
     and back to the original time zone before the return. Consequently, if
     `power_output` time series is not in UTC form it needs to carry a time zone
     information.
-    
+
     Parameters
     ----------
     power_output : pd.Series
@@ -234,11 +231,9 @@ def power_output_fill(power_output, output_resolution, year):
     output_series = output_series.resample(
         '{0}min'.format(output_resolution)).pad()
     output_series = output_series.drop(output_series.index[-1])
-    try:
+    if time_zone:
         # Convert back to original time zone
         output_series.index = output_series.index.tz_convert(str(time_zone))
-    except Exception:
-        pass
     return output_series
 
 
@@ -247,7 +242,7 @@ def get_indices_for_series(temporal_resolution, year=None,
     # TODO: possibile add on: add time_zone parameter
     r"""
     Create indices for annual time series in a certain frequency and form.
-    
+
     The indices are created for the time zone of 'Europe/Berlin'.
 
     Parameters
@@ -304,3 +299,72 @@ def select_certain_time_steps(series, time_period):
     """
     return series[(time_period[0] <= series.index.hour) &
                   (series.index.hour <= time_period[1])]
+
+
+def convert_time_zone_of_index(series, output_time_zone, local_time_zone=None):
+    r"""
+    Checks the index time zone of a series and converts it if necessary.
+
+    The time zone of the index is converted to UTC or a local time zone if
+    depending on `output_time_zone`.
+
+    Parameters
+    ----------
+    series : pd.Series
+        Time series whose index has to be checked and/or converted.
+    output_time_zone : String
+        Desired output time zone. Options: 'UTC', 'local'.
+    local_time_zone : String
+        Local time zone the index of `series` will be converted to if
+        `output_time_zone` is 'local' and the index of `series` is UTC.
+        Default: None.
+    Returns
+    -------
+    series : pd.Series
+        Time series of `series` with converted or not converted index time
+        depending on weather `ouput_time_zone` was already existent.
+    converted : Boolean
+        True if conversion has taken place.
+        False if conversion has not taken place.
+
+    """
+    if output_time_zone == 'local':
+        if series.index.tz == 'UTC':
+            series.index = series.index.tz_convert(local_time_zone)
+            converted = True
+        else:
+            converted = False
+    if output_time_zone == 'UTC':
+        if series.index.tz is not 'UTC':
+            series.index = series.index.tz_convert('UTC')
+            converted = True
+        else:
+            converted = False
+    return series, converted
+
+
+def summarize_output_of_farms(farm_list):
+    r"""
+    Summarizes the output of several wind farms and initialises a new farm.
+
+    Power output time series and annual energy output are summarized.
+
+    Parameters
+    ----------
+    farm_list : List
+        Contains :class:`~.windpowerlib.wind_farm.WindFarm` objects.
+
+    Returns
+    -------
+    wind_farm_sum : Object
+        A :class:`~.windpowerlib.wind_farm.WindFarm` object representing a
+        sum of wind farms needed for validation purposes.
+
+    """
+    wind_farm_sum = wf.WindFarm(wind_farm_name='Summmarized farms',
+                                wind_turbine_fleet=None, coordinates=None)
+    wind_farm_sum.power_output = sum(farm.power_output
+                                     for farm in farm_list)
+    wind_farm_sum.annual_energy_output = sum(farm.annual_energy_output
+                                             for farm in farm_list)
+    return wind_farm_sum
