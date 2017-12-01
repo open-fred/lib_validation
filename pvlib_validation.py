@@ -8,6 +8,10 @@ data = xarray.open_dataset('ASWDIFU_S/oF_00625_MERRA2.ASWDIFU_S.2002_02.DEplus.n
 b = data.sel(rlat=[-4.5, -4.4], method='nearest')
 # = data.to_dataframe()
 
+# conn = db.connection(section='reiners_db')
+# my_weather = coastdat.get_weather(
+#     conn, geopy.Point(loc_berlin['longitude'], loc_berlin['latitude']), year)
+
 # # preparing the weather data to suit pvlib's needs
 # # different name for the wind speed
 # my_weather.data.rename(columns={'v_wind': 'wind_speed'}, inplace=True)
@@ -41,6 +45,8 @@ b = data.sel(rlat=[-4.5, -4.4], method='nearest')
 #                  modules_per_string=14, strings_per_inverter=1,
 #                  inverter=CEC_inverters[inv_danfoss],
 #                  name='HTW_module_3')
+# module_3['module_parameters']['EgRef'] = 1.121
+# module_3['module_parameters']['dEgdT'] = -0.0002677
 #
 # # module 4 - Aleo S19 245W / SMA SB 3000HF-30 'Aleo_Solar_S19U245_ulr' CEC
 # # module 5 - Schott aSi 105W / SMA SB 3000HF-30
@@ -56,16 +62,28 @@ b = data.sel(rlat=[-4.5, -4.4], method='nearest')
 # call modelchain
 ####################################################################################################
 
-# mc = ModelChain(PVSystem(**yingli210),
+# # pvlib's ModelChain
+# mc = ModelChain(PVSystem(**pvmodule),
 #                 Location(**wittenberg),
-#                 orientation_strategy='south_at_latitude_tilt')
+#                 orientation_strategy=None,
+#                 aoi_model='no_loss',
+#                 spectral_model='no_loss',
+#                 dc_model='singlediode')
+# mc.complete_irradiance(times=times, weather=weather)
+# mc.run_model(times, weather=weather)
 #
-# mc.run_model(times, weather=w)
+# # plot the results
+# dc = mc.dc.p_mp.sum()
+# ac = mc.ac.sum()
+# diff = dc - ac
+# print("dc = ", dc)
+# print("ac = ", ac)
+# print("diff = ", diff)
 #
+# logging.info('Done!')
+
 # if plt:
 #     mc.dc.p_mp.fillna(0).plot()
 #     plt.show()
 # else:
 #     logging.warning("No plots shown. Install matplotlib to see the plots.")
-#
-# logging.info('Done!')
