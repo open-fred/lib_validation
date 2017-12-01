@@ -11,5 +11,6 @@ setup(name='lib_validation',
       zip_safe=False,
       install_requires=['pandas',
                         'matplotlib',
+                        'xarray',
                         'pvlib >= 0.5.0',
                         'windpowerlib >= 0.0.6'])
