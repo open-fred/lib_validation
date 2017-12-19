@@ -1,103 +1,201 @@
+# Imports from Windpowerlib
+from windpowerlib import wind_farm as wf
+from windpowerlib import (power_output, wind_speed, density, temperature)
+
+# Imports from lib_validation
+import tools
+
+# Other imports
 import pandas as pd
 import os
 import pickle
-from windpowerlib import (power_output, wind_speed)
-from windpowerlib import wind_farm as wf
-import tools
+from scipy.spatial import cKDTree
+import numpy as np
 
 
-def get_weather_data(pickle_load=None, filename='pickle_dump.p',
-                     weather_data=None, year=None, coordinates=None,
-                     data_frame=None):
+def get_weather_data(weather_data_name, temporal_resolution, pickle_load=None,
+                     filename='pickle_dump.p', year=None, coordinates=None):
     r"""
     Helper function to load pickled weather data or retrieve data and dump it.
 
     Parameters
     ----------
+    weather_data_name : String
+        String specifying if open_FRED or MERRA data is retrieved in case
+        `pickle_load` is False.
+    temporal_resolution :  Float or Integer # TODO: float possible? necessary?
+        Temporal resolution of weather data time series in minutes.
     pickle_load : Boolean
         True if data has already been dumped before.
     filename : String
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
-    weather_data : String
-        String specifying if open_FRED or MERRA data is retrieved in case
-        `pickle_load` is False. Default: None.
     year : int
         Specifies which year the weather data is retrieved for. Default: None.
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
         Default: None
-    data_frame : pandas.DataFrame
-        Contains MERRA or open_FRED data. Makes function faster if it is used
-        in a loop. Default: None.
 
     Returns
     -------
-    data : pandas.DataFrame
-        Weather data with time series as index and data like temperature and
+    weather_df : pandas.DataFrame
+        Weather data with datetime index and data like temperature and
         wind speed as columns.
 
     """
     if pickle_load:
-        weather_df = pickle.load(open(filename, 'rb'))
+        data_frame = pickle.load(open(filename, 'rb'))
     else:
-        if weather_data == 'open_FRED':
-            # TODO: add open_FRED weather data
-            filename = 'weather_df_open_FRED_{0}.p'.format(year)
-        elif weather_data == 'MERRA':
-            if data_frame is None:
-                # Load data from csv
-                data_frame = pd.read_csv(os.path.join(
-                    os.path.dirname(__file__), 'data/Merra', # TODO: make folder individua
-                    'weather_data_GER_{0}.csv'.format(year)),
-                    sep=',', decimal='.', index_col=0)
-            weather_df = create_merra_df(data_frame, coordinates)
-            # Set indices to standardized form
-            weather_df.index = tools.get_indices_for_series(60, year=year)
-#            visualization_tools.print_whole_dataframe(weather_df.lat)
-            filename = 'weather_df_merra_{0}.p'.format(year)
-        pickle.dump(weather_df, open(os.path.join(os.path.dirname(__file__),
-                                     'dumps/weather', filename), 'wb'))
+        data_frame = read_and_dump_csv_weather(weather_data_name, year,
+                                               filename)
+    # Find closest coordinates to weather data point and create weather_df
+    closest_coordinates = get_closest_coordinates(data_frame, coordinates)
+    weather_df = create_weather_df(data_frame, closest_coordinates,
+                                   weather_data_name)
+    # Set index to standardized form
+    if weather_data_name == 'open_FRED':
+        weather_df.index = tools.get_indices_for_series(
+            temporal_resolution, 'UTC', year=year)
+        # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
+    if weather_data_name == 'MERRA':
+        weather_df.index = tools.get_indices_for_series(
+            temporal_resolution, 'Europe/Berlin', year=year)
     return weather_df
 
 
-def create_merra_df(dataframe, coordinates):
+def read_and_dump_csv_weather(weather_data_name, year,
+                              filename='pickle_dump.p'):
     r"""
+    Reads csv file containing weather data and dumps it as data frame.
+
     Parameters
     ----------
+    weather_data_name : String
+        String specifying if open_FRED or MERRA data is retrieved in case.
+    year : Integer
+        Year the weather data is fetched for.
     filename : String
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
-    coordinates : List
-        List of coordinates [lat, lon] of location. For loading data.
-        Default: None
 
     Returns
     -------
-    merra_df : pandas.DataFrame
+    data_frame : pd.DataFrame
+        Containins raw weather data (MERRA) or already revised weather data
+        (open_FRED).
+
+    """
+    if weather_data_name == 'open_FRED':
+        # Load data from csv files and join in one data frame
+        open_fred_filenames = ['wss_10m.csv', 'wss_80m.csv', 'z0.csv']
+        # Initialize data_frame
+        data_frame = pd.DataFrame()
+        for of_filename in open_fred_filenames:
+            df_csv = pd.read_csv(os.path.join( # TODO: generic: csv_filename
+                os.path.dirname(__file__), 'data/open_FRED',
+                of_filename),
+                sep=',', decimal='.', index_col=0, parse_dates=True)
+            if (of_filename == 'wss_10m.csv' or
+                    of_filename == 'wss_80m.csv'):
+                df_part = df_csv.reset_index().drop_duplicates().set_index(
+                    'time')  # TODO: delete after fixing csv
+                data_frame = pd.concat([data_frame, df_part], axis=1)
+            if of_filename == 'z0.csv':
+                z0_series = pd.Series()
+                for coordinates in df_csv.groupby(
+                        ['lat', 'lon']).size().reset_index().drop(
+                        [0], axis=1).values.tolist():
+                    df = df_csv.loc[(df_csv['lat'] == coordinates[0]) &
+                                    (df_csv['lon'] == coordinates[1])]
+                    series = df['Z0']
+                    series.index = series.index.tz_localize('UTC')
+                    z0_series = z0_series.append(upsample_series(series, 30))
+                data_frame['roughness_length'] = z0_series.values
+        data_frame = data_frame.loc[:, ~data_frame.columns.duplicated()]
+        data_frame = data_frame.rename(columns={'WSS_10M': 'wind_speed',
+                                   'WSS': 'wind_speed_80m'})
+    elif weather_data_name == 'MERRA':
+        # Load data from csv
+        data_frame = pd.read_csv(os.path.join(
+            os.path.dirname(__file__), 'data/Merra',
+            'weather_data_GER_{0}.csv'.format(year)),
+            sep=',', decimal='.', index_col=0)
+    pickle.dump(data_frame, open(filename, 'wb'))
+    return data_frame
+
+
+def create_weather_df(data_frame, coordinates, weather_data_name):
+    r"""
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        Contains weather data in raw form from csv file (MERRA) or already
+        altered data (open_FRED).
+    coordinates : List
+        List of coordinates [lat, lon] of location. For loading data.
+        Default: None
+    weather_data_name : String
+        Specifying the name of the weather data.
+
+    Returns
+    -------
+    weather_df : pandas.DataFrame
         Weather data with time series as index and data like temperature and
         wind speed as columns.
 
     """
-    merra_df = dataframe.loc[(dataframe['lat'] == coordinates[0]) &
-                             (dataframe['lon'] == coordinates[1])]
-    merra_df = merra_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
-                              'SWTDN', 'SWGDN'], axis=1)
-    merra_df = merra_df.rename(
-        columns={'v_50m': 'wind_speed', 'h1': 'temperature_height',
-                 'z0': 'roughness_length', 'T': 'temperature',
-                 'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
-    return merra_df
+    # Select coordinates from data frame
+    weather_df = data_frame.loc[(data_frame['lat'] == coordinates[0]) &
+                                (data_frame['lon'] == coordinates[1])]
+    if weather_data_name == 'MERRA':
+        weather_df = weather_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
+                                      'SWTDN', 'SWGDN'], axis=1)
+        weather_df = weather_df.rename(
+            columns={'v_50m': 'wind_speed', 'h1': 'temperature_height',
+                     'z0': 'roughness_length', 'T': 'temperature',
+                     'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
+    return weather_df
 
 
-def power_output_sum(wind_turbine_fleet, weather_df, data_height):
+def return_unique_pairs(df, column_names):
     r"""
-    Calculate power output of several wind turbines by summation.
+    Returns all unique pairs of values of DataFrame `df`.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns (`column_names`) contain unique pairs of values.
+
+    """
+    return df.groupby(column_names).size().reset_index().drop([0], axis=1)
+
+
+def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
+    r"""
+    Finds the coordinates of a data frame that are closest to `coordinates`.
+
+    Returns
+    -------
+    pd.Series
+        Contains closest coordinates with `column_names`as indices.
+
+    """
+    coordinates_df = return_unique_pairs(df, column_names)
+    tree = cKDTree(coordinates_df)
+    dists, index = tree.query(np.array(coordinates), k=1)
+    return coordinates_df.iloc[index]
+
+
+def power_output_simple(wind_turbine_fleet, weather_df, data_height):
+    r"""
+    Calculate power output of several wind turbines by simple method.
 
     Simplest way to calculate the power output of a wind farm or other
     gathering of wind turbines. For the power_output of the single turbines
     a power_curve without density correction is used. The wind speed at hub
-    height is calculated by the logarithmic wind profile.
+    height is calculated by the logarithmic wind profile. The power output of
+    the wind farm is calculated by aggregation of the power output of the
+    single turbines.
 
     Parameters
     ----------
@@ -112,18 +210,95 @@ def power_output_sum(wind_turbine_fleet, weather_df, data_height):
         Contains the heights of the weather measurements or weather
         model in meters with the keys of the data parameter.
 
+    Returns
+    -------
+    pd.Series
+        Simulated power output of wind farm.
+
     """
-    farm_power_output = 0
     for turbine_type in wind_turbine_fleet:
         wind_speed_hub = wind_speed.logarithmic_profile(
             weather_df.wind_speed, data_height['wind_speed'],
             turbine_type['wind_turbine'].hub_height,
             weather_df.roughness_length, obstacle_height=0.0)
-        farm_power_output += (power_output.power_curve(
-            wind_speed_hub,
-            turbine_type['wind_turbine'].power_curve['wind_speed'],
-            turbine_type['wind_turbine'].power_curve['values']) *
-            turbine_type['number_of_turbines'])
+        turbine_type['wind_turbine'].power_output = (
+            power_output.power_curve(
+                wind_speed_hub,
+                turbine_type['wind_turbine'].power_curve['wind_speed'],
+                turbine_type['wind_turbine'].power_curve['values']))
+    return power_output_simple_aggregation(wind_turbine_fleet, weather_df,
+                                           data_height)
+
+
+def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
+    r"""
+#    Calculate power output of several wind turbines ......
+#
+#    Simplest way to calculate the power output of a wind farm or other
+#    gathering of wind turbines. For the power_output of the single turbines
+#    a power_curve without density correction is used. The wind speed at hub
+#    height is calculated by the logarithmic wind profile.
+
+    Parameters
+    ----------
+    wind_turbine_fleet : List of Dictionaries
+        Wind turbines of wind farm. Dictionaries must have 'wind_turbine'
+        (contains wind turbine object) and 'number_of_turbines' (number of
+        turbine type in wind farm) as keys.
+    weather_df : pandas.DataFrame
+        DataFrame with time series for wind speed `wind_speed` in m/s and
+        roughness length `roughness_length` in m.
+    data_height : Dictionary
+        Contains the heights of the weather measurements or weather
+        model in meters with the keys of the data parameter.
+
+    Returns
+    -------
+    pd.Series
+        Simulated power output of wind farm.
+
+    """
+    for turbine_type in wind_turbine_fleet:
+        wind_speed_hub = wind_speed.logarithmic_profile(
+            weather_df.wind_speed, data_height['wind_speed'],
+            turbine_type['wind_turbine'].hub_height,
+            weather_df.roughness_length, obstacle_height=0.0)
+        temperature_hub = temperature.linear_gradient(
+            weather_df.temperature, data_height['temperature'],
+            turbine_type['wind_turbine'].hub_height)
+        density_hub = density.ideal_gas(
+            weather_df.pressure, data_height['pressure'],
+            turbine_type['wind_turbine'].hub_height, temperature_hub)
+        turbine_type['wind_turbine'].power_output = (
+            power_output.power_curve_density_correction(
+                wind_speed_hub,
+                turbine_type['wind_turbine'].power_curve['wind_speed'],
+                turbine_type['wind_turbine'].power_curve['values'],
+                density_hub))
+    return power_output_simple_aggregation(wind_turbine_fleet, weather_df,
+                                           data_height)
+
+
+def power_output_simple_aggregation(wind_turbine_fleet, weather_df,
+                                    data_height):
+    r"""
+    Calulate power output of wind farm by simple aggregation.
+
+    Simplest way to calculate the power output of a wind farm or other
+    gathering of wind turbines.
+
+    Parameters
+    ----------
+    wind_turbine_fleet : List of Dictionaries
+        Wind turbines of wind farm. Dictionaries must have 'wind_turbine'
+        (contains wind turbine object) and 'number_of_turbines' (number of
+        turbine type in wind farm) as keys.
+
+    """
+    farm_power_output = 0
+    for turbine_type in wind_turbine_fleet:
+        farm_power_output += (turbine_type['wind_turbine'].power_output *
+                              turbine_type['number_of_turbines'])
     return farm_power_output
 
 
@@ -196,38 +371,38 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
     return energy_output
 
 
-def power_output_fill(power_output, output_resolution, year):
+def upsample_series(series, output_resolution):
     r"""
-    Change temporal resolution of power output by filling with pad().
+    Change temporal resolution of a series by filling with pad().
 
-    The input time series (`power_output`) is for calculations converted to UTC
+    The input time series (`series`) is for calculations converted to UTC
     and back to the original time zone before the return. Consequently, if
-    `power_output` time series is not in UTC form it needs to carry a time zone
+    `series` time series is not in UTC form it needs to carry a time zone
     information.
 
     Parameters
     ----------
-    power_output : pd.Series
-        Power output of wind turbine or wind farm.
+    series : pd.Series
+        Series to be upsampled.
     output_resolution : Integer
         Temporal resolution of output time series in minutes.
-    year : Integer
-        Year of the power output series.
 
     Returns
     -------
     output_series : pd.Series
-        Power output of wind turbine or wind farm in the temporal resolution of
-        `output_resolution`. Time zone is the time zone of `power_output`.
+        `series` in the temporal resolution of `output_resolution`.
+        Time zone is the time zone of `series`.
 
     """
     # Convert time series to UTC
-    if power_output.index.tz is not 'UTC':
-        time_zone = power_output.index.tz
-        power_output.index = power_output.index.tz_convert('UTC')
-    index = pd.to_datetime(pd.datetime(
-            year + 1, 1, 1, 0)).tz_localize('Europe/Berlin').tz_convert('UTC')
-    output_series = pd.concat([power_output, pd.Series(10, index=[index])])
+    if str(series.index.tz) is not 'UTC':
+        time_zone = series.index.tz
+        series.index = series.index.tz_convert('UTC')
+    else:
+        time_zone = None
+    index = pd.date_range(series.index[-1], periods=2,
+                          freq=series.index.freq) # TODO: why is freq = None for open_FRED data
+    output_series = pd.concat([series, pd.Series(10, index=[index[1]])])
     output_series = output_series.resample(
         '{0}min'.format(output_resolution)).pad()
     output_series = output_series.drop(output_series.index[-1])
@@ -237,7 +412,7 @@ def power_output_fill(power_output, output_resolution, year):
     return output_series
 
 
-def get_indices_for_series(temporal_resolution, year=None,
+def get_indices_for_series(temporal_resolution, time_zone, year=None,
                            start=None, end=None):
     # TODO: possibile add on: add time_zone parameter
     r"""
@@ -249,6 +424,8 @@ def get_indices_for_series(temporal_resolution, year=None,
     ----------
     temporal_resolution : integer
         Intended temporal resolution of time series index in min.
+    time_zone : String
+        Time zone of output indices ('UTC', 'Europe/Berlin', ...).
     year : integer
         Year of the time series. Either `year` or `start` and `end` have to be
         defined. If all three are given, `start` and `end` will be used.
@@ -277,11 +454,7 @@ def get_indices_for_series(temporal_resolution, year=None,
             raise TypeError("Either `year` or `start` and `end`" +
                             "have to be defined.")
     return (pd.date_range(start, end, freq=frequency,
-                          tz='Europe/Berlin', closed='left'))
-
-#dev = standard_deviation([6,7,7.5,6.5,7.5,8,6.5])  # Test
-#dev = standard_deviation(pd.Series(data=[6,7,7.5,6.5,7.5,8,6.5]))  # Test
-# TODO: possible: split tools module to power_output, weather, comparison...
+                          tz=time_zone, closed='left'))
 
 
 def select_certain_time_steps(series, time_period):
@@ -301,23 +474,24 @@ def select_certain_time_steps(series, time_period):
                   (series.index.hour <= time_period[1])]
 
 
-def convert_time_zone_of_index(series, output_time_zone, local_time_zone=None):
+def convert_time_zone_of_index(data, output_time_zone, local_time_zone=None):
     r"""
-    Checks the index time zone of a series and converts it if necessary.
+    Checks the index time zone of `data` and converts it if necessary.
 
     The time zone of the index is converted to UTC or a local time zone if
     depending on `output_time_zone`.
 
     Parameters
     ----------
-    series : pd.Series
-        Time series whose index has to be checked and/or converted.
+    data : pd.Series or pd.DataFrame
+        Date of which the index has to be checked and/or converted.
     output_time_zone : String
         Desired output time zone. Options: 'UTC', 'local'.
     local_time_zone : String
         Local time zone the index of `series` will be converted to if
         `output_time_zone` is 'local' and the index of `series` is UTC.
         Default: None.
+
     Returns
     -------
     series : pd.Series
@@ -328,19 +502,20 @@ def convert_time_zone_of_index(series, output_time_zone, local_time_zone=None):
         False if conversion has not taken place.
 
     """
+    # TODO: if output_time_zone == ... else: convert to this time zone (one parameter less)
     if output_time_zone == 'local':
-        if series.index.tz == 'UTC':
-            series.index = series.index.tz_convert(local_time_zone)
+        if str(data.index.tz) == 'UTC':
+            data.index = data.index.tz_convert(local_time_zone)
             converted = True
         else:
             converted = False
     if output_time_zone == 'UTC':
-        if series.index.tz is not 'UTC':
-            series.index = series.index.tz_convert('UTC')
+        if str(data.index.tz) is not 'UTC':
+            data.index = data.index.tz_convert('UTC')
             converted = True
         else:
             converted = False
-    return series, converted
+    return data, converted
 
 
 def summarize_output_of_farms(farm_list):
@@ -361,7 +536,7 @@ def summarize_output_of_farms(farm_list):
         sum of wind farms needed for validation purposes.
 
     """
-    wind_farm_sum = wf.WindFarm(wind_farm_name='Summmarized farms',
+    wind_farm_sum = wf.WindFarm(wind_farm_name='Sum',
                                 wind_turbine_fleet=None, coordinates=None)
     wind_farm_sum.power_output = sum(farm.power_output
                                      for farm in farm_list)

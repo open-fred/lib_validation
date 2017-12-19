@@ -1,14 +1,17 @@
-import pandas as pd
-import os
-import pickle
-from matplotlib import pyplot as plt
-#import numpy as np
+# Imports from Windpowerlib
 from windpowerlib import wind_turbine as wt
-from windpowerlib import wind_farm as wf
 from windpowerlib import power_output
+
+# Imports from lib_validation
 import visualization_tools
 import analysis_tools
 import tools
+
+# Other imports
+from matplotlib import pyplot as plt
+import pandas as pd
+import os
+import pickle
 
 
 def read_data(filename, **kwargs):
@@ -49,8 +52,8 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     r"""
     Restructure data read from a csv file.
 
-    Create a DataFrame. Data can be filtered (if filter_cols is not None) and
-    Nan's can be droped (if drop_na is not None).
+    Create a DataFrame. Data are filtered (if filter_cols is not None) and
+    Nan's are droped (if drop_na is not None).
 
     Parameters:
     -----------
@@ -120,7 +123,8 @@ def get_data(filename_files, filename_column_names, new_column_names,
 
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        'dumps', filename_pickle))
+                                        'dumps/validation_data',
+                                        filename_pickle))
     if not pickle_load:
         with open(filename_files) as file:
             data = pd.DataFrame()
@@ -166,22 +170,40 @@ def fast_plot(df, save_folder, y_limit=None, x_limit=None):
 #df_compare = data_evaluation('helper_files/filenames_all.txt')
 
 new_column_names_2016_2017 = [
-    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
-    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst', 'Goeser_P_W',
-    'Goeser_P_W_theo', 'Goeser_v_wind', 'Goeser_wind_dir', 'Goeser_P_W_inst',
-    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4919_v_wind',
-    'PPC_4919_wind_dir', 'PPC_4919_P_W_inst', 'PPC_4950_P_W',
-    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_4950_wind_dir',
-    'PPC_4950_P_W_inst', 'PPC_5598_P_W', 'PPC_5598_P_W_theo',
-    'PPC_5598_v_wind', 'PPC_5598_wind_dir', 'PPC_5598_P_W_inst']
+    'Bredstedt_P_W', 'Bredstedt_v_wind',
+    'Bredstedt_P_W_inst', 'Goeser_P_W',
+    'Goeser_v_wind', 'Goeser_P_W_inst',
+    'PPC_4919_P_W', 'PPC_4919_v_wind',
+    'PPC_4919_P_W_inst', 'PPC_4950_P_W',
+    'PPC_4950_v_wind',
+    'PPC_4950_P_W_inst', 'PPC_5598_P_W',
+    'PPC_5598_v_wind', 'PPC_5598_P_W_inst']
 
 new_column_names_2015 = [
-    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
-    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst',
-    'Nordstrand_P_W', 'Nordstrand_P_W_theo', 'Nordstrand_P_W_inst',
-    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4950_P_W',
-    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
-    'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
+    'Bredstedt_P_W', 'Bredstedt_v_wind',
+    'Bredstedt_P_W_inst',
+    'Nordstrand_P_W', 'Nordstrand_P_W_inst',
+    'PPC_4919_P_W', 'PPC_4919_v_wind', 'PPC_4950_P_W',
+    'PPC_4950_v_wind', 'PPC_5598_P_W',
+    'PPC_5598_P_W_inst']
+
+#new_column_names_2016_2017 = [
+#    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
+#    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst', 'Goeser_P_W',
+#    'Goeser_P_W_theo', 'Goeser_v_wind', 'Goeser_wind_dir', 'Goeser_P_W_inst',
+#    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4919_v_wind',
+#    'PPC_4919_wind_dir', 'PPC_4919_P_W_inst', 'PPC_4950_P_W',
+#    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_4950_wind_dir',
+#    'PPC_4950_P_W_inst', 'PPC_5598_P_W', 'PPC_5598_P_W_theo',
+#    'PPC_5598_v_wind', 'PPC_5598_wind_dir', 'PPC_5598_P_W_inst']
+#
+#new_column_names_2015 = [
+#    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
+#    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst',
+#    'Nordstrand_P_W', 'Nordstrand_P_W_theo', 'Nordstrand_P_W_inst',
+#    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4950_P_W',
+#    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
+#    'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
 
 def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
@@ -292,7 +314,7 @@ if __name__ == "__main__":
 
 ## Evaluate WEA data from Energymap
 #pickle_load = False
-#pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dumps'))
+#pickle_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dumps/validation_data'))
 #plz = 25821
 #place = 'Struckum'
 #peak_power = 2300
