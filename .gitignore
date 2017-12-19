@@ -1,10 +1,13 @@
 *.pyc
 *.xlsx
 *.ini
+*.nc
+*.nc4
 
 *.egg-info/
 /data/
 /dumps/
+/htw_2015/
 
 
 
