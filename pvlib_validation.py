@@ -1,8 +1,15 @@
 import pvlib
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
+import pandas as pd
 
+# required: 'wind_speed' in m/s, 'temp_air' in C, 'dni', 'ghi', 'dhi' in W/m²
 
+# HTW data
+data = pd.read_csv('htw_2015/einleuchtend_data_2015/htw_wetter_weatherdata_2015.csv', sep=';', index_col=0, parse_dates=True)
+print(data)
+weather_data = pd.DataFrame()
+weather_data['wind_speed'] = data['v_Wind']
 # conn = db.connection(section='reiners_db')
 # my_weather = coastdat.get_weather(
 #     conn, geopy.Point(loc_berlin['longitude'], loc_berlin['latitude']), year)
