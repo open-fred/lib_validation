@@ -1,12 +1,7 @@
 import pvlib
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
-import xarray
 
-data = xarray.open_dataset('ASWDIFU_S/oF_00625_MERRA2.ASWDIFU_S.2002_02.DEplus.nc')
-#a = data.where(data.lat<46.0) #sel(rlat=[0], rlon=[0], time=[12])
-b = data.sel(rlat=[-4.5, -4.4], method='nearest')
-# = data.to_dataframe()
 
 # conn = db.connection(section='reiners_db')
 # my_weather = coastdat.get_weather(
