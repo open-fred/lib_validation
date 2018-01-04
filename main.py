@@ -102,7 +102,7 @@ if plot_wind_turbines:
 bredstedt = {
     'wind_farm_name': 'Bredstedt',
     'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 16}],
+                            'number_of_turbines': 15}],
     'coordinates': [54.578219, 8.978092]
 }
 # Nordstrand (54.509708, 8.9007)
@@ -125,14 +125,14 @@ PPC_4919 = {
 PPC_4950 = {
     'wind_farm_name': 'PPC_4950',
     'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 22}],
+                            'number_of_turbines': 19}],
     'coordinates': [54.629608, 9.029239]
 }
 # PPC_5598 (54.596603, 8.968139)
 PPC_5598 = {
     'wind_farm_name': 'PPC_5598',
     'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 14}],
+                            'number_of_turbines': 16}],
     'coordinates': [54.596603, 8.968139]
 }
 
