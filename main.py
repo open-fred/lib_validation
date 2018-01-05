@@ -1,8 +1,8 @@
 # Imports from Windpowerlib
-from windpowerlib import wind_turbine as wt
 from windpowerlib import wind_farm as wf
 
 # Imports from lib_validation
+import wind_farm_specifications
 import feedin_time_series
 import visualization_tools
 import analysis_tools
@@ -20,6 +20,7 @@ time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
+pickle_load_wind_farm_data = True
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
     'density_correction'  # density corrected power curve, simple aggregation
@@ -74,68 +75,6 @@ plot_arge_feedin = False  # If True all ArgeNetz data is plotted
 plot_wind_farms = False  # If True usage of plot_or_print_farm()
 plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
 
-# --------------------- Turbine data and initialization --------------------- #
-# TODO: scale power curves??
-# Turbine data
-enerconE70 = {
-    'turbine_name': 'ENERCON E 70 2300',  # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
-    'hub_height': 64,  # in m
-    'rotor_diameter': 71  # in m    source: www.wind-turbine-models.com
-}
-enerconE66 = {
-    'turbine_name': 'ENERCON E 66 1800',  # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
-    'hub_height': 65,  # in m
-    'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
-}
-
-# Initialize WindTurbine objects
-# TODO: Put if statments in case of other turbines in other validation data
-# TODO: use second file for turbine and wind farm data
-e70 = wt.WindTurbine(**enerconE70)
-e66 = wt.WindTurbine(**enerconE66)
-if plot_wind_turbines:
-    visualization_tools.plot_or_print_turbine(e70)
-    visualization_tools.plot_or_print_turbine(e66)
-
-# ----------------------------- Wind farm data ------------------------------ #
-# Bredstedt (54.578219, 8.978092)
-bredstedt = {
-    'wind_farm_name': 'Bredstedt',
-    'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 15}],
-    'coordinates': [54.578219, 8.978092]
-}
-# Nordstrand (54.509708, 8.9007)
-nordstrand = {
-    'wind_farm_name': 'Nordstrand',
-    'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 6}],
-    'coordinates': [54.509708, 8.9007]
-}
-# PPC_4919 (54.629167, 9.0625)
-PPC_4919 = {
-    'wind_farm_name': 'PPC_4919',
-    'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 13},
-                           {'wind_turbine': e66,
-                            'number_of_turbines': 4}],
-    'coordinates': [54.629167, 9.0625]
-}
-# PPC_4950 (54.629608, 9.029239)
-PPC_4950 = {
-    'wind_farm_name': 'PPC_4950',
-    'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 19}],
-    'coordinates': [54.629608, 9.029239]
-}
-# PPC_5598 (54.596603, 8.968139)
-PPC_5598 = {
-    'wind_farm_name': 'PPC_5598',
-    'wind_turbine_fleet': [{'wind_turbine': e70,
-                            'number_of_turbines': 16}],
-    'coordinates': [54.596603, 8.968139]
-}
-
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_farms(validation_data_name):
@@ -164,15 +103,20 @@ def get_validation_farms(validation_data_name):
     # TODO: temporal_resolution needed? maybe from timestamps. 
     if validation_data_name == 'ArgeNetz':
         if year == 2015:
-            wind_farm_data = [bredstedt, nordstrand,
-                              PPC_4919, PPC_4950, PPC_5598]
+            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
+                'farm_specification_argenetz_2015.p',
+                os.path.join(os.path.dirname(__file__),
+                             'dumps/wind_farm_data'))
             temporal_resolution_validation = 5  # minutes
             # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
                 temporal_resolution_validation, 'Europe/Berlin',
                 start='5/1/2015', end='1/1/2016')
         if (year == 2016 or year == 2017):
-            wind_farm_data = [bredstedt, PPC_4919, PPC_4950, PPC_5598]
+            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
+                'farm_specification_argenetz_2016.p',
+                os.path.join(os.path.dirname(__file__),
+                             'dumps/wind_farm_data'))
             temporal_resolution_validation = 1  # minutes
             # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
