@@ -106,7 +106,8 @@ def get_validation_farms(validation_data_name):
             wind_farm_data = wind_farm_specifications.get_wind_farm_data(
                 'farm_specification_argenetz_2015.p',
                 os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'))
+                             'dumps/wind_farm_data'),
+                pickle_load_wind_farm_data)
             temporal_resolution_validation = 5  # minutes
             # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
@@ -116,7 +117,8 @@ def get_validation_farms(validation_data_name):
             wind_farm_data = wind_farm_specifications.get_wind_farm_data(
                 'farm_specification_argenetz_2016.p',
                 os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'))
+                             'dumps/wind_farm_data'),
+                pickle_load_wind_farm_data)
             temporal_resolution_validation = 1  # minutes
             # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
