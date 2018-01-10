@@ -1,17 +1,11 @@
-import pandas as pd
+# Imports from Windpowerlib
+from windpowerlib import wind_turbine as wt
+
+# Other imports
 from matplotlib import pyplot as plt
-import os
 import seaborn as sns
-
-
-def return_lats_lons(df):
-    r"""
-    Returns all latitudes and longitudes of DataFrame.
-
-    """
-    lats = df.lat.unique()
-    lons = df.lon.unique()
-    return lats, lons
+import pandas as pd
+import os
 
 
 def print_whole_dataframe(df):
@@ -152,6 +146,7 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
 
     """
     def label_bars(bars, labels):
+        # TODO: Remove from here - but save for other possible labels
         r"""
         Attach a label above each bar.
 
@@ -188,10 +183,10 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                          index=index,
                          columns=[validation_object.validation_name])], axis=1)
         df.plot(kind='bar', ax=ax)
-        # Add RMSE labels to bars
-        rmse_labels = ['RMSE [{0}]\n{1}'.format(label_part, round(entry, 2))
-                       for entry in validation_object.rmse_monthly]
-        label_bars(ax.patches[:12], rmse_labels)
+#        # Add RMSE labels to bars
+#        rmse_labels = ['RMSE [{0}]\n{1}'.format(label_part, round(entry, 2))
+#                       for entry in validation_object.rmse_monthly]
+#        label_bars(ax.patches[:12], rmse_labels)
     else:
         validation_object.simulation_series.plot(
             legend=True, label=validation_object.weather_data_name, ax=ax)
@@ -261,10 +256,15 @@ def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
              round(validation_object.pearson_s_r, 2),
              round(validation_object.mean_bias, 2), label_part,
              round(validation_object.standard_deviation, 2)) + label_part,
-         xy=(1, 1), xycoords='axes fraction',
-         xytext=(-6, -6), textcoords='offset points',
-         ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
+        xy=(1, 1), xycoords='axes fraction',
+        xytext=(-6, -6), textcoords='offset points',
+        ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
     plt.close()
+
+if __name__ == "__main__":
+    # Get all turbine types of windpowerlib
+    turbines = wt.get_turbine_types(print_out=False)
+    print_whole_dataframe(turbines)

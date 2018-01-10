@@ -1,6 +1,9 @@
+# Imports from lib_validation
+import tools
+
+# Other imports
 import numpy as np
 import pandas as pd
-import tools
 
 
 class ValidationObject(object):
@@ -14,6 +17,10 @@ class ValidationObject(object):
             Validation feedin output time series.
     simulation_series : pandas.Series
             Simulated feedin output time series.
+    output_method : String
+        Specifies the form of the time series (`simulation_series` and
+        `validation_series`) for the validation.
+        For example: 'hourly_energy_output'. Default: None
     weather_data_name : String
         Indicates the origin of the weather data of the simulated feedin time
         series. This parameter will be set as an attribute of ValidationObject
@@ -31,6 +38,10 @@ class ValidationObject(object):
             Validation feedin output time series.
     simulation_series : pandas.Series
             Simulated feedin output time series.
+    output_method : String
+        Specifies the form of the time series (`simulation_series` and
+        `validation_series`) for the validation.
+        For example: 'hourly_energy_output'. Default: None
     weather_data_name : String
         Indicates the origin of the weather data of the simulated feedin time
         series. This parameter will be set as an attribute of ValidationObject
@@ -53,27 +64,28 @@ class ValidationObject(object):
         Root mean square error for each month.
     standard_deviation : Float
         Standard deviation of the bias time series (`bias`).
-    output_method : String
-        Specifies the form of the time series (`simulation_series` and
-        `validation_series`) for the validation.
-        For example: 'hourly_energy_output'.
+
     """
     def __init__(self, object_name, validation_series, simulation_series,
-                 weather_data_name=None, validation_name=None):
+                 output_method=None, weather_data_name=None, validation_name=None):
         self.object_name = object_name
         self.validation_series = validation_series
         self.simulation_series = simulation_series
+        self.output_method = output_method
         self.weather_data_name = weather_data_name
         self.validation_name = validation_name
 
         self.bias = self.get_bias()
         self.mean_bias = self.bias.mean()
-        self.pearson_s_r = self.get_pearson_s_r()
         self.rmse = self.get_rmse()
-        self.rmse_monthly = self.get_rmse('monthly')
+        #        self.rmse_monthly = self.get_rmse('monthly')
+        self.rmse_monthly = None
         self.standard_deviation = self.get_standard_deviation(self.bias)
-        self.output_method = None
-# TODO: add some kind of percentage bias/rmse
+        if output_method is not 'annual_energy_output':
+            self.pearson_s_r = self.get_pearson_s_r()
+    # TODO: add some kind of percentage bias/rmse
+    # TODO: add annual energy output deviation [%] as attribute (for latex output)
+
     def get_standard_deviation(self, data_series):
         r"""
         Calculate standard deviation of a data series.
@@ -113,7 +125,7 @@ class ValidationObject(object):
         if (time_scale is None or time_scale == 'annual'):
             rmse = np.sqrt(((self.simulation_series -
                              self.validation_series)**2).sum() /
-                            len(self.simulation_series))
+                           len(self.simulation_series))
         if time_scale == 'monthly':
             rmse = []
             for month in range(12):
@@ -206,7 +218,7 @@ def evaluate_feedin_time_series(
     simulation_farm_list : List of objects
         List of :class:`~.wind_farm.WindFarm` objects representing simulated
         wind farms. Must be in the same order as `validation_farm_list`.
-    temp_resolution_val : Float or Integer
+    temp_resolution_val : Float or Integer # TODO: float possible? necessary?
         Temporal resolution of valdation time series in minutes.
     temp_resolution_sim : Float or Integer
         Temporal resolution of simulation time series in minutes.
@@ -242,7 +254,7 @@ def evaluate_feedin_time_series(
         A set of :class:`~.analysis_tools.ValidationObject` objects.
 
     """
-    # TODO check power output graphs (feedin comparison) - why interpolation?
+    # TODO check power output graphs for time periods (feedin comparison) - why interpolation?
     validation_object_set = []
     for validation_farm, simulation_farm in zip(validation_farm_list,
                                                 simulation_farm_list):
@@ -274,15 +286,13 @@ def evaluate_feedin_time_series(
             # Get validation energy output series in certain temp. resolution
             validation_series = tools.energy_output_series(
                 validation_series, temp_resolution_val,
-                temporal_output_resolution)
+                temporal_output_resolution, time_zone)
             # Get simulated energy output series in certain temp. resolution
             simulation_series = tools.energy_output_series(
                 simulation_series, temp_resolution_sim,
-                temporal_output_resolution)
+                temporal_output_resolution, time_zone)
         # Initialize validation objects and append to list
-        validation_object = ValidationObject(
-            validation_farm.wind_farm_name, validation_series,
-            simulation_series, weather_data_name, validation_name)
-        validation_object.output_method = output_method
-        validation_object_set.append(validation_object)
+        validation_object_set.append(ValidationObject(
+        validation_farm.wind_farm_name, validation_series,
+        simulation_series, output_method, weather_data_name, validation_name))
     return validation_object_set
