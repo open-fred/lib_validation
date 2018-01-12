@@ -114,7 +114,9 @@ def get_data(filename_files, filename_column_names, new_column_names,
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps/validation_data',
                                         filename_pickle))
-    if not pickle_load:
+    if pickle_load:
+        data = pickle.load(open(path, 'rb'))
+    else:
         with open(filename_files) as file:
             data = pd.DataFrame()
             for line in file:
@@ -124,8 +126,6 @@ def get_data(filename_files, filename_column_names, new_column_names,
                 df.columns = new_column_names
                 data = pd.concat([data, df])  # data could also be dictionary
         pickle.dump(data, open(path, 'wb'))
-    if pickle_load:
-        data = pickle.load(open(path, 'rb'))
     return data
 
 
