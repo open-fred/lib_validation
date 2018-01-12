@@ -212,7 +212,7 @@ new_column_names_2015 = [
 #    'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
 
 
-def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
+def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
     
@@ -299,7 +299,7 @@ if __name__ == "__main__":
         start = None
         end = None
         # Get ArgeNetz Data
-        arge_netz_data = get_and_plot_feedin(
+        arge_netz_data = get_argenetz_data(
             year, pickle_load=True, plot=False)
         check_arge_netz_data(arge_netz_data, year, start, end)
         print("Plots for comparing theoretical power with simulated power " +
