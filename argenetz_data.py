@@ -260,7 +260,7 @@ def check_arge_netz_data(df, year, start, end):
     e70 = wt.WindTurbine(**enerconE70)
     e66 = wt.WindTurbine(**enerconE66)
     for name, turbine_amount in zip(wind_farm_names, wind_turbine_amount):
-        indices = tools.get_indices_for_series(1, year)
+        indices = tools.get_indices_for_series(1, 'Europe/Berlin', year)
         power_output_theo = df[name + '_P_W_theo'] / 1000
         power_output_theo = pd.Series(data=power_output_theo.values,
                                       index=indices)
