@@ -14,6 +14,8 @@ import os
 import pickle
 
 
+# TODO: move read_data and restructure_data to tools module to be free to use
+# for other validation data modules, too
 def read_data(filename, **kwargs):
     r"""
     Fetches data from a csv file.
