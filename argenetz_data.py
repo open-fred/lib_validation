@@ -308,22 +308,3 @@ if __name__ == "__main__":
         check_arge_netz_data(arge_netz_data, year, start, end)
         print("Plots for comparing theoretical power with simulated power " +
               "(measured wind speed) are saved in 'Plots/Test_Arge'")
-
-# Get the data of 2015 (and 2016/2017) and plot the results
-#x_limit = None
-#data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
-#                     'arge_data_2015.p', pickle_load=True)
-#plot_argenetz_data(data_2015, save_folder='ArgeNetz_power_output/Plots_2015',
-#          x_limit=x_limit)
-#data_2016_2017 = get_data('filenames_2016_2017.txt',
-#                          'column_names_2016_2017.txt',
-#                          new_column_names_2016_2017, 'arge_data_2016_2017.p',
-#                          pickle_load=True)
-#plot_argenetz_data(data_2016_2017, save_folder='ArgeNetz_power_output/Plots_2016_2017',
-#          x_limit=x_limit)
-
-# Sample for period of 2015 (possible mistakes in data)
-#data = get_data('filenames.txt', 'column_names_2015.txt',
-#                 new_column_names_2015, 'arge_data_2015.p', pickle_load=True)
-#x_limit = [10, 50]
-#plot_argenetz_data(data, save_folder='Plots_2015_period', x_limit=x_limit)
