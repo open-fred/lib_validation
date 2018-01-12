@@ -215,7 +215,9 @@ new_column_names_2015 = [
     'wf_5_theoretical_power']
 
 
-def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
+def get_argenetz_data(year, only_get_power=True, pickle_load=False,
+                      pickle_dump=False, csv_load=False, csv_dump=False,
+                      plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
 
@@ -231,10 +233,34 @@ def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
     if (year == 2016 or year == 2017):
         filename_column_names = 'helper_files/column_names_2016_2017.txt'
         new_column_names = new_column_names_2016_2017
-    argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
-                           filename_column_names, new_column_names,
-                           'arge_data_{0}.p'.format(year),
-                           pickle_load=pickle_load)
+    if (not only_get_power or not pickle_load):
+        # Get all data either because desired or because only power has not
+        # been dumped, yet.
+        argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
+                               filename_column_names, new_column_names,
+                               'arge_data_{0}.p'.format(year),
+                               pickle_load=pickle_load)
+    if only_get_power:
+        pickle_path = os.path.abspath(os.path.join(
+                          os.path.dirname(__file__), 'dumps/validation_data',
+                          'arge_power_output{0}.p'.format(year)))
+        csv_path = os.path.abspath(os.path.join(
+                    os.path.dirname(__file__), 'dumps/validation_data',
+                    'arge_power_output{0}.csv'.format(year)))
+        if pickle_load:
+            argenetz_df = pickle.load(open(pickle_path, 'rb'))
+        else:
+            if csv_load:
+                argenetz_df = pd.read_csv(csv_path)
+            else:
+                # Select power output columns
+                column_list = [column_name for column_name in list(argenetz_df)
+                               if 'power_output' in column_name]
+                argenetz_df = argenetz_df[column_list]
+            if pickle_dump:
+                pickle.dump(argenetz_df, open(pickle_path, 'wb'))
+            if csv_dump:
+                argenetz_df.to_csv(csv_path)
     if plot:
         plot_argenetz_data(
             argenetz_df, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
@@ -297,7 +323,16 @@ def check_arge_netz_data(df, year, start=None, end=None):
             title='{0}'.format(name))
 
 if __name__ == "__main__":
-    
+    years = [2015, 2016]  # possible: 2015, 2016, 2017
+    only_get_power = False  # Only get power output instead of other parameters
+    pickle_load = False  # Load data from csv
+    pickle_dump = True  # Dump data
+    csv_load = False  # load dataframe with only power output from csv
+    csv_dump = True  # write dataframe with only power output to csv
+    # Get Arge Netz data
+    for year in years:
+        get_argenetz_data(year, only_get_power, pickle_load, pickle_dump,
+                          csv_load, csv_dump, plot=False)
 #    evaluate_data = False  # Check which variables are given for which farm
     check_theo_power = False  # theoretical power against wind speed if True
 
