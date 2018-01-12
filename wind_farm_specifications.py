@@ -141,7 +141,9 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
 if __name__ == "__main__":
     save_folder = os.path.join(os.path.dirname(__file__),
                                'dumps/wind_farm_data')
-    filenames = ['farm_specification_argenetz_2015.p',
-                 'farm_specification_argenetz_2016.p']
+    filenames = [
+        'farm_specification_argenetz_2015.p',
+        'farm_specification_argenetz_2016.p'
+        ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
