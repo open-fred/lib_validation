@@ -90,7 +90,7 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     return df2
 
 
-def get_data(filename_files, filename_column_names, new_column_names,
+def get_data(filename_files, filename_column_names=None, new_column_names=None,
              filename_pickle='pickle_dump.p', pickle_load=False):
     r"""
     Fetches data of the requested files and renames columns.
@@ -103,7 +103,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
         Name of file that contains column names to be filtered for.
         Default: None.
     new_column_names : List
-        Contains new column names (Strings) for the data frame.
+        Contains new column names (Strings) for the data frame. Default: None
 
     Returns
     -------
