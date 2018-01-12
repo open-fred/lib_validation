@@ -141,7 +141,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
     return data
 
 
-def fast_plot(df, save_folder, y_limit=None, x_limit=None):
+def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
     r"""
     Plot all data from DataFrame to single plots and save them.
 
@@ -227,7 +227,7 @@ def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
                     filename_column_names, new_column_names,
                     'arge_data_{0}.p'.format(year), pickle_load=pickle_load)
     if plot:
-        fast_plot(
+        plot_argenetz_data(
             data, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
                 year), x_limit=x_limit)
     return data
@@ -332,17 +332,17 @@ if __name__ == "__main__":
 #x_limit = None
 #data_2015 = get_data('filenames_2015.txt', new_column_names_2015,
 #                     'arge_data_2015.p', pickle_load=True)
-#fast_plot(data_2015, save_folder='ArgeNetz_power_output/Plots_2015',
+#plot_argenetz_data(data_2015, save_folder='ArgeNetz_power_output/Plots_2015',
 #          x_limit=x_limit)
 #data_2016_2017 = get_data('filenames_2016_2017.txt',
 #                          'column_names_2016_2017.txt',
 #                          new_column_names_2016_2017, 'arge_data_2016_2017.p',
 #                          pickle_load=True)
-#fast_plot(data_2016_2017, save_folder='ArgeNetz_power_output/Plots_2016_2017',
+#plot_argenetz_data(data_2016_2017, save_folder='ArgeNetz_power_output/Plots_2016_2017',
 #          x_limit=x_limit)
 
 # Sample for period of 2015 (possible mistakes in data)
 #data = get_data('filenames.txt', 'column_names_2015.txt',
 #                 new_column_names_2015, 'arge_data_2015.p', pickle_load=True)
 #x_limit = [10, 50]
-#fast_plot(data, save_folder='Plots_2015_period', x_limit=x_limit)
+#plot_argenetz_data(data, save_folder='Plots_2015_period', x_limit=x_limit)
