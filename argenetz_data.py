@@ -211,10 +211,10 @@ new_column_names_2015 = [
 def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
-    
+
     Returns
     -------
-    data : pandas.DataFrame
+    argenetz_df : pandas.DataFrame
         Data of ArgeNetz wind farms with readable column names (see function
         get_data()).
     """
@@ -224,14 +224,15 @@ def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
     if (year == 2016 or year == 2017):
         filename_column_names = 'helper_files/column_names_2016_2017.txt'
         new_column_names = new_column_names_2016_2017
-    data = get_data('helper_files/filenames_{0}.txt'.format(year),
-                    filename_column_names, new_column_names,
-                    'arge_data_{0}.p'.format(year), pickle_load=pickle_load)
+    argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
+                           filename_column_names, new_column_names,
+                           'arge_data_{0}.p'.format(year),
+                           pickle_load=pickle_load)
     if plot:
         plot_argenetz_data(
-            data, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
+            argenetz_df, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
                 year), x_limit=x_limit)
-    return data
+    return argenetz_df
 
 
 def check_arge_netz_data(df, year, start=None, end=None):
