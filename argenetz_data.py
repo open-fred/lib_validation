@@ -107,7 +107,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
 
     Returns
     -------
-    data : pandas.DataFrame
+    df : pandas.DataFrame
         Data of ArgeNetz wind farms with readable column names.
 
     """
@@ -115,18 +115,18 @@ def get_data(filename_files, filename_column_names, new_column_names,
                                         'dumps/validation_data',
                                         filename_pickle))
     if pickle_load:
-        data = pickle.load(open(path, 'rb'))
+        df = pickle.load(open(path, 'rb'))
     else:
         with open(filename_files) as file:
-            data = pd.DataFrame()
+            df = pd.DataFrame()
             for line in file:
                 name = line.strip()
-                df = restructure_data(name, filename_column_names,
-                                      filter_cols=True)
-                df.columns = new_column_names
-                data = pd.concat([data, df])  # data could also be dictionary
-        pickle.dump(data, open(path, 'wb'))
-    return data
+                df_part = restructure_data(name, filename_column_names,
+                                           filter_cols=True)
+                df_part.columns = new_column_names
+                df = pd.concat([df, df_part])
+        pickle.dump(df, open(path, 'wb'))
+    return df
 
 
 def data_evaluation(filename, csv_print=True):
