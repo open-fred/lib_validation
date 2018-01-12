@@ -91,7 +91,7 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
 
 
 def get_data(filename_files, filename_column_names, new_column_names,
-             filename_pickle='pickle_dump.p', pickle_load=True):
+             filename_pickle='pickle_dump.p', pickle_load=False):
     r"""
     Fetches data of the requested files and renames columns.
 
