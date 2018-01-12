@@ -52,8 +52,8 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     r"""
     Restructures data read from a csv file.
 
-    Creates a DataFrame. Data is filtered (if filter_cols is not None) and
-    Nan's are droped (if drop_na is not None).
+    Creates a DataFrame. Data is filtered (if filter_cols is True) and
+    Nan's are dropped (if drop_na is True).
 
     Parameters:
     -----------
@@ -65,13 +65,13 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     filter_cols : list
         Column names to filter for. Default: None.
     drop_na : boolean
-        If True: Nan's are droped from DataFrame with method how='any'.
+        If True: Nan's are dropped from DataFrame with method how='any'.
         Default: None.
 
     Other Parameters
     ----------------
     datapath : string, optional
-        Path to the location of the data file. Needed for for read_data().
+        Path to the location of the data file. Needed for read_data().
         Default: './data'
 
     """
