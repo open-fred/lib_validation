@@ -90,30 +90,6 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     return df2
 
 
-def data_evaluation(filename):
-    """
-    Evaluate the data in terms of which variables are given for each dataset.
-
-    Parameters:
-    -----------
-    filename : string
-        Name of file that contains names of files to be evaluated.
-
-    """
-    # Initialise pandas.DataFrame
-    df_compare = pd.DataFrame()
-    # Read file and add to DataFrame for each line (= filenames)
-    with open(filename) as file:
-            for line in file:
-                name = line.strip()
-                df = restructure_data(name, drop_na=True)
-                df2 = pd.DataFrame(data=df, index=list(df),
-                                   columns=[name])
-                df_compare = pd.concat([df_compare, df2], axis=1)
-    df_compare.to_csv('evaluation.csv')
-    return df_compare
-
-
 def get_data(filename_files, filename_column_names, new_column_names,
              filename_pickle='pickle_dump.p', pickle_load=True):
     r"""
@@ -141,6 +117,33 @@ def get_data(filename_files, filename_column_names, new_column_names,
     if pickle_load:
         data = pickle.load(open(path, 'rb'))
     return data
+
+
+def data_evaluation(filename, csv_print=False):
+    """
+    Evaluate the data in terms of which variables are given for each dataset.
+
+    Parameters:
+    -----------
+    filename : string
+        Name of file that contains names of files to be evaluated.
+    csv_print : boolean
+        Decision whether to print resultating data frame to csv file.
+
+    """
+    # Initialise pandas.DataFrame
+    df_compare = pd.DataFrame()
+    # Read file and add to DataFrame for each line (= filenames)
+    with open(filename) as file:
+            for line in file:
+                name = line.strip()
+                df = restructure_data(name, drop_na=True)
+                df2 = pd.DataFrame(data=df, index=list(df),
+                                   columns=[name])
+                df_compare = pd.concat([df_compare, df2], axis=1)
+    if csv_print:
+        df_compare.to_csv('evaluation.csv')
+    return df_compare
 
 
 def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
