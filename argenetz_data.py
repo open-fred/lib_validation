@@ -186,27 +186,27 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
     plt.close()
 
 #new_column_names_2016_2017 = [
-#    'wf_1_P_W', 'wf_1_v_wind', 'wf_1_P_W_inst', 'wf_3_P_W', 'wf_3_v_wind',
-#    'wf_3_P_W_inst', 'wf_4_P_W', 'wf_4_v_wind', 'wf_4_P_W_inst', 'wf_5_P_W',
-#    'wf_5_v_wind', 'wf_5_P_W_inst']
+#    'wf_1_power_output', 'wf_1_installed_power', 'wf_3_power_output', 'wf_3_wind_speed',
+#    'wf_3_installed_power', 'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power', 'wf_5_power_output',
+#    'wf_5_wind_speed', 'wf_5_installed_power']
 #
 #new_column_names_2015 = [
-#    'wf_1_P_W', 'wf_1_v_wind', 'wf_1_P_W_inst', 'wf_2_P_W', 'wf_2_P_W_inst',
-#    'wf_3_P_W', 'wf_3_v_wind', 'wf_4_P_W', 'wf_4_v_wind', 'wf_5_P_W',
-#    'wf_5_P_W_inst']
+#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power', 'wf_2_power_output', 'wf_2_installed_power',
+#    'wf_3_power_output', 'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed', 'wf_5_power_output',
+#    'wf_5_installed_power']
 
 new_column_names_2016_2017 = [
-    'wf_1_P_W', 'wf_1_P_W_theo', 'wf_1_v_wind', 'wf_1_wind_dir',
-    'wf_1_P_W_inst', 'wf_3_P_W', 'wf_3_P_W_theo', 'wf_3_v_wind',
-    'wf_3_wind_dir', 'wf_3_P_W_inst', 'wf_4_P_W', 'wf_4_P_W_theo',
-    'wf_4_v_wind', 'wf_4_wind_dir', 'wf_4_P_W_inst', 'wf_5_P_W',
-    'wf_5_P_W_theo', 'wf_5_v_wind', 'wf_5_wind_dir', 'wf_5_P_W_inst']
+    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed', 'wf_1_wind_dir',
+    'wf_1_installed_power', 'wf_3_power_output', 'wf_3_theoretical_power', 'wf_3_wind_speed',
+    'wf_3_wind_dir', 'wf_3_installed_power', 'wf_4_power_output', 'wf_4_theoretical_power',
+    'wf_4_wind_speed', 'wf_4_wind_dir', 'wf_4_installed_power', 'wf_5_power_output',
+    'wf_5_theoretical_power', 'wf_5_wind_speed', 'wf_5_wind_dir', 'wf_5_installed_power']
 
 new_column_names_2015 = [
-    'wf_1_P_W', 'wf_1_P_W_theo', 'wf_1_v_wind', 'wf_1_wind_dir',
-    'wf_1_P_W_inst', 'wf_2_P_W', 'wf_2_P_W_theo', 'wf_2_P_W_inst', 'wf_3_P_W',
-    'wf_3_P_W_theo', 'wf_4_P_W', 'wf_4_P_W_theo', 'wf_4_v_wind', 'wf_5_P_W',
-    'wf_5_P_W_inst', 'wf_5_P_W_theo']
+    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed', 'wf_1_wind_dir',
+    'wf_1_installed_power', 'wf_2_power_output', 'wf_2_theoretical_power', 'wf_2_installed_power', 'wf_3_power_output',
+    'wf_3_theoretical_power', 'wf_4_power_output', 'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_5_power_output',
+    'wf_5_installed_power', 'wf_5_theoretical_power']
 
 
 def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
@@ -264,14 +264,14 @@ def check_arge_netz_data(df, year, start=None, end=None):
     e66 = wt.WindTurbine(**enerconE66)
     for name, turbine_amount in zip(wind_farm_names, wind_turbine_amount):
         indices = tools.get_indices_for_series(1, 'Europe/Berlin', year)
-        power_output_theo = df[name + '_P_W_theo'] / 1000
+        power_output_theo = df[name + '_theoretical_power'] / 1000
         power_output_theo = pd.Series(data=power_output_theo.values,
                                       index=indices)
         power_output_by_wind_speed = (turbine_amount[0] * power_output.power_curve(
-            df[name + '_v_wind'], e66.power_curve['wind_speed'],
+            df[name + '_wind_speed'], e66.power_curve['wind_speed'],
             e66.power_curve['values']) +
             turbine_amount[1] * power_output.power_curve(
-            df[name + '_v_wind'], e70.power_curve['wind_speed'],
+            df[name + '_wind_speed'], e70.power_curve['wind_speed'],
             e70.power_curve['values'])) / (1*10**6)
         power_output_by_wind_speed = pd.Series(
             data=power_output_by_wind_speed.values, index=indices)
