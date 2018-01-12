@@ -183,43 +183,29 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
                                                  str(column) + '.pdf')))
     plt.close()
 
+#new_column_names_2016_2017 = [
+#    'wf_1_P_W', 'wf_1_v_wind', 'wf_1_P_W_inst', 'wf_3_P_W', 'wf_3_v_wind',
+#    'wf_3_P_W_inst', 'wf_4_P_W', 'wf_4_v_wind', 'wf_4_P_W_inst', 'wf_5_P_W',
+#    'wf_5_v_wind', 'wf_5_P_W_inst']
+#
+#new_column_names_2015 = [
+#    'wf_1_P_W', 'wf_1_v_wind', 'wf_1_P_W_inst', 'wf_2_P_W', 'wf_2_P_W_inst',
+#    'wf_3_P_W', 'wf_3_v_wind', 'wf_4_P_W', 'wf_4_v_wind', 'wf_5_P_W',
+#    'wf_5_P_W_inst']
 #df_compare = data_evaluation('helper_files/filenames_all.txt')
 
 new_column_names_2016_2017 = [
-    'Bredstedt_P_W', 'Bredstedt_v_wind',
-    'Bredstedt_P_W_inst', 'Goeser_P_W',
-    'Goeser_v_wind', 'Goeser_P_W_inst',
-    'PPC_4919_P_W', 'PPC_4919_v_wind',
-    'PPC_4919_P_W_inst', 'PPC_4950_P_W',
-    'PPC_4950_v_wind',
-    'PPC_4950_P_W_inst', 'PPC_5598_P_W',
-    'PPC_5598_v_wind', 'PPC_5598_P_W_inst']
+    'wf_1_P_W', 'wf_1_P_W_theo', 'wf_1_v_wind', 'wf_1_wind_dir',
+    'wf_1_P_W_inst', 'wf_3_P_W', 'wf_3_P_W_theo', 'wf_3_v_wind',
+    'wf_3_wind_dir', 'wf_3_P_W_inst', 'wf_4_P_W', 'wf_4_P_W_theo',
+    'wf_4_v_wind', 'wf_4_wind_dir', 'wf_4_P_W_inst', 'wf_5_P_W',
+    'wf_5_P_W_theo', 'wf_5_v_wind', 'wf_5_wind_dir', 'wf_5_P_W_inst']
 
 new_column_names_2015 = [
-    'Bredstedt_P_W', 'Bredstedt_v_wind',
-    'Bredstedt_P_W_inst',
-    'Nordstrand_P_W', 'Nordstrand_P_W_inst',
-    'PPC_4919_P_W', 'PPC_4919_v_wind', 'PPC_4950_P_W',
-    'PPC_4950_v_wind', 'PPC_5598_P_W',
-    'PPC_5598_P_W_inst']
-
-#new_column_names_2016_2017 = [
-#    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
-#    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst', 'Goeser_P_W',
-#    'Goeser_P_W_theo', 'Goeser_v_wind', 'Goeser_wind_dir', 'Goeser_P_W_inst',
-#    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4919_v_wind',
-#    'PPC_4919_wind_dir', 'PPC_4919_P_W_inst', 'PPC_4950_P_W',
-#    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_4950_wind_dir',
-#    'PPC_4950_P_W_inst', 'PPC_5598_P_W', 'PPC_5598_P_W_theo',
-#    'PPC_5598_v_wind', 'PPC_5598_wind_dir', 'PPC_5598_P_W_inst']
-#
-#new_column_names_2015 = [
-#    'Bredstedt_P_W', 'Bredstedt_P_W_theo', 'Bredstedt_v_wind',
-#    'Bredstedt_wind_dir', 'Bredstedt_P_W_inst',
-#    'Nordstrand_P_W', 'Nordstrand_P_W_theo', 'Nordstrand_P_W_inst',
-#    'PPC_4919_P_W', 'PPC_4919_P_W_theo', 'PPC_4950_P_W',
-#    'PPC_4950_P_W_theo', 'PPC_4950_v_wind', 'PPC_5598_P_W',
-#    'PPC_5598_P_W_inst', 'PPC_5598_P_W_theo']
+    'wf_1_P_W', 'wf_1_P_W_theo', 'wf_1_v_wind', 'wf_1_wind_dir',
+    'wf_1_P_W_inst', 'wf_2_P_W', 'wf_2_P_W_theo', 'wf_2_P_W_inst', 'wf_3_P_W',
+    'wf_3_P_W_theo', 'wf_4_P_W', 'wf_4_P_W_theo', 'wf_4_v_wind', 'wf_5_P_W',
+    'wf_5_P_W_inst', 'wf_5_P_W_theo']
 
 
 def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
@@ -258,7 +244,7 @@ def check_arge_netz_data(df, year, start=None, end=None):
     used for the year 2015.
 
     """
-    wind_farm_names = ['Bredstedt', 'PPC_4919', 'PPC_4950', 'PPC_5598']
+    wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
     wind_turbine_amount = [(0, 16), (4, 13), (0, 22), (0, 14)]
     # Turbine data
     enerconE70 = {
