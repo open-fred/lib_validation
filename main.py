@@ -124,8 +124,9 @@ def get_validation_farms(validation_data_name):
             indices = tools.get_indices_for_series(
                 temporal_resolution_validation, 'Europe/Berlin', year=year)
         # Get ArgeNetz Data
-        validation_data = feedin_time_series.get_argenetz_data(
-            year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
+        validation_data = get_argenetz_data(
+            year, only_get_power=True, pickle_load=pickle_load_arge,
+            plot=plot_arge_feedin)
     if validation_data_name == '...':
         pass  # Add more data
 
@@ -138,7 +139,7 @@ def get_validation_farms(validation_data_name):
         # Power output in MW with DatetimeIndex indices
         wind_farm.power_output = pd.Series(
             data=(validation_data[description['wind_farm_name'] +
-                                  '_P_W'].values / 1000),  # TODO: make generic
+                                  '_power_output'].values / 1000),
             index=indices)
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
