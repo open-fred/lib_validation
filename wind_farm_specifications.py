@@ -79,19 +79,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             # Initialize turbines
             e70, e66 = initialize_turbines(['enerconE70', 'enerconE66'])
             wf_1 = {
-                'wind_farm_name': 'WF_1',
+                'wind_farm_name': 'wf_1',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 16}],
                 'coordinates': []
             }
             wf_2 = {
-                'wind_farm_name': 'WF_2',
+                'wind_farm_name': 'wf_2',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 6}],
                 'coordinates': []
             }
             wf_3 = {
-                'wind_farm_name': 'WF_3',
+                'wind_farm_name': 'wf_3',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 13},
                                        {'wind_turbine': e66,
@@ -99,13 +99,13 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 'coordinates': []
             }
             wf_4 = {
-                'wind_farm_name': 'WF_4',
+                'wind_farm_name': 'wf_4',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 22}],
                 'coordinates': []
             }
             wf_5 = {
-                'wind_farm_name': 'WF_5',
+                'wind_farm_name': 'wf_5',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 14}],
                 'coordinates': []
@@ -117,19 +117,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
         if filename == 'farm_specification_green_wind.p':
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
-                'wind_farm_name': 'WF_6',
+                'wind_farm_name': 'wf_6',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 9}],
                 #                'coordinates': []
             }
             wf_7 = {
-                'wind_farm_name': 'WF_7',
+                'wind_farm_name': 'wf_7',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 14}],
                 #                'coordinates': []
             }
             wf_8 = {
-                'wind_farm_name': 'WF_8',
+                'wind_farm_name': 'wf_8',
                 'wind_turbine_fleet': [{'wind_turbine': v80,
                                         'number_of_turbines': 2}],
                 #                'coordinates': []
