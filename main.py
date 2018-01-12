@@ -3,10 +3,10 @@ from windpowerlib import wind_farm as wf
 
 # Imports from lib_validation
 import wind_farm_specifications
-import feedin_time_series
 import visualization_tools
 import analysis_tools
 import tools
+from argenetz_data import get_argenetz_data
 
 # Other imports
 import os
