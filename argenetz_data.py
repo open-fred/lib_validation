@@ -129,7 +129,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
     return data
 
 
-def data_evaluation(filename, csv_print=False):
+def data_evaluation(filename, csv_print=True):
     """
     Evaluate the data in terms of which variables are given for each dataset.
 
