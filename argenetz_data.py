@@ -142,6 +142,7 @@ def data_evaluation(filename, csv_print=True):
         Decision whether to print resulting data frame to csv file.
 
     """
+    ########## ATTENTION: not working at the moment!!! ##########
     # Initialise pandas.DataFrame
     df_compare = pd.DataFrame()
     # Read file and add to DataFrame for each line (= filenames)
@@ -193,7 +194,6 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
 #    'wf_1_P_W', 'wf_1_v_wind', 'wf_1_P_W_inst', 'wf_2_P_W', 'wf_2_P_W_inst',
 #    'wf_3_P_W', 'wf_3_v_wind', 'wf_4_P_W', 'wf_4_v_wind', 'wf_5_P_W',
 #    'wf_5_P_W_inst']
-#df_compare = data_evaluation('helper_files/filenames_all.txt')
 
 new_column_names_2016_2017 = [
     'wf_1_P_W', 'wf_1_P_W_theo', 'wf_1_v_wind', 'wf_1_wind_dir',
@@ -291,7 +291,13 @@ def check_arge_netz_data(df, year, start=None, end=None):
             title='{0}'.format(name))
 
 if __name__ == "__main__":
+    
+#    evaluate_data = False  # Check which variables are given for which farm
     check_theo_power = False  # theoretical power against wind speed if True
+
+#    if evaluate_data:
+#        # Filenames: filenames_all.txt, filenames_2016.txt,... see helper_files
+#        df_compare = data_evaluation('helper_files/filenames_2016.txt')
     if check_theo_power:
         year = 2016  # dont use 2015 - no wind speed!
         start = None
