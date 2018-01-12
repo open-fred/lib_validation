@@ -233,7 +233,7 @@ def get_and_plot_feedin(year, pickle_load=False, plot=False, x_limit=None):
     return data
 
 
-def check_arge_netz_data(df, year, start, end):
+def check_arge_netz_data(df, year, start=None, end=None):
     r"""
     This function was used to compare the theoretical power of ArgeNetz wind
     farms with the simulated power when the measured wind speed (of ArgeNetz
