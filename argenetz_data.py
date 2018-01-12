@@ -16,7 +16,7 @@ import pickle
 
 def read_data(filename, **kwargs):
     r"""
-    Fetches power time series from a file.
+    Fetches data from a csv file.
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ def read_data(filename, **kwargs):
     datapath : string, optional
         Path where the data file is stored. Default: './data'
     usecols : list of strings or list of integers, optional
-        .... Default: None
+        TODO: add explanation Default: None
 
     Returns
     -------
@@ -50,9 +50,9 @@ def read_data(filename, **kwargs):
 def restructure_data(filename, filename_column_names=None, filter_cols=False,
                      drop_na=False, **kwargs):
     r"""
-    Restructure data read from a csv file.
+    Restructures data read from a csv file.
 
-    Create a DataFrame. Data are filtered (if filter_cols is not None) and
+    Creates a DataFrame. Data is filtered (if filter_cols is not None) and
     Nan's are droped (if drop_na is not None).
 
     Parameters:
@@ -71,7 +71,8 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     Other Parameters
     ----------------
     datapath : string, optional
-        Path where the data file is stored. (for read_data()) Default: './data'
+        Path to the location of the data file. Needed for for read_data().
+        Default: './data'
 
     """
     df = read_data(filename, **kwargs)
@@ -119,7 +120,7 @@ def get_data(filename_files, filename_column_names, new_column_names,
     Returns
     -------
     data : pandas.DataFrame
-        Data of ArgeNetz wind farms with readable column names
+        Data of ArgeNetz wind farms with readable column names.
 
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -254,7 +255,12 @@ def get_energy_map_data(plz, place=None, peak_power=None,
 
 def check_arge_netz_data(df, year, start, end):
     r"""
+    This function was used to compare the theoretical power of ArgeNetz wind
+    farms with the simulated power when the measured wind speed (of ArgeNetz
+    data) is used.
 
+    As no wind speed is added to the data of 2015 this function can only be
+    used for the year 2015.
 
     """
     wind_farm_names = ['Bredstedt', 'PPC_4919', 'PPC_4950', 'PPC_5598']
