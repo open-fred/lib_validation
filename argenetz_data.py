@@ -186,27 +186,33 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
     plt.close()
 
 #new_column_names_2016_2017 = [
-#    'wf_1_power_output', 'wf_1_installed_power', 'wf_3_power_output', 'wf_3_wind_speed',
-#    'wf_3_installed_power', 'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power', 'wf_5_power_output',
+#    'wf_1_power_output', 'wf_1_installed_power', 'wf_3_power_output',
+#    'wf_3_wind_speed', 'wf_3_installed_power', 'wf_4_power_output',
+#    'wf_4_wind_speed', 'wf_4_installed_power', 'wf_5_power_output',
 #    'wf_5_wind_speed', 'wf_5_installed_power']
 #
 #new_column_names_2015 = [
-#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power', 'wf_2_power_output', 'wf_2_installed_power',
-#    'wf_3_power_output', 'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed', 'wf_5_power_output',
-#    'wf_5_installed_power']
+#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
+#    'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
+#    'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
+#    'wf_5_power_output', 'wf_5_installed_power']
 
 new_column_names_2016_2017 = [
-    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed', 'wf_1_wind_dir',
-    'wf_1_installed_power', 'wf_3_power_output', 'wf_3_theoretical_power', 'wf_3_wind_speed',
-    'wf_3_wind_dir', 'wf_3_installed_power', 'wf_4_power_output', 'wf_4_theoretical_power',
-    'wf_4_wind_speed', 'wf_4_wind_dir', 'wf_4_installed_power', 'wf_5_power_output',
-    'wf_5_theoretical_power', 'wf_5_wind_speed', 'wf_5_wind_dir', 'wf_5_installed_power']
+    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
+    'wf_1_wind_dir', 'wf_1_installed_power', 'wf_3_power_output',
+    'wf_3_theoretical_power', 'wf_3_wind_speed', 'wf_3_wind_dir',
+    'wf_3_installed_power', 'wf_4_power_output', 'wf_4_theoretical_power',
+    'wf_4_wind_speed', 'wf_4_wind_dir', 'wf_4_installed_power',
+    'wf_5_power_output', 'wf_5_theoretical_power', 'wf_5_wind_speed',
+    'wf_5_wind_dir', 'wf_5_installed_power']
 
 new_column_names_2015 = [
-    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed', 'wf_1_wind_dir',
-    'wf_1_installed_power', 'wf_2_power_output', 'wf_2_theoretical_power', 'wf_2_installed_power', 'wf_3_power_output',
-    'wf_3_theoretical_power', 'wf_4_power_output', 'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_5_power_output',
-    'wf_5_installed_power', 'wf_5_theoretical_power']
+    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
+    'wf_1_wind_dir', 'wf_1_installed_power', 'wf_2_power_output',
+    'wf_2_theoretical_power', 'wf_2_installed_power', 'wf_3_power_output',
+    'wf_3_theoretical_power', 'wf_4_power_output', 'wf_4_theoretical_power',
+    'wf_4_wind_speed', 'wf_5_power_output', 'wf_5_installed_power',
+    'wf_5_theoretical_power']
 
 
 def get_argenetz_data(year, pickle_load=False, plot=False, x_limit=None):
