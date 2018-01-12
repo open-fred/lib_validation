@@ -131,14 +131,15 @@ def get_data(filename_files, filename_column_names, new_column_names,
 
 def data_evaluation(filename, csv_print=True):
     """
-    Evaluate the data in terms of which variables are given for each dataset.
+    Evaluate the data in terms of which data series exist of which farm for
+    which year.
 
     Parameters:
     -----------
     filename : string
         Name of file that contains names of files to be evaluated.
     csv_print : boolean
-        Decision whether to print resultating data frame to csv file.
+        Decision whether to print resulting data frame to csv file.
 
     """
     # Initialise pandas.DataFrame
