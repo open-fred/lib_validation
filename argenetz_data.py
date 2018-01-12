@@ -308,15 +308,18 @@ def check_arge_netz_data(df, year, start, end):
             title='{0}'.format(name))
 
 if __name__ == "__main__":
-    year = 2016  # dont use 2015 - no wind speed!
-    start = None
-    end = None
-    # Get ArgeNetz Data
-    arge_netz_data = get_and_plot_feedin(
-        year, pickle_load=True, plot=False)
-    check_arge_netz_data(arge_netz_data, year, start, end)
-    print('Done')
-#    print(arge_netz_data)
+    check_theo_power = False  # theoretical power against wind speed if True
+    if check_theo_power:
+        year = 2016  # dont use 2015 - no wind speed!
+        start = None
+        end = None
+        # Get ArgeNetz Data
+        arge_netz_data = get_and_plot_feedin(
+            year, pickle_load=True, plot=False)
+        check_arge_netz_data(arge_netz_data, year, start, end)
+        print("Plots for comparing theoretical power with simulated power " +
+              "(measured wind speed) are saved in 'Plots/Test_Arge'")
+
 
 ## Evaluate WEA data from Energymap
 #pickle_load = False
