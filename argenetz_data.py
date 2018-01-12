@@ -95,6 +95,16 @@ def get_data(filename_files, filename_column_names, new_column_names,
     r"""
     Fetches data of the requested files and renames columns.
 
+    Parameters
+    ----------
+    filename_files : String
+        Filename of file containing filenames of csv file to be read.
+    filename_column_names : string, optional
+        Name of file that contains column names to be filtered for.
+        Default: None.
+    new_column_names : List
+        Contains new column names (Strings) for the data frame.
+
     Returns
     -------
     data : pandas.DataFrame
