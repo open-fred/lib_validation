@@ -70,11 +70,6 @@ extra_plots = np.array([
 # relative path to latex tables folder
 latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 
-# TODO: check, whether the following still work / are needed:
-plot_arge_feedin = False  # If True all ArgeNetz data is plotted
-plot_wind_farms = False  # If True usage of plot_or_print_farm()
-plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
-
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_farms(validation_data_name):
@@ -150,13 +145,6 @@ def get_validation_farms(validation_data_name):
     # Add a summary of the wind farms to validation_farms
     validation_farms.append(tools.summarize_output_of_farms(validation_farms))
     return validation_farms, temporal_resolution_validation, wind_farm_data
-#if plot_arge_feedin:
-#    # y_limit = [0, 60]
-#    y_limit = None
-#    visualization_tools.plot_or_print_farm(
-#        validation_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
-#        y_limit=y_limit)
-# TODO: check if this works - might be deleted
 
 
 # ------------------------- Power output simulation ------------------------- #
@@ -258,12 +246,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     # Add a summary of the wind farms to simulation_farms
     simulation_farms.append(tools.summarize_output_of_farms(simulation_farms))
     return simulation_farms, temporal_resolution_simulation
-#if plot_wind_farms:
-#    y_limit = [0, 60]
-#    visualization_tools.plot_or_print_farm(
-#        simulation_farms, save_folder='Merra_power_output/{0}'.format(year),
-#        y_limit=y_limit)
-# TODo: check if the above works
+
 
 # ------------------------------ Data Evaluation ---------------------------- #
 # Initialise array for filenames of pickle dumped validation objects
