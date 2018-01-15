@@ -92,35 +92,25 @@ def get_validation_farms(validation_data_name):
     validation_farms : List
         Contains :class:`windpowerlib.wind_farm.WindFarm` objects representing
         the wind farms with the measured (validation) power output.
-    temporal_resolution_validation : Integer
-        Temporal resolution of valdation time series in minutes.
     wind_farm_data : List
         Contains descriptions of the wind farms of the valdiation data.
 
     """
-    # TODO: temporal_resolution needed? maybe from timestamps. 
     if validation_data_name == 'ArgeNetz':
+        # Create DatetimeIndex indices for DataFrame depending on the year
         if year == 2015:
-            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
-                'farm_specification_argenetz_2015.p',
-                os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'),
-                pickle_load_wind_farm_data)
-            temporal_resolution_validation = 5  # minutes
-            # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
-                temporal_resolution_validation, 'Europe/Berlin',
+                temporal_resolution=5, time_zone='Europe/Berlin',
                 start='5/1/2015', end='1/1/2016')
-        if (year == 2016 or year == 2017):
-            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
-                'farm_specification_argenetz_2016.p',
-                os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'),
-                pickle_load_wind_farm_data)
-            temporal_resolution_validation = 1  # minutes
-            # Create DatetimeIndex indices for DataFrame
+        if year == 2016:
             indices = tools.get_indices_for_series(
-                temporal_resolution_validation, 'Europe/Berlin', year=year)
+                temporal_resolution=1, time_zone='Europe/Berlin', year=year)
+        # Get wind farm data
+        wind_farm_data = wind_farm_specifications.get_wind_farm_data(
+            'farm_specification_argenetz_{0}.p'.format(year),
+            os.path.join(os.path.dirname(__file__),
+                         'dumps/wind_farm_data'),
+            pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         validation_data = get_argenetz_data(
             year, only_get_power=True, pickle_load=pickle_load_arge,
@@ -143,11 +133,11 @@ def get_validation_farms(validation_data_name):
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
-            wind_farm.power_output, temporal_resolution_validation)
+            wind_farm.power_output)
         validation_farms.append(wind_farm)
     # Add a summary of the wind farms to validation_farms
     validation_farms.append(tools.summarize_output_of_farms(validation_farms))
-    return validation_farms, temporal_resolution_validation, wind_farm_data
+    return validation_farms, wind_farm_data
 
 
 # ------------------------- Power output simulation ------------------------- #
@@ -178,16 +168,12 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     simulation_farms : List
         Contains :class:`windpowerlib.wind_farm.WindFarm` objects representing
         the simulated wind farms.
-    temporal_resolution_simulation : Integer
-        Temporal resolution of simulation time series in minutes.
 
     """
     if weather_data_name == 'MERRA':
-        temporal_resolution_simulation = 60
         filename_weather = 'weather_df_merra_{0}.p'.format(year)
         pickle_load_weather = pickle_load_merra
     if weather_data_name == 'open_FRED':
-        temporal_resolution_simulation = 30
         filename_weather = 'weather_df_open_FRED_{0}.p'.format(year)
         pickle_load_weather = pickle_load_open_fred
         data_height = {'wind_speed': 10,
@@ -213,8 +199,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         wind_farm = wf.WindFarm(**description)
         # Get weather data
         weather = tools.get_weather_data(
-            weather_data_name, temporal_resolution_simulation,
-            pickle_load_weather, filename_weather, year, wind_farm.coordinates)
+            weather_data_name, pickle_load_weather, filename_weather, year,
+            wind_farm.coordinates)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
             # For ArgeNetz data in 2015 only data from May is needed
             weather, converted = tools.convert_time_zone_of_index(
@@ -244,11 +230,11 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     #        wind_farm.power_output.index).tz_convert('UTC')
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
-            wind_farm.power_output, temporal_resolution_simulation)
+            wind_farm.power_output)
         simulation_farms.append(wind_farm)
     # Add a summary of the wind farms to simulation_farms
     simulation_farms.append(tools.summarize_output_of_farms(simulation_farms))
-    return simulation_farms, temporal_resolution_simulation
+    return simulation_farms
 
 
 # ------------------------------ Data Evaluation ---------------------------- #
@@ -258,12 +244,12 @@ filenames_validation_objects = []
 # validation sets and utilize visualization methods
 for approach in approach_list:
     for validation_data_name in validation_data_list:
-        validation_farms, temporal_resolution_validation, wind_farm_data = (
-            get_validation_farms(validation_data_name))
+        validation_farms, wind_farm_data = get_validation_farms(
+            validation_data_name)
         for weather_data_name in weather_data_list:
-            simulation_farms, temporal_resolution_simulation = (
-                get_simulation_farms(weather_data_name, validation_data_name,
-                                     wind_farm_data, approach))
+            simulation_farms = get_simulation_farms(
+                weather_data_name, validation_data_name,
+                wind_farm_data, approach)
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
@@ -271,35 +257,28 @@ for approach in approach_list:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'annual_energy_output',
-                        validation_data_name, weather_data_name, time_period,
-                        time_zone, 'A'))
+                        'annual_energy_output', validation_data_name,
+                        weather_data_name, time_period, time_zone, 'A'))
             if 'hourly_energy_output' in output_methods:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'hourly_energy_output',
-                        validation_data_name, weather_data_name, time_period,
-                        time_zone, 'H'))
+                        'hourly_energy_output', validation_data_name,
+                        weather_data_name, time_period, time_zone, 'H'))
             if 'monthly_energy_output' in output_methods:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation,
                         'monthly_energy_output', validation_data_name,
                         weather_data_name, time_period, time_zone, 'M'))
             if 'power_output' in output_methods:
                 for farm in simulation_farms:
                     farm.power_output = tools.upsample_series(
-                        farm.power_output, temporal_resolution_validation)
+                        farm.power_output,
+                        validation_farms[0].power_output.index.freq.n)
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'power_output',
+                        validation_farms, simulation_farms, 'power_output',
                         validation_data_name, weather_data_name, time_period,
                         time_zone))
 

@@ -13,7 +13,7 @@ from scipy.spatial import cKDTree
 import numpy as np
 
 
-def get_weather_data(weather_data_name, temporal_resolution, pickle_load=None,
+def get_weather_data(weather_data_name, pickle_load=None,
                      filename='pickle_dump.p', year=None, coordinates=None):
     r"""
     Helper function to load pickled weather data or retrieve data and dump it.
@@ -23,8 +23,6 @@ def get_weather_data(weather_data_name, temporal_resolution, pickle_load=None,
     weather_data_name : String
         String specifying if open_FRED or MERRA data is retrieved in case
         `pickle_load` is False.
-    temporal_resolution :  Float or Integer # TODO: float possible? necessary?
-        Temporal resolution of weather data time series in minutes.
     pickle_load : Boolean
         True if data has already been dumped before.
     filename : String
@@ -53,13 +51,13 @@ def get_weather_data(weather_data_name, temporal_resolution, pickle_load=None,
     weather_df = create_weather_df(data_frame, closest_coordinates,
                                    weather_data_name)
     # Set index to standardized form
-    if weather_data_name == 'open_FRED':
-        weather_df.index = tools.get_indices_for_series(
-            temporal_resolution, 'UTC', year=year)
-        # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
     if weather_data_name == 'MERRA':
         weather_df.index = tools.get_indices_for_series(
-            temporal_resolution, 'Europe/Berlin', year=year)
+            temporal_resolution=60, time_zone='Europe/Berlin', year=year)
+    if weather_data_name == 'open_FRED':
+        weather_df.index = tools.get_indices_for_series(
+            temporal_resolution=30, time_zone='UTC', year=year)
+        # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
     return weather_df
 
 
@@ -302,7 +300,7 @@ def power_output_simple_aggregation(wind_turbine_fleet, weather_df,
     return farm_power_output
 
 
-def annual_energy_output(power_output, temporal_resolution):
+def annual_energy_output(power_output, temporal_resolution=None):
     r"""
     Calculate annual energy output from power output time series.
 
@@ -311,7 +309,9 @@ def annual_energy_output(power_output, temporal_resolution):
     power_output : pd.Series
         Power output time series of wind turbine or wind farm.
     temporal_resolution : Integer
-        Temporal resolution of power output time series in minutes.
+        Temporal resolution of `power_output` time series in minutes. If the
+        temporal resolution can be called by `power_output.index.freq.n` this
+        parameter is not needed. Default: None
 
     Return
     ------
@@ -320,12 +320,20 @@ def annual_energy_output(power_output, temporal_resolution):
         unit of `power_output`.
 
     """
-    energy = power_output * temporal_resolution / 60
+    try:
+        energy = power_output * power_output.index.freq.n / 60
+    except AttributeError:
+        if temporal_resolution is not None:
+            energy = power_output * temporal_resolution / 60
+        else:
+            raise ValueError("`temporal_resolution` needs to be specified " +
+                             "as the frequency of the time series cannot be " +
+                             "called.")
     return energy.sum()
 
 
-def energy_output_series(power_output, temporal_resolution, output_resolution,
-                         time_zone=None):
+def energy_output_series(power_output, output_resolution,
+                         time_zone=None, temporal_resolution_intput=None):
     r"""
     Converts power output time series to hourly energy output time series.
 
@@ -343,8 +351,6 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
     ----------
     power_output : pd.Series
         Power output of wind turbine or wind farm.
-    temporal_resolution : Integer
-        Temporal resolution of power output time series in minutes.
     output_resolution : String
         Intended resolution of output series: 'H' for hourly, 'M' for monthly,
         etc. see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
@@ -352,6 +358,10 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
         Time zone information of the location of `power_output`. Not necessary
         if the `power_output` carries this information. Set to 'UTC' if
         resampling is wanted in UTC time zone. Default: None.
+    temporal_resolution_intput : Integer
+        Temporal resolution of `power_output` time series in minutes. If the
+        temporal resolution can be called by `power_output.index.freq.n` this
+        parameter is not needed. Default: None
 
     Returns
     -------
@@ -363,7 +373,16 @@ def energy_output_series(power_output, temporal_resolution, output_resolution,
     # Convert time series to local time zone if necessary
     power_output, converted = tools.convert_time_zone_of_index(
         power_output, 'local', local_time_zone=time_zone)
-    energy_output_series = power_output * temporal_resolution / 60
+    try:
+        energy_output_series = power_output * power_output.index.freq.n / 60
+    except AttributeError:
+        if temporal_resolution_intput is not None:
+            energy_output_series = (power_output *
+                                    temporal_resolution_intput / 60)
+        else:
+            raise ValueError("`temporal_resolution_intput` needs to be " +
+                             "specified as the frequency of the time " +
+                             "series cannot be called.")
     energy_output = energy_output_series.resample(output_resolution).sum()
     energy_output = energy_output.dropna()
     if converted:
@@ -414,7 +433,6 @@ def upsample_series(series, output_resolution):
 
 def get_indices_for_series(temporal_resolution, time_zone, year=None,
                            start=None, end=None):
-    # TODO: possibile add on: add time_zone parameter
     r"""
     Create indices for annual time series in a certain frequency and form.
 
