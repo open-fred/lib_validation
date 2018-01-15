@@ -221,6 +221,36 @@ def get_argenetz_data(year, only_get_power=True, pickle_load=False,
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
 
+    year : Integer
+        Desired year to get the data for.
+    only_get_power : Boolean
+        If True only the power output of each wind farm is written to the
+        output data frame, if False column containing wind speed, wind
+        direction, theoretical power output and installed power are added, too.
+        Default: True.
+    pickle_load : Boolean
+        If True and `only_get_power` is True the data frame is loaded from the
+        pickle dump, if False or `only_get_power` is False the data is loaded
+        from the csv files. Default: False.
+    pickle_dump : Boolean
+        If True and `only_get_power` is True the data frame is pickle dumped,
+        if False or `only_get_power` is False no dump is carried out.
+        Default: False.
+    csv_load : Boolean
+        If True and `only_get_power` is True the data is loaded from a csv file
+        that was created in an earlier run, if False or `only_get_power` is
+        False the data is loaded from the original csv files from ArgeNetz.
+        Default: False
+    csv_dump : Boolean
+        If True and `only_get_power` is True the data is written into a csv
+        file, if False or `only_get_power` this does not happen. Default: False
+    plot : Boolean
+        If True each column of the data farme is plotted into a seperate
+        figure. Default: False
+    x_limit : list of floats or integers
+        Values for xmin and xmax in case of `plot` being True and x limits
+        wanted. Default: None.
+
     Returns
     -------
     argenetz_df : pandas.DataFrame
