@@ -170,7 +170,7 @@ def annual_energy_output(power_output, temporal_resolution=None):
     """
     try:
         energy = power_output * power_output.index.freq.n / 60
-    except AttributeError:
+    except Exception:
         if temporal_resolution is not None:
             energy = power_output * temporal_resolution / 60
         else:
@@ -223,7 +223,7 @@ def energy_output_series(power_output, output_resolution,
         power_output, 'local', local_time_zone=time_zone)
     try:
         energy_output_series = power_output * power_output.index.freq.n / 60
-    except AttributeError:
+    except Exception:
         if temporal_resolution_intput is not None:
             energy_output_series = (power_output *
                                     temporal_resolution_intput / 60)
