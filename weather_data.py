@@ -1,3 +1,9 @@
+"""
+The ``weather_data`` module contains functions to read and dump MERRA-2 and
+open_FRED weather data.
+
+"""
+
 # Imports from lib_validation
 import tools
 
@@ -5,14 +11,13 @@ import tools
 import pandas as pd
 import os
 import pickle
-from scipy.spatial import cKDTree
-import numpy as np
 
 
 def get_weather_data(weather_data_name, pickle_load=None,
                      filename='pickle_dump.p', year=None, coordinates=None):
     r"""
     Helper function to load pickled weather data or retrieve data and dump it.
+
     Parameters
     ----------
     weather_data_name : String
@@ -28,21 +33,20 @@ def get_weather_data(weather_data_name, pickle_load=None,
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
         Default: None
+
     Returns
     -------
     weather_df : pandas.DataFrame
         Weather data with datetime index and data like temperature and
         wind speed as columns.
+
     """
     if pickle_load:
         data_frame = pickle.load(open(filename, 'rb'))
     else:
         data_frame = read_and_dump_csv_weather(weather_data_name, year,
                                                filename)
-    # Find closest coordinates to weather data point and create weather_df
-    closest_coordinates = get_closest_coordinates(data_frame, coordinates)
-    weather_df = create_weather_df(data_frame, closest_coordinates,
-                                   weather_data_name)
+    weather_df = create_weather_df(data_frame, weather_data_name, coordinates)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
         weather_df.index = tools.get_indices_for_series(
@@ -58,6 +62,7 @@ def read_and_dump_csv_weather(weather_data_name, year,
                               filename='pickle_dump.p'):
     r"""
     Reads csv file containing weather data and dumps it as data frame.
+
     Parameters
     ----------
     weather_data_name : String
@@ -67,11 +72,13 @@ def read_and_dump_csv_weather(weather_data_name, year,
     filename : String
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
+
     Returns
     -------
     data_frame : pd.DataFrame
         Containins raw weather data (MERRA) or already revised weather data
         (open_FRED).
+
     """
     if weather_data_name == 'open_FRED':
         # Load data from csv files and join in one data frame
@@ -97,7 +104,8 @@ def read_and_dump_csv_weather(weather_data_name, year,
                                     (df_csv['lon'] == coordinates[1])]
                     series = df['Z0']
                     series.index = series.index.tz_localize('UTC')
-                    z0_series = z0_series.append(upsample_series(series, 30))
+                    z0_series = z0_series.append(tools.upsample_series(
+                        series, output_resolution=30, input_resolution='H'))
                 data_frame['roughness_length'] = z0_series.values
         data_frame = data_frame.loc[:, ~data_frame.columns.duplicated()]
         data_frame = data_frame.rename(columns={'WSS_10M': 'wind_speed',
@@ -112,27 +120,36 @@ def read_and_dump_csv_weather(weather_data_name, year,
     return data_frame
 
 
-def create_weather_df(data_frame, coordinates, weather_data_name):
+def create_weather_df(data_frame, weather_data_name, coordinates=None):
     r"""
     Parameters
     ----------
     data_frame : pd.DataFrame
         Contains weather data in raw form from csv file (MERRA) or already
         altered data (open_FRED).
+    weather_data_name : String
+        Specifying the name of the weather data.
     coordinates : List
         List of coordinates [lat, lon] of location. For loading data.
         Default: None
-    weather_data_name : String
-        Specifying the name of the weather data.
+
     Returns
     -------
     weather_df : pandas.DataFrame
         Weather data with time series as index and data like temperature and
         wind speed as columns.
+
     """
-    # Select coordinates from data frame
-    weather_df = data_frame.loc[(data_frame['lat'] == coordinates[0]) &
-                                (data_frame['lon'] == coordinates[1])]
+    if coordinates is not None:
+        # Find closest coordinates to weather data point and create weather_df
+        closest_coordinates = tools.get_closest_coordinates(data_frame,
+                                                            coordinates)
+        # Select coordinates from data frame
+        weather_df = data_frame.loc[
+            (data_frame['lat'] == closest_coordinates[0]) &
+            (data_frame['lon'] == closest_coordinates[1])]
+    else:
+        weather_df = data_frame
     if weather_data_name == 'MERRA':
         weather_df = weather_df.drop(['v1', 'v2', 'h2', 'cumulated hours',
                                       'SWTDN', 'SWGDN'], axis=1)
@@ -140,4 +157,24 @@ def create_weather_df(data_frame, coordinates, weather_data_name):
             columns={'v_50m': 'wind_speed', 'h1': 'temperature_height',
                      'z0': 'roughness_length', 'T': 'temperature',
                      'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
-return weather_df
+    return weather_df
+
+
+if __name__ == "__main__":
+    weather_data_names = [
+        'MERRA',
+        'open_FRED'
+        ]
+    years = [
+        2015,
+#        2016
+    ]
+    coordinates = [54.5, 8.75]  # example: [54.5, 8.75]: load for these coordinates
+    for year in years:
+        for weather_data_name in weather_data_names:
+            filename_weather = os.path.join(
+                os.path.dirname(__file__), 'dumps/weather',
+                'weather_df_{0}_{1}.p'.format(weather_data_name, year))
+            weather = get_weather_data(
+                weather_data_name, filename=filename_weather,
+                year=year, coordinates=coordinates)
