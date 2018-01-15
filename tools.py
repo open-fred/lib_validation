@@ -113,7 +113,7 @@ def read_and_dump_csv_weather(weather_data_name, year,
                 data_frame['roughness_length'] = z0_series.values
         data_frame = data_frame.loc[:, ~data_frame.columns.duplicated()]
         data_frame = data_frame.rename(columns={'WSS_10M': 'wind_speed',
-                                   'WSS': 'wind_speed_80m'})
+                                                'WSS': 'wind_speed_80m'})
     elif weather_data_name == 'MERRA':
         # Load data from csv
         data_frame = pd.read_csv(os.path.join(

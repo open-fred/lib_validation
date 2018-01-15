@@ -242,11 +242,11 @@ def get_argenetz_data(year, only_get_power=True, pickle_load=False,
                                pickle_load=pickle_load)
     if only_get_power:
         pickle_path = os.path.abspath(os.path.join(
-                          os.path.dirname(__file__), 'dumps/validation_data',
-                          'arge_power_output{0}.p'.format(year)))
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'arge_power_output{0}.p'.format(year)))
         csv_path = os.path.abspath(os.path.join(
-                    os.path.dirname(__file__), 'dumps/validation_data',
-                    'arge_power_output{0}.csv'.format(year)))
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'arge_power_output{0}.csv'.format(year)))
         if pickle_load:
             argenetz_df = pickle.load(open(pickle_path, 'rb'))
         else:
@@ -299,12 +299,13 @@ def check_arge_netz_data(df, year, start=None, end=None):
         power_output_theo = df[name + '_theoretical_power'] / 1000
         power_output_theo = pd.Series(data=power_output_theo.values,
                                       index=indices)
-        power_output_by_wind_speed = (turbine_amount[0] * power_output.power_curve(
-            df[name + '_wind_speed'], e66.power_curve['wind_speed'],
-            e66.power_curve['values']) +
+        power_output_by_wind_speed = (
+            turbine_amount[0] * power_output.power_curve(
+                df[name + '_wind_speed'], e66.power_curve['wind_speed'],
+                e66.power_curve['values']) +
             turbine_amount[1] * power_output.power_curve(
-            df[name + '_wind_speed'], e70.power_curve['wind_speed'],
-            e70.power_curve['values'])) / (1*10**6)
+                df[name + '_wind_speed'], e70.power_curve['wind_speed'],
+                e70.power_curve['values'])) / (1*10**6)
         power_output_by_wind_speed = pd.Series(
             data=power_output_by_wind_speed.values, index=indices)
         val_obj = analysis_tools.ValidationObject(
@@ -337,7 +338,7 @@ if __name__ == "__main__":
     check_theo_power = False  # theoretical power against wind speed if True
 
 #    if evaluate_data:
-#        # Filenames: filenames_all.txt, filenames_2016.txt,... see helper_files
+#        # Filenames: filenames_all.txt, filenames_2016.txt,.. see helper_files
 #        df_compare = data_evaluation('helper_files/filenames_2016.txt')
     if check_theo_power:
         year = 2016  # dont use 2015 - no wind speed!
