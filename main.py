@@ -6,6 +6,7 @@ import wind_farm_specifications
 import visualization_tools
 import analysis_tools
 import tools
+import latex_tables
 from argenetz_data import get_argenetz_data
 
 # Other imports
@@ -383,84 +384,8 @@ for approach in approach_list:
 
 
 # ---------------------------------- LaTeX Output --------------------------- #
-def create_column_format(number_of_columns, position):
-        r"""
-        Creates column format for pd.DataFrame.to_latex() function.
-
-        Parameters
-        ----------
-        number_of_columns : Integer
-            Number of columns of the table to be created without index column.
-        position : String
-            Position of text in columns. For example: 'c', 'l', 'r'.
-
-        """
-        column_format = 'l'
-        for i in range(number_of_columns):
-            column_format = column_format.__add__(position)
-        return column_format
-
 path_latex_tables = os.path.join(os.path.dirname(__file__),
                                  latex_tables_folder)
-
-
-def get_columns(column_names, multiplikator):
-    r"""
-    Produces columns for pd.DataFrame needed for latex output.
-
-    Parameters
-    ----------
-    column_names : List
-        Contains column names (String).
-    multiplikator : Integer
-        Frequency of column names.
-
-    Returns
-    -------
-    columns : List
-        Column names for pd.DataFrame needed for latex output.
-
-    """
-    columns = []
-    for column_name in column_names:
-        columns.extend([column_name for i in range(multiplikator)])
-    return columns
-
-
-def get_data(validation_sets, data_names, object_position):
-    r"""
-    Retruns list containing data for pd.DataFrame needed for latex output.
-
-    Paramters
-    ---------
-    validation_sets : List
-        Contains lists of :class:`~.analysis_tools.ValidationObject` objects.
-    data_names : List
-        Contains specification of data (Strings) to be displayed.
-    object_position : Integer
-        Position of object in lists in `validation_sets`.
-
-    Returns
-    -------
-    data : List
-        Data for pd.DataFrame needed for latex output.
-
-    """
-    data = []
-    if 'RMSE' in data_names:
-        data.extend([round(validation_sets[j][object_position].rmse, 2)
-                     for j in range(len(weather_data_list))])
-    if 'Pr' in data_names:
-        data.extend([round(validation_sets[j][object_position].pearson_s_r, 2)
-                     for j in range(len(weather_data_list))])
-    if 'mean bias' in data_names:
-        data.extend([round(validation_sets[j][object_position].mean_bias, 2)
-                     for j in range(len(weather_data_list))])
-    if 'std. dev.' in data_names:
-        data.extend([round(
-            validation_sets[j][object_position].standard_deviation, 2)
-            for j in range(len(weather_data_list))])
-    return data
 
 
 if 'annual_energy_weather' in latex_output:
@@ -512,7 +437,7 @@ if 'annual_energy_weather' in latex_output:
             path_latex_tables, 'Annual_energy_weather_{0}_{1}.tex'.format(
                 year, approach))
         latex_df.to_latex(buf=filename_table,
-                          column_format=create_column_format(len(
+                          column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
                           multicolumn_format='c')
 
@@ -538,9 +463,10 @@ if 'key_figures_weather' in latex_output:
                     val_set for val_set in validation_sets
                     if val_set[0].output_method == output_method]
                 for i in range(len(validation_sets_part[0])):
-                    data = np.array([get_data(
+                    data = np.array([latex_tables.get_data(
                         validation_sets_part,
-                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i)])
+                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i,
+                        len(weather_data_list))])
                     column_names = ['RMSE [MW]/[MWh]', "Pearson's r",
                                     'mean bias [MW]/[MWh]',
                                     'standard deviation [MW]/[MWh]']
@@ -548,9 +474,9 @@ if 'key_figures_weather' in latex_output:
                         validation_sets_part[j][0].weather_data_name
                         for j in range(len(weather_data_list))] * len(
                         column_names)
-                    columns = [np.array(get_columns(column_names,
-                                                    len(weather_data_list))),
-                               np.array(columns_2)]
+                    columns = [np.array(latex_tables.get_columns(
+                        column_names, len(weather_data_list))),
+                        np.array(columns_2)]
                     index = ['{0} {1}'.format(
                         validation_sets_part[0][i].object_name,
                         validation_sets_part[0][i].output_method.rsplit(
@@ -574,7 +500,7 @@ if 'key_figures_weather' in latex_output:
             path_latex_tables, 'Key_figures_weather_{0}_{1}.tex'.format(
                 year, approach))
         latex_df.to_latex(buf=filename_table,
-                          column_format=create_column_format(
+                          column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
                           multicolumn_format='c')
 
