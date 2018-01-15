@@ -70,6 +70,9 @@ extra_plots = np.array([
 # relative path to latex tables folder
 latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 
+# Other plots
+plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
+
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_farms(validation_data_name):
