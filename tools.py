@@ -186,7 +186,7 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
 
 def power_output_simple(wind_turbine_fleet, weather_df, data_height):
     r"""
-    Calculate power output of several wind turbines by simple method.
+    Calculate power output of several wind turbines by a simple method.
 
     Simplest way to calculate the power output of a wind farm or other
     gathering of wind turbines. For the power_output of the single turbines
@@ -279,9 +279,6 @@ def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
 def power_output_simple_aggregation(wind_turbine_fleet):
     r"""
     Calulate power output of wind farm by simple aggregation.
-
-    Simplest way to calculate the power output of a wind farm or other
-    gathering of wind turbines.
 
     Parameters
     ----------
