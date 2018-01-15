@@ -219,7 +219,7 @@ def energy_output_series(power_output, output_resolution,
 
     """
     # Convert time series to local time zone if necessary
-    power_output, converted = tools.convert_time_zone_of_index(
+    power_output, converted = convert_time_zone_of_index(
         power_output, 'local', local_time_zone=time_zone)
     try:
         energy_output_series = power_output * power_output.index.freq.n / 60
@@ -238,7 +238,7 @@ def energy_output_series(power_output, output_resolution,
     return energy_output
 
 
-def upsample_series(series, output_resolution):
+def upsample_series(series, output_resolution, input_resolution=None):
     r"""
     Change temporal resolution of a series by filling with pad().
 
@@ -253,6 +253,10 @@ def upsample_series(series, output_resolution):
         Series to be upsampled.
     output_resolution : Integer
         Temporal resolution of output time series in minutes.
+    input_resolution : Integer
+        Temporal resolution of `series` in minutes. If the temporal resolution
+        can be called by `series.index.freq.n` this parameter is not needed.
+        Default: None
 
     Returns
     -------
@@ -267,8 +271,17 @@ def upsample_series(series, output_resolution):
         series.index = series.index.tz_convert('UTC')
     else:
         time_zone = None
-    index = pd.date_range(series.index[-1], periods=2,
-                          freq=series.index.freq) # TODO: why is freq = None for open_FRED data
+    try:
+        index = pd.date_range(series.index[-1], periods=2,
+                              freq=series.index.freq)
+    except Exception:
+        if input_resolution is not None:
+            index = pd.date_range(series.index[-1], periods=2,
+                                  freq=input_resolution)
+        else:
+            raise ValueError("`input_resolution` needs to be specified as " +
+                             "the frequency of the time " +
+                             "series cannot be called.")
     output_series = pd.concat([series, pd.Series(10, index=[index[1]])])
     output_series = output_series.resample(
         '{0}min'.format(output_resolution)).pad()
