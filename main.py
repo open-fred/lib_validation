@@ -7,6 +7,7 @@ import visualization_tools
 import analysis_tools
 import tools
 import latex_tables
+from weather_data import get_weather_data, read_and_dump_csv_weather
 from argenetz_data import get_argenetz_data
 
 # Other imports
@@ -188,8 +189,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     if not pickle_load_weather:
         # Read csv file that contains weather data (pd.DataFrame is dumped)
         # and turn pickle_load_weather to True
-        tools.read_and_dump_csv_weather(weather_data_name, year,
-                                        filename_weather)
+        read_and_dump_csv_weather(weather_data_name, year,
+                                  filename_weather)
         pickle_load_weather = True
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
@@ -198,7 +199,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         # Initialise wind farm
         wind_farm = wf.WindFarm(**description)
         # Get weather data
-        weather = tools.get_weather_data(
+        weather = get_weather_data(
             weather_data_name, pickle_load_weather, filename_weather, year,
             wind_farm.coordinates)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
