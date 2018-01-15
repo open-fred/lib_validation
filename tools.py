@@ -224,8 +224,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, data_height):
                 wind_speed_hub,
                 turbine_type['wind_turbine'].power_curve['wind_speed'],
                 turbine_type['wind_turbine'].power_curve['values']))
-    return power_output_simple_aggregation(wind_turbine_fleet, weather_df,
-                                           data_height)
+    return power_output_simple_aggregation(wind_turbine_fleet)
 
 
 def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
@@ -277,8 +276,7 @@ def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
                                            data_height)
 
 
-def power_output_simple_aggregation(wind_turbine_fleet, weather_df,
-                                    data_height):
+def power_output_simple_aggregation(wind_turbine_fleet):
     r"""
     Calulate power output of wind farm by simple aggregation.
 
