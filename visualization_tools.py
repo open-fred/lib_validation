@@ -48,38 +48,35 @@ def plot_or_print_turbine(wind_turbine, plot=True, print_out=False):
             print(wind_turbine.power_output)
 
 
-def plot_or_print_farm(wind_farms, save_folder, plot=True,
+def plot_or_print_farm(wind_farm, save_folder, plot=True,
                        print_out=False, y_limit=None, x_limit=None):
-    # TODO only for one farm!?
     """
     Plot power output and/or power curves of wind farm.
 
     Parameters:
     -----------
-    wind_farms : List of objects
-        List of wind farm objects.
+    wind_farm : Object
+        Wind farm object.
     save_folder : String
         Name of Folder for saving the plots.
     """
     if plot:
-        for farm in wind_farms:
-            fig = plt.figure()
-            farm.power_output.plot()
-            plt.xticks(rotation='vertical')
-            plt.title(farm.wind_farm_name, fontsize=20)
-            plt.ylabel('Power output in MW')
-            if y_limit:
-                plt.ylim(ymin=y_limit[0], ymax=y_limit[1])
-            if x_limit:
-                plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
-            plt.tight_layout()
-            fig.savefig(os.path.abspath(os.path.join(
-                os.path.dirname(__file__), '../Plots', save_folder,
-                str(farm.wind_farm_name) + '.pdf')))
-            plt.close()
+        fig = plt.figure()
+        wind_farm.power_output.plot()
+        plt.xticks(rotation='vertical')
+        plt.title(wind_farm.wind_farm_name, fontsize=20)
+        plt.ylabel('Power output in MW')
+        if y_limit:
+            plt.ylim(ymin=y_limit[0], ymax=y_limit[1])
+        if x_limit:
+            plt.xlim(xmin=x_limit[0], xmax=x_limit[1])
+        plt.tight_layout()
+        fig.savefig(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '../Plots', save_folder,
+            str(wind_farm.wind_farm_name) + '.pdf')))
+        plt.close()
     if print_out:
-        for farm in wind_farms:
-            print(farm.power_output)
+        print(wind_farm.power_output)
 
 
 def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
