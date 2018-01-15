@@ -265,9 +265,9 @@ def evaluate_feedin_time_series(
                 local_time_zone=time_zone)
             # Selecet time steps
             validation_series = tools.select_certain_time_steps(
-                    validation_series, time_period)
+                validation_series, time_period)
             simulation_series = tools.select_certain_time_steps(
-                    simulation_series, time_period)
+                simulation_series, time_period)
             # Convert back to UTC (if there was conversion)
             if converted_v:
                 validation_series.index = validation_series.index.tz_convert(
