@@ -355,15 +355,20 @@ def check_arge_netz_data(df, year, start=None, end=None):
 
 if __name__ == "__main__":
     years = [2015, 2016]  # possible: 2015, 2016, 2017
-    only_get_power = False  # Only get power output instead of other parameters
-    pickle_load = False  # Load data from csv
-    pickle_dump = True  # Dump data
-    csv_load = False  # load dataframe with only power output from csv
-    csv_dump = True  # write dataframe with only power output to csv
     # Get Arge Netz data
     for year in years:
-        get_argenetz_data(year, only_get_power, pickle_load, pickle_dump,
-                          csv_load, csv_dump, plot=False)
+        get_argenetz_data(
+            # NOTE: pickle load/dump and csv load/dump is only realized if
+            #       `only_get_power` is True.
+            year,
+            only_get_power=False,  # Do not read other parameters like v_wind
+            pickle_load=False,  # Load power output from former pickle dump
+            pickle_dump=True,  # Dump power output data frame
+            csv_load=False,  # Load saved power output data frame from csv
+            csv_dump=True,  # Save power output data frame in csv file
+            plot=False)  # Plot each column of dataframe
+
+# Other paramterts:
 #    evaluate_data = False  # Check which variables are given for which farm
     check_theo_power = False  # theoretical power against wind speed if True
 
