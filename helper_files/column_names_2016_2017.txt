@@ -1,4 +1,4 @@
-﻿Bredstedt :: Elektrische Wirkleistung :: [kW]
+Bredstedt :: Elektrische Wirkleistung :: [kW]
 Bredstedt :: Mögliche elektrische Wirkleistung (fluktuierende Erzeuger) :: [kW]
 Bredstedt :: Windgeschwindigkeit :: [ m/s]
 Bredstedt :: Windrichtung (0°=Nord) :: [ °]
