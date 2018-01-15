@@ -7,6 +7,9 @@ import seaborn as sns
 import pandas as pd
 import os
 
+# TODO's:
+# write small tool for display of all turbines of a wind farm
+
 
 def print_whole_dataframe(df):
     r"""
@@ -104,7 +107,7 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
     plt.close()
-# TODO: write small tool for display of all turbines of a wind farm
+
 
 def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
@@ -249,10 +252,10 @@ def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
     # Add certain values to plot as text
     plt.annotate(
         'RMSE = {0} \n Pr = {1} \n mean bias = {2}{3} \n std dev = {4}'.format(
-             round(validation_object.rmse, 2),
-             round(validation_object.pearson_s_r, 2),
-             round(validation_object.mean_bias, 2), label_part,
-             round(validation_object.standard_deviation, 2)) + label_part,
+            round(validation_object.rmse, 2),
+            round(validation_object.pearson_s_r, 2),
+            round(validation_object.mean_bias, 2), label_part,
+            round(validation_object.standard_deviation, 2)) + label_part,
         xy=(1, 1), xycoords='axes fraction',
         xytext=(-6, -6), textcoords='offset points',
         ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
