@@ -172,10 +172,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
 
     """
     if weather_data_name == 'MERRA':
-        filename_weather = 'weather_df_merra_{0}.p'.format(year)
         pickle_load_weather = pickle_load_merra
     if weather_data_name == 'open_FRED':
-        filename_weather = 'weather_df_open_FRED_{0}.p'.format(year)
         pickle_load_weather = pickle_load_open_fred
         data_height = {'wind_speed': 10,
                        'roughness_length': 0, # TODO: only for wind speed exact!
@@ -185,7 +183,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
 
     # Generate filename (including path) for pickle dumps (and loads)
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
-                                    filename_weather)
+                                    'weather_df_{0}_{1}.p'.format(
+                                        weather_data_name, year))
     if not pickle_load_weather:
         # Read csv file that contains weather data (pd.DataFrame is dumped)
         # and turn pickle_load_weather to True
