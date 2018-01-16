@@ -3,10 +3,12 @@ from windpowerlib import wind_farm as wf
 
 # Imports from lib_validation
 import wind_farm_specifications
-import feedin_time_series
 import visualization_tools
 import analysis_tools
 import tools
+import latex_tables
+from weather_data import get_weather_data, read_and_dump_csv_weather
+from argenetz_data import get_argenetz_data
 
 # Other imports
 import os
@@ -27,7 +29,7 @@ approach_list = [
     ]
 weather_data_list = [
     'MERRA',
-#    'open_FRED' # TODO: not implemented yet
+    'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
@@ -70,10 +72,8 @@ extra_plots = np.array([
 # relative path to latex tables folder
 latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 
-# TODO: check, whether the following still work / are needed:
-plot_arge_feedin = False  # If True all ArgeNetz data is plotted
-plot_wind_farms = False  # If True usage of plot_or_print_farm()
-plot_wind_turbines = False  # If True usage of plot_or_print_turbine()
+# Other plots
+plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
@@ -94,36 +94,29 @@ def get_validation_farms(validation_data_name):
     validation_farms : List
         Contains :class:`windpowerlib.wind_farm.WindFarm` objects representing
         the wind farms with the measured (validation) power output.
-    temporal_resolution_validation : Integer
-        Temporal resolution of valdation time series in minutes.
     wind_farm_data : List
         Contains descriptions of the wind farms of the valdiation data.
 
     """
-    # TODO: temporal_resolution needed? maybe from timestamps. 
     if validation_data_name == 'ArgeNetz':
+        # Create DatetimeIndex indices for DataFrame depending on the year
         if year == 2015:
-            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
-                'farm_specification_argenetz_2015.p',
-                os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'))
-            temporal_resolution_validation = 5  # minutes
-            # Create DatetimeIndex indices for DataFrame
             indices = tools.get_indices_for_series(
-                temporal_resolution_validation, 'Europe/Berlin',
+                temporal_resolution=5, time_zone='Europe/Berlin',
                 start='5/1/2015', end='1/1/2016')
-        if (year == 2016 or year == 2017):
-            wind_farm_data = wind_farm_specifications.get_wind_farm_data(
-                'farm_specification_argenetz_2016.p',
-                os.path.join(os.path.dirname(__file__),
-                             'dumps/wind_farm_data'))
-            temporal_resolution_validation = 1  # minutes
-            # Create DatetimeIndex indices for DataFrame
+        if year == 2016:
             indices = tools.get_indices_for_series(
-                temporal_resolution_validation, 'Europe/Berlin', year=year)
+                temporal_resolution=1, time_zone='Europe/Berlin', year=year)
+        # Get wind farm data
+        wind_farm_data = wind_farm_specifications.get_wind_farm_data(
+            'farm_specification_argenetz_{0}.p'.format(year),
+            os.path.join(os.path.dirname(__file__),
+                         'dumps/wind_farm_data'),
+            pickle_load_wind_farm_data)
         # Get ArgeNetz Data
-        validation_data = feedin_time_series.get_and_plot_feedin(
-            year, pickle_load=pickle_load_arge, plot=plot_arge_feedin)
+        validation_data = get_argenetz_data(
+            year, only_get_power=True, pickle_load=pickle_load_arge,
+            plot=plot_arge_feedin)
     if validation_data_name == '...':
         pass  # Add more data
 
@@ -136,24 +129,17 @@ def get_validation_farms(validation_data_name):
         # Power output in MW with DatetimeIndex indices
         wind_farm.power_output = pd.Series(
             data=(validation_data[description['wind_farm_name'] +
-                                  '_P_W'].values / 1000),  # TODO: make generic
+                                  '_power_output'].values / 1000),
             index=indices)
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
-            wind_farm.power_output, temporal_resolution_validation)
+            wind_farm.power_output)
         validation_farms.append(wind_farm)
     # Add a summary of the wind farms to validation_farms
     validation_farms.append(tools.summarize_output_of_farms(validation_farms))
-    return validation_farms, temporal_resolution_validation, wind_farm_data
-#if plot_arge_feedin:
-#    # y_limit = [0, 60]
-#    y_limit = None
-#    visualization_tools.plot_or_print_farm(
-#        validation_farms, save_folder='ArgeNetz_power_output/Plots_{0}'.format(year),
-#        y_limit=y_limit)
-# TODO: check if this works - might be deleted
+    return validation_farms, wind_farm_data
 
 
 # ------------------------- Power output simulation ------------------------- #
@@ -184,17 +170,11 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     simulation_farms : List
         Contains :class:`windpowerlib.wind_farm.WindFarm` objects representing
         the simulated wind farms.
-    temporal_resolution_simulation : Integer
-        Temporal resolution of simulation time series in minutes.
 
     """
     if weather_data_name == 'MERRA':
-        temporal_resolution_simulation = 60
-        filename_weather = 'weather_df_merra_{0}.p'.format(year)
         pickle_load_weather = pickle_load_merra
     if weather_data_name == 'open_FRED':
-        temporal_resolution_simulation = 30
-        filename_weather = 'weather_df_open_FRED_{0}.p'.format(year)
         pickle_load_weather = pickle_load_open_fred
         data_height = {'wind_speed': 10,
                        'roughness_length': 0, # TODO: only for wind speed exact!
@@ -204,12 +184,13 @@ def get_simulation_farms(weather_data_name, validation_data_name,
 
     # Generate filename (including path) for pickle dumps (and loads)
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
-                                    filename_weather)
+                                    'weather_df_{0}_{1}.p'.format(
+                                        weather_data_name, year))
     if not pickle_load_weather:
         # Read csv file that contains weather data (pd.DataFrame is dumped)
         # and turn pickle_load_weather to True
-        tools.read_and_dump_csv_weather(weather_data_name, year,
-                                        filename_weather)
+        read_and_dump_csv_weather(weather_data_name, year,
+                                  filename_weather)
         pickle_load_weather = True
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
@@ -218,9 +199,9 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         # Initialise wind farm
         wind_farm = wf.WindFarm(**description)
         # Get weather data
-        weather = tools.get_weather_data(
-            weather_data_name, temporal_resolution_simulation,
-            pickle_load_weather, filename_weather, year, wind_farm.coordinates)
+        weather = get_weather_data(
+            weather_data_name, pickle_load_weather, filename_weather, year,
+            wind_farm.coordinates)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
             # For ArgeNetz data in 2015 only data from May is needed
             weather, converted = tools.convert_time_zone_of_index(
@@ -250,17 +231,12 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     #        wind_farm.power_output.index).tz_convert('UTC')
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
-            wind_farm.power_output, temporal_resolution_simulation)
+            wind_farm.power_output)
         simulation_farms.append(wind_farm)
     # Add a summary of the wind farms to simulation_farms
     simulation_farms.append(tools.summarize_output_of_farms(simulation_farms))
-    return simulation_farms, temporal_resolution_simulation
-#if plot_wind_farms:
-#    y_limit = [0, 60]
-#    visualization_tools.plot_or_print_farm(
-#        simulation_farms, save_folder='Merra_power_output/{0}'.format(year),
-#        y_limit=y_limit)
-# TODo: check if the above works
+    return simulation_farms
+
 
 # ------------------------------ Data Evaluation ---------------------------- #
 # Initialise array for filenames of pickle dumped validation objects
@@ -269,12 +245,12 @@ filenames_validation_objects = []
 # validation sets and utilize visualization methods
 for approach in approach_list:
     for validation_data_name in validation_data_list:
-        validation_farms, temporal_resolution_validation, wind_farm_data = (
-            get_validation_farms(validation_data_name))
+        validation_farms, wind_farm_data = get_validation_farms(
+            validation_data_name)
         for weather_data_name in weather_data_list:
-            simulation_farms, temporal_resolution_simulation = (
-                get_simulation_farms(weather_data_name, validation_data_name,
-                                     wind_farm_data, approach))
+            simulation_farms = get_simulation_farms(
+                weather_data_name, validation_data_name,
+                wind_farm_data, approach)
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
@@ -282,35 +258,28 @@ for approach in approach_list:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'annual_energy_output',
-                        validation_data_name, weather_data_name, time_period,
-                        time_zone, 'A'))
+                        'annual_energy_output', validation_data_name,
+                        weather_data_name, time_period, time_zone, 'A'))
             if 'hourly_energy_output' in output_methods:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'hourly_energy_output',
-                        validation_data_name, weather_data_name, time_period,
-                        time_zone, 'H'))
+                        'hourly_energy_output', validation_data_name,
+                        weather_data_name, time_period, time_zone, 'H'))
             if 'monthly_energy_output' in output_methods:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
                         validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation,
                         'monthly_energy_output', validation_data_name,
                         weather_data_name, time_period, time_zone, 'M'))
             if 'power_output' in output_methods:
                 for farm in simulation_farms:
                     farm.power_output = tools.upsample_series(
-                        farm.power_output, temporal_resolution_validation)
+                        farm.power_output,
+                        validation_farms[0].power_output.index.freq.n)
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms,
-                        temporal_resolution_validation,
-                        temporal_resolution_simulation, 'power_output',
+                        validation_farms, simulation_farms, 'power_output',
                         validation_data_name, weather_data_name, time_period,
                         time_zone))
 
@@ -415,84 +384,8 @@ for approach in approach_list:
 
 
 # ---------------------------------- LaTeX Output --------------------------- #
-def create_column_format(number_of_columns, position):
-        r"""
-        Creates column format for pd.DataFrame.to_latex() function.
-
-        Parameters
-        ----------
-        number_of_columns : Integer
-            Number of columns of the table to be created without index column.
-        position : String
-            Position of text in columns. For example: 'c', 'l', 'r'.
-
-        """
-        column_format = 'l'
-        for i in range(number_of_columns):
-            column_format = column_format.__add__(position)
-        return column_format
-
 path_latex_tables = os.path.join(os.path.dirname(__file__),
                                  latex_tables_folder)
-
-
-def get_columns(column_names, multiplikator):
-    r"""
-    Produces columns for pd.DataFrame needed for latex output.
-
-    Parameters
-    ----------
-    column_names : List
-        Contains column names (String).
-    multiplikator : Integer
-        Frequency of column names.
-
-    Returns
-    -------
-    columns : List
-        Column names for pd.DataFrame needed for latex output.
-
-    """
-    columns = []
-    for column_name in column_names:
-        columns.extend([column_name for i in range(multiplikator)])
-    return columns
-
-
-def get_data(validation_sets, data_names, object_position):
-    r"""
-    Retruns list containing data for pd.DataFrame needed for latex output.
-
-    Paramters
-    ---------
-    validation_sets : List
-        Contains lists of :class:`~.analysis_tools.ValidationObject` objects.
-    data_names : List
-        Contains specification of data (Strings) to be displayed.
-    object_position : Integer
-        Position of object in lists in `validation_sets`.
-
-    Returns
-    -------
-    data : List
-        Data for pd.DataFrame needed for latex output.
-
-    """
-    data = []
-    if 'RMSE' in data_names:
-        data.extend([round(validation_sets[j][object_position].rmse, 2)
-                     for j in range(len(weather_data_list))])
-    if 'Pr' in data_names:
-        data.extend([round(validation_sets[j][object_position].pearson_s_r, 2)
-                     for j in range(len(weather_data_list))])
-    if 'mean bias' in data_names:
-        data.extend([round(validation_sets[j][object_position].mean_bias, 2)
-                     for j in range(len(weather_data_list))])
-    if 'std. dev.' in data_names:
-        data.extend([round(
-            validation_sets[j][object_position].standard_deviation, 2)
-            for j in range(len(weather_data_list))])
-    return data
 
 
 if 'annual_energy_weather' in latex_output:
@@ -544,7 +437,7 @@ if 'annual_energy_weather' in latex_output:
             path_latex_tables, 'Annual_energy_weather_{0}_{1}.tex'.format(
                 year, approach))
         latex_df.to_latex(buf=filename_table,
-                          column_format=create_column_format(len(
+                          column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
                           multicolumn_format='c')
 
@@ -570,9 +463,10 @@ if 'key_figures_weather' in latex_output:
                     val_set for val_set in validation_sets
                     if val_set[0].output_method == output_method]
                 for i in range(len(validation_sets_part[0])):
-                    data = np.array([get_data(
+                    data = np.array([latex_tables.get_data(
                         validation_sets_part,
-                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i)])
+                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i,
+                        len(weather_data_list))])
                     column_names = ['RMSE [MW]/[MWh]', "Pearson's r",
                                     'mean bias [MW]/[MWh]',
                                     'standard deviation [MW]/[MWh]']
@@ -580,9 +474,9 @@ if 'key_figures_weather' in latex_output:
                         validation_sets_part[j][0].weather_data_name
                         for j in range(len(weather_data_list))] * len(
                         column_names)
-                    columns = [np.array(get_columns(column_names,
-                                                    len(weather_data_list))),
-                               np.array(columns_2)]
+                    columns = [np.array(latex_tables.get_columns(
+                        column_names, len(weather_data_list))),
+                        np.array(columns_2)]
                     index = ['{0} {1}'.format(
                         validation_sets_part[0][i].object_name,
                         validation_sets_part[0][i].output_method.rsplit(
@@ -606,7 +500,7 @@ if 'key_figures_weather' in latex_output:
             path_latex_tables, 'Key_figures_weather_{0}_{1}.tex'.format(
                 year, approach))
         latex_df.to_latex(buf=filename_table,
-                          column_format=create_column_format(
+                          column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
                           multicolumn_format='c')
 

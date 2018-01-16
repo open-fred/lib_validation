@@ -197,9 +197,9 @@ class ValidationObject(object):
 
 
 def evaluate_feedin_time_series(
-        validation_farm_list, simulation_farm_list, temp_resolution_val,
-        temp_resolution_sim, output_method, validation_name, weather_data_name,
-        time_period=None, time_zone=None, temporal_output_resolution=None):
+        validation_farm_list, simulation_farm_list, output_method,
+        validation_name, weather_data_name, time_period=None, time_zone=None,
+        temporal_output_resolution=None):
     r"""
     Evaluate feedin time series concerning validation feedin time series.
 
@@ -218,10 +218,6 @@ def evaluate_feedin_time_series(
     simulation_farm_list : List of objects
         List of :class:`~.wind_farm.WindFarm` objects representing simulated
         wind farms. Must be in the same order as `validation_farm_list`.
-    temp_resolution_val : Float or Integer # TODO: float possible? necessary?
-        Temporal resolution of valdation time series in minutes.
-    temp_resolution_sim : Float or Integer
-        Temporal resolution of simulation time series in minutes.
     output_method : String
         Specification of form of time series to be validated. For example:
         'hourly_energy_output'. This parameter will be set as an attribute of
@@ -269,9 +265,9 @@ def evaluate_feedin_time_series(
                 local_time_zone=time_zone)
             # Selecet time steps
             validation_series = tools.select_certain_time_steps(
-                    validation_series, time_period)
+                validation_series, time_period)
             simulation_series = tools.select_certain_time_steps(
-                    simulation_series, time_period)
+                simulation_series, time_period)
             # Convert back to UTC (if there was conversion)
             if converted_v:
                 validation_series.index = validation_series.index.tz_convert(
@@ -285,14 +281,13 @@ def evaluate_feedin_time_series(
         if 'energy' in output_method:
             # Get validation energy output series in certain temp. resolution
             validation_series = tools.energy_output_series(
-                validation_series, temp_resolution_val,
-                temporal_output_resolution, time_zone)
+                validation_series, temporal_output_resolution, time_zone)
             # Get simulated energy output series in certain temp. resolution
             simulation_series = tools.energy_output_series(
-                simulation_series, temp_resolution_sim,
-                temporal_output_resolution, time_zone)
+                simulation_series, temporal_output_resolution, time_zone)
         # Initialize validation objects and append to list
         validation_object_set.append(ValidationObject(
-        validation_farm.wind_farm_name, validation_series,
-        simulation_series, output_method, weather_data_name, validation_name))
+            validation_farm.wind_farm_name, validation_series,
+            simulation_series, output_method, weather_data_name,
+            validation_name))
     return validation_object_set

@@ -79,19 +79,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             # Initialize turbines
             e70, e66 = initialize_turbines(['enerconE70', 'enerconE66'])
             wf_1 = {
-                'wind_farm_name': 'WF 1',
+                'wind_farm_name': 'wf_1',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 16}],
                 'coordinates': []
             }
             wf_2 = {
-                'wind_farm_name': 'WF 2',
+                'wind_farm_name': 'wf_2',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 6}],
                 'coordinates': []
             }
             wf_3 = {
-                'wind_farm_name': 'WF 3',
+                'wind_farm_name': 'wf_3',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 13},
                                        {'wind_turbine': e66,
@@ -99,13 +99,13 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 'coordinates': []
             }
             wf_4 = {
-                'wind_farm_name': 'WF 4',
+                'wind_farm_name': 'wf_4',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 22}],
                 'coordinates': []
             }
             wf_5 = {
-                'wind_farm_name': 'WF 5',
+                'wind_farm_name': 'wf_5',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 14}],
                 'coordinates': []
@@ -117,22 +117,22 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
         if filename == 'farm_specification_green_wind.p':
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
-                'wind_farm_name': 'WF 6',
+                'wind_farm_name': 'wf_6',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 9}],
-                'coordinates': []
+                #                'coordinates': []
             }
             wf_7 = {
-                'wind_farm_name': 'WF 7',
+                'wind_farm_name': 'wf_7',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 14}],
-                'coordinates': []
+                #                'coordinates': []
             }
             wf_8 = {
-                'wind_farm_name': 'WF 8',
+                'wind_farm_name': 'wf_8',
                 'wind_turbine_fleet': [{'wind_turbine': v80,
                                         'number_of_turbines': 2}],
-                'coordinates': []
+                #                'coordinates': []
             }
             wind_farm_data = [wf_6, wf_7, wf_8]
         pickle.dump(wind_farm_data, open(pickle_path, 'wb'))
@@ -141,7 +141,9 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
 if __name__ == "__main__":
     save_folder = os.path.join(os.path.dirname(__file__),
                                'dumps/wind_farm_data')
-    filenames = ['farm_specification_argenetz_2015.p',
-                 'farm_specification_argenetz_2016.p']
+    filenames = [
+        'farm_specification_argenetz_2015.p',
+        'farm_specification_argenetz_2016.p'
+        ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
