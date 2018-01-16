@@ -81,6 +81,7 @@ def read_and_dump_csv_weather(weather_data_name, year,
 
     """
     if weather_data_name == 'open_FRED':
+        # TODO: Move this to open_FRED module (because it will grow)
         # Load data from csv files and join in one data frame
         open_fred_filenames = ['wss_10m.csv', 'wss_80m.csv', 'z0.csv']
         # Initialize data_frame
