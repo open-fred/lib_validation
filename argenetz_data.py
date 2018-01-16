@@ -1,3 +1,20 @@
+"""
+The ``argenetz_data`` module contains functions to read and dump measured
+feed-in time series from ArgeNetz wind farms.
+
+The following data is available for 5 wind farms (year 2015) or 4 wind farms
+(year 2016):
+- measured feed-in (power)
+- wind speed
+- wind direction
+- theoretical power
+- installed power
+
+If only `only_get_power` of get_argenetz_data() is set to True only the first
+variable (measured feed-in is returned/dumped).
+
+"""
+
 # Imports from Windpowerlib
 from windpowerlib import wind_turbine as wt
 from windpowerlib import power_output
