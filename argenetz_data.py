@@ -315,7 +315,7 @@ def get_argenetz_data(year, only_get_power=True, pickle_load=False,
     return argenetz_df
 
 
-def check_arge_netz_data(df, year, start=None, end=None):
+def check_theoretical_power(df, year, start=None, end=None):
     r"""
     This function was used to compare the theoretical power of ArgeNetz wind
     farms with the simulated power when the measured wind speed (of ArgeNetz
@@ -399,6 +399,6 @@ if __name__ == "__main__":
         # Get ArgeNetz Data
         arge_netz_data = get_argenetz_data(
             year, pickle_load=True, plot=False)
-        check_arge_netz_data(arge_netz_data, year, start, end)
+        check_theoretical_power(arge_netz_data, year, start, end)
         print("Plots for comparing theoretical power with simulated power " +
               "(measured wind speed) are saved in 'Plots/Test_Arge'")
