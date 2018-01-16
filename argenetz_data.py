@@ -310,7 +310,7 @@ def get_argenetz_data(year, only_get_power=True, pickle_load=False,
                 argenetz_df.to_csv(csv_path)
     if plot:
         plot_argenetz_data(
-            argenetz_df, save_folder='ArgeNetz_power_output/Plots_{0}'.format(
+            argenetz_df, save_folder='ArgeNetz/Plots_{0}'.format(
                 year), x_limit=x_limit)
     return argenetz_df
 
