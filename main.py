@@ -29,7 +29,7 @@ approach_list = [
     ]
 weather_data_list = [
     'MERRA',
-#    'open_FRED' # TODO: not implemented yet
+    'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
