@@ -38,6 +38,9 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
 
 
 def power_output_simple(wind_turbine_fleet, weather_df, data_height):
+    # TODO: add weather_data_name to these functions and use modelchain for 
+    #       open_FRED data as there are different heights and this is easier
+    #       with the multiindex dataframe
     r"""
     Calculate power output of several wind turbines by a simple method.
 
