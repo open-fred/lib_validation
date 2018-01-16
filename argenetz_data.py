@@ -371,7 +371,10 @@ def check_theoretical_power(df, year, start=None, end=None):
             title='{0}'.format(name))
 
 if __name__ == "__main__":
-    years = [2015, 2016]  # possible: 2015, 2016, 2017
+    years = [
+        2015,
+        2016
+        ]  # possible: 2015, 2016, 2017
     # Get Arge Netz data
     for year in years:
         get_argenetz_data(
