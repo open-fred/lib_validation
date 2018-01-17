@@ -425,3 +425,22 @@ def summarize_output_of_farms(farm_list):
     wind_farm_sum.annual_energy_output = sum(farm.annual_energy_output
                                              for farm in farm_list)
     return wind_farm_sum
+
+
+def filter_interpolated_data(df, replacement_character=np.nan):
+    """
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data frame that contains # TODO: add
+    replacement_character : Integer, Float or np.nan
+
+    Returns
+    -------
+    corrected_df : pd.DataFrame
+        Corrected data frame with interpolated values set to
+        `replacement_character`.
+
+    """
+    
