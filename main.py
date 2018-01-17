@@ -209,10 +209,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
             weather = weather.loc[weather.index >= '2015-05-01']
             if converted:
                 weather.index = weather.index.tz_convert('UTC')
-                if weather.index.freq == '30T': # TODO: make more generic
-                    weather = weather.drop(weather.index[-2:])
-                if weather.index.freq == 'H':
-                    weather = weather.drop(weather.index[-1])
+                weather = weather.drop(weather.index[
+                                       int(-60 / weather.index.freq.n):])
         if weather_data_name == 'MERRA':
             # Temperature height is time series (different for each location)
             data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
