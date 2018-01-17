@@ -56,7 +56,7 @@ def read_data(filename, **kwargs):
     """
     if 'datapath' not in kwargs:
         kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
-                                          'data')
+                                          'data/ArgeNetz')
     if 'usecols' not in kwargs:
         kwargs['usecols'] = None
 
