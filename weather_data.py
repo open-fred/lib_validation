@@ -59,7 +59,7 @@ def get_weather_data(weather_data_name, pickle_load=None,
 
 
 def read_and_dump_weather_df(weather_data_name, year,
-                            filename='pickle_dump.p'):
+                             filename='pickle_dump.p'):
     r"""
     Reads csv file containing weather data and dumps it as data frame.
 

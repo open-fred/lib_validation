@@ -7,7 +7,7 @@ import visualization_tools
 import analysis_tools
 import tools
 import latex_tables
-from weather_data import get_weather_data, read_and_dump_csv_weather
+from weather_data import get_weather_data, read_and_dump_weather_df
 from argenetz_data import get_argenetz_data
 
 # Other imports
@@ -104,14 +104,6 @@ def get_validation_farms(validation_data_name):
 
     """
     if validation_data_name == 'ArgeNetz':
-        # Create DatetimeIndex indices for DataFrame depending on the year
-        if year == 2015:
-            indices = tools.get_indices_for_series(
-                temporal_resolution=5, time_zone='Europe/Berlin',
-                start='5/1/2015', end='1/1/2016')
-        if year == 2016:
-            indices = tools.get_indices_for_series(
-                temporal_resolution=1, time_zone='Europe/Berlin', year=year)
         # Get wind farm data
         wind_farm_data = wind_farm_specifications.get_wind_farm_data(
             'farm_specification_argenetz_{0}.p'.format(year),
@@ -135,7 +127,8 @@ def get_validation_farms(validation_data_name):
         wind_farm.power_output = pd.Series(
             data=(validation_data[description['wind_farm_name'] +
                                   '_power_output'].values / 1000),
-            index=indices)
+            index=(validation_data[description['wind_farm_name'] +
+                                  '_power_output'].index))
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
         # Annual energy output in MWh
@@ -203,12 +196,12 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     for description in wind_farm_data:
         # Initialise wind farm
         wind_farm = wf.WindFarm(**description)
-        # Get weather data
+        # Get weather data for specific coordinates
         weather = get_weather_data(
             weather_data_name, pickle_load_weather, filename_weather, year,
             wind_farm.coordinates)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
-            # For ArgeNetz data in 2015 only data from May is needed
+            # For ArgeNetz data in 2015 only data from May on is needed
             weather, converted = tools.convert_time_zone_of_index(
                 weather, 'local', local_time_zone='Europe/Berlin')
             weather = weather.loc[weather.index >= '2015-05-01']
