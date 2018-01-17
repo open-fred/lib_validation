@@ -17,15 +17,15 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2016
+year = 2015
 time_zone = 'Europe/Berlin'
-pickle_load_merra = True
-pickle_load_open_fred = True
-pickle_load_arge = True
-pickle_load_wind_farm_data = True
+pickle_load_merra = False
+pickle_load_open_fred = False
+pickle_load_arge = False
+pickle_load_wind_farm_data = False
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
-    'density_correction'  # density corrected power curve, simple aggregation
+    #'density_correction'  # density corrected power curve, simple aggregation
     ]
 weather_data_list = [
     'MERRA',

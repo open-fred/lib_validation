@@ -53,6 +53,18 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
             'path': os.path.join(main_path, 'Z0'),
             'startswith': main_startswith + 'Z0.' + str(year),
             'filename': 'z0.csv'
+        },
+        # DHI
+        'dhi': {
+            'path': os.path.join(main_path, 'ASWDIFD_S'),
+            'startswith': main_startswith + 'ASWDIFD_S.' + str(year),
+            'filename': 'dhi.csv'
+        },
+        # DIRHI
+        'dirhi': {
+            'path': os.path.join(main_path, 'ASWDIR_S'),
+            'startswith': main_startswith + 'ASWDIR_S.' + str(year),
+            'filename': 'dirhi.csv'
         }
     }
 
@@ -88,15 +100,19 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
 if __name__ == '__main__':
 
     # choose year and area
+    # SH lat_min = 54.4, lat_max = 54.7, lon_min = 8.9, lon_max = 9.1
+    # Berlin NW: 52.661962, 13.102158
+    # Berlin SO: 52.255534, 13.866914
     year = 2015
-    lat_min = 54.4
-    lat_max = 54.7
-    lon_min = 8.9
-    lon_max = 9.1
+    lat_min = 52.255534
+    lat_max = 52.661962
+    lon_min = 13.102158
+    lon_max = 13.866914
 
     # choose keys from helper_dict for which you want to load open_FRED
     # weather_data
-    load_data_list = ['wss_10m', 'wss_80m']
+    load_data_list = ['wss_10m', 'wss_80m', 'temp_10m', 'temp_80m',
+                      'pressure_10m', 'pressure_80m', 'z0', 'dirhi', 'dhi']
 
     get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
                                     load_data_list)

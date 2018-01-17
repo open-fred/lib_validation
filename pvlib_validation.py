@@ -6,7 +6,7 @@ from pvlib.location import Location
 # conn = db.connection(section='reiners_db')
 # my_weather = coastdat.get_weather(
 #     conn, geopy.Point(loc_berlin['longitude'], loc_berlin['latitude']), year)
-
+#
 # # preparing the weather data to suit pvlib's needs
 # # different name for the wind speed
 # my_weather.data.rename(columns={'v_wind': 'wind_speed'}, inplace=True)
