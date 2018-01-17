@@ -194,8 +194,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     if not pickle_load_weather:
         # Read csv file that contains weather data (pd.DataFrame is dumped)
         # and turn pickle_load_weather to True
-        read_and_dump_csv_weather(weather_data_name, year,
-                                  filename_weather)
+        read_and_dump_weather_df(weather_data_name, year,
+                                 filename_weather)
         pickle_load_weather = True
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output

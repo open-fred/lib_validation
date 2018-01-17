@@ -44,8 +44,8 @@ def get_weather_data(weather_data_name, pickle_load=None,
     if pickle_load:
         data_frame = pickle.load(open(filename, 'rb'))
     else:
-        data_frame = read_and_dump_csv_weather(weather_data_name, year,
-                                               filename)
+        data_frame = read_and_dump_weather_df(weather_data_name, year,
+                                              filename)
     weather_df = create_weather_df(data_frame, weather_data_name, coordinates)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
@@ -58,8 +58,8 @@ def get_weather_data(weather_data_name, pickle_load=None,
     return weather_df
 
 
-def read_and_dump_csv_weather(weather_data_name, year,
-                              filename='pickle_dump.p'):
+def read_and_dump_weather_df(weather_data_name, year,
+                            filename='pickle_dump.p'):
     r"""
     Reads csv file containing weather data and dumps it as data frame.
 
