@@ -75,6 +75,11 @@ latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 # Other plots
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 
+# Filename specification
+arge_pickle_filename = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), 'dumps/validation_data',
+    'arge_netz_data_{0}.p'.format(year)))
+
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_farms(validation_data_name):
@@ -115,8 +120,8 @@ def get_validation_farms(validation_data_name):
             pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         validation_data = get_argenetz_data(
-            year, only_get_power=True, pickle_load=pickle_load_arge,
-            plot=plot_arge_feedin)
+            year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
+            csv_dump=False, plot=plot_arge_feedin)
     if validation_data_name == '...':
         pass  # Add more data
 
