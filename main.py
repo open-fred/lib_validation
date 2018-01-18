@@ -128,7 +128,7 @@ def get_validation_farms(validation_data_name):
             data=(validation_data[description['wind_farm_name'] +
                                   '_power_output'].values / 1000),
             index=(validation_data[description['wind_farm_name'] +
-                                  '_power_output'].index))
+                                   '_power_output'].index))
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
         # Annual energy output in MWh

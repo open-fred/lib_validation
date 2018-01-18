@@ -57,6 +57,7 @@ def read_data(filename, **kwargs):
     """
     if 'datapath' not in kwargs:
         kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
+
                                           'data/ArgeNetz')
     if 'usecols' not in kwargs:
         kwargs['usecols'] = None
@@ -245,6 +246,7 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
                                                  '../Plots', save_folder,
                                                  str(column) + '.pdf')))
     plt.close()
+
 
 def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
                       csv_load=False, csv_dump=True,
