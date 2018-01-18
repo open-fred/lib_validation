@@ -49,7 +49,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
         data_frame = pd.read_csv(os.path.join(
             os.path.dirname(__file__), 'data/Merra',
             'weather_data_GER_{0}.csv'.format(year)),
-            sep=',', decimal='.', index_col=0).iloc[0:10]
+            sep=',', decimal='.', index_col=0)
         if not raw_data:
             if multi_index:
                 if heights is not None:
@@ -126,4 +126,3 @@ if __name__ == "__main__":
         weather_df = get_merra_data(year, raw_data=False, multi_index=True,
                                     heights=heights, filename=filename_weather,
                                     pickle_load=False)
-        print(weather_df)
