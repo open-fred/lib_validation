@@ -7,6 +7,7 @@ import visualization_tools
 import analysis_tools
 import tools
 import latex_tables
+import modelchain_usage
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
@@ -189,8 +190,9 @@ def get_simulation_farms(weather_data_name, validation_data_name,
             fred_path = os.path.join(
                 os.path.dirname(__file__), 'data/open_FRED',
                 'fred_data_{0}_sh.csv'.format(year))
-            get_open_fred_data(filename=fred_path,
-                       pickle_filename=filename_weather, pickle_load=False)
+            get_open_fred_data(
+                filename=fred_path, pickle_filename=filename_weather,
+                pickle_load=False)
 
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
@@ -201,8 +203,8 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         # Get weather data for specific coordinates
         weather = tools.get_weather_data(
             weather_data_name, wind_farm.coordinates, pickle_load=True,
-                     filename=filename_weather, year=year,
-                     temperature_heights=temperature_heights)
+            filename=filename_weather, year=year,
+            temperature_heights=temperature_heights)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
             # For ArgeNetz data in 2015 only data from May on is needed
             weather, converted = tools.convert_time_zone_of_index(
@@ -213,11 +215,16 @@ def get_simulation_farms(weather_data_name, validation_data_name,
                 weather = weather.drop(weather.index[
                                        int(-60 / weather.index.freq.n):])
         if approach == 'simple':
-            wind_farm.power_output = tools.power_output_simple(
-                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+            wind_farm.power_output = modelchain_usage.power_output_simple(
+                wind_farm.wind_turbine_fleet, weather)
+#            wind_farm.power_output = tools.power_output_simple(
+#                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
         if approach == 'density_correction':
-            wind_farm.power_output = tools.power_output_density_corr(
-                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+            wind_farm.power_output = modelchain_usage.power_output_simple(
+                wind_farm.wind_turbine_fleet, weather,
+                density_correction=False)
+            # wind_farm.power_output = tools.power_output_density_corr(
+            #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(
     #        wind_farm.power_output.index).tz_convert('UTC')
