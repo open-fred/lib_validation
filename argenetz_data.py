@@ -109,34 +109,38 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
 
 
 def new_column_names(year):
+    """
+    Returns column names for ArgeNetz data depending on the year as list.
+
+    """
     if year == 2015:
         new_column_names = [
-    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
-    'wf_1_wind_dir', 'wf_1_installed_power', 'wf_2_power_output',
-    'wf_2_theoretical_power', 'wf_2_installed_power', 'wf_3_power_output',
-    'wf_3_theoretical_power', 'wf_4_power_output', 'wf_4_theoretical_power',
-    'wf_4_wind_speed', 'wf_5_power_output', 'wf_5_installed_power',
-    'wf_5_theoretical_power']
-
-#new_column_names = [
-#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-#    'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
-#    'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
-#    'wf_5_power_output', 'wf_5_installed_power']
+            'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
+            'wf_1_wind_dir', 'wf_1_installed_power', 'wf_2_power_output',
+            'wf_2_theoretical_power', 'wf_2_installed_power',
+            'wf_3_power_output', 'wf_3_theoretical_power', 'wf_4_power_output',
+            'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_5_power_output',
+            'wf_5_installed_power', 'wf_5_theoretical_power']
+#        new_column_names = [
+#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
+#           'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
+#           'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
+#           'wf_5_power_output', 'wf_5_installed_power']
     if (year == 2016 or year == 2017):
         new_column_names = [
             'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
             'wf_1_wind_dir', 'wf_1_installed_power', 'wf_3_power_output',
             'wf_3_theoretical_power', 'wf_3_wind_speed', 'wf_3_wind_dir',
-            'wf_3_installed_power', 'wf_4_power_output', 'wf_4_theoretical_power',
-            'wf_4_wind_speed', 'wf_4_wind_dir', 'wf_4_installed_power',
-            'wf_5_power_output', 'wf_5_theoretical_power', 'wf_5_wind_speed',
-            'wf_5_wind_dir', 'wf_5_installed_power']
-        #new_column_names = [
-    #    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-    #    'wf_3_power_output', 'wf_3_wind_speed', 'wf_3_installed_power',
-    #    'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power',
-    #    'wf_5_power_output', 'wf_5_wind_speed', 'wf_5_installed_power']
+            'wf_3_installed_power', 'wf_4_power_output',
+            'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_4_wind_dir',
+            'wf_4_installed_power', 'wf_5_power_output',
+            'wf_5_theoretical_power', 'wf_5_wind_speed', 'wf_5_wind_dir',
+            'wf_5_installed_power']
+#        new_column_names = [
+#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
+#           'wf_3_power_output', 'wf_3_wind_speed', 'wf_3_installed_power',
+#           'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power',
+#           'wf_5_power_output', 'wf_5_wind_speed', 'wf_5_installed_power']
     return new_column_names
 
 
@@ -241,7 +245,6 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
                                                  '../Plots', save_folder,
                                                  str(column) + '.pdf')))
     plt.close()
-
 
 def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
                       csv_load=False, csv_dump=True,
