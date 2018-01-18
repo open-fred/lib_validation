@@ -6,6 +6,7 @@ from windpowerlib import (power_output, wind_speed, density, temperature)
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
 import tools
+import matplotlib.pyplot as plt
 
 # Other imports
 import pandas as pd
@@ -65,7 +66,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
                                  slice(closest_coordinates['lat']),
-                                 slice(closest_coordinates['lon'])),:].reset_index(
+                                 slice(closest_coordinates['lon'])),:].reset_index(  # TODO: fix mistake with merra dataframe
                                 level=[1,2], drop=True)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
@@ -114,7 +115,7 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
 
 
 def power_output_simple(wind_turbine_fleet, weather_df, data_height):
-    # TODO: add weather_data_name to these functions and use modelchain for 
+    # TODO: add weather_data_name to these functions and use modelchain for
     #       open_FRED data as there are different heights and this is easier
     #       with the multiindex dataframe
     r"""
@@ -503,13 +504,13 @@ def summarize_output_of_farms(farm_list):
     return wind_farm_sum
 
 
-def filter_interpolated_data(df, replacement_character=np.nan):
+def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
+                             replacement_character=np.nan, plot=False):
     """
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data frame that contains # TODO: add
+    series : pd.Series
     replacement_character : Integer, Float or np.nan
 
     Returns
@@ -519,4 +520,19 @@ def filter_interpolated_data(df, replacement_character=np.nan):
         `replacement_character`.
 
     """
-    
+    data_corrected = series.copy()
+    # calculate the sum of the gradient of the feed-in data over |window_size| time
+    # steps, if it is about zero over the whole time window the data is assumed to
+    # be interpolated
+    data_gradient_sum = series.diff().diff().rolling(
+        window=window_size, min_periods=window_size).sum()
+    for i, v in data_gradient_sum.iteritems():
+        # if the sum of the gradient is within the set tolerance and
+        if abs(v) <= tolerance:
+            if not (series[i - window_size + 1:i + 1] < 0).all():
+                data_corrected[i - window_size + 1:i + 1] = replacement_character
+    if plot:
+        series.plot()
+        data_corrected.plot()
+        plt.show()
+    return data_corrected

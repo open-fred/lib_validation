@@ -28,6 +28,7 @@ import tools
 # Other imports
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 import os
 import pickle
 
@@ -146,7 +147,7 @@ def new_column_names(year):
 
 
 def get_data(filename_files, year, filename_pickle='pickle_dump.p',
-             pickle_load=False):
+             pickle_load=False, filter_interpolated_data=True):
     r"""
     Fetches data of the requested files and renames columns.
 
@@ -187,6 +188,13 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                 df_part.columns = new_column_names(year)
                 df = pd.concat([df, df_part])
         df.index = indices
+        if filter_interpolated_data:
+            df_corrected = df.copy()
+            for column_name in list(df):
+                if 'power_output' in column_name:
+                    df[column_name] = tools.filter_interpolated_data(
+                        df[column_name], window_size=10, tolerance=0.0011,
+                        replacement_character=np.nan, plot=False)
         pickle.dump(df, open(path, 'wb'))
     return df
 
@@ -293,7 +301,8 @@ def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
     else:
         # Load data with get_data(); data frame is dumped in this function
         argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
-                               year, filename, pickle_load=pickle_load)
+                               year, filename, pickle_load=pickle_load,
+                               filter_interpolated_data=filter_interpolated_data)
     if csv_dump:
         argenetz_df.to_csv(filename.replace('.p', '.csv'))
     if plot:
