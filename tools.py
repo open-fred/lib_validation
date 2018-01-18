@@ -4,6 +4,7 @@ from windpowerlib import (power_output, wind_speed, density, temperature)
 
 # Imports from lib_validation
 from merra_weather_data import get_merra_data
+from open_fred_weather_data import get_open_fred_data
 import tools
 
 # Other imports
@@ -11,6 +12,7 @@ import pandas as pd
 from scipy.spatial import cKDTree
 import numpy as np
 import pickle
+import os
 
 
 def get_weather_data(weather_data_name, coordinates, pickle_load=None,
@@ -52,20 +54,30 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                 year, heights=temperature_heights,
                 filename=filename, pickle_load=pickle_load)
         if weather_data_name == 'open_FRED':
-#            data_frame = ...
-            pass
+            fred_path = os.path.join(
+                os.path.dirname(__file__), 'data/open_FRED',
+                'fred_data_{0}_sh.csv'.format(year))
+            data_frame = get_open_fred_data(
+                year, filename=fred_path, pickle_filename=filename)
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = tools.get_closest_coordinates(data_frame,
                                                         coordinates)
     # Select coordinates from data frame
-    weather_df = data_frame.loc[
-        (data_frame['lat'] == closest_coordinates[0]) &
-        (data_frame['lon'] == closest_coordinates[1])]
+    weather_df = data_frame.loc[(slice(None),
+                                 slice(closest_coordinates['lat']),
+                                 slice(closest_coordinates['lon'])),:].reset_index(
+                                level=[1,2], drop=True)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
         weather_df.index = tools.get_indices_for_series(
             temporal_resolution=60, time_zone='Europe/Berlin', year=year)
     if weather_data_name == 'open_FRED':
+        series = weather_df['roughness_length']
+        series.index = series.index.tz_localize('UTC')
+        z0_series = tools.upsample_series(
+            series, output_resolution=30,
+            input_resolution='H')
+        weather_df['roughness_length'] = z0_series.values
         weather_df.index = tools.get_indices_for_series(
             temporal_resolution=30, time_zone='UTC', year=year)
         # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
@@ -351,7 +363,7 @@ def upsample_series(series, output_resolution, input_resolution=None):
                              "series cannot be called.")
     output_series = pd.concat([series, pd.Series(10, index=[index[1]])])
     output_series = output_series.resample(
-        '{0}min'.format(output_resolution)).pad()
+        '{0}min'.format(output_resolution)).pad()  #TODO: this does not work because of duplicates!!!!!
     output_series = output_series.drop(output_series.index[-1])
     if time_zone:
         # Convert back to original time zone

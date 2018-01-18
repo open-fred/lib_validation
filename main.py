@@ -186,8 +186,11 @@ def get_simulation_farms(weather_data_name, validation_data_name,
                            filename=filename_weather)
     if weather_data_name == 'open_FRED':
         if not pickle_load_open_fred:
-            get_open_fred_data(
-                weather_data_name, year, filename='pickle_dump.p')
+            fred_path = os.path.join(
+                os.path.dirname(__file__), 'data/open_FRED',
+                'fred_data_{0}_sh.csv'.format(year))
+            get_open_fred_data(filename=fred_path,
+                       pickle_filename=filename_weather, pickle_load=False)
 
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
@@ -197,8 +200,9 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         wind_farm = wf.WindFarm(**description)
         # Get weather data for specific coordinates
         weather = tools.get_weather_data(
-            weather_data_name, True, filename_weather, year,
-            wind_farm.coordinates, heights=temperature_heights)
+            weather_data_name, wind_farm.coordinates, pickle_load=True,
+                     filename=filename_weather, year=year,
+                     temperature_heights=temperature_heights)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
             # For ArgeNetz data in 2015 only data from May on is needed
             weather, converted = tools.convert_time_zone_of_index(

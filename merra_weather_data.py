@@ -3,7 +3,6 @@ from windpowerlib import temperature
 
 # Other imports
 import pandas as pd
-import numpy as np
 import os
 import pickle
 
@@ -64,8 +63,9 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                         df_part = pd.DataFrame(
                             data=temperature.linear_gradient(
                                 temp, temp_height, height),
-                            index=data_frame.index)
-                        data_frame = pd.concat([data_frame, df_part])
+                            index=data_frame.index,
+                            columns=['temperature'])
+                        data_frame = pd.concat([data_frame, df_part], axis=1)
                 data_frame_2 = rename_columns(data_frame, ['T', 'h1'])
                 weather_df = data_frame_2
                 weather_df.columns = [data_frame_2.columns,
