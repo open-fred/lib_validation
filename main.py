@@ -7,7 +7,8 @@ import visualization_tools
 import analysis_tools
 import tools
 import latex_tables
-from weather_data import get_weather_data, read_and_dump_weather_df
+from merra_weather_data import get_merra_data
+from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
 
 # Other imports
@@ -79,6 +80,9 @@ plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 arge_pickle_filename = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data',
     'arge_netz_data_{0}.p'.format(year)))
+
+# Heights for which temperature of MERRA shall be calculated
+temperature_heights = [64, 65, 105]
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
@@ -170,26 +174,21 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         the simulated wind farms.
 
     """
-    if weather_data_name == 'MERRA':
-        pickle_load_weather = pickle_load_merra
-    if weather_data_name == 'open_FRED':
-        pickle_load_weather = pickle_load_open_fred
-        data_height = {'wind_speed': 10,
-                       'roughness_length': 0, # TODO: only for wind speed exact!
-                       'temperature': 0,
-                       'density': 0,
-                       'pressure': 0}
-
     # Generate filename (including path) for pickle dumps (and loads)
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
                                     'weather_df_{0}_{1}.p'.format(
                                         weather_data_name, year))
-    if not pickle_load_weather:
-        # Read csv file that contains weather data (pd.DataFrame is dumped)
-        # and turn pickle_load_weather to True
-        read_and_dump_weather_df(weather_data_name, year,
-                                 filename_weather)
-        pickle_load_weather = True
+    if weather_data_name == 'MERRA':
+        if not pickle_load_merra:
+            # Read csv file that contains weather data (pd.DataFrame is dumped)
+            # to save time below
+            get_merra_data(year, heights=temperature_heights,
+                           filename=filename_weather)
+    if weather_data_name == 'open_FRED':
+        if not pickle_load_open_fred:
+            get_open_fred_data(
+                weather_data_name, year, filename='pickle_dump.p')
+
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
     simulation_farms = []
@@ -197,9 +196,9 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         # Initialise wind farm
         wind_farm = wf.WindFarm(**description)
         # Get weather data for specific coordinates
-        weather = get_weather_data(
-            weather_data_name, pickle_load_weather, filename_weather, year,
-            wind_farm.coordinates)
+        weather = tools.get_weather_data(
+            weather_data_name, True, filename_weather, year,
+            wind_farm.coordinates, heights=temperature_heights)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
             # For ArgeNetz data in 2015 only data from May on is needed
             weather, converted = tools.convert_time_zone_of_index(
@@ -209,13 +208,6 @@ def get_simulation_farms(weather_data_name, validation_data_name,
                 weather.index = weather.index.tz_convert('UTC')
                 weather = weather.drop(weather.index[
                                        int(-60 / weather.index.freq.n):])
-        if weather_data_name == 'MERRA':
-            # Temperature height is time series (different for each location)
-            data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
-                           'roughness_length': 0,  # TODO: is this specified?
-                           'temperature': weather.temperature_height,
-                           'density': 0,
-                           'pressure': 0}
         if approach == 'simple':
             wind_farm.power_output = tools.power_output_simple(
                 wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)

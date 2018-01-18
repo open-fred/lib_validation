@@ -2,10 +2,74 @@
 from windpowerlib import wind_farm as wf
 from windpowerlib import (power_output, wind_speed, density, temperature)
 
+# Imports from lib_validation
+from merra_weather_data import get_merra_data
+import tools
+
 # Other imports
 import pandas as pd
 from scipy.spatial import cKDTree
 import numpy as np
+import pickle
+
+
+def get_weather_data(weather_data_name, coordinates, pickle_load=None,
+                     filename='pickle_dump.p', year=None,
+                     temperature_heights=None):
+    r"""
+    Gets MERRA-2 or open_FRED weather data for the specified coordinates.
+
+    Parameters
+    ----------
+    weather_data_name : String
+        String specifying if open_FRED or MERRA data is retrieved in case
+        `pickle_load` is False.
+    coordinates : List
+        List of coordinates [lat, lon] of location for loading data.
+    pickle_load : Boolean
+        True if data has already been dumped before.
+    filename : String
+        Name (including path) of file to load data from or if MERRA data is
+        retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
+    year : int
+        Specifies which year the weather data is retrieved for. Default: None.
+    temperature_heights : List
+        Contains heights for which the temperature of the MERRA-2 data shall be
+        calculated. Default: None (as not needed for open_FRED data).
+
+    Returns
+    -------
+    weather_df : pandas.DataFrame
+        Weather data with datetime index and data like temperature and
+        wind speed as columns.
+
+    """
+    if pickle_load:
+        data_frame = pickle.load(open(filename, 'rb'))
+    else:
+        if weather_data_name == 'MERRA':
+            data_frame = get_merra_data(
+                year, heights=temperature_heights,
+                filename=filename, pickle_load=pickle_load)
+        if weather_data_name == 'open_FRED':
+#            data_frame = ...
+            pass
+    # Find closest coordinates to weather data point and create weather_df
+    closest_coordinates = tools.get_closest_coordinates(data_frame,
+                                                        coordinates)
+    # Select coordinates from data frame
+    weather_df = data_frame.loc[
+        (data_frame['lat'] == closest_coordinates[0]) &
+        (data_frame['lon'] == closest_coordinates[1])]
+    # Set index to standardized form
+    if weather_data_name == 'MERRA':
+        weather_df.index = tools.get_indices_for_series(
+            temporal_resolution=60, time_zone='Europe/Berlin', year=year)
+    if weather_data_name == 'open_FRED':
+        weather_df.index = tools.get_indices_for_series(
+            temporal_resolution=30, time_zone='UTC', year=year)
+        # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
+    return weather_df
 
 
 def return_unique_pairs(df, column_names):
