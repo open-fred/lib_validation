@@ -14,7 +14,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
 
     Data is revised: unnecessary columns are droped, columns are renamed - if
     `raw_data` is False (default). The data will be dumped as a MultiIndex
-    pandas DataFrame if ´multi_index` is True (default).
+    pandas DataFrame if `multi_index` is True (default).
 
     Parameters
     ----------
@@ -49,7 +49,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
         data_frame = pd.read_csv(os.path.join(
             os.path.dirname(__file__), 'data/Merra',
             'weather_data_GER_{0}.csv'.format(year)),
-            sep=',', decimal='.', index_col=0)
+            sep=',', decimal='.', index_col=0).iloc[0:10]
         if not raw_data:
             if multi_index:
                 if heights is not None:
@@ -57,30 +57,29 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                     # and add to multiindex dataframe
                     temp = data_frame['T']
                     temp_height = data_frame['h1']
-                    second_level_columns = ['lat', 'lon', 50, 0, 0, 0, 0, 0]
+                    second_level_columns = [50, 0, 0, 0]
                     for height in heights:
                         second_level_columns.append(height)
                         df_part = pd.DataFrame(
                             data=temperature.linear_gradient(
                                 temp, temp_height, height),
                             index=data_frame.index,
-                            columns=['temperature'])
+                            columns=['temperature_{0}'.format(height)])
                         data_frame = pd.concat([data_frame, df_part], axis=1)
-                data_frame_2 = rename_columns(data_frame, ['T', 'h1'])
+                index = [data_frame.index, data_frame['lat'], data_frame['lon']]
+                data_frame_2 = rename_columns(data_frame, ['T', 'h1', 'lat', 'lon'])
+                data_frame_2.index = index
                 weather_df = data_frame_2
-                weather_df.columns = [data_frame_2.columns,
+                weather_df.columns = [['wind_speed', 'roughness_lenght',
+                                       'density', 'pressure','temperature',
+                                       'temperature', 'temperature'],
                                       second_level_columns]
-    #            weather_df = pd.DataFrame(
-    #                data=[data_frame_2['wind_speed'],
-    #                      data_frame_2['pressure'],
-    #                      data_frame_2['density'],
-    #                      data_frame_2['roughness_length']],
-    #                index=data_frame_2.index,
-    #                columns=[np.array(['wind_speed', 'pressure',
-    #                                   'density', 'roughness_length']),
-    #                         np.array([50, 0, 0, 0])])
-    #        >>> weather_df.columns.get_level_values(0)[0]
-    #        'wind_speed'
+                # weather_df.rename(columns={'temperature_64': 'temperature',
+                #                            'temperature_65': 'temperature',
+                #                            'temperature_105': 'temperature'})
+                # weather_df.columns.set_levels(
+                #     ['wind_speed', 'roughness_lenght', 'density', 'pressure',
+                #      'temperature', 'temperature', 'temperature'], level=0)
             else:
                 weather_df = rename_columns(data_frame)
         else:
