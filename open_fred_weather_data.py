@@ -33,13 +33,18 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
         weather_df = pd.read_csv(filename,
                                  header=[0,1], index_col=[0, 1, 2],
                                  parse_dates=True)
+        # change type of height from str to int by resetting columns
+        weather_df.columns = [weather_df.axes[1].levels[0][
+                                  weather_df.axes[1].labels[0]],
+                              weather_df.axes[1].levels[1][
+                                  weather_df.axes[1].labels[1]].astype(int)]
         pickle.dump(weather_df, open(pickle_filename, 'wb'))
     return weather_df
 
 if __name__ == "__main__":
     years = [
         2015,
-        #        2016
+        2016
     ]
     for year in years:
         pickle_path = os.path.join(

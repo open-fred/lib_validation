@@ -63,7 +63,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = tools.get_closest_coordinates(data_frame,
                                                         coordinates)
-    data_frame = data_frame[0:1000]
+    data_frame = data_frame
     data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
@@ -72,18 +72,17 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                                 level=[1,2], drop=True)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
-        print(weather_df)
-        print('length after filter {0}'.format(len(weather_df)))
-        print('length data frame {0}'.format(len(data_frame)))
         weather_df.index = tools.get_indices_for_series(
             temporal_resolution=60, time_zone='Europe/Berlin', year=year)
     if weather_data_name == 'open_FRED':
-        series = weather_df['roughness_length']
-        series.index = series.index.tz_localize('UTC')
-        z0_series = tools.upsample_series(
-            series, output_resolution=30,
-            input_resolution='H')
-        weather_df['roughness_length'] = z0_series.values
+        # series = weather_df['roughness_length']
+        # series.index = series.index.tz_localize('UTC')
+        # z0_series = tools.upsample_series(
+        #     series, output_resolution=30,
+        #     input_resolution='H')
+        # weather_df['roughness_length'] = z0_series.values
+        # TODO: indices für 2016....
+        # TODO: check: to_datetime possible??
         weather_df.index = tools.get_indices_for_series(
             temporal_resolution=30, time_zone='UTC', year=year)
         # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?

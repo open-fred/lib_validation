@@ -70,7 +70,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                 data_frame_2 = rename_columns(data_frame, ['T', 'h1', 'lat', 'lon'])
                 data_frame_2.index = index
                 weather_df = data_frame_2
-                weather_df.columns = [['wind_speed', 'roughness_lenght',
+                weather_df.columns = [['wind_speed', 'roughness_length',
                                        'density', 'pressure','temperature',
                                        'temperature', 'temperature',
                                        'temperature'],
@@ -117,7 +117,7 @@ def rename_columns(weather_df, additional_columns_drop=None):
 if __name__ == "__main__":
     years = [
         2015,
-#        2016
+       2016
     ]
     heights = [60, 64, 65, 105] # Heights for which the temperature shall be calculated
     for year in years:

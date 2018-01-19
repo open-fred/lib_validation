@@ -20,7 +20,7 @@ import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
 # TODO: Ordner gitten - Inhalt nicht
-year = 2015
+year = 2016
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -148,7 +148,7 @@ def get_validation_farms(validation_data_name):
 
 # ------------------------- Power output simulation ------------------------- #
 def get_simulation_farms(weather_data_name, validation_data_name,
-                         wind_farm_data, approach):
+                         wind_farm_data, approach, validation_farms=None):
     r"""
     Creates list of farms containing the simulated power/energy output.
 
@@ -215,20 +215,39 @@ def get_simulation_farms(weather_data_name, validation_data_name,
                 weather.index = weather.index.tz_convert('UTC')
                 weather = weather.drop(weather.index[
                                        int(-60 / weather.index.freq.n):])
+        # Power output in MW
         if approach == 'simple':
             wind_farm.power_output = modelchain_usage.power_output_simple(
-                wind_farm.wind_turbine_fleet, weather)
+                wind_farm.wind_turbine_fleet, weather) / (1*10**6)
 #            wind_farm.power_output = tools.power_output_simple(
 #                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
         if approach == 'density_correction':
             wind_farm.power_output = modelchain_usage.power_output_simple(
                 wind_farm.wind_turbine_fleet, weather,
-                density_correction=False)
+                density_correction=False) / (1*10**6)
             # wind_farm.power_output = tools.power_output_density_corr(
             #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(
     #        wind_farm.power_output.index).tz_convert('UTC')
+        if validation_data_name == 'ArgeNetz':
+            # Set power output to nan where power output of ArgeNetz is nan
+            for farm in validation_farms:
+                if farm.wind_farm_name == description['wind_farm_name']:
+                    # df = pd.DataFrame([farm.power_output,
+                    #                    wind_farm.power_output]).transpose()
+                    a = farm.power_output.loc[farm.power_output.isnull() == True]
+                    indices = a.index.tz_convert('UTC')
+                    # indices = farm.power_output.index[farm.power_output.apply(np.isnan)]
+                    # pd.DataFrame([farm.power_output,
+                                  # wind_farm.power_output]).transpose()
+                    for index in indices:
+                        try:
+                            wind_farm.power_output[index]
+                            wind_farm.power_output[index] = np.nan
+                        except Exception:
+                            pass
+                # s.isnull().sum() # TODO how many values are nan
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
             wind_farm.power_output)
@@ -250,7 +269,7 @@ for approach in approach_list:
         for weather_data_name in weather_data_list:
             simulation_farms = get_simulation_farms(
                 weather_data_name, validation_data_name,
-                wind_farm_data, approach)
+                wind_farm_data, approach, validation_farms)
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
