@@ -19,7 +19,8 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2016
+# TODO: Ordner gitten - Inhalt nicht
+year = 2015
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -27,11 +28,11 @@ pickle_load_arge = True
 pickle_load_wind_farm_data = True
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
-    'density_correction'  # density corrected power curve, simple aggregation
+#    'density_correction'  # density corrected power curve, simple aggregation
     ]
 weather_data_list = [
-    'MERRA',
-    'open_FRED'
+   'MERRA',
+  # 'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
@@ -65,7 +66,7 @@ start = None
 end = None
 
 latex_output = np.array([
-    'annual_energy_weather',  # Annual energy output of all weather sets
+#    'annual_energy_weather',  # Annual energy output of all weather sets
 #    'key_figures_weather'     # Key figures of all weather sets
     ])
 extra_plots = np.array([
@@ -83,7 +84,7 @@ arge_pickle_filename = os.path.abspath(os.path.join(
     'arge_netz_data_{0}.p'.format(year)))
 
 # Heights for which temperature of MERRA shall be calculated
-temperature_heights = [64, 65, 105]
+temperature_heights = [60, 64, 65, 105]
 
 
 # -------------------------- Validation Feedin Data ------------------------- #

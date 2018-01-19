@@ -192,9 +192,10 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
             df_corrected = df.copy()
             for column_name in list(df):
                 if 'power_output' in column_name:
-                    df[column_name] = tools.filter_interpolated_data(
+                    df_corrected[column_name] = tools.filter_interpolated_data(
                         df[column_name], window_size=10, tolerance=0.0011,
                         replacement_character=np.nan, plot=False)
+            df = df_corrected
         pickle.dump(df, open(path, 'wb'))
     return df
 

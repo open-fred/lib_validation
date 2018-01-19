@@ -63,13 +63,23 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = tools.get_closest_coordinates(data_frame,
                                                         coordinates)
+    data_frame = data_frame[0:1000]
+    data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
                                  slice(closest_coordinates['lat']),
-                                 slice(closest_coordinates['lon'])),:].reset_index(  # TODO: fix mistake with merra dataframe
-                                level=[1,2], drop=True)
+                                 slice(None)),:]
+    weather_df = weather_df.loc[(slice(None),
+                                 slice(None),
+                                 slice(closest_coordinates['lon'])), :]\
+        # .reset_index(
+        # level=[1, 2], drop=True)
+
     # Set index to standardized form
     if weather_data_name == 'MERRA':
+        print(weather_df)
+        print('length after filter {0}'.format(len(weather_df)))
+        print('length data frame {0}'.format(len(data_frame)))
         weather_df.index = tools.get_indices_for_series(
             temporal_resolution=60, time_zone='Europe/Berlin', year=year)
     if weather_data_name == 'open_FRED':
