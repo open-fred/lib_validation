@@ -294,18 +294,32 @@ def evaluate_feedin_time_series(
     return validation_object_set
 
 
-def correlation(series_1, series_2):
+def correlation(val_obj, sample_resolution=None):
     """
 
 
     """
-    data = pd.DataFrame([series_1, series_2])
-    b = data.resample('1M').agg({'corr': lambda x: x[data.columns[0]].corr(
+    data = pd.DataFrame([val_obj.validation_series,
+                         val_obj.simulation_series]).transpose()
+    b = data.resample(sample_resolution).agg({'corr': lambda x: x[data.columns[0]].corr(
         x[data.columns[1]])})
-    return b
+    corr = b['corr'].drop(1, axis=1)
+    corr.columns = ['{0} {1}'.format(val_obj.object_name,
+                                         val_obj.weather_data_name)]
+    return corr
 
 if __name__ == "__main__":
     path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
-                        'validation_sets_2015_open_FRED_ArgeNetz_simple_hourly_energy_output.p')
-    val_obj = pickle.load(open(path,'rb'))
-    output = correlation(val_obj.validation_series, val_obj.simulation_series)
+                        'validation_sets_2015_open_FRED_ArgeNetz_simple_power_output.p')
+    path_2 = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+                        'validation_sets_2015_MERRA_ArgeNetz_simple_power_output.p')
+    val_objs = pickle.load(open(path,'rb'))
+    val_objs_2 = pickle.load(open(path_2,'rb'))
+    for obj in val_objs_2:
+        val_obj = val_objs.append(obj)
+    sample_resolution = 'M'
+    df = pd.DataFrame()
+    for val_obj in val_objs:
+        output = correlation(val_obj, sample_resolution)
+        df = pd.concat([df, output], axis=1)
+    df.to_csv('correlations_power.csv')
