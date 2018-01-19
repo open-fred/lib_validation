@@ -83,9 +83,12 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
         # weather_df['roughness_length'] = z0_series.values
         # TODO: indices für 2016....
         # TODO: check: to_datetime possible??
-        weather_df.index = tools.get_indices_for_series(
-            temporal_resolution=30, time_zone='UTC', year=year)
-        # weather_df.index = weather_df.index.tz_localize('UTC') TODO: take care: always starts from 00:00?
+        # weather_df.index = tools.get_indices_for_series(
+        #     temporal_resolution=30, time_zone='UTC', year=year)
+        weather_df.index = weather_df.index.tz_localize('UTC')
+        # Add frequency attribute
+        freq = pd.infer_freq(weather_df.index)
+        weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
     return weather_df
 
 

@@ -20,7 +20,7 @@ import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
 # TODO: Ordner gitten - Inhalt nicht
-year = 2016
+year = 2015
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -32,7 +32,7 @@ approach_list = [
     ]
 weather_data_list = [
    'MERRA',
-  # 'open_FRED'
+  'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
@@ -207,7 +207,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
             filename=filename_weather, year=year,
             temperature_heights=temperature_heights)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
-            # For ArgeNetz data in 2015 only data from May on is needed
+            # For ArgeNetz data in 2015 only data from May on is needed (local)
             weather, converted = tools.convert_time_zone_of_index(
                 weather, 'local', local_time_zone='Europe/Berlin')
             weather = weather.loc[weather.index >= '2015-05-01']
@@ -241,12 +241,15 @@ def get_simulation_farms(weather_data_name, validation_data_name,
                     # indices = farm.power_output.index[farm.power_output.apply(np.isnan)]
                     # pd.DataFrame([farm.power_output,
                                   # wind_farm.power_output]).transpose()
+                    nan_amount = 0
                     for index in indices:
                         try:
                             wind_farm.power_output[index]
                             wind_farm.power_output[index] = np.nan
+                            nan_amount += 1
                         except Exception:
                             pass
+                    # print('numbers of nans filtered: {0}'.format(nan_amount))
                 # s.isnull().sum() # TODO how many values are nan
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
@@ -270,6 +273,19 @@ for approach in approach_list:
             simulation_farms = get_simulation_farms(
                 weather_data_name, validation_data_name,
                 wind_farm_data, approach, validation_farms)
+
+            if (weather_data_name == 'open_FRED' and year == 2016):
+                # For open_FRED data in 2016 data does not exist for december
+                # validation_data, converted = tools.convert_time_zone_of_index(
+                #     validation_data, 'local', local_time_zone='Europe/Berlin')
+                for validation_farm in validation_farms:
+                    validation_farm.power_output = (
+                        validation_farm.power_output.loc[
+                            validation_farm.power_output.index <= '2016-11-30'])
+                # if converted:
+                #     weather.index = weather.index.tz_convert('UTC')
+                #     weather = weather.drop(weather.index[
+                #                            int(-60 / weather.index.freq.n):])
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
