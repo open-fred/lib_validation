@@ -67,14 +67,9 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
-                                 slice(closest_coordinates['lat']),
-                                 slice(None)),:]
-    weather_df = weather_df.loc[(slice(None),
-                                 slice(None),
-                                 slice(closest_coordinates['lon'])), :]\
-        # .reset_index(
-        # level=[1, 2], drop=True)
-
+                                 [closest_coordinates['lat']],
+                                 [closest_coordinates['lon']]),:].reset_index(
+                                level=[1,2], drop=True)
     # Set index to standardized form
     if weather_data_name == 'MERRA':
         print(weather_df)
