@@ -4,7 +4,8 @@ import tools
 # Other imports
 import numpy as np
 import pandas as pd
-
+import os
+import pickle
 
 class ValidationObject(object):
     r"""
@@ -291,3 +292,20 @@ def evaluate_feedin_time_series(
             simulation_series, output_method, weather_data_name,
             validation_name))
     return validation_object_set
+
+
+def correlation(series_1, series_2):
+    """
+
+
+    """
+    data = pd.DataFrame([series_1, series_2])
+    b = data.resample('1M').agg({'corr': lambda x: x[data.columns[0]].corr(
+        x[data.columns[1]])})
+    return b
+
+if __name__ == "__main__":
+    path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+                        'validation_sets_2015_open_FRED_ArgeNetz_simple_hourly_energy_output.p')
+    val_obj = pickle.load(open(path,'rb'))
+    output = correlation(val_obj.validation_series, val_obj.simulation_series)
