@@ -356,3 +356,11 @@ if __name__ == "__main__":
             df = pd.concat([df, output], axis=1)
         df.to_csv('correlations_{0}_{1}.csv'.format(time_period[0],
                                                     time_period[1]))
+        ############### Tageszeiten yearly correlation ########################
+        # Get correlation
+        df = pd.DataFrame()
+        for val_obj in val_objs:
+            output = correlation(val_obj, 'Y')
+            df = pd.concat([df, output], axis=1)
+        df.to_csv('correlations_yearly_{0}_{1}.csv'.format(time_period[0],
+                                                           time_period[1]))
