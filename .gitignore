@@ -3,13 +3,22 @@
 *.ini
 *.nc
 *.nc4
+*.xml
+*.iml
+*.orig
+*.sublime-project
+*.sublime-workspace
 
 *.egg-info/
-/data/
-/dumps/
 /htw_2015/
 
-
+data/ArgeNetz/**/*
+data/Merra/**/*
+data/open_FRED/**/*
+dumps/validation_data/**/*
+dumps/validation_objects/**/*
+dumps/weather/**/*
+dumps/wind_farm_data/**/*
 
 /untitled0.py
 /ergebnis.csv
