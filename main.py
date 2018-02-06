@@ -19,7 +19,6 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-# TODO: Ordner gitten - Inhalt nicht
 year = 2015
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
@@ -32,7 +31,7 @@ approach_list = [
     ]
 weather_data_list = [
    'MERRA',
-  'open_FRED'
+   'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
@@ -52,8 +51,8 @@ visualization_methods = [
 
 # Select time of day you want to observe or None for all day
 time_period = (
-#        12, 15  # time of day to be selected (from h to h)
-        None   # complete time series will be observed
+       8, 20  # time of day to be selected (from h to h)
+        # None   # complete time series will be observed
         ) 
 
 # Start and end date for time period to be plotted
@@ -469,8 +468,9 @@ if 'annual_energy_weather' in latex_output:
                 i += 1
             latex_df = pd.concat([latex_df, df_part])
         filename_table = os.path.join(
-            path_latex_tables, 'Annual_energy_weather_{0}_{1}_{2}.tex'.format(
-                year, approach, title_add_on))
+            path_latex_tables,
+            'Annual_energy_weather_{0}_{1}_{2}-{3}.tex'.format(
+                year, approach, time_period[0], time_period[1]))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
@@ -532,38 +532,38 @@ if 'key_figures_weather' in latex_output:
             for df_part in df_parts:
                 latex_df = pd.concat([latex_df, df_part], axis=0)
         filename_table = os.path.join(
-            path_latex_tables, 'Key_figures_weather_{0}_{1}_{2}.tex'.format(
-                year, approach, title_add_on))
+            path_latex_tables,
+            'Key_figures_weather_{0}_{1}_{2}-{3}.tex'.format(
+                year, approach, time_period[0], time_period[1]))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
                           multicolumn_format='c')
 
 # ------------------------------- Extra plots ------------------------------- #
-if 'annual_bars_weather' in extra_plots:
-    years = [2015, 2016]
-    if 'annual_energy_output' not in output_methods:
-        raise ValueError("'annual_energy_output' not in `output_methods` - " +
-                         "cannot generate 'annual_bars_weather' plot")
-    for approach in approach_list:
-        for validation_data_name in validation_data_list:
-            filenames = []
-            for year in years:
-                validation_sets = []
-                filenames.extend(['validation_sets_{0}_{1}_{2}_{3}'.format(
-                    year, weather_data_name,
-                    validation_data_name, approach) +
-                             '_annual_energy_output.p'
-                             for weather_data_name in weather_data_list])
-                for filename in filenames:
-                    if (approach in filename and 'annual_energy_output' in filename
-                            and validation_data_name in filename
-                            and str(year) in filename):
-                        validation_sets.append(pickle.load(open(filename, 'rb')))
-                    index = [year]
-                    columns = [validation_data_name]
-                    columns.extend([name for name in weather_data_list])
-                    data = []
-        
+# if 'annual_bars_weather' in extra_plots:
+#     years = [2015, 2016]
+#     if 'annual_energy_output' not in output_methods:
+#         raise ValueError("'annual_energy_output' not in `output_methods` - " +
+#                          "cannot generate 'annual_bars_weather' plot")
+#     for approach in approach_list:
+#         for validation_data_name in validation_data_list:
+#             filenames = []
+#             for year in years:
+#                 validation_sets = []
+#                 filenames.extend(['validation_sets_{0}_{1}_{2}_{3}'.format(
+#                     year, weather_data_name,
+#                     validation_data_name, approach) +
+#                              '_annual_energy_output.p'
+#                              for weather_data_name in weather_data_list])
+#                 for filename in filenames:
+#                     if (approach in filename and 'annual_energy_output' in filename
+#                             and validation_data_name in filename
+#                             and str(year) in filename):
+#                         validation_sets.append(pickle.load(open(filename, 'rb')))
+#                     index = [year]
+#                     columns = [validation_data_name]
+#                     columns.extend([name for name in weather_data_list])
+#                     data = []
 
 print('# ----------- Done ----------- #')
