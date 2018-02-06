@@ -437,7 +437,8 @@ def select_certain_time_steps(series, time_period):
 
     """
     # Save frequency attribute of `series`
-    freq = pd.infer_freq(series.index)
+    freq = series.index.freq
+    # freq = pd.infer_freq(series.index)
     selected_series = series[(time_period[0] <= series.index.hour) &
                              (series.index.hour <= time_period[1])]
     selected_series.index.freq = pd.tseries.frequencies.to_offset(freq)
