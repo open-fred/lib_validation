@@ -469,8 +469,8 @@ if 'annual_energy_weather' in latex_output:
                 i += 1
             latex_df = pd.concat([latex_df, df_part])
         filename_table = os.path.join(
-            path_latex_tables, 'Annual_energy_weather_{0}_{1}.tex'.format(
-                year, approach))
+            path_latex_tables, 'Annual_energy_weather_{0}_{1}_{2}.tex'.format(
+                year, approach, title_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
@@ -532,8 +532,8 @@ if 'key_figures_weather' in latex_output:
             for df_part in df_parts:
                 latex_df = pd.concat([latex_df, df_part], axis=0)
         filename_table = os.path.join(
-            path_latex_tables, 'Key_figures_weather_{0}_{1}.tex'.format(
-                year, approach))
+            path_latex_tables, 'Key_figures_weather_{0}_{1}_{2}.tex'.format(
+                year, approach, title_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
