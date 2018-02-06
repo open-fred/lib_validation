@@ -436,8 +436,12 @@ def select_certain_time_steps(series, time_period):
         select all time steps whose time lies between 9 and 12 o'clock.
 
     """
-    return series[(time_period[0] <= series.index.hour) &
-                  (series.index.hour <= time_period[1])]
+    # Save frequency attribute of `series`
+    freq = pd.infer_freq(series.index)
+    selected_series = series[(time_period[0] <= series.index.hour) &
+                             (series.index.hour <= time_period[1])]
+    selected_series.index.freq = pd.tseries.frequencies.to_offset(freq)
+    return selected_series
 
 
 def convert_time_zone_of_index(data, output_time_zone, local_time_zone=None):
