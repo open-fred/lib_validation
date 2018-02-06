@@ -1,4 +1,6 @@
 from windpowerlib.wind_turbine import WindTurbine
+from windpowerlib.power_output import summarized_power_curve
+
 from windpowerlib import power_output, tools
 import pandas as pd
 import numpy as np
@@ -34,7 +36,7 @@ print(turbulence_intensity)
 plt.plot(e126.power_curve['wind_speed'], e126.power_curve['values'])
 plt.plot(smoothed_power_curve['wind_speed'], smoothed_power_curve['values'])
 plt.show()
-
+plt.close()
 
 # variables = pd.Series(data=np.arange(-15.0, 15.0, 0.5), index=np.arange(-15.0, 15.0, 0.5))
 # wind_speed = 12
@@ -44,3 +46,42 @@ plt.show()
 # gauss.plot()
 # plt.show()
 # print(gauss)
+
+
+enerconE70 = {
+            'turbine_name': 'ENERCON E 70 2300',
+            'hub_height': 64,
+            'rotor_diameter': 71
+        }
+enerconE66 = {
+            'turbine_name': 'ENERCON E 66 1800',
+            'hub_height': 65,
+            'rotor_diameter': 70
+        }
+vestasV126 = {
+            'turbine_name': 'VESTAS V 126 3300',
+            'hub_height': 117,
+            'rotor_diameter': 126
+        }
+
+
+e70 = WindTurbine(**enerconE70)
+e66 = WindTurbine(**enerconE66)
+v126 = WindTurbine(**vestasV126)
+parameters = {'wind_turbine_fleet': [{'wind_turbine': e70,
+                                      'number_of_turbines': 13},
+                                     {'wind_turbine': e66,
+                                      'number_of_turbines': 4},
+                                      {'wind_turbine': v126,
+                                      'number_of_turbines': 2}],
+              'smoothing': True,
+              'density_correction': False,
+              'roughness_length': 0.4
+              }
+power_curve_exp = 2
+summarized_power_curve_df = summarized_power_curve(**parameters)
+print(summarized_power_curve_df)
+
+# plt.plot(summarized_power_curve_df['wind_speed'], summarized_power_curve_df['values'])
+# plt.show()
+# plt.close()
