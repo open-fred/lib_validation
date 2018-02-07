@@ -91,7 +91,7 @@ def get_validation_farms(validation_data_name):
     r"""
     Creates list of farms representing the validation data.
 
-    Farms are initialised and their power output and annual energy output are
+    Farms are initialized and their power output and annual energy output are
     assigned to the respective attributes.
 
     Parameters
