@@ -189,6 +189,8 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                 df = pd.concat([df, df_part])
         df.index = indices
         if filter_interpolated_data:
+            print('---- The interpolated data of ArgeNetz data is ' +
+                  'being filtered. ----')
             df_corrected = df.copy()
             for column_name in list(df):
                 if 'power_output' in column_name:
@@ -196,6 +198,7 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                         df[column_name], window_size=10, tolerance=0.0011,
                         replacement_character=np.nan, plot=False)
             df = df_corrected
+            print('---- Filtering Done. ----')
         pickle.dump(df, open(path, 'wb'))
     return df
 
