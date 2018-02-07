@@ -19,11 +19,11 @@ def smooth_pc(plot=True, print_out=False):
     block_width = 0.5
     standard_deviation_method = 'turbulence_intensity'
     # standard_deviation_method='Staffell'
-    turbulence_intensity = tools.estimate_turbulence_intensity(
-        135, z0.mean())
     # turbulence_intensity = (2.4 * 0.41) / np.log(135/z0.mean()) *
     # np.exp(-135/500) # constant boundary layer
     for turbine in turbines:
+        turbulence_intensity = tools.estimate_turbulence_intensity(
+            turbine.hub_height, z0.mean())
         smoothed_power_curve = power_output.smooth_power_curve(
             turbine.power_curve.wind_speed, turbine.power_curve['values'],
             block_width=block_width,
@@ -34,13 +34,17 @@ def smooth_pc(plot=True, print_out=False):
             print(smoothed_power_curve)
         if plot:
             fig = plt.figure()
-            plt.plot(turbine.power_curve['wind_speed'],
-                     turbine.power_curve['values'])
-            plt.plot(smoothed_power_curve['wind_speed'],
-                     smoothed_power_curve['values'])
+            a, = plt.plot(turbine.power_curve['wind_speed'],
+                         turbine.power_curve['values']/1000, label='original')
+            b, = plt.plot(smoothed_power_curve['wind_speed'],
+                         smoothed_power_curve['values']/1000, label='smoothed')
+            plt.ylabel('Power in kW')
+            plt.xlabel('Wind speed in m/s')
+            plt.title(turbine.turbine_name)
+            plt.legend(handles=[a, b])
             fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots/power_curves',
-                '{0}_{1}_{2}.png'.format(turbine.turbine_name,
+                '{0}_{1}_{2}.pdf'.format(turbine.turbine_name,
                                          standard_deviation_method,
                                          block_width))))
             plt.close()
