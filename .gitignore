@@ -13,8 +13,13 @@
 /htw_2015/
 
 data/ArgeNetz/**/*
+data/Enertrag/**/*
+data/GreenWind/**/*
+data/Daten_Twele/**/*
 data/Merra/**/*
 data/open_FRED/**/*
+data/Renewables_ninja_capacity_factors/**/*
+
 dumps/validation_data/**/*
 dumps/validation_objects/**/*
 dumps/weather/**/*
