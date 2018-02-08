@@ -7,7 +7,9 @@ import visualization_tools
 import analysis_tools
 import tools
 import latex_tables
-from weather_data import get_weather_data, read_and_dump_csv_weather
+import modelchain_usage
+from merra_weather_data import get_merra_data
+from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
 
 # Other imports
@@ -17,7 +19,7 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2016
+year = 2015
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -25,11 +27,11 @@ pickle_load_arge = True
 pickle_load_wind_farm_data = True
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
-    'density_correction'  # density corrected power curve, simple aggregation
+#    'density_correction'  # density corrected power curve, simple aggregation
     ]
 weather_data_list = [
-    'MERRA',
-    'open_FRED'
+   'MERRA',
+   'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz'
@@ -49,8 +51,8 @@ visualization_methods = [
 
 # Select time of day you want to observe or None for all day
 time_period = (
-#        12, 15  # time of day to be selected (from h to h)
-        None   # complete time series will be observed
+       8, 20  # time of day to be selected (from h to h)
+        # None   # complete time series will be observed
         ) 
 
 # Start and end date for time period to be plotted
@@ -63,7 +65,7 @@ start = None
 end = None
 
 latex_output = np.array([
-    'annual_energy_weather',  # Annual energy output of all weather sets
+#    'annual_energy_weather',  # Annual energy output of all weather sets
 #    'key_figures_weather'     # Key figures of all weather sets
     ])
 extra_plots = np.array([
@@ -75,13 +77,21 @@ latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 # Other plots
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 
+# Filename specification
+arge_pickle_filename = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), 'dumps/validation_data',
+    'arge_netz_data_{0}.p'.format(year)))
+
+# Heights for which temperature of MERRA shall be calculated
+temperature_heights = [60, 64, 65, 105]
+
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_farms(validation_data_name):
     r"""
     Creates list of farms representing the validation data.
 
-    Farms are initialised and their power output and annual energy output are
+    Farms are initialized and their power output and annual energy output are
     assigned to the respective attributes.
 
     Parameters
@@ -99,14 +109,6 @@ def get_validation_farms(validation_data_name):
 
     """
     if validation_data_name == 'ArgeNetz':
-        # Create DatetimeIndex indices for DataFrame depending on the year
-        if year == 2015:
-            indices = tools.get_indices_for_series(
-                temporal_resolution=5, time_zone='Europe/Berlin',
-                start='5/1/2015', end='1/1/2016')
-        if year == 2016:
-            indices = tools.get_indices_for_series(
-                temporal_resolution=1, time_zone='Europe/Berlin', year=year)
         # Get wind farm data
         wind_farm_data = wind_farm_specifications.get_wind_farm_data(
             'farm_specification_argenetz_{0}.p'.format(year),
@@ -115,8 +117,8 @@ def get_validation_farms(validation_data_name):
             pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         validation_data = get_argenetz_data(
-            year, only_get_power=True, pickle_load=pickle_load_arge,
-            plot=plot_arge_feedin)
+            year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
+            csv_dump=False, plot=plot_arge_feedin)
     if validation_data_name == '...':
         pass  # Add more data
 
@@ -130,7 +132,8 @@ def get_validation_farms(validation_data_name):
         wind_farm.power_output = pd.Series(
             data=(validation_data[description['wind_farm_name'] +
                                   '_power_output'].values / 1000),
-            index=indices)
+            index=(validation_data[description['wind_farm_name'] +
+                                   '_power_output'].index))
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
         # Annual energy output in MWh
@@ -144,7 +147,7 @@ def get_validation_farms(validation_data_name):
 
 # ------------------------- Power output simulation ------------------------- #
 def get_simulation_farms(weather_data_name, validation_data_name,
-                         wind_farm_data, approach):
+                         wind_farm_data, approach, validation_farms=None):
     r"""
     Creates list of farms containing the simulated power/energy output.
 
@@ -172,63 +175,81 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         the simulated wind farms.
 
     """
-    if weather_data_name == 'MERRA':
-        pickle_load_weather = pickle_load_merra
-    if weather_data_name == 'open_FRED':
-        pickle_load_weather = pickle_load_open_fred
-        data_height = {'wind_speed': 10,
-                       'roughness_length': 0, # TODO: only for wind speed exact!
-                       'temperature': 0,
-                       'density': 0,
-                       'pressure': 0}
-
     # Generate filename (including path) for pickle dumps (and loads)
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
                                     'weather_df_{0}_{1}.p'.format(
                                         weather_data_name, year))
-    if not pickle_load_weather:
-        # Read csv file that contains weather data (pd.DataFrame is dumped)
-        # and turn pickle_load_weather to True
-        read_and_dump_csv_weather(weather_data_name, year,
-                                  filename_weather)
-        pickle_load_weather = True
+    if weather_data_name == 'MERRA':
+        if not pickle_load_merra:
+            # Read csv file that contains weather data (pd.DataFrame is dumped)
+            # to save time below
+            get_merra_data(year, heights=temperature_heights,
+                           filename=filename_weather)
+    if weather_data_name == 'open_FRED':
+        if not pickle_load_open_fred:
+            fred_path = os.path.join(
+                os.path.dirname(__file__), 'data/open_FRED',
+                'fred_data_{0}_sh.csv'.format(year))
+            get_open_fred_data(
+                filename=fred_path, pickle_filename=filename_weather,
+                pickle_load=False)
+
     # Initialise simulaton wind farms from `wind_farm_data` and calculate power
     # output and annual energy output
     simulation_farms = []
     for description in wind_farm_data:
         # Initialise wind farm
         wind_farm = wf.WindFarm(**description)
-        # Get weather data
-        weather = get_weather_data(
-            weather_data_name, pickle_load_weather, filename_weather, year,
-            wind_farm.coordinates)
+        # Get weather data for specific coordinates
+        weather = tools.get_weather_data(
+            weather_data_name, wind_farm.coordinates, pickle_load=True,
+            filename=filename_weather, year=year,
+            temperature_heights=temperature_heights)
         if (validation_data_name == 'ArgeNetz' and year == 2015):
-            # For ArgeNetz data in 2015 only data from May is needed
+            # For ArgeNetz data in 2015 only data from May on is needed (local)
             weather, converted = tools.convert_time_zone_of_index(
                 weather, 'local', local_time_zone='Europe/Berlin')
             weather = weather.loc[weather.index >= '2015-05-01']
             if converted:
                 weather.index = weather.index.tz_convert('UTC')
-                if weather.index.freq == '30T': # TODO: make more generic
-                    weather = weather.drop(weather.index[-2:])
-                if weather.index.freq == 'H':
-                    weather = weather.drop(weather.index[-1])
-        if weather_data_name == 'MERRA':
-            # Temperature height is time series (different for each location)
-            data_height = {'wind_speed': 50,  # Source: https://data.open-power-system-data.org/weather_data/2017-07-05/
-                           'roughness_length': 0,  # TODO: is this specified?
-                           'temperature': weather.temperature_height,
-                           'density': 0,
-                           'pressure': 0}
+                weather = weather.drop(weather.index[
+                                       int(-60 / weather.index.freq.n):])
+        # Power output in MW
         if approach == 'simple':
-            wind_farm.power_output = tools.power_output_simple(
-                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+            wind_farm.power_output = modelchain_usage.power_output_simple(
+                wind_farm.wind_turbine_fleet, weather) / (1*10**6)
+#            wind_farm.power_output = tools.power_output_simple(
+#                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
         if approach == 'density_correction':
-            wind_farm.power_output = tools.power_output_density_corr(
-                wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
+            wind_farm.power_output = modelchain_usage.power_output_simple(
+                wind_farm.wind_turbine_fleet, weather,
+                density_correction=False) / (1*10**6)
+            # wind_farm.power_output = tools.power_output_density_corr(
+            #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(
     #        wind_farm.power_output.index).tz_convert('UTC')
+        if validation_data_name == 'ArgeNetz':
+            # Set power output to nan where power output of ArgeNetz is nan
+            for farm in validation_farms:
+                if farm.wind_farm_name == description['wind_farm_name']:
+                    # df = pd.DataFrame([farm.power_output,
+                    #                    wind_farm.power_output]).transpose()
+                    a = farm.power_output.loc[farm.power_output.isnull() == True]
+                    indices = a.index.tz_convert('UTC')
+                    # indices = farm.power_output.index[farm.power_output.apply(np.isnan)]
+                    # pd.DataFrame([farm.power_output,
+                                  # wind_farm.power_output]).transpose()
+                    nan_amount = 0
+                    for index in indices:
+                        try:
+                            wind_farm.power_output[index]
+                            wind_farm.power_output[index] = np.nan
+                            nan_amount += 1
+                        except Exception:
+                            pass
+                    # print('numbers of nans filtered: {0}'.format(nan_amount))
+                # s.isnull().sum() # TODO how many values are nan
         # Annual energy output in MWh
         wind_farm.annual_energy_output = tools.annual_energy_output(
             wind_farm.power_output)
@@ -250,7 +271,20 @@ for approach in approach_list:
         for weather_data_name in weather_data_list:
             simulation_farms = get_simulation_farms(
                 weather_data_name, validation_data_name,
-                wind_farm_data, approach)
+                wind_farm_data, approach, validation_farms)
+
+            if (weather_data_name == 'open_FRED' and year == 2016):
+                # For open_FRED data in 2016 data does not exist for december
+                # validation_data, converted = tools.convert_time_zone_of_index(
+                #     validation_data, 'local', local_time_zone='Europe/Berlin')
+                for validation_farm in validation_farms:
+                    validation_farm.power_output = (
+                        validation_farm.power_output.loc[
+                            validation_farm.power_output.index <= '2016-11-30'])
+                # if converted:
+                #     weather.index = weather.index.tz_convert('UTC')
+                #     weather = weather.drop(weather.index[
+                #                            int(-60 / weather.index.freq.n):])
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
@@ -434,8 +468,9 @@ if 'annual_energy_weather' in latex_output:
                 i += 1
             latex_df = pd.concat([latex_df, df_part])
         filename_table = os.path.join(
-            path_latex_tables, 'Annual_energy_weather_{0}_{1}.tex'.format(
-                year, approach))
+            path_latex_tables,
+            'Annual_energy_weather_{0}_{1}_{2}-{3}.tex'.format(
+                year, approach, time_period[0], time_period[1]))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
@@ -497,38 +532,38 @@ if 'key_figures_weather' in latex_output:
             for df_part in df_parts:
                 latex_df = pd.concat([latex_df, df_part], axis=0)
         filename_table = os.path.join(
-            path_latex_tables, 'Key_figures_weather_{0}_{1}.tex'.format(
-                year, approach))
+            path_latex_tables,
+            'Key_figures_weather_{0}_{1}_{2}-{3}.tex'.format(
+                year, approach, time_period[0], time_period[1]))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
                           multicolumn_format='c')
 
 # ------------------------------- Extra plots ------------------------------- #
-if 'annual_bars_weather' in extra_plots:
-    years = [2015, 2016]
-    if 'annual_energy_output' not in output_methods:
-        raise ValueError("'annual_energy_output' not in `output_methods` - " +
-                         "cannot generate 'annual_bars_weather' plot")
-    for approach in approach_list:
-        for validation_data_name in validation_data_list:
-            filenames = []
-            for year in years:
-                validation_sets = []
-                filenames.extend(['validation_sets_{0}_{1}_{2}_{3}'.format(
-                    year, weather_data_name,
-                    validation_data_name, approach) +
-                             '_annual_energy_output.p'
-                             for weather_data_name in weather_data_list])
-                for filename in filenames:
-                    if (approach in filename and 'annual_energy_output' in filename
-                            and validation_data_name in filename
-                            and str(year) in filename):
-                        validation_sets.append(pickle.load(open(filename, 'rb')))
-                    index = [year]
-                    columns = [validation_data_name]
-                    columns.extend([name for name in weather_data_list])
-                    data = []
-        
+# if 'annual_bars_weather' in extra_plots:
+#     years = [2015, 2016]
+#     if 'annual_energy_output' not in output_methods:
+#         raise ValueError("'annual_energy_output' not in `output_methods` - " +
+#                          "cannot generate 'annual_bars_weather' plot")
+#     for approach in approach_list:
+#         for validation_data_name in validation_data_list:
+#             filenames = []
+#             for year in years:
+#                 validation_sets = []
+#                 filenames.extend(['validation_sets_{0}_{1}_{2}_{3}'.format(
+#                     year, weather_data_name,
+#                     validation_data_name, approach) +
+#                              '_annual_energy_output.p'
+#                              for weather_data_name in weather_data_list])
+#                 for filename in filenames:
+#                     if (approach in filename and 'annual_energy_output' in filename
+#                             and validation_data_name in filename
+#                             and str(year) in filename):
+#                         validation_sets.append(pickle.load(open(filename, 'rb')))
+#                     index = [year]
+#                     columns = [validation_data_name]
+#                     columns.extend([name for name in weather_data_list])
+#                     data = []
 
 print('# ----------- Done ----------- #')

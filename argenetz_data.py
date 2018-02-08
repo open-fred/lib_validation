@@ -12,6 +12,7 @@ The following data is available for 5 wind farms (year 2015) or 4 wind farms
 
 If only `only_get_power` of get_argenetz_data() is set to True only the first
 variable (measured feed-in is returned/dumped).
+TODO: adjust this information
 
 """
 
@@ -27,6 +28,7 @@ import tools
 # Other imports
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 import os
 import pickle
 
@@ -39,7 +41,7 @@ def read_data(filename, **kwargs):
 
     Parameters
     ----------
-    filename : string, optional
+    filename : string
         Name of data file.
 
     Other Parameters
@@ -56,7 +58,8 @@ def read_data(filename, **kwargs):
     """
     if 'datapath' not in kwargs:
         kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
-                                          'data')
+
+                                          'data/ArgeNetz')
     if 'usecols' not in kwargs:
         kwargs['usecols'] = None
 
@@ -107,8 +110,44 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     return df2
 
 
-def get_data(filename_files, filename_column_names=None, new_column_names=None,
-             filename_pickle='pickle_dump.p', pickle_load=False):
+def new_column_names(year):
+    """
+    Returns column names for ArgeNetz data depending on the year as list.
+
+    """
+    if year == 2015:
+        new_column_names = [
+            'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
+            'wf_1_wind_dir', 'wf_1_installed_power', 'wf_2_power_output',
+            'wf_2_theoretical_power', 'wf_2_installed_power',
+            'wf_3_power_output', 'wf_3_theoretical_power', 'wf_4_power_output',
+            'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_5_power_output',
+            'wf_5_installed_power', 'wf_5_theoretical_power']
+#        new_column_names = [
+#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
+#           'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
+#           'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
+#           'wf_5_power_output', 'wf_5_installed_power']
+    if (year == 2016 or year == 2017):
+        new_column_names = [
+            'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
+            'wf_1_wind_dir', 'wf_1_installed_power', 'wf_3_power_output',
+            'wf_3_theoretical_power', 'wf_3_wind_speed', 'wf_3_wind_dir',
+            'wf_3_installed_power', 'wf_4_power_output',
+            'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_4_wind_dir',
+            'wf_4_installed_power', 'wf_5_power_output',
+            'wf_5_theoretical_power', 'wf_5_wind_speed', 'wf_5_wind_dir',
+            'wf_5_installed_power']
+#        new_column_names = [
+#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
+#           'wf_3_power_output', 'wf_3_wind_speed', 'wf_3_installed_power',
+#           'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power',
+#           'wf_5_power_output', 'wf_5_wind_speed', 'wf_5_installed_power']
+    return new_column_names
+
+
+def get_data(filename_files, year, filename_pickle='pickle_dump.p',
+             pickle_load=False, filter_interpolated_data=True):
     r"""
     Fetches data of the requested files and renames columns.
 
@@ -116,11 +155,8 @@ def get_data(filename_files, filename_column_names=None, new_column_names=None,
     ----------
     filename_files : String
         Filename of file containing filenames of csv file to be read.
-    filename_column_names : string, optional
-        Name of file that contains column names to be filtered for.
-        Default: None.
-    new_column_names : List
-        Contains new column names (Strings) for the data frame. Default: None
+    year : Integer
+        Year of data to be fetched.
 
     Returns
     -------
@@ -131,6 +167,15 @@ def get_data(filename_files, filename_column_names=None, new_column_names=None,
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps/validation_data',
                                         filename_pickle))
+    if year == 2015:
+        filename_column_names = 'helper_files/column_names_2015.txt'
+        indices = tools.get_indices_for_series(
+            temporal_resolution=5, time_zone='Europe/Berlin',
+            start='5/1/2015', end='1/1/2016')
+    if (year == 2016 or year == 2017):
+        filename_column_names = 'helper_files/column_names_2016_2017.txt'
+        indices = tools.get_indices_for_series(
+            temporal_resolution=1, time_zone='Europe/Berlin', year=year)
     if pickle_load:
         df = pickle.load(open(path, 'rb'))
     else:
@@ -140,8 +185,20 @@ def get_data(filename_files, filename_column_names=None, new_column_names=None,
                 name = line.strip()
                 df_part = restructure_data(name, filename_column_names,
                                            filter_cols=True)
-                df_part.columns = new_column_names
+                df_part.columns = new_column_names(year)
                 df = pd.concat([df, df_part])
+        df.index = indices
+        if filter_interpolated_data:
+            print('---- The interpolated data of ArgeNetz data is ' +
+                  'being filtered. ----')
+            df_corrected = df.copy()
+            for column_name in list(df):
+                if 'power_output' in column_name:
+                    df_corrected[column_name] = tools.filter_interpolated_data(
+                        df[column_name], window_size=10, tolerance=0.0011,
+                        replacement_character=np.nan, plot=False)
+            df = df_corrected
+            print('---- Filtering Done. ----')
         pickle.dump(df, open(path, 'wb'))
     return df
 
@@ -202,65 +259,32 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
                                                  str(column) + '.pdf')))
     plt.close()
 
-#new_column_names_2016_2017 = [
-#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-#    'wf_3_power_output', 'wf_3_wind_speed', 'wf_3_installed_power',
-#    'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power',
-#    'wf_5_power_output', 'wf_5_wind_speed', 'wf_5_installed_power']
-#
-#new_column_names_2015 = [
-#    'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-#    'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
-#    'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
-#    'wf_5_power_output', 'wf_5_installed_power']
 
-new_column_names_2016_2017 = [
-    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
-    'wf_1_wind_dir', 'wf_1_installed_power', 'wf_3_power_output',
-    'wf_3_theoretical_power', 'wf_3_wind_speed', 'wf_3_wind_dir',
-    'wf_3_installed_power', 'wf_4_power_output', 'wf_4_theoretical_power',
-    'wf_4_wind_speed', 'wf_4_wind_dir', 'wf_4_installed_power',
-    'wf_5_power_output', 'wf_5_theoretical_power', 'wf_5_wind_speed',
-    'wf_5_wind_dir', 'wf_5_installed_power']
-
-new_column_names_2015 = [
-    'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
-    'wf_1_wind_dir', 'wf_1_installed_power', 'wf_2_power_output',
-    'wf_2_theoretical_power', 'wf_2_installed_power', 'wf_3_power_output',
-    'wf_3_theoretical_power', 'wf_4_power_output', 'wf_4_theoretical_power',
-    'wf_4_wind_speed', 'wf_5_power_output', 'wf_5_installed_power',
-    'wf_5_theoretical_power']
-
-
-def get_argenetz_data(year, only_get_power=True, pickle_load=False,
-                      pickle_dump=False, csv_load=False, csv_dump=False,
-                      plot=False, x_limit=None):
+def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
+                      csv_load=False, csv_dump=True,
+                      filter_interpolated_data=True, plot=False, x_limit=None):
     r"""
     Fetches ArgeNetz data for specified year and plots feedin.
 
     year : Integer
         Desired year to get the data for.
-    only_get_power : Boolean
-        If True only the power output of each wind farm is written to the
-        output data frame, if False column containing wind speed, wind
-        direction, theoretical power output and installed power are added, too.
-        Default: True.
     pickle_load : Boolean
-        If True and `only_get_power` is True the data frame is loaded from the
-        pickle dump, if False or `only_get_power` is False the data is loaded
-        from the csv files. Default: False.
-    pickle_dump : Boolean
-        If True and `only_get_power` is True the data frame is pickle dumped,
-        if False or `only_get_power` is False no dump is carried out.
-        Default: False.
+        If True data frame is loaded from the pickle dump if False the data is
+        loaded from the original csv files (or from smaller csv file that was
+        created in an earlier run if `csv_load` is True).
+        Either set `pickle_load` or `csv_load` to True. Default: False.
+    filename : String
+        Filename including path of pickle dump. Default: 'pickle_dump.p'.
     csv_load : Boolean
-        If True and `only_get_power` is True the data is loaded from a csv file
-        that was created in an earlier run, if False or `only_get_power` is
-        False the data is loaded from the original csv files from ArgeNetz.
-        Default: False
+        If True the data is loaded from a csv file that was created in an
+        earlier run, if False the data is loaded from the original csv files
+        from ArgeNetz (or loaded by pickle if `pickle_load` is True).
+        Either set `pickle_load` or `csv_load` to True. Default: False
     csv_dump : Boolean
-        If True and `only_get_power` is True the data is written into a csv
-        file, if False or `only_get_power` this does not happen. Default: False
+        If True the data is written into a csv file. Default: True
+    filter_interpolated_data : Boolean
+        If True the interpolated data (indicator for missing data) is filtered.
+        The missing values are set to None. Default: True.
     plot : Boolean
         If True each column of the data farme is plotted into a seperate
         figure. Default: False
@@ -274,40 +298,17 @@ def get_argenetz_data(year, only_get_power=True, pickle_load=False,
         Data of ArgeNetz wind farms with readable column names (see function
         get_data()).
     """
-    if year == 2015:
-        filename_column_names = 'helper_files/column_names_2015.txt'
-        new_column_names = new_column_names_2015
-    if (year == 2016 or year == 2017):
-        filename_column_names = 'helper_files/column_names_2016_2017.txt'
-        new_column_names = new_column_names_2016_2017
-    if (not only_get_power or not pickle_load):
-        # Get all data either because desired or because only power has not
-        # been dumped, yet.
+    if pickle_load:
+        argenetz_df = pickle.load(open(filename, 'rb'))
+    elif csv_load:
+        argenetz_df = pd.read_csv(filename.replace('.p', '.csv'))
+    else:
+        # Load data with get_data(); data frame is dumped in this function
         argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
-                               filename_column_names, new_column_names,
-                               'arge_data_{0}.p'.format(year),
-                               pickle_load=pickle_load)
-    if only_get_power:
-        pickle_path = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), 'dumps/validation_data',
-            'arge_power_output{0}.p'.format(year)))
-        csv_path = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), 'dumps/validation_data',
-            'arge_power_output{0}.csv'.format(year)))
-        if pickle_load:
-            argenetz_df = pickle.load(open(pickle_path, 'rb'))
-        else:
-            if csv_load:
-                argenetz_df = pd.read_csv(csv_path)
-            else:
-                # Select power output columns
-                column_list = [column_name for column_name in list(argenetz_df)
-                               if 'power_output' in column_name]
-                argenetz_df = argenetz_df[column_list]
-            if pickle_dump:
-                pickle.dump(argenetz_df, open(pickle_path, 'wb'))
-            if csv_dump:
-                argenetz_df.to_csv(csv_path)
+                               year, filename, pickle_load=pickle_load,
+                               filter_interpolated_data=filter_interpolated_data)
+    if csv_dump:
+        argenetz_df.to_csv(filename.replace('.p', '.csv'))
     if plot:
         plot_argenetz_data(
             argenetz_df, save_folder='ArgeNetz/Plots_{0}'.format(
@@ -377,13 +378,13 @@ if __name__ == "__main__":
         ]  # possible: 2015, 2016, 2017
     # Get Arge Netz data
     for year in years:
+        pickle_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
+                         'arge_netz_data_{0}.p'.format(year)))
         get_argenetz_data(
-            # NOTE: pickle load/dump and csv load/dump is only realized if
-            #       `only_get_power` is True.
             year,
-            only_get_power=False,  # Do not read other parameters like v_wind
             pickle_load=False,  # Load power output from former pickle dump
-            pickle_dump=True,  # Dump power output data frame
+            filename=pickle_path,  # Path and filename for pickle dump and load
             csv_load=False,  # Load saved power output data frame from csv
             csv_dump=True,  # Save power output data frame in csv file
             plot=False)  # Plot each column of dataframe
@@ -401,7 +402,7 @@ if __name__ == "__main__":
         end = None
         # Get ArgeNetz Data
         arge_netz_data = get_argenetz_data(
-            year, pickle_load=True, plot=False)
+            year, pickle_load=True, filename=pickle_path, plot=False)
         check_theoretical_power(arge_netz_data, year, start, end)
         print("Plots for comparing theoretical power with simulated power " +
               "(measured wind speed) are saved in 'Plots/Test_Arge'")

@@ -111,7 +111,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 'coordinates': []
             }
             if filename == 'farm_specification_argenetz_2015.p':
-                wind_farm_data = [wf_1, wf_2, wf_3, wf_4, wf_5]
+                wind_farm_data = [wf_2, wf_4, wf_5]
             if filename == 'farm_specification_argenetz_2016.p':
                 wind_farm_data = [wf_1, wf_3, wf_4, wf_5]  # no wf_2 for 2016
         if filename == 'farm_specification_green_wind.p':

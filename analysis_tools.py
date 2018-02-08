@@ -4,6 +4,9 @@ import tools
 # Other imports
 import numpy as np
 import pandas as pd
+import os
+import pickle
+import copy
 
 
 class ValidationObject(object):
@@ -291,3 +294,73 @@ def evaluate_feedin_time_series(
             simulation_series, output_method, weather_data_name,
             validation_name))
     return validation_object_set
+
+
+def correlation(val_obj, sample_resolution=None):
+    """
+
+
+    """
+    data = pd.DataFrame([val_obj.validation_series,
+                         val_obj.simulation_series]).transpose()
+    b = data.resample(sample_resolution).agg({'corr': lambda x: x[data.columns[0]].corr(
+        x[data.columns[1]])})
+    corr = b['corr'].drop(b['corr'].columns[1], axis=1)
+    corr.columns = ['{0} {1}'.format(val_obj.object_name,
+                    val_obj.weather_data_name)]
+    return corr
+
+if __name__ == "__main__":
+    # Load validation objects - choose power output or hourly/monthly energy output
+#    path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+#                        'validation_sets_2015_open_FRED_ArgeNetz_simple_power_output.p')
+#    path_2 = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+#                        'validation_sets_2015_MERRA_ArgeNetz_simple_power_output.p')
+    path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+                        'validation_sets_2015_open_FRED_ArgeNetz_simple_hourly_energy_output.p')
+    path_2 = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
+                        'validation_sets_2015_MERRA_ArgeNetz_simple_hourly_energy_output.p')
+    val_objs = pickle.load(open(path,'rb'))
+    val_objs_2 = pickle.load(open(path_2,'rb'))
+    for obj in val_objs_2:
+        val_obj = val_objs.append(obj)
+    # Choose resolution of resampling
+    sample_resolution = 'M'
+    # ##################### Correlation dataframe ###############################
+    df = pd.DataFrame()
+    for val_obj in val_objs:
+        output = correlation(val_obj, sample_resolution)
+        df = pd.concat([df, output], axis=1)
+    df.to_csv('correlations.csv')
+
+    ###################### Tageszeiten  #####################
+    time_periods = [(4, 8), (8, 16), (16, 22), (22, 4)]
+    for time_period in time_periods:
+        val_objs_copy = copy.deepcopy(val_objs)
+        for val_obj in val_objs_copy:
+            # Set all time series to UTC (will be different in the future, now
+            # it's an easy way)
+            val_obj.simulation_series.index = val_obj.simulation_series.index.tz_convert(
+                    'UTC')
+            val_obj.validation_series.index =  val_obj.validation_series.index.tz_convert(
+                    'UTC')
+            # Selecet time steps
+            val_obj.simulation_series = tools.select_certain_time_steps(
+                val_obj.simulation_series, time_period)
+            val_obj.validation_series = tools.select_certain_time_steps(
+                val_obj.validation_series, time_period)
+        # Get correlation
+        df = pd.DataFrame()
+        for val_obj in val_objs:
+            output = correlation(val_obj, sample_resolution)
+            df = pd.concat([df, output], axis=1)
+        df.to_csv('correlations_{0}_{1}.csv'.format(time_period[0],
+                                                    time_period[1]))
+        ############### Tageszeiten yearly correlation ########################
+        # Get correlation
+        df = pd.DataFrame()
+        for val_obj in val_objs:
+            output = correlation(val_obj, 'Y')
+            df = pd.concat([df, output], axis=1)
+        df.to_csv('correlations_yearly_{0}_{1}.csv'.format(time_period[0],
+                                                           time_period[1]))
