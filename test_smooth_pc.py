@@ -110,7 +110,7 @@ def wind_farms_hub_height():
                                 'number_of_turbines': 4}],
         'coordinates': [54.629167, 9.0625]}
     wf = WindFarm(**wf_3)
-    return wf.average_hub_height
+    return wf.mean_hub_height
 
 if __name__ == "__main__":
     print(summarized_pc(plot=False))
