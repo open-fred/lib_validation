@@ -58,8 +58,11 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                     temp = data_frame['T']
                     temp_height = data_frame['h1']
                     second_level_columns = [50, 0, 0, 0]
+                    first_level_columns = ['wind_speed', 'roughness_length',
+                                           'density', 'pressure']
                     for height in heights:
                         second_level_columns.append(height)
+                        first_level_columns.append('temperature')
                         df_part = pd.DataFrame(
                             data=temperature.linear_gradient(
                                 temp, temp_height, height),
@@ -70,10 +73,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                 data_frame_2 = rename_columns(data_frame, ['T', 'h1', 'lat', 'lon'])
                 data_frame_2.index = index
                 weather_df = data_frame_2
-                weather_df.columns = [['wind_speed', 'roughness_length',
-                                       'density', 'pressure','temperature',
-                                       'temperature', 'temperature',
-                                       'temperature'],
+                weather_df.columns = [first_level_columns,
                                       second_level_columns]
                 # weather_df.rename(columns={'temperature_64': 'temperature',
                 #                            'temperature_65': 'temperature',
@@ -117,9 +117,10 @@ def rename_columns(weather_df, additional_columns_drop=None):
 if __name__ == "__main__":
     years = [
         2015,
-       2016
+        2016
     ]
-    heights = [60, 64, 65, 105] # Heights for which the temperature shall be calculated
+    # Heights for which the temperature shall be calculated (hub heights)
+    heights = [60, 64, 65, 105, 114]
     for year in years:
         filename_weather = os.path.join(
             os.path.dirname(__file__), 'dumps/weather',
