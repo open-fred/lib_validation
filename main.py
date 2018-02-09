@@ -596,7 +596,7 @@ if 'annual_energy_approaches' in latex_output:
                                 val_obj.validation_series.values[0] * 100, 2)
                           for val_obj in validation_set]
                 data = np.array([data_1, data_2]).transpose()
-                columns = [np.array([approach_list[0], approach_list[0]]),
+                columns = [np.array([approach_list[0], approach_list[1]]),
                            np.array(['[MWh]', '[%]'])]
                 df_temp = pd.DataFrame(data=data, index=index, columns=columns)
                 df_part = pd.concat([df_part, df_temp], axis=1)
@@ -610,7 +610,7 @@ if 'annual_energy_approaches' in latex_output:
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
                           multicolumn_format='c')
-
+        # TODO: check order
 
 if 'key_figures_approaches' in latex_output:
     # Do not include data of annual energy output
