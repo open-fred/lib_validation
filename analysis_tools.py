@@ -290,7 +290,7 @@ def evaluate_feedin_time_series(
                 simulation_series, temporal_output_resolution, time_zone)
         # Initialize validation objects and append to list
         validation_object_set.append(ValidationObject(
-            validation_farm.wind_farm_name, validation_series,
+            validation_farm.object_name, validation_series,
             simulation_series, output_method, weather_data_name,
             validation_name))
     return validation_object_set

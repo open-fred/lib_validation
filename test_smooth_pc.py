@@ -40,11 +40,11 @@ def smooth_pc(plot=True, print_out=False):
                          smoothed_power_curve['values']/1000, label='smoothed')
             plt.ylabel('Power in kW')
             plt.xlabel('Wind speed in m/s')
-            plt.title(turbine.turbine_name)
+            plt.title(turbine.object_name)
             plt.legend(handles=[a, b])
             fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots/power_curves',
-                '{0}_{1}_{2}.pdf'.format(turbine.turbine_name,
+                '{0}_{1}_{2}.pdf'.format(turbine.object_name,
                                          standard_deviation_method,
                                          block_width))))
             plt.close()
@@ -62,17 +62,17 @@ def smooth_pc(plot=True, print_out=False):
 
 def summarized_pc(plot=False):
     enerconE70 = {
-            'turbine_name': 'ENERCON E 70 2300',
+            'object_name': 'ENERCON E 70 2300',
             'hub_height': 64,
             'rotor_diameter': 71
         }
     enerconE66 = {
-                'turbine_name': 'ENERCON E 66 1800',
+                'object_name': 'ENERCON E 66 1800',
                 'hub_height': 65,
                 'rotor_diameter': 70
             }
     vestasV126 = {
-                'turbine_name': 'VESTAS V 126 3300',
+                'object_name': 'VESTAS V 126 3300',
                 'hub_height': 117,
                 'rotor_diameter': 126
             }
@@ -103,7 +103,7 @@ def wind_farms_hub_height():
     e70, e66 = wind_farm_specifications.initialize_turbines(['enerconE70',
                                                              'enerconE66'])
     wf_3 = {
-        'wind_farm_name': 'wf_3',
+        'object_name': 'wf_3',
         'wind_turbine_fleet': [{'wind_turbine': e70,
                                 'number_of_turbines': 13},
                                {'wind_turbine': e66,
