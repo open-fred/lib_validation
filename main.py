@@ -231,7 +231,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
             wind_farm.power_output = modelchain_usage.power_output_smooth_wf(
                 wind_farm, weather, cluster=False, density_correction=False,
                 wake_losses=False, smoothing=True, block_width=0.5,
-                standard_deviation_method='turbulence_intensity')
+                standard_deviation_method='turbulence_intensity') / (1*10**6)
             # wind_farm.power_output = tools.power_output_density_corr(
             #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional
