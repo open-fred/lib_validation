@@ -280,6 +280,13 @@ def setup_of_weather_df_pvlib(coordinates, csv_directory,
     # convert temperature from K to °C
     fred_data['temp_air'] = fred_data['temp_air'] - 273.15
 
+    # shift time index by half an hour to have mean values for the following
+    # half hour instead of the previous (this is then also consistent with
+    # pandas resample)
+    fred_data.reset_index(inplace=True)
+    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=30)
+    fred_data.set_index(['time', 'lat', 'lon'], drop=True, inplace=True)
+    # save as csv
     fred_data.to_csv(os.path.join(csv_directory, filename))
     return fred_data
 
@@ -312,7 +319,7 @@ def setup_of_weather_df_windpowerlib(coordinates, csv_directory,
     pandas.DataFrame
         DataFrame with time series for wind speed `wind_speed` in m/s and
         optionally temperature `temperature` in K, roughness length
-        `roughness_lengthC in m, pressure `pressure` in Pa and wind direction
+        `roughness_length in m, pressure `pressure` in Pa and wind direction
         `wind direction`, depending on what is specified in `parameter_list`.
         The columns of the DataFrame are a MultiIndex where the first level
         contains the variable name as string (e.g. 'wind_speed') and the
@@ -373,7 +380,13 @@ def setup_of_weather_df_windpowerlib(coordinates, csv_directory,
             fred_data = fred_data.join(data, how='outer')
         counter += 1
         print(fred_data.shape)
-
+    # shift time index by half an hour to have mean values for the following
+    # half hour instead of the previous (this is then also consistent with
+    # pandas resample)
+    fred_data.reset_index(inplace=True)
+    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=30)
+    fred_data.set_index(['time', 'lat', 'lon'], drop=True, inplace=True)
+    # save as csv
     fred_data.to_csv(os.path.join(csv_directory, filename))
     return fred_data
 
