@@ -24,7 +24,7 @@ time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
-pickle_load_wind_farm_data = True
+pickle_load_wind_farm_data = False
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
 #    'density_correction'  # density corrected power curve, simple aggregation
@@ -83,7 +83,7 @@ arge_pickle_filename = os.path.abspath(os.path.join(
     'arge_netz_data_{0}.p'.format(year)))
 
 # Heights for which temperature of MERRA shall be calculated
-temperature_heights = [60, 64, 65, 105]
+temperature_heights = [60, 64, 65, 105, 114]
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
