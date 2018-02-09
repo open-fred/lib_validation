@@ -18,12 +18,18 @@ data/GreenWind/**/*
 data/Daten_Twele/**/*
 data/Merra/**/*
 data/open_FRED/**/*
+data/Fred/*
+data/htw_2015/*
 data/Renewables_ninja_capacity_factors/**/*
+data/pvlib/* 
+data/windfarm_specifications/*
 
 dumps/validation_data/**/*
 dumps/validation_objects/**/*
 dumps/weather/**/*
 dumps/wind_farm_data/**/*
+
+plots/*
 
 /untitled0.py
 /ergebnis.csv
