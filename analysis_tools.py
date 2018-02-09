@@ -70,7 +70,8 @@ class ValidationObject(object):
 
     """
     def __init__(self, object_name, validation_series, simulation_series,
-                 output_method=None, weather_data_name=None, validation_name=None):
+                 output_method=None, weather_data_name=None,
+                 validation_name=None):
         self.object_name = object_name
         self.validation_series = validation_series
         self.simulation_series = simulation_series
