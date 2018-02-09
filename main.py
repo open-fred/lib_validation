@@ -130,9 +130,9 @@ def get_validation_farms(validation_data_name):
         wind_farm = wf.WindFarm(**description)
         # Power output in MW with DatetimeIndex indices
         wind_farm.power_output = pd.Series(
-            data=(validation_data[description['wind_farm_name'] +
+            data=(validation_data[description['object_name'] +
                                   '_power_output'].values / 1000),
-            index=(validation_data[description['wind_farm_name'] +
+            index=(validation_data[description['object_name'] +
                                    '_power_output'].index))
     #    # Convert DatetimeIndex indices to UTC # TODO: delete or optional
     #    wind_farm.power_output.index = pd.to_datetime(indices).tz_convert('UTC')
@@ -232,7 +232,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         if validation_data_name == 'ArgeNetz':
             # Set power output to nan where power output of ArgeNetz is nan
             for farm in validation_farms:
-                if farm.wind_farm_name == description['wind_farm_name']:
+                if farm.object_name == description['object_name']:
                     # df = pd.DataFrame([farm.power_output,
                     #                    wind_farm.power_output]).transpose()
                     a = farm.power_output.loc[farm.power_output.isnull() == True]

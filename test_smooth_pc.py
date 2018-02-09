@@ -1,11 +1,12 @@
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
 from windpowerlib.power_output import summarized_power_curve
-
+from windpowerlib import wind_farm_modelchain
 from windpowerlib import power_output, tools
 import pandas as pd
 import numpy as np
 import wind_farm_specifications
+from tools import get_weather_data
 from matplotlib import pyplot as plt
 import os
 import pickle
@@ -40,11 +41,11 @@ def smooth_pc(plot=True, print_out=False):
                          smoothed_power_curve['values']/1000, label='smoothed')
             plt.ylabel('Power in kW')
             plt.xlabel('Wind speed in m/s')
-            plt.title(turbine.turbine_name)
+            plt.title(turbine.object_name)
             plt.legend(handles=[a, b])
             fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '../Plots/power_curves',
-                '{0}_{1}_{2}.pdf'.format(turbine.turbine_name,
+                '{0}_{1}_{2}.pdf'.format(turbine.object_name,
                                          standard_deviation_method,
                                          block_width))))
             plt.close()
@@ -62,17 +63,17 @@ def smooth_pc(plot=True, print_out=False):
 
 def summarized_pc(plot=False):
     enerconE70 = {
-            'turbine_name': 'ENERCON E 70 2300',
+            'object_name': 'ENERCON E 70 2300',
             'hub_height': 64,
             'rotor_diameter': 71
         }
     enerconE66 = {
-                'turbine_name': 'ENERCON E 66 1800',
+                'object_name': 'ENERCON E 66 1800',
                 'hub_height': 65,
                 'rotor_diameter': 70
             }
     vestasV126 = {
-                'turbine_name': 'VESTAS V 126 3300',
+                'object_name': 'VESTAS V 126 3300',
                 'hub_height': 117,
                 'rotor_diameter': 126
             }
@@ -103,7 +104,7 @@ def wind_farms_hub_height():
     e70, e66 = wind_farm_specifications.initialize_turbines(['enerconE70',
                                                              'enerconE66'])
     wf_3 = {
-        'wind_farm_name': 'wf_3',
+        'object_name': 'wf_3',
         'wind_turbine_fleet': [{'wind_turbine': e70,
                                 'number_of_turbines': 13},
                                {'wind_turbine': e66,
@@ -112,7 +113,28 @@ def wind_farms_hub_height():
     wf = WindFarm(**wf_3)
     return wf.mean_hub_height
 
+
+def wind_farm_model_chain():
+    e70, e66 = wind_farm_specifications.initialize_turbines(['enerconE70',
+                                                             'enerconE66'])
+    wf_3 = {
+        'object_name': 'wf_3',
+        'wind_turbine_fleet': [{'wind_turbine': e70,
+                                'number_of_turbines': 13},
+                               {'wind_turbine': e66,
+                                'number_of_turbines': 4}],
+        'coordinates': [54.629167, 9.0625]}
+    wf = WindFarm(**wf_3)
+    filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
+                                    'weather_df_MERRA_2015.p')
+    weather = get_weather_data(
+        'MERRA', wf.coordinates, pickle_load=True, filename=filename_weather,
+        year=2015, temperature_heights=[64, 65])
+    mc = wind_farm_modelchain.WindFarmModelChain(wf).run_model(weather)
+    return mc.power_output
+
 if __name__ == "__main__":
-    print(summarized_pc(plot=False))
-    print(wind_farms_hub_height())
-    smooth_pc(plot=True, print_out=False)
+#    print(summarized_pc(plot=False))
+#    print(wind_farms_hub_height())
+#    smooth_pc(plot=True, print_out=False)
+    print(wind_farm_model_chain())

@@ -27,22 +27,22 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     # Turbine data specification - feel free to add
     turbine_dict = {
         'enerconE70': {
-            'turbine_name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
+            'object_name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
             'hub_height': 64,  # in m
             'rotor_diameter': 71  # in m    source: www.wind-turbine-models.com
         },
         'enerconE66': {
-            'turbine_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
+            'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
             'hub_height': 65,  # in m
             'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
         },
         'vestasV90': {
-            'turbine_name': 'VESTAS V 90 2000',
+            'object_name': 'VESTAS V 90 2000',
             'hub_height': 105,  # in m
             'rotor_diameter': 90  # in m    source: www.wind-turbine-models.com
         },
         'vestasV80': {
-            'turbine_name': 'VESTAS V 80 2000',
+            'object_name': 'VESTAS V 80 2000',
             'hub_height': 60,  # in m
             'rotor_diameter': 80  # in m    source: www.wind-turbine-models.com
         }
@@ -79,19 +79,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             # Initialize turbines
             e70, e66 = initialize_turbines(['enerconE70', 'enerconE66'])
             wf_1 = {
-                'wind_farm_name': 'wf_1',
+                'object_name': 'wf_1',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 16}],
                 'coordinates': []
             }
             wf_2 = {
-                'wind_farm_name': 'wf_2',
+                'object_name': 'wf_2',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 6}],
                 'coordinates': []
             }
             wf_3 = {
-                'wind_farm_name': 'wf_3',
+                'object_name': 'wf_3',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 13},
                                        {'wind_turbine': e66,
@@ -99,13 +99,13 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 'coordinates': []
             }
             wf_4 = {
-                'wind_farm_name': 'wf_4',
+                'object_name': 'wf_4',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 22}],
                 'coordinates': []
             }
             wf_5 = {
-                'wind_farm_name': 'wf_5',
+                'object_name': 'wf_5',
                 'wind_turbine_fleet': [{'wind_turbine': e70,
                                         'number_of_turbines': 14}],
                 'coordinates': []
@@ -117,19 +117,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
         if filename == 'farm_specification_green_wind.p':
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
-                'wind_farm_name': 'wf_6',
+                'object_name': 'wf_6',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 9}],
                 #                'coordinates': []
             }
             wf_7 = {
-                'wind_farm_name': 'wf_7',
+                'object_name': 'wf_7',
                 'wind_turbine_fleet': [{'wind_turbine': v90,
                                         'number_of_turbines': 14}],
                 #                'coordinates': []
             }
             wf_8 = {
-                'wind_farm_name': 'wf_8',
+                'object_name': 'wf_8',
                 'wind_turbine_fleet': [{'wind_turbine': v80,
                                         'number_of_turbines': 2}],
                 #                'coordinates': []

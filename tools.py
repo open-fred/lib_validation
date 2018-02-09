@@ -507,7 +507,7 @@ def summarize_output_of_farms(farm_list):
         sum of wind farms needed for validation purposes.
 
     """
-    wind_farm_sum = wf.WindFarm(wind_farm_name='Sum',
+    wind_farm_sum = wf.WindFarm(object_name='Sum',
                                 wind_turbine_fleet=None, coordinates=None)
     wind_farm_sum.power_output = sum(farm.power_output
                                      for farm in farm_list)
