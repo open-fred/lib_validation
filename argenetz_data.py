@@ -4,11 +4,11 @@ feed-in time series from ArgeNetz wind farms.
 
 The following data is available for 5 wind farms (year 2015) or 4 wind farms
 (year 2016):
-- measured feed-in (power)
-- wind speed
+- measured feed-in (power) [kW]
+- wind speed [m/s]
 - wind direction
-- theoretical power
-- installed power
+- theoretical power [kW]
+- installed power [kW]
 
 If only `only_get_power` of get_argenetz_data() is set to True only the first
 variable (measured feed-in is returned/dumped).
