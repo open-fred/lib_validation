@@ -28,6 +28,7 @@ pickle_load_wind_farm_data = False
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
 #    'density_correction'  # density corrected power curve, simple aggregation
+#     'smooth_wf'  # Smoothed power curves at wind farm level
     ]
 weather_data_list = [
    'MERRA',
@@ -223,7 +224,12 @@ def get_simulation_farms(weather_data_name, validation_data_name,
         if approach == 'density_correction':
             wind_farm.power_output = modelchain_usage.power_output_simple(
                 wind_farm.wind_turbine_fleet, weather,
-                density_correction=False) / (1*10**6)
+                density_correction=True) / (1*10**6)
+        if approach == 'smooth_wf':
+            wind_farm.power_output = modelchain_usage.power_output_smooth_wf(
+                wind_farm, weather, cluster=False, density_correction=False,
+                wake_losses=False, smoothing=True, block_width=0.5,
+                standard_deviation_method='turbulence_intensity')
             # wind_farm.power_output = tools.power_output_density_corr(
             #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional

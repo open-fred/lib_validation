@@ -1,6 +1,7 @@
 # Imports from Windpowerlib
 from windpowerlib import (power_output, wind_speed, density, temperature)
 from windpowerlib.modelchain import ModelChain
+from windpowerlib.wind_farm_modelchain import WindFarmModelChain
 
 # Imports from lib_validation
 import tools
@@ -50,9 +51,40 @@ def power_output_simple(wind_turbine_fleet, weather_df,
         'obstacle_height': obstacle_height,
         'hellman_exp': hellman_exp}
     for turbine_type in wind_turbine_fleet:
-        # Initialise ModelChain
+        # Initialise ModelChain and run model
         mc = ModelChain(turbine_type['wind_turbine'],
                         **modelchain_data).run_model(weather_df)
         # Write power output timeseries to WindTurbine object
         turbine_type['wind_turbine'].power_output = mc.power_output
     return tools.power_output_simple_aggregation(wind_turbine_fleet)
+
+
+def power_output_smooth_wf(wind_farm, weather_df, cluster=False,
+                           density_correction=False, wake_losses=False,
+                           smoothing=True, block_width=0.5,
+                           standard_deviation_method='turbulence_intensity'):
+    r"""
+    Calculate power output of... TODO: add to docstring
+
+    Parameters
+    ----------
+    wind_farm : Object
+        A :class:`~.wind_farm.WindFarm` object representing the wind farm.
+    weather_df : pandas.DataFrame
+        TODO: adapt
+
+    Returns
+    -------
+    pd.Series
+        Simulated power output of wind farm.
+    """
+    wf_modelchain_data = {
+        'cluster': cluster,
+        'density_correction': density_correction,
+        'wake_losses': wake_losses,
+        'smoothing': smoothing,
+        'block_width': block_width,
+        'standard_deviation_method': standard_deviation_method}
+    wf_mc = WindFarmModelChain(wind_farm,
+                               **wf_modelchain_data).run_model(weather_df)
+    return wf_mc.power_output
