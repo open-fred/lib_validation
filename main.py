@@ -432,7 +432,10 @@ for approach in approach_list:
 # ---------------------------------- LaTeX Output --------------------------- #
 path_latex_tables = os.path.join(os.path.dirname(__file__),
                                  latex_tables_folder)
-
+if time_period is not None:
+    filename_add_on = '_{0}_{1}'.format(time_period[0], time_period[1])
+else:
+    filename_add_on = ''
 
 if 'annual_energy_weather' in latex_output:
     if 'annual_energy_output' not in output_methods:
@@ -481,8 +484,8 @@ if 'annual_energy_weather' in latex_output:
             latex_df = pd.concat([latex_df, df_part])
         filename_table = os.path.join(
             path_latex_tables,
-            'Annual_energy_weather_{0}_{1}_{2}-{3}.tex'.format(
-                year, approach, time_period[0], time_period[1]))
+            'Annual_energy_weather_{0}_{1}{2}.tex'.format(
+                year, approach, filename_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
@@ -545,8 +548,8 @@ if 'key_figures_weather' in latex_output:
                 latex_df = pd.concat([latex_df, df_part], axis=0)
         filename_table = os.path.join(
             path_latex_tables,
-            'Key_figures_weather_{0}_{1}_{2}-{3}.tex'.format(
-                year, approach, time_period[0], time_period[1]))
+            'Key_figures_weather_{0}_{1}{2}.tex'.format(
+                year, approach, filename_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
