@@ -291,3 +291,29 @@ def evaluate_feedin_time_series(
             simulation_series, output_method, weather_data_name,
             validation_name))
     return validation_object_set
+
+
+def correlation(df, resample_rule):
+    r"""
+    Calculates the correlation between two columns of the given dataframe.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+       DataFrame with two columns the correlation is calculated for.
+    resample_rule : String
+       The offset string representing target conversion of
+       pandas.DataFrame.resample, e.g. '1M' to calculate monthly correlation.
+
+    Returns
+    -------
+    pandas.Series
+       Series with correlations for each time interval.
+
+    """
+    corr = df.resample(resample_rule).agg(
+        {'corr': lambda x: x[df.columns[0]].corr(x[df.columns[1]])})
+    corr = corr[corr.columns[0]]
+    corr.name = corr.name[1]
+    return corr
+
