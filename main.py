@@ -444,8 +444,8 @@ if 'annual_energy_weather' in latex_output:
         # Initialise DataFrame for latex output
         latex_df = pd.DataFrame()
         for filename in filenames_validation_objects:
-            if (approach in filename and str(year) in filename
-                    and 'annual_energy_output' in filename):
+            if (approach in filename and str(year) in filename and
+                    'annual_energy_output' in filename):
                 val_sets = pickle.load(open(filename, 'rb'))
                 validation_sets.append(val_sets)
         for validation_data_name in validation_data_list:
@@ -500,8 +500,8 @@ if 'key_figures_weather' in latex_output:
             # Initialize validation sets list
             validation_sets = []
             for filename in filenames_validation_objects: # TODO: function?!
-                if (approach in filename and str(year) in filename
-                        and validation_data_name in filename):
+                if (approach in filename and str(year) in filename and
+                        validation_data_name in filename):
                     validation_sets.append(pickle.load(open(filename, 'rb')))
             # Initialize df parts for each wind farm
             df_parts = [pd.DataFrame() for j in range(len(validation_sets[0]))]
