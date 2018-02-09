@@ -24,7 +24,7 @@ time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
-pickle_load_wind_farm_data = True
+pickle_load_wind_farm_data = False
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
 #    'density_correction'  # density corrected power curve, simple aggregation
@@ -83,7 +83,7 @@ arge_pickle_filename = os.path.abspath(os.path.join(
     'arge_netz_data_{0}.p'.format(year)))
 
 # Heights for which temperature of MERRA shall be calculated
-temperature_heights = [60, 64, 65, 105]
+temperature_heights = [60, 64, 65, 105, 114]
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
@@ -377,14 +377,20 @@ for approach in approach_list:
 
                     if 'feedin_comparison' in visualization_methods:
                     # TODO: rename this method for better understanding
+                        if (start is None and end is None and
+                                validation_set[0].output_method
+                                is not 'monthly_energy_output'):
+                            filename_add_on = ''
+                        else:
+                            filename_add_on = '_{0}_{1}'.format(start, end)
                         for validation_object in validation_set:
                             filename = (
                                 save_folder +
-                                '{0}_{1}_Feedin_{2}_{3}_{4}_{5}.pdf'.format(
+                                '{0}_{1}_Feedin_{2}_{3}_{4}_{5}{6}.png'.format(
                                     validation_set[0].output_method,
                                     validation_object.object_name, year,
                                     validation_data_name, weather_data_name,
-                                    approach))
+                                    approach, filename_add_on))
                             title = (
                                 '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
                                     validation_set[0].output_method.replace(
@@ -400,7 +406,7 @@ for approach in approach_list:
                         for validation_object in validation_set:
                             filename = (
                                 save_folder +
-                                '{0}_{1}_Correlation_{2}_{3}_{4}_{5}.pdf'.format(
+                                '{0}_{1}_Correlation_{2}_{3}_{4}_{5}.png'.format(
                                     validation_set[0].output_method,
                                     validation_object.object_name, year,
                                     validation_data_name, weather_data_name,
