@@ -279,7 +279,6 @@ def setup_of_weather_df_pvlib(coordinates, csv_directory,
     fred_data['ghi'] = fred_data['dhi'] + fred_data['dirhi']
     # convert temperature from K to °C
     fred_data['temp_air'] = fred_data['temp_air'] - 273.15
-
     # shift time index by half an hour to have mean values for the following
     # half hour instead of the previous (this is then also consistent with
     # pandas resample)
@@ -496,38 +495,39 @@ if __name__ == '__main__':
     # # BB NW: 52.905026, 11.982852
     # # BB SO: 51.517393, 14.860673
     # year = 2015
-    # lat_min = 51.517393
-    # lat_max = 52.905026
-    # lon_min = 11.982852
-    # lon_max = 14.860673
+    # lat_min = 54.4
+    # lat_max = 54.7
+    # lon_min = 8.9
+    # lon_max = 9.1
     #
     # # choose keys from helper_dict for which you want to load open_FRED
     # # weather_data
     # # wind data for Sabine
     # parameter_list = ['wss_10m',
-    #                   #'wss_80m', 'wss_100m', 'wss_120m',
-    #                   #'temp_10m',
-    #                   #'temp_80m', 'temp_100m', 'temp_120m',
-    #                   # 'pressure_10m', 'pressure_80m', 'pressure_100m',
-    #                   # 'pressure_120m',
-    #                   #'z0'
-    #                   #'wind_direction_10m', 'wind_direction_80m',
-    #                   #'wind_direction_100m', 'wind_direction_120m'
+    #                   'wss_80m', 'wss_100m', 'wss_120m',
+    #                   'temp_10m',
+    #                   'temp_80m', 'temp_100m', 'temp_120m',
+    #                   'pressure_10m', 'pressure_80m', 'pressure_100m',
+    #                   'pressure_120m',
+    #                   'z0',
+    #                   'wind_direction_10m', 'wind_direction_80m',
+    #                   'wind_direction_100m', 'wind_direction_120m'
     #                   ]
     # # # radiation data
     # # parameter_list = ['wss_10m', 'temp_10m', 'dhi', 'dirhi', 'dni']
     #
     # get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
-    #                                 parameter_list, csv_directory='')
+    #                                 parameter_list,
+    #                                 csv_directory='data/Fred/SH_2015')
 
     ##########################################################################
     # set up weather dataframe for pvlib from open_FRED csv files
     ##########################################################################
 
-    # coordinates = [51.73837, 14.626430000000028]
+    # coordinates = [52.456032, 13.525282]
     # csv_directory = 'data/Fred/BB_2015'
     # pvlib_weather_df = setup_of_weather_df_pvlib(
-    #     coordinates, csv_directory, filename='weather_data.csv')
+    #     coordinates, csv_directory, filename='fred_data_htw_2015.csv')
 
     ##########################################################################
     # set up multiindex weather dataframe for windpowerlib from open_FRED csv
@@ -537,29 +537,29 @@ if __name__ == '__main__':
     # # coordinates_wf_1 = [52.407386, 13.966889]
     # # coordinates_wf_2 = [51.775147, 13.560156]
     # # coordinates_wf_3 = [52.860588, 13.070485]
-    # coordinates = [52.860588, 13.070485]
-    # csv_directory = 'data/Fred/BB_2015'
-    # parameter_list = ['wind_speed-10m.csv', #'wind_speed-80m.csv',
-    #                   # 'wind_speed-100m.csv', 'wind_speed-120m.csv',
-    #                   # 'wind_direction-10m.csv', 'wind_direction-80m.csv',
-    #                   # 'wind_direction-100m.csv', 'wind_direction-120m.csv',
-    #                   # 'pressure-10m.csv', 'pressure-80m.csv',
-    #                   # 'pressure-100m.csv', 'pressure-120m.csv',
-    #                   # 'temperature-10m.csv', 'temperature-80m.csv',
-    #                   # 'temperature-100m.csv', 'temperature-120m.csv',
+    # coordinates = None
+    # csv_directory = 'data/Fred/SH_2015'
+    # parameter_list = ['wind_speed-10m.csv', 'wind_speed-80m.csv',
+    #                   'wind_speed-100m.csv', 'wind_speed-120m.csv',
+    #                   'wind_direction-10m.csv', 'wind_direction-80m.csv',
+    #                   'wind_direction-100m.csv', 'wind_direction-120m.csv',
+    #                   'pressure-10m.csv', 'pressure-80m.csv',
+    #                   'pressure-100m.csv', 'pressure-120m.csv',
+    #                   'temperature-10m.csv', 'temperature-80m.csv',
+    #                   'temperature-100m.csv', 'temperature-120m.csv',
     #                   'roughness_length-0m.csv']
     # windpowerlib_weather_df = setup_of_weather_df_windpowerlib(
     #     coordinates, csv_directory, parameter_list,
-    #     filename='windpowerlib_weather_data.csv')
+    #     filename='fred_data_2015_SH.csv')
 
     ##########################################################################
     # read multiindex weather dataframe for windpowerlib from csv
     ##########################################################################
 
-    coordinates = [54.516, 8.96]
-    path = 'data/Fred/SH_2015'
-    filename = 'fred_data_2015_sh.csv'
-    read_of_weather_df_windpowerlib_from_csv(path, filename, coordinates)
+    # coordinates = [54.516, 8.96]
+    # path = 'data/Fred/SH_2015'
+    # filename = 'fred_data_2015_sh.csv'
+    # read_of_weather_df_windpowerlib_from_csv(path, filename, coordinates)
 
     ##########################################################################
     # read weather dataframe for pvlib from csv
