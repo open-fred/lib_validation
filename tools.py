@@ -73,7 +73,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     # Set index to standardized form
     if weather_data_name == 'MERRA':
         weather_df.index = tools.get_indices_for_series(
-            temporal_resolution=60, time_zone='Europe/Berlin', year=year)
+            temporal_resolution=60, time_zone='UTC', year=year)
     if weather_data_name == 'open_FRED':
         # series = weather_df['roughness_length']
         # series.index = series.index.tz_localize('UTC')
