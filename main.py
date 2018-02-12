@@ -66,9 +66,11 @@ start = None
 end = None
 
 latex_output = np.array([
-#    'annual_energy_weather',  # Annual energy output of all weather sets
-#    'key_figures_weather'     # Key figures of all weather sets
-    ])
+    # 'annual_energy_weather',  # Annual energy output of all weather sets
+    # 'key_figures_weather',     # Key figures of all weather sets
+    # 'key_figures_approaches',  # Key figures of all approaches
+    'annual_energy_approaches'  # ...
+     ])
 extra_plots = np.array([
 #    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
     ])
@@ -229,7 +231,7 @@ def get_simulation_farms(weather_data_name, validation_data_name,
             wind_farm.power_output = modelchain_usage.power_output_smooth_wf(
                 wind_farm, weather, cluster=False, density_correction=False,
                 wake_losses=False, smoothing=True, block_width=0.5,
-                standard_deviation_method='turbulence_intensity')
+                standard_deviation_method='turbulence_intensity') / (1*10**6)
             # wind_farm.power_output = tools.power_output_density_corr(
             #     wind_farm.wind_turbine_fleet, weather, data_height) / (1*10**6)
     #    # Convert DatetimeIndex indices to UTC  # TODO: delete or optional
@@ -432,7 +434,10 @@ for approach in approach_list:
 # ---------------------------------- LaTeX Output --------------------------- #
 path_latex_tables = os.path.join(os.path.dirname(__file__),
                                  latex_tables_folder)
-
+if time_period is not None:
+    filename_add_on = '_{0}_{1}'.format(time_period[0], time_period[1])
+else:
+    filename_add_on = ''
 
 if 'annual_energy_weather' in latex_output:
     if 'annual_energy_output' not in output_methods:
@@ -444,8 +449,8 @@ if 'annual_energy_weather' in latex_output:
         # Initialise DataFrame for latex output
         latex_df = pd.DataFrame()
         for filename in filenames_validation_objects:
-            if (approach in filename and str(year) in filename
-                    and 'annual_energy_output' in filename):
+            if (approach in filename and str(year) in filename and
+                    'annual_energy_output' in filename):
                 val_sets = pickle.load(open(filename, 'rb'))
                 validation_sets.append(val_sets)
         for validation_data_name in validation_data_list:
@@ -481,8 +486,8 @@ if 'annual_energy_weather' in latex_output:
             latex_df = pd.concat([latex_df, df_part])
         filename_table = os.path.join(
             path_latex_tables,
-            'Annual_energy_weather_{0}_{1}_{2}-{3}.tex'.format(
-                year, approach, time_period[0], time_period[1]))
+            'Annual_energy_weather_{0}_{1}{2}.tex'.format(
+                year, approach, filename_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(len(
                               latex_df.columns), 'c'),
@@ -500,8 +505,8 @@ if 'key_figures_weather' in latex_output:
             # Initialize validation sets list
             validation_sets = []
             for filename in filenames_validation_objects: # TODO: function?!
-                if (approach in filename and str(year) in filename
-                        and validation_data_name in filename):
+                if (approach in filename and str(year) in filename and
+                        validation_data_name in filename):
                     validation_sets.append(pickle.load(open(filename, 'rb')))
             # Initialize df parts for each wind farm
             df_parts = [pd.DataFrame() for j in range(len(validation_sets[0]))]
@@ -545,8 +550,126 @@ if 'key_figures_weather' in latex_output:
                 latex_df = pd.concat([latex_df, df_part], axis=0)
         filename_table = os.path.join(
             path_latex_tables,
-            'Key_figures_weather_{0}_{1}_{2}-{3}.tex'.format(
-                year, approach, time_period[0], time_period[1]))
+            'Key_figures_weather_{0}_{1}{2}.tex'.format(
+                year, approach, filename_add_on))
+        latex_df.to_latex(buf=filename_table,
+                          column_format=latex_tables.create_column_format(
+                              len(latex_df.columns), 'c'),
+                          multicolumn_format='c')
+
+
+if 'annual_energy_approaches' in latex_output:
+    if 'annual_energy_output' not in output_methods:
+        raise ValueError("'annual_energy_output' not in `output_methods` - " +
+                         "cannot generate 'annual_energy_weather' table")
+    # TODO: check create_dataframe() of outputlib!
+    for weather_data_name in weather_data_list:
+        validation_sets = []
+        # Initialise DataFrame for latex output
+        latex_df = pd.DataFrame()
+        for filename in filenames_validation_objects:
+            if (weather_data_name in filename and str(year) in filename and
+                    'annual_energy_output' in filename):
+                val_sets = pickle.load(open(filename, 'rb'))
+                validation_sets.append(val_sets)
+        for validation_data_name in validation_data_list:
+            validation_sets_part = [
+                val_set for val_set in validation_sets
+                if val_set[0].validation_name == validation_data_name]
+            # Initialise DataFrame for latex output
+            df_part = pd.DataFrame()
+            i = 0 # TODO: check: maybe first part not necessary
+            for validation_set in validation_sets:
+                index = [val_obj.object_name for val_obj in validation_set]
+                if i == 0:
+                    # Add measured data (validation data) to DataFrame
+                    data = [round(val_obj.validation_series.values[0], 2)
+                            for val_obj in validation_set]
+                    columns = [['Measured'], ['[MWh]']]
+                    df_temp = pd.DataFrame(data=data, index=index,
+                                           columns=columns)
+                    df_part = pd.concat([df_part, df_temp], axis=1)
+                # Add simulated data and its deviaton from validation data
+                data_1 = [round(val_obj.simulation_series.values[0], 2)
+                          for val_obj in validation_set]
+                data_2 = [round(val_obj.bias.values[0] /
+                                val_obj.validation_series.values[0] * 100, 2)
+                          for val_obj in validation_set]
+                data = np.array([data_1, data_2]).transpose()
+                columns = [np.array([approach_list[0], approach_list[1]]),
+                           np.array(['[MWh]', '[%]'])]
+                df_temp = pd.DataFrame(data=data, index=index, columns=columns)
+                df_part = pd.concat([df_part, df_temp], axis=1)
+                i += 1
+            latex_df = pd.concat([latex_df, df_part])
+        filename_table = os.path.join(
+            path_latex_tables,
+            'Annual_energy_approach_{0}_{1}{2}.tex'.format(
+                year, weather_data_name, filename_add_on))
+        latex_df.to_latex(buf=filename_table,
+                          column_format=latex_tables.create_column_format(len(
+                              latex_df.columns), 'c'),
+                          multicolumn_format='c')
+        # TODO: check order
+
+if 'key_figures_approaches' in latex_output:
+    # Do not include data of annual energy output
+    ouput_methods_modified = [method for method in output_methods
+                              if method is not 'annual_energy_output']
+    for weather_data_name in weather_data_list:
+        # Initialise DataFrame for latex output
+        latex_df = pd.DataFrame()
+        # Iteration through validation data
+        for validation_data_name in validation_data_list:
+            # Initialize validation sets list
+            validation_sets = []
+            for filename in filenames_validation_objects: # TODO: function?!
+                if (weather_data_name in filename and str(year) in filename and
+                        validation_data_name in filename):
+                    validation_sets.append(pickle.load(open(filename, 'rb')))
+            # Initialize df parts for each wind farm
+            df_parts = [pd.DataFrame() for j in range(len(validation_sets[0]))]
+            for output_method in ouput_methods_modified:
+                validation_sets_part = [
+                    val_set for val_set in validation_sets
+                    if val_set[0].output_method == output_method]
+                for i in range(len(validation_sets_part[0])):
+                    data = np.array([latex_tables.get_data(
+                        validation_sets_part,
+                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i,
+                        len(weather_data_list))])
+                    column_names = ['RMSE [MW]/[MWh]', "Pearson's r",
+                                    'mean bias [MW]/[MWh]',
+                                    'standard deviation [MW]/[MWh]']
+                    columns_2 = [
+                        approach for approach in approach_list] * len(
+                            column_names)
+                    columns = [np.array(latex_tables.get_columns(
+                        column_names, len(weather_data_list))),
+                        np.array(columns_2)]
+                    index = ['{0} {1}'.format(
+                        validation_sets_part[0][i].object_name,
+                        validation_sets_part[0][i].output_method.rsplit(
+                            '_')[0])]
+                    df_part = pd.DataFrame(data=data, columns=columns,
+                                           index=index)
+                    df_parts[i] = pd.concat([df_parts[i], df_part], axis=0)
+                    if output_method == 'monthly_energy_output':
+                        pass # TODO ?
+                    for validation_set in validation_sets_part:
+                        if (validation_sets_part[0][i].object_name !=
+                                validation_set[i].object_name):
+                            raise ValueError(
+                                "Careful: Object names differ!! " +
+                                "{0} and {1}".format(
+                                    validation_sets_part[0][i].object_name,
+                                    validation_set[i].object_name))
+            for df_part in df_parts:
+                latex_df = pd.concat([latex_df, df_part], axis=0)
+        filename_table = os.path.join(
+            path_latex_tables,
+            'Key_figures_approach_{0}_{1}{2}.tex'.format(
+                year, weather_data_name, filename_add_on))
         latex_df.to_latex(buf=filename_table,
                           column_format=latex_tables.create_column_format(
                               len(latex_df.columns), 'c'),
