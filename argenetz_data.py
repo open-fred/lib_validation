@@ -169,13 +169,10 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                                         filename_pickle))
     if year == 2015:
         filename_column_names = 'helper_files/column_names_2015.txt'
-        indices = tools.get_indices_for_series(
-            temporal_resolution=5, time_zone='Europe/Berlin',
-            start='5/1/2015', end='1/1/2016')
+        replace = 'PT5M'
     if (year == 2016 or year == 2017):
         filename_column_names = 'helper_files/column_names_2016_2017.txt'
-        indices = tools.get_indices_for_series(
-            temporal_resolution=1, time_zone='Europe/Berlin', year=year)
+        replace = 'PT1M'
     if pickle_load:
         df = pickle.load(open(path, 'rb'))
     else:
@@ -187,7 +184,15 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                                            filter_cols=True)
                 df_part.columns = new_column_names(year)
                 df = pd.concat([df, df_part])
-        df.index = indices
+        # Convert string index to Datetime index
+        # Attention: when using pd.to_datetime the index is converted to UTC
+        df.index = [pd.to_datetime(index.replace(replace, '')) for index
+                                                              in df.index]
+        # Convert to local time zone
+        df.index = df.index.tz_localize('UTC').tz_convert('Europe/Berlin')
+        # Add frequency attribute
+        freq = pd.infer_freq(df.index)
+        df.index.freq = pd.tseries.frequencies.to_offset(freq)
         if filter_interpolated_data:
             print('---- The interpolated data of ArgeNetz data is ' +
                   'being filtered. ----')
