@@ -10,9 +10,7 @@ The following data is available for 5 wind farms (year 2015) or 4 wind farms
 - theoretical power [kW]
 - installed power [kW]
 
-If only `only_get_power` of get_argenetz_data() is set to True only the first
-variable (measured feed-in is returned/dumped).
-TODO: adjust this information
+The time stamps are in local time 'Europe/Berlin'.
 
 """
 
