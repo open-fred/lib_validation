@@ -70,25 +70,14 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]),:].reset_index(
                                 level=[1,2], drop=True)
-    # Set index to standardized form
     if weather_data_name == 'MERRA':
-        weather_df.index = tools.get_indices_for_series(
-            temporal_resolution=60, time_zone='UTC', year=year)
+        # Index to DatetimeIndex
+        weather_df.index = weather_df.index.to_datetime()
     if weather_data_name == 'open_FRED':
-        # series = weather_df['roughness_length']
-        # series.index = series.index.tz_localize('UTC')
-        # z0_series = tools.upsample_series(
-        #     series, output_resolution=30,
-        #     input_resolution='H')
-        # weather_df['roughness_length'] = z0_series.values
-        # TODO: indices für 2016....
-        # TODO: check: to_datetime possible??
-        # weather_df.index = tools.get_indices_for_series(
-        #     temporal_resolution=30, time_zone='UTC', year=year)
         weather_df.index = weather_df.index.tz_localize('UTC')
-        # Add frequency attribute
-        freq = pd.infer_freq(weather_df.index)
-        weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
+    # Add frequency attribute
+    freq = pd.infer_freq(weather_df.index)
+    weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
     return weather_df
 
 
