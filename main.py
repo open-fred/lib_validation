@@ -69,7 +69,7 @@ latex_output = np.array([
     # 'annual_energy_weather',  # Annual energy output of all weather sets
     # 'key_figures_weather',     # Key figures of all weather sets
     # 'key_figures_approaches',  # Key figures of all approaches
-    'annual_energy_approaches'  # ...
+    # 'annual_energy_approaches'  # ...
      ])
 extra_plots = np.array([
 #    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
