@@ -229,8 +229,8 @@ def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
     if 'power' in validation_object.output_method:
         label_part = 'MW'
     fig = plt.figure()
-    plt.scatter(validation_object.validation_series,
-                validation_object.simulation_series)
+    plt.scatter(validation_object.simulation_series,
+                validation_object.validation_series)
     plt.ylabel('{0} of {1} in {2}'.format(
         validation_object.output_method.replace('_', ' '),
         validation_object.validation_name, label_part))
