@@ -74,10 +74,13 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
         # Index to DatetimeIndex
         weather_df.index = weather_df.index.to_datetime()
     if weather_data_name == 'open_FRED':
+        # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')
     # Add frequency attribute
     freq = pd.infer_freq(weather_df.index)
     weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
+    # Convert index to local time zone
+    weather_df.index = weather_df.index.tz_convert('Europe/Berlin')
     return weather_df
 
 
