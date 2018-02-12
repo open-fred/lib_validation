@@ -1,6 +1,3 @@
-# Imports from lib_validation
-import tools
-
 # Other imports
 import pandas as pd
 import os
@@ -31,7 +28,7 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
     else:
         # Load data from csv file
         weather_df = pd.read_csv(filename,
-                                 header=[0,1], index_col=[0, 1, 2],
+                                 header=[0, 1], index_col=[0, 1, 2],
                                  parse_dates=True)
         # change type of height from str to int by resetting columns
         weather_df.columns = [weather_df.axes[1].levels[0][
