@@ -31,11 +31,13 @@ approach_list = [
 #     'smooth_wf'  # Smoothed power curves at wind farm level
     ]
 weather_data_list = [
-   'MERRA',
+   # 'MERRA',
    'open_FRED'
     ]
 validation_data_list = [ # TODO: Add other validation data
-    'ArgeNetz'
+    'ArgeNetz',
+    'Enertrag',
+    'Greenwind'
     ]
 
 output_methods = [
@@ -90,6 +92,40 @@ temperature_heights = [60, 64, 65, 105, 114]
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
+def get_validation_data(frequency):
+    r"""
+
+
+    Returns
+    -------
+
+    """
+    # TODO: if this takes long, pickle dump
+    df_list = []
+    if 'ArgeNetz' in validation_data_list:
+        # Get wind farm data
+        wind_farm_data_arge = wind_farm_specifications.get_wind_farm_data(
+            'farm_specification_argenetz_{0}.p'.format(year),
+            os.path.join(os.path.dirname(__file__),
+                         'dumps/wind_farm_data'), pickle_load_wind_farm_data)
+        # Get ArgeNetz Data
+        arge_data = get_argenetz_data(
+            year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
+            csv_dump=False, plot=plot_arge_feedin)
+        # Select only columns containing the power output and rename them
+        arge_data = arge_data[['{0}_power_output'.format(data['object_name'])
+                               for data in wind_farm_data_arge]].rename(
+            columns={col: col.replace('power_output', 'measured') for col in
+                     arge_data.columns})
+        # Resample the DataFrame columns with `frequency` and add to list
+        df_list.append(arge_data.resample(frequency).mean())
+    if 'Enertrag' in validation_data_list:
+        enertrag_data = get_enertrag_data(...) # TODO add
+        # Resample the DataFrame columns with `frequency` and add to list
+        df_list.append(arge_data.resample(frequency).mean())
+    validation_df = pd.concat(df_list, axis=1)
+    return validation_df
+
 def get_validation_farms(validation_data_name):
     r"""
     Creates list of farms representing the validation data.
@@ -113,11 +149,11 @@ def get_validation_farms(validation_data_name):
     """
     if validation_data_name == 'ArgeNetz':
         # Get wind farm data
+        get_validation_data('H')
         wind_farm_data = wind_farm_specifications.get_wind_farm_data(
             'farm_specification_argenetz_{0}.p'.format(year),
             os.path.join(os.path.dirname(__file__),
-                         'dumps/wind_farm_data'),
-            pickle_load_wind_farm_data)
+                         'dumps/wind_farm_data'), pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         validation_data = get_argenetz_data(
             year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
