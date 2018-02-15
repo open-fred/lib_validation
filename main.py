@@ -11,6 +11,7 @@ import modelchain_usage
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
+from enertrag_data import get_enertrag_data
 
 # Other imports
 import os
@@ -24,7 +25,10 @@ time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
-pickle_load_wind_farm_data = False
+pickle_load_enertrag = True
+pickle_load_wind_farm_data = True
+pickle_load_time_series_df = False
+
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
 #    'density_correction'  # density corrected power curve, simple aggregation
@@ -37,7 +41,7 @@ weather_data_list = [
 validation_data_list = [ # TODO: Add other validation data
     'ArgeNetz',
     'Enertrag',
-    'Greenwind'
+    'GreenWind'
     ]
 
 output_methods = [
@@ -54,7 +58,7 @@ visualization_methods = [
 
 # Select time of day you want to observe or None for all day
 time_period = (
-       8, 20  # time of day to be selected (from h to h)
+       6, 22  # time of day to be selected (from h to h)
         # None   # complete time series will be observed
         ) 
 
@@ -83,9 +87,8 @@ latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 
 # Filename specification
-arge_pickle_filename = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), 'dumps/validation_data',
-    'arge_netz_data_{0}.p'.format(year)))
+validation_pickle_folder = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), 'dumps/validation_data'))
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
@@ -94,13 +97,22 @@ temperature_heights = [60, 64, 65, 105, 114]
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_data(frequency):
     r"""
+    Writes all measured power output time series into one DataFrame.
 
+    All time series are resampled to the given frequency.
+
+    Parameters
+    ----------
+    frequency : ...
+        TODO add
 
     Returns
     -------
+    validation_df : pd.DataFrame
+        Measured power output in MW. Column names are as follows:
+        'wf_1_power_output', 'wf_2_power_output', etc.
 
     """
-    # TODO: if this takes long, pickle dump
     df_list = []
     if 'ArgeNetz' in validation_data_list:
         # Get wind farm data
@@ -110,7 +122,9 @@ def get_validation_data(frequency):
                          'dumps/wind_farm_data'), pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         arge_data = get_argenetz_data(
-            year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
+            year, pickle_load=pickle_load_arge,
+            filename=validation_pickle_folder+'/arge_netz_data_{0}.p'.format(
+                year),
             csv_dump=False, plot=plot_arge_feedin)
         # Select only columns containing the power output and rename them
         arge_data = arge_data[['{0}_power_output'.format(data['object_name'])
@@ -119,12 +133,43 @@ def get_validation_data(frequency):
                      arge_data.columns})
         # Resample the DataFrame columns with `frequency` and add to list
         df_list.append(arge_data.resample(frequency).mean())
-    if 'Enertrag' in validation_data_list:
-        enertrag_data = get_enertrag_data(...) # TODO add
+    if ('Enertrag' in validation_data_list and year == 2016):
+        # Get Enertrag Data
+        enertrag_data = get_enertrag_data(
+            pickle_load=pickle_load_enertrag,
+            filename=validation_pickle_folder+'/enertrag_data.p',
+            resample=True, plot=False, x_limit=None)
+        # Select aggregated power output of wind farm and rename
+        enertrag_data = enertrag_data[['wf_9_power_output']].rename(
+            columns={'wf_9_power_output': 'wf_9_measured'})
         # Resample the DataFrame columns with `frequency` and add to list
-        df_list.append(arge_data.resample(frequency).mean())
-    validation_df = pd.concat(df_list, axis=1)
+        df_list.append(enertrag_data.resample(frequency).mean())
+    if 'GreenWind' in validation_data_list:
+        # Get GreenWind data
+        pass
+    # Join DataFrames - power output in MW
+    validation_df = pd.concat(df_list, axis=1) / 1000
     return validation_df
+
+
+def get_calculated_data(weather_df):
+    r"""
+    Calculates time series with different approaches.
+
+    Data is saved in a DataFrame that can later be joined with the validation
+    data frame.
+
+    Parameters
+    ----------
+    weather_df
+        ...
+
+    Returns
+    -------
+
+    """
+
+    return calculation_df
 
 def get_validation_farms(validation_data_name):
     r"""
@@ -149,14 +194,15 @@ def get_validation_farms(validation_data_name):
     """
     if validation_data_name == 'ArgeNetz':
         # Get wind farm data
-        get_validation_data('H')
+        get_validation_data('30T')
         wind_farm_data = wind_farm_specifications.get_wind_farm_data(
             'farm_specification_argenetz_{0}.p'.format(year),
             os.path.join(os.path.dirname(__file__),
                          'dumps/wind_farm_data'), pickle_load_wind_farm_data)
         # Get ArgeNetz Data
         validation_data = get_argenetz_data(
-            year, pickle_load=pickle_load_arge, filename=arge_pickle_filename,
+            year, pickle_load=pickle_load_arge,
+            filename=validation_pickle_filename,
             csv_dump=False, plot=plot_arge_feedin)
     if validation_data_name == '...':
         pass  # Add more data
@@ -218,10 +264,10 @@ def get_simulation_farms(weather_data_name, validation_data_name,
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
                                     'weather_df_{0}_{1}.p'.format(
                                         weather_data_name, year))
+    # Read csv files that contains weather data (pd.DataFrame is dumped)
+    # to save time below
     if weather_data_name == 'MERRA':
         if not pickle_load_merra:
-            # Read csv file that contains weather data (pd.DataFrame is dumped)
-            # to save time below
             get_merra_data(year, heights=temperature_heights,
                            filename=filename_weather)
     if weather_data_name == 'open_FRED':
