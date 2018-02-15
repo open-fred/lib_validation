@@ -107,8 +107,9 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
                                inplace=True)
                 # Add to DataFrame
                 enertrag_df = pd.concat([enertrag_df, df_part], axis=1)
-            # Convert index to DatetimeIndex
-            enertrag_df.index = pd.to_datetime(enertrag_df.index)
+            # Convert index to DatetimeIndex and make time zone aware
+            enertrag_df.index = pd.to_datetime(enertrag_df.index).tz_localize(
+                'UTC').tz_convert('Europe/Berlin')
             if resample:
                 enertrag_df = enertrag_df.resample(frequency).mean()
             # Get wind farm power output
