@@ -2,9 +2,15 @@
 The ``enertrag_data`` module contains functions to read and dump measured
 feed-in time series from a Enertrag wind farm.
 
-The following data is available (year 2016):
-- 
-TODO: adjust this information
+The following data is available (year 2016) for the 17 turbines:
+- meter (Zählerstand) in kW
+- power output in kW
+- wind speed in m/s  # TODO: korregiert???
+- wind direction (gondel position) in °
+ATTENTION: gondel position is not correct!!
+
+Additionally the sum of the power output of all wind turbines is available in
+column 'wf_9_power_output'.
 
 """
 
@@ -48,8 +54,9 @@ def read_data(filename, **kwargs):
     return df
 
 
-def get_enertrag_data(pickle_load=False, filename='pickle_dump.p',
-                      plot=False, x_limit=None):
+def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
+                      resample=True, plot=False, x_limit=None, frequency='30T'):
+    # TODO: add plots to check data
     r"""
     Fetches Enertrag data.
 
@@ -60,12 +67,16 @@ def get_enertrag_data(pickle_load=False, filename='pickle_dump.p',
         Either set `pickle_load` or `csv_load` to True. Default: False.
     filename : String
         Filename including path of pickle dump. Default: 'pickle_dump.p'.
+    resample : Boolean
+        If True the data will be resampled to the `frequency`. (mean power)
     plot : Boolean
         If True each column of the data farme is plotted into a seperate
         figure. Default: False
     x_limit : list of floats or integers
         Values for xmin and xmax in case of `plot` being True and x limits
         wanted. Default: None.
+    frequency : String (or freq object...?)
+        # TODO add
 
     Returns
     -------
@@ -74,22 +85,46 @@ def get_enertrag_data(pickle_load=False, filename='pickle_dump.p',
 
     """
     if pickle_load:
-        df = pickle.load(open(filename, 'rb'))
+        enertrag_df = pickle.load(open(filename, 'rb'))
     else:
         filename_files = os.path.join(os.path.dirname(__file__),
                                       'helper_files/filenames_enertrag.txt')
-        new_column_names = ['']
-        df = pd.DataFrame()
+        enertrag_df = pd.DataFrame()
         with open(filename_files) as file:
-            df = pd.DataFrame()
             for line in file:
                 name = line.strip()
                 df_part = read_data(name)
-                df_part.columns = new_column_names
-                df = pd.concat([df, df_part])
-#        df.index = indices
-                
-    return
+                turbine_name = name.split('_')[1].split('.')[0]
+                # Rename columns
+                df_part.rename(columns={
+                    'Zählerstand[kWh]': 'wf_9_{0}_meter'.format(turbine_name),
+                    'Windgeschwindigkeit[m/s]': 'wf_9_{0}_wind_speed'.format(
+                        turbine_name),
+                    'Leistung[kW]': 'wf_9_{0}_power_output'.format(
+                        turbine_name),
+                    'Gondelposition': 'wf_9_{0}_wind_dir'.format(
+                        turbine_name)},
+                               inplace=True)
+                # Add to DataFrame
+                enertrag_df = pd.concat([enertrag_df, df_part], axis=1)
+            # Convert index to DatetimeIndex
+            enertrag_df.index = pd.to_datetime(enertrag_df.index)
+            if resample:
+                enertrag_df = enertrag_df.resample(frequency).mean()
+            # Get wind farm power output
+            enertrag_df['wf_9_power_output'] = enertrag_df.loc[:,
+                                               [column for column in
+                                                list(enertrag_df) if
+                                                'power_output' in column]].sum(
+                skipna=True, axis=1)
+            pickle.dump(enertrag_df, open(filename, 'wb'))
+    return enertrag_df
 
 if __name__ == "__main__":
-    df = get_enertrag_data()
+    # Decide whether to resample to a certain frequency
+    resample = True
+    frequency = '30T'
+    filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
+                            'enertrag_data.p') # Filename for pickle dump
+    df = get_enertrag_data(resample=resample, filename=filename)
+
