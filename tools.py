@@ -70,9 +70,6 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]),:].reset_index(
                                 level=[1,2], drop=True)
-    if weather_data_name == 'MERRA':
-        # Index to DatetimeIndex
-        weather_df.index = weather_df.index.to_datetime()
     if weather_data_name == 'open_FRED':
         # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')

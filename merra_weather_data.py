@@ -59,6 +59,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
             os.path.dirname(__file__), 'data/Merra',
             'weather_data_GER_{0}.csv'.format(year)),
             sep=',', decimal='.', index_col=0)
+        data_frame.index = pd.to_datetime(data_frame.index, utc=True)
         if not raw_data:
             if multi_index:
                 if heights is not None:
