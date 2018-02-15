@@ -112,6 +112,9 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
                 'UTC').tz_convert('Europe/Berlin')
             if resample:
                 enertrag_df = enertrag_df.resample(frequency).mean()
+            # Add frequency attribute
+            freq = pd.infer_freq(enertrag_df.index)
+            enertrag_df.index.freq = pd.tseries.frequencies.to_offset(freq)
             # Get wind farm power output
             enertrag_df['wf_9_power_output'] = enertrag_df.loc[:,
                                                [column for column in
