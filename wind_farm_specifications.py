@@ -65,10 +65,6 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
     Data is either loaded from pickle files or specified in this function and
     then dumped with pickle.
 
-    Parameters
-    ----------
-    name
-
     """
     pickle_path = os.path.join(save_folder, filename)
     if pickle_load:
@@ -114,7 +110,8 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 wind_farm_data = [wf_2, wf_4, wf_5]
             if filename == 'farm_specification_argenetz_2016.p':
                 wind_farm_data = [wf_1, wf_3, wf_4, wf_5]  # no wf_2 for 2016
-        if filename == 'farm_specification_green_wind.p':
+        if (filename == 'farm_specification_GreenWind_2015.p' or
+                    filename == 'farm_specification_GreenWind_2016.p'):
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
                 'object_name': 'wf_6',
@@ -135,15 +132,31 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 #                'coordinates': []
             }
             wind_farm_data = [wf_6, wf_7, wf_8]
+        if filename == 'enertrag_data_2016.p':
+            pass
         pickle.dump(wind_farm_data, open(pickle_path, 'wb'))
     return wind_farm_data
+
+
+def get_joined_wind_farm_data(filenames, save_folder, pickle_load):
+    r"""
+    Join the wind farm data of different validation data sets.
+
+    """
+    # Initialize wind farm data list
+    wind_farm_data = []
+    for filename in filenames:
+        wind_farm_data += get_wind_farm_data(filename, save_folder,
+                                             pickle_load)
+    return wind_farm_data
+
 
 if __name__ == "__main__":
     save_folder = os.path.join(os.path.dirname(__file__),
                                'dumps/wind_farm_data')
     filenames = [
         'farm_specification_argenetz_2015.p',
-        'farm_specification_argenetz_2016.p'
+        'farm_specification_argenetz_2016.p'  # TODO: add
         ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
