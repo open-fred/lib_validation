@@ -16,7 +16,7 @@ import pickle
 import os
 
 
-def get_weather_data(weather_data_name, coordinates, pickle_load=None,
+def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                      filename='pickle_dump.p', year=None,
                      temperature_heights=None):
     r"""
@@ -30,7 +30,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
     pickle_load : Boolean
-        True if data has already been dumped before.
+        True if data has already been dumped before. Default: False.
     filename : String
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
@@ -60,6 +60,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                 'fred_data_{0}_sh.csv'.format(year))
             data_frame = get_open_fred_data(
                 year, filename=fred_path, pickle_filename=filename)
+        pickle.dump(data_frame, open(filename, 'rb'))
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = tools.get_closest_coordinates(data_frame,
                                                         coordinates)

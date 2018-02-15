@@ -129,6 +129,6 @@ if __name__ == "__main__":
     resample = True
     frequency = '30T'
     filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
-                            'enertrag_data.p') # Filename for pickle dump
+                            'enertrag_data_2016.p') # Filename for pickle dump
     df = get_enertrag_data(resample=resample, filename=filename)
 
