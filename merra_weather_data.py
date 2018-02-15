@@ -84,12 +84,6 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                 weather_df = data_frame_2
                 weather_df.columns = [first_level_columns,
                                       second_level_columns]
-                # weather_df.rename(columns={'temperature_64': 'temperature',
-                #                            'temperature_65': 'temperature',
-                #                            'temperature_105': 'temperature'})
-                # weather_df.columns.set_levels(
-                #     ['wind_speed', 'roughness_lenght', 'density', 'pressure',
-                #      'temperature', 'temperature', 'temperature'], level=0)
             else:
                 weather_df = rename_columns(data_frame)
         else:

@@ -97,16 +97,20 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     """
     df = read_data(filename, **kwargs)
     if filter_cols:
-        filter_cols = []
-        with open(filename_column_names) as file:
-            for line in file:
-                line = line.strip()
-                filter_cols.append(line)
-        df2 = df.filter(items=filter_cols, axis=1)
+        cols = read_file_to_list(filename_column_names)
+        df2 = df.filter(items=cols, axis=1)
     if drop_na:
         df2 = df.dropna(axis='columns', how='all')
     return df2
 
+
+def read_file_to_list(filename):
+    list = []
+    with open(filename) as file:
+        for line in file:
+            line = line.strip()
+            list.append(line)
+    return list
 
 def new_column_names(year):
     """
@@ -180,7 +184,11 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                 name = line.strip()
                 df_part = restructure_data(name, filename_column_names,
                                            filter_cols=True)
-                df_part.columns = new_column_names(year)
+                df_part.rename(columns={
+                    old_name: new_name for old_name, new_name in
+                    zip(read_file_to_list(filename_column_names),
+                        new_column_names(year))},
+                               inplace=True)
                 df = pd.concat([df, df_part])
         # Convert string index to Datetime index
         # Attention: when using pd.to_datetime the index is converted to UTC

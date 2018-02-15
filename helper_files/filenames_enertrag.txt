@@ -1,0 +1,17 @@
+Erfassungsdaten_B1.csv
+Erfassungsdaten_B2.csv
+Erfassungsdaten_E1.csv
+Erfassungsdaten_E2.csv
+Erfassungsdaten_E3.csv
+Erfassungsdaten_E4.csv
+Erfassungsdaten_K1.csv
+Erfassungsdaten_K2.csv
+Erfassungsdaten_K3.csv
+Erfassungsdaten_K4.csv
+Erfassungsdaten_K5.csv
+Erfassungsdaten_M1.csv
+Erfassungsdaten_M2.csv
+Erfassungsdaten_M3.csv
+Erfassungsdaten_M4.csv
+Erfassungsdaten_M5.csv
+Erfassungsdaten_M6.csv
