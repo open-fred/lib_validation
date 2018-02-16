@@ -37,7 +37,6 @@ pickle_load_wind_farm_data = True
 csv_load_time_series_df = False  # Load time series data frame from csv dump
 csv_dump_time_series_df = False  # Dump df as csv
 
-
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
     'density_correction',  # density corrected power curve, simple aggregation
@@ -54,14 +53,15 @@ validation_data_list = [
     ]
 
 output_methods = [
-    'annual_energy_output',
-    'hourly_energy_output',
-    'monthly_energy_output',
-    'power_output'
+    'no_resample',
+#    'annual',
+    'hourly',
+    'monthly'
     ]
+
 visualization_methods = [
 #    'box_plots',
-#    'feedin_comparison',
+    'feedin_comparison',
 #    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
@@ -71,14 +71,13 @@ time_period = (
         # None   # complete time series will be observed
         ) 
 
-# Start and end date for time period to be plotted
-# Attention: only for 'feedin_comparison' and not for monthly output
-#start = '{0}-10-01 11:00:00+00:00'.format(year)
-#end = '{0}-10-01 16:00:00+00:00'.format(year)
-#start = '{0}-10-01'.format(year)
-#end = '{0}-10-03'.format(year)
-start = None
-end = None
+# Start and end date for time period to be plotted when 'feedin_comparison' is
+# selected. (not for monthly output)
+start_end_list = [
+    (None, None),
+#    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
+    ('{0}-10-01'.format(year), '{0}-10-03'.format(year))
+    ]
 
 latex_output = np.array([
     # 'annual_energy_weather',  # Annual energy output of all weather sets
@@ -106,10 +105,14 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__),
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
 
+# Wind farms that will not be examined also if they are in the time series df
+restiction_list = []
+
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not pickle_load_arge
         or not pickle_load_enertrag or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
+
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_data(frequency):
@@ -291,11 +294,106 @@ def get_time_series_df(weather_data_name):
         time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
     return time_series_df
 
-for weather_data_name in weather_data_list:
-    time_series_df = get_time_series_df(weather_data_name)
-
 
 # ------------------------------ Data Evaluation ---------------------------- #
+# Create list of wind farm names
+wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
+val_obj_dict = {}
+for weather_data_name in weather_data_list:
+    time_series_df = get_time_series_df(weather_data_name)
+    # Set value of measured series to nan if respective calculated value
+    # is nan and the other way round
+    column_name_lists = [
+        [name for name in list(time_series_df) if wf_name in name] for wf_name
+        in wind_farm_names]
+    for column_name in column_name_lists:
+        # Nans of calculated data to measured data
+        time_series_df.loc[:, column_name[0]].loc[
+            time_series_df.loc[:, column_name[1]].loc[
+                time_series_df.loc[
+                    :, column_name[1]].isnull() == True].index] = np.nan
+        # Nans of calculated data to measured data
+        for i in range(len(column_name) - 1):
+            time_series_df.loc[:, column_name[i+1]].loc[
+                time_series_df.loc[:, column_name[0]].loc[
+                    time_series_df.loc[
+                    :, column_name[0]].isnull() == True].index] = np.nan
+    if (pickle_load_time_series_df or csv_load_time_series_df):
+        # Check if all needed data exists
+        pass  # TODO: add
+    # Create list of time series data frames (for each wind farm for each
+    # approach) - measured and calculated data
+    time_series_pairs = [time_series_df.loc[:, ['{0}_measured'.format(wf_name),
+                                                '{0}_calculated_{1}'.format(
+                                                    wf_name, approach)]]
+                         for wf_name, approach in
+                         zip(wind_farm_names, approach_list)
+                         if (wf_name not in restiction_list and
+                             approach not in restiction_list)]
+
+    if 'annual' in output_methods:
+        for time_series_pair in time_series_pairs:
+            # annual_energy_output(time_series_pair[0]), annual_energy_output(time_series_pair[0])
+            pass
+        # TODO: resample (energy output!), latex tables
+    if 'no_resample' in output_methods:
+        pass
+        # TODO: no resampling, get validation objects,
+        # val_obj_dict['no_resample'] = val_obj_list_no_resample
+    if 'hourly' in output_methods:
+        pass
+    if 'monthly' in output_methods:
+        pass
+
+    # Visualization #
+    if 'feedin_comparison' in visualization_methods:
+        # Specify folder and title add on for saving the plots
+        for time_series_pair in time_series_pairs:
+            if time_period is not None:
+                save_folder_add_on = (
+                    '{0}_{1}/'.format(time_period[0], time_period[1]))
+                title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+                    time_period[0], time_period[1])
+            else:
+                save_folder_add_on = 'None/'
+                title_add_on = ''
+            save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
+                year, weather_data_name,
+                '_'.join(list(time_series_pair)[1].split('_')[3:]),
+                save_folder_add_on)
+            for method in output_methods:
+                method_string = (method if method is not 'no_resample'
+                                 else 'hourly' if weather_data_name is 'MERRA'
+                                 else 'half-hourly')
+                approach_string = '_'.join(list(time_series_pair)[1].split( # TODO: solve copy problem
+                    '_')[3:])
+                wf_string = '_'.join(list(time_series_pair)[0].split(
+                    '_')[:2])
+                for start_end in start_end_list:
+                    if (method == 'monthly' and start_end[0] is not None):
+                        # Do not plot
+                        pass
+                    else:
+                        visualization_tools.plot_feedin_comparison(
+                            data=time_series_pair, method=method,
+                            filename=(
+                                save_folder +
+                                '{0}_feedin_{1}_{2}_{3}_{4}_{5}{6}.png'.format(
+                                    method_string,
+                                    list(time_series_pair)[0].split('_')[0],
+                                    weather_data_name, year, approach_string,
+                                    (start_end[0].split(':')[0] if start_end[0]
+                                     else ''), (start_end[1].split(':')[0]
+                                                if start_end[0] else ''))),
+                            title=(
+                                '{0} power output of {1} calculated with {2} data\n in {3} ({4} approach)'.format(
+                                    method_string, wf_string,
+                                    weather_data_name, year, approach_string) +
+                                title_add_on),
+                            tick_label=None, start=start_end[0], end=start_end[1])
+    print('l')
+
+# ------------------------------ Old ---------------------------- #
 # Initialise array for filenames of pickle dumped validation objects
 filenames_validation_objects = []
 # Iterate through all approaches, validation data and weather data, dump

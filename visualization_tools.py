@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
 import os
+from copy import deepcopy
 
 # TODO's:
 # write small tool for display of all turbines of a wind farm
@@ -109,9 +110,9 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     plt.close()
 
 
-def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
+def plot_feedin_comparison(data, method, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
-                           start=None, end=None, time_zone=None):
+                           start=None, end=None):
     r"""
     Plot simulation and validation feedin time series.
 
@@ -120,10 +121,10 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
 
     Parameters
     ----------
-    validation_object : Object
-        A :class:`~.analysis_tools.ValidationObject` object representing the
-        comparison of simulated feedin time series with validation feedin time
-        series.
+    data : pd.DataFrame
+        ...
+    method: String
+        ...
     filename : String
         Filename including path relatively to the active folder for saving
         the figure. Default: 'Tests/feedin_test.pdf'.
@@ -139,64 +140,50 @@ def plot_feedin_comparison(validation_object, filename='Tests/feedin_test.pdf',
         End date of time period to be plotted in the format 'yyyy-mm-dd' or
         'yyyy-mm-dd hh:mm:ss' or 'yyyy-mm-dd hh:mm:ss+hh:mm'. If `start`
         and/or `end` is None the whole time series is plotted. Default: None.
-    time_zone : String
-        Time zone information of the location of the time series of
-        `validation_object`. Not necessary if they carry this information.
-        Set to 'UTC' if plot is wanted in UTC time zone. Default: None.
 
     """
-    def label_bars(bars, labels):
-        # TODO: Remove from here - but save for other possible labels
-        r"""
-        Attach a label above each bar.
+#    def label_bars(bars, labels):
+#        # TODO: Remove from here - but save for other possible labels
+#        r"""
+#        Attach a label above each bar.
+#
+#        Parameters
+#        ----------
+#        bars : List
+#            Contains the patches of the axis (ax.patches).
+#        labels : List
+#            Contains the labels.
+#
+#        """
+#        for bar, label in zip(bars, labels):
+#            height = bar.get_height()
+#            ax.text(bar.get_x() + bar.get_width()/2.,  height + 3, label,
+#                    ha='center', va='bottom', fontsize=6)
 
-        Parameters
-        ----------
-        bars : List
-            Contains the patches of the axis (ax.patches).
-        labels : List
-            Contains the labels.
-
-        """
-        for bar, label in zip(bars, labels):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2.,  height + 3, label,
-                    ha='center', va='bottom', fontsize=6)
-
-    if validation_object.simulation_series.index.tz == 'UTC':
-        validation_object.simulation_series.index = (
-            validation_object.simulation_series.index.tz_convert(time_zone))
+    # Drop nans and rename columns
+    data = deepcopy(data).rename(columns={ # TODO: remove deepcopy if not necesarry
+        old_name: new_name.replace('_', ' ') for old_name, new_name in
+        zip(list(data), list(data))})
     fig, ax = plt.subplots()
-    if 'energy' in validation_object.output_method:
-        label_part = 'MWh'
-    if 'power' in validation_object.output_method:
-        label_part = 'MW'
-    if 'monthly' in validation_object.output_method:
+    if method == 'hourly':
+        data.resample('H').mean()
+    if method == 'monthly':
+        data = data.resample('M').mean().dropna() # TODO: remove months that only contain some values..
         # Create DataFrame for bar plot
-        index = pd.Series(
-            validation_object.simulation_series.index).dt.strftime('%b')
-        df = pd.concat([
-            pd.DataFrame(data=validation_object.simulation_series.values,
-                         index=index,
-                         columns=[validation_object.weather_data_name]),
-            pd.DataFrame(data=validation_object.validation_series.values,
-                         index=index,
-                         columns=[validation_object.validation_name])], axis=1)
-        df.plot(kind='bar', ax=ax)
+        data.index = pd.Series(
+            data.index).dt.strftime('%b')
+        data.plot(kind='bar', ax=ax)
 #        # Add RMSE labels to bars
 #        rmse_labels = ['RMSE [{0}]\n{1}'.format(label_part, round(entry, 2))
 #                       for entry in validation_object.rmse_monthly]
 #        label_bars(ax.patches[:12], rmse_labels)
     else:
-        validation_object.simulation_series.plot(
-            legend=True, label=validation_object.weather_data_name, ax=ax)
-        validation_object.validation_series.plot(
-            legend=True, label=validation_object.validation_name, ax=ax)
-    plt.ylabel('{0} in {1}'.format(
-        validation_object.output_method.replace('_', ' '), label_part))
+        data.plot(
+            legend=True, ax=ax)
+    plt.ylabel('Calculated and measured average power output in MW')
     plt.xticks(rotation='vertical')
     if (start is not None and end is not None and
-            'monthly' not in validation_object.output_method):
+            method is not 'monthly'):
         plt.xlim(pd.Timestamp(start), pd.Timestamp(end))
     plt.title(title)
     plt.tight_layout()
