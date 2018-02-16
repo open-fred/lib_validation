@@ -24,7 +24,9 @@ import pickle
 year = 2015
 time_zone = 'Europe/Berlin'
 
-pickle_load_time_series_df = True  # Pickle load time series data frame
+# Pickle load time series data frame - if one of the above pickle_load options
+# is set to False, `pickle_load_time_series_df` is automatically set to False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -103,6 +105,10 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__), 'dumps')
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
 
+# If pickle_load options not all True:
+if (not pickle_load_merra or not pickle_load_open_fred or not pickle_load_arge
+        or not pickle_load_enertrag or not pickle_load_wind_farm_data):
+    pickle_load_time_series_df = False
 
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_data(frequency):
@@ -161,6 +167,27 @@ def get_validation_data(frequency):
     return validation_df
 
 
+# ------------------------------ Wind farm data ----------------------------- #
+def return_wind_farm_data():
+        r"""
+        Get wind farm data of all valdation data.
+
+        Returns
+        -------
+        List of Dictionaries
+            Contains information about the wind farm.
+
+        """
+        filenames = ['farm_specification_{0}_{1}.p'.format(
+            validation_data_name.replace('ArgeNetz', 'argenetz'), year)
+            for validation_data_name in validation_data_list if
+            validation_data_name is not 'Enertrag']
+        if year == 2016:
+            filenames += ['farm_specification_enertrag_2016.p']
+        return get_joined_wind_farm_data(filenames, wind_farm_pickle_folder,
+                                         pickle_load_wind_farm_data)
+
+
 # ------------------------- Power output simulation ------------------------- #
 def get_calculated_data(weather_data_name):
     r"""
@@ -181,25 +208,6 @@ def get_calculated_data(weather_data_name):
         'wf_1_calculated_{0}'.format(approach) etc.
 
     """
-    def return_wind_farm_data():
-        r"""
-        Get wind farm data of all valdation data.
-
-        Returns
-        -------
-        List of Dictionaries
-            Contains information about the wind farm.
-
-        """
-        filenames = ['farm_specification_{0}_{1}.p'.format(
-            validation_data_name.replace('ArgeNetz', 'argenetz'), year)
-            for validation_data_name in validation_data_list if
-            validation_data_name is not 'Enertrag']
-        if year == 2016:
-            filenames += ['farm_specification_enertrag_2016.p']
-        return get_joined_wind_farm_data(filenames, wind_farm_pickle_folder,
-                                         pickle_load_wind_farm_data)
-
     # Get weather data
     # Generate weather filename (including path) for pickle dumps (and loads)
     filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
@@ -273,10 +281,10 @@ def get_time_series_df(weather_data_name):
         pickle.dump(time_series_df, open(time_series_filename, 'wb'))
     else:
         # Get validation and calculated data
-        calculated_df = get_calculated_data(weather_data_name)
-        validation_df = get_validation_data(calculated_df.index.freq)
+        calculation_df = get_calculated_data(weather_data_name)
+        validation_df = get_validation_data(calculation_df.index.freq)
         # Join data frames
-        time_series_df = pd.concat([validation_df, calculated_df], axis=1)
+        time_series_df = pd.concat([validation_df, calculation_df], axis=1)
         pickle.dump(time_series_df, open(time_series_filename, 'wb'))
     if csv_dump_time_series_df:
         time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
