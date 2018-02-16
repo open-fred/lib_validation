@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from datetime import timedelta
 
 
 #ToDo: check localize, are values instantaneous?
@@ -72,7 +73,8 @@ def setup_weather_dataframe(weather_data):
     if weather_data == 'open_FRED':
         data = data.resample('30Min').mean()
     elif weather_data == 'MERRA':
-        data = data.resample('60Min').mean()
+        data = data.resample('60Min', base=30,
+                             loffset=timedelta(hours=0.5)).mean()
     data = data.tz_localize('Etc/GMT-1')
-    data = data.tz_convert('UTC')
+    data = data.tz_convert('Europe/Berlin')
     return data

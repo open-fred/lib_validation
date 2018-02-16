@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as mpl
 import numpy as np
 import os
+from collections import OrderedDict
 
 import pvlib
 from pvlib.pvsystem import PVSystem
@@ -12,6 +13,7 @@ from pvlib import irradiance
 import read_htw_data
 import get_weather_data
 import analysis_tools
+import tools
 
 
 #ToDo nochmal prüfen welche Werte Instantanwerte und Mittelwerte sind und am
@@ -175,168 +177,280 @@ def setup_and_run_modelchain(pv_system, location, weather_data):
     return mc
 
 
+def reindl(ghi, i0_h, elevation):
+
+    elevation = pvlib.tools.sind(elevation)
+
+    # calculate clearness index kt
+    kt = np.maximum(0, ghi / (i0_h * elevation))
+
+    # calculate diffuse fraction DHI/GHI
+    # for kt <= 0.3
+    df = 1.02 - 0.254 * kt + 0.0123 * elevation
+    # for kt > 0.3 and kt <= 0.78
+    df = np.where((kt > 0.3) & (kt <= 0.78),
+                  np.fmin(0.97, np.fmax(
+                      0.1, 1.4 - 1.794 * kt + 0.177 * elevation)),
+                  df)
+    # for kt > 0.78
+    df = np.where(kt > 0.78, np.fmax(0.1, 0.486 * kt + 0.182 * elevation), df)
+
+    # eliminate extreme data according to limits Case 1 and Case 2 in Reindl
+    df = np.where(((df < 0.9) & (kt < 0.2)) |
+                  ((df > 0.8) & (kt > 0.6)) |
+                  (df > 1) | (ghi - i0_h > 0), 0, df)
+
+    dhi = df * ghi
+    dni = (ghi - dhi) / elevation
+
+    data = OrderedDict()
+    data['dni'] = dni
+    data['dhi'] = dhi
+    data['kt'] = kt
+
+    if isinstance(ghi, pd.Series):
+        data = pd.DataFrame(data)
+
+    return data
+
+
+def compare_decomposition_models(merra_df, location, htw_weather_df):
+    """
+    """
+
+    solar_position = location.get_solarposition(
+        merra_df.index, pressure=merra_df['pressure'].mean(),
+        temperature=merra_df['temp_air'].mean())
+
+    # reindl
+    df_reindl = reindl(merra_df.ghi, merra_df.i0_h, solar_position.elevation)
+    df_reindl['dni_corrected'] = irradiance.dni(
+        merra_df['ghi'], df_reindl['dhi'], solar_position.zenith,
+        clearsky_dni=location.get_clearsky(
+            merra_df.index, solar_position=solar_position).dni,
+        clearsky_tolerance=1.1,
+        zenith_threshold_for_zero_dni=88.0,
+        zenith_threshold_for_clearsky_limit=80.0)
+
+    # erbs
+    df_erbs = irradiance.erbs(merra_df.ghi, solar_position.zenith,
+                              merra_df.index)
+    df_erbs['dni_corrected'] = irradiance.dni(
+        merra_df['ghi'], df_erbs['dhi'], solar_position.zenith,
+        clearsky_dni=location.get_clearsky(
+            merra_df.index, solar_position=solar_position).dni,
+        clearsky_tolerance=1.1,
+        zenith_threshold_for_zero_dni=88.0,
+        zenith_threshold_for_clearsky_limit=80.0)
+
+    # disc
+    df_disc = irradiance.disc(merra_df.ghi, solar_position.zenith,
+                              merra_df.index, merra_df.pressure.mean())
+    # df_disc['dni_corrected'] = irradiance.dni(
+    #     merra_df['ghi'], df_disc['dhi'], solar_position.zenith,
+    #     clearsky_dni=location.get_clearsky(
+    #         merra_df.index, solar_position=solar_position).dni,
+    #     clearsky_tolerance=1.1,
+    #     zenith_threshold_for_zero_dni=88.0,
+    #     zenith_threshold_for_clearsky_limit=80.0)
+
+    # combine dataframes
+    df_comp = df_reindl.join(df_erbs, how='outer',
+                             rsuffix='_erbs', lsuffix='_reindl')
+    df_comp = df_comp.join(df_disc, how='outer', rsuffix='_disc')
+
+    return df_comp
+
+def load_merra_data(year, lat, lon, directory):
+    # read csv file
+    merra_df = pd.read_csv(
+        os.path.join(directory, 'weather_data_GER_{}.csv'.format(year)),
+        header=[0], index_col=[0], parse_dates=True)
+    # get closest coordinates to given location
+    lat_lon = tools.get_closest_coordinates(merra_df, [lat, lon])
+    # get weather data for closest location
+    df = merra_df[(merra_df['lon'] == lat_lon['lon']) &
+                  (merra_df['lat'] == lat_lon['lat'])]
+    # convert time index to local time
+    df.index = df.index.tz_localize('UTC').tz_convert('Europe/Berlin')
+    # rename columns to fit needs of pvlib
+    df.rename(columns={'T': 'temp_air', 'v_50m': 'wind_speed', 'p': 'pressure',
+                       'SWTDN': 'i0_h', 'SWGDN': 'ghi'}, inplace=True)
+    # convert temperature to °C
+    df.loc[:, 'temp_air'] = df.temp_air - 273.15
+    return df
+
+
 if __name__ == '__main__':
 
-    plot_directory = 'telko/pv'
-    weather_data = 'open_FRED'
-    measured_data = 'HTW'
-
-    ##############################################################################
-    # read HTW converter data
-    ##############################################################################
-
-    htw_wr3_data = read_htw_data.setup_converter_dataframe('wr3', weather_data)
-    htw_wr4_data = read_htw_data.setup_converter_dataframe('wr4', weather_data)
-
-    ##############################################################################
-    # get weather data HTW
-    ##############################################################################
-
-    htw_weather_data = read_htw_data.setup_weather_dataframe(weather_data)
-
-    ##############################################################################
-    # get weather data FRED
-    ##############################################################################
-
-    path = 'data/Fred/BB_2015'
-    filename = 'fred_data_2015_htw.csv'
-    fred_weather_data = get_weather_data.read_of_weather_df_pvlib_from_csv(
-        path, filename, coordinates=None)
-
-    ##############################################################################
-    # compare FRED and HTW weather data
-    ##############################################################################
-
-    # ghi
-    parameter = 'ghi'
-    resample_rule = '1M'
-    df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
-                              weather_data)
-    compare_parameters(df, parameter, resample_rule, plot_directory)
-    plot_week(parameter, weather_data, measured_data, plot_directory)
-
-    # gni
-    parameter = 'gni'
-    resample_rule = '1M'
-    df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
-                              weather_data)
-    compare_parameters(df, parameter, resample_rule, plot_directory)
-    plot_week(parameter, weather_data, measured_data, plot_directory)
-
-    # dni
-    parameter = 'dni'
-    resample_rule = '1M'
-    weather_data = 'open_FRED'
-    corrected = True
-    df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
-                              weather_data, corrected=corrected)
-    compare_parameters(df, parameter + '_corrected', resample_rule,
-                       plot_directory)
-    plot_week(parameter + '_corrected', weather_data, plot_directory)
-
-    corrected = False
-    df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
-                              weather_data, corrected=corrected)
-    compare_parameters(df, parameter + '_uncorrected', resample_rule,
-                       plot_directory)
-    plot_week(parameter + '_uncorrected', weather_data, plot_directory)
-
-    ##############################################################################
-    # setup modules
-    ##############################################################################
-
-    module_3 = setup_htw_pvlib_pvsystem('wr3')
-    module_4 = setup_htw_pvlib_pvsystem('wr4')
-
-    # ############################################################################
-    # # setup location
-    # ############################################################################
-
+    year = 1998
     location = setup_pvlib_location_object()
+    merra_df = load_merra_data(year, location.latitude, location.longitude,
+                               'data/MERRA')
+    htw_weather_data = read_htw_data.setup_weather_dataframe(
+        weather_data='MERRA')
+    compare_decomposition_models(merra_df, location)
 
-    ##############################################################################
-    # call modelchain with FRED data
-    ##############################################################################
+    # plot_directory = 'telko/pv'
+    # weather_data = 'open_FRED'
+    # measured_data = 'HTW'
+    #
+    # ##############################################################################
+    # # read HTW converter data
+    # ##############################################################################
+    #
+    # htw_wr3_data = read_htw_data.setup_converter_dataframe('wr3', weather_data)
+    # htw_wr4_data = read_htw_data.setup_converter_dataframe('wr4', weather_data)
+    #
+    # ##############################################################################
+    # # get weather data HTW
+    # ##############################################################################
+    #
+    # htw_weather_data = read_htw_data.setup_weather_dataframe(weather_data)
+    #
+    # ##############################################################################
+    # # get weather data FRED
+    # ##############################################################################
+    #
+    # path = 'data/Fred/BB_2015'
+    # filename = 'fred_data_2015_htw.csv'
+    # fred_weather_data = get_weather_data.read_of_weather_df_pvlib_from_csv(
+    #     path, filename, coordinates=None)
+    #
+    # ##############################################################################
+    # # compare FRED and HTW weather data
+    # ##############################################################################
+    #
+    # # ghi
+    # parameter = 'ghi'
+    # resample_rule = '1M'
+    # df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
+    #                           weather_data)
+    # compare_parameters(df, parameter, resample_rule, plot_directory)
+    # plot_week(parameter, weather_data, measured_data, plot_directory)
+    #
+    # # gni
+    # parameter = 'gni'
+    # resample_rule = '1M'
+    # df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
+    #                           weather_data)
+    # compare_parameters(df, parameter, resample_rule, plot_directory)
+    # plot_week(parameter, weather_data, measured_data, plot_directory)
+    #
+    # # dni
+    # parameter = 'dni'
+    # resample_rule = '1M'
+    # weather_data = 'open_FRED'
+    # corrected = True
+    # df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
+    #                           weather_data, corrected=corrected)
+    # compare_parameters(df, parameter + '_corrected', resample_rule,
+    #                    plot_directory)
+    # plot_week(parameter + '_corrected', weather_data, plot_directory)
+    #
+    # corrected = False
+    # df = setup_correlation_df(htw_weather_data, fred_weather_data, parameter,
+    #                           weather_data, corrected=corrected)
+    # compare_parameters(df, parameter + '_uncorrected', resample_rule,
+    #                    plot_directory)
+    # plot_week(parameter + '_uncorrected', weather_data, plot_directory)
+    #
+    # ##############################################################################
+    # # setup modules
+    # ##############################################################################
+    #
+    # module_3 = setup_htw_pvlib_pvsystem('wr3')
+    # module_4 = setup_htw_pvlib_pvsystem('wr4')
+    #
+    # # ############################################################################
+    # # # setup location
+    # # ############################################################################
+    #
+    # location = setup_pvlib_location_object()
+    #
+    # ##############################################################################
+    # # call modelchain with FRED data
+    # ##############################################################################
+    #
+    # # module 3
+    # mc3 = setup_and_run_modelchain(module_3, location, fred_weather_data)
+    # # calculate monthly correlation
+    # resample_rule = '1M'
+    # parameter = 'feedin_wr3'
+    # weather_data = 'open_FRED'
+    # feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
+    # feedin.rename(columns={'p_mp': 'energy_calculated',
+    #                        'P_DC': 'energy_measured'},
+    #               inplace=True)
+    # compare_parameters(feedin, parameter, resample_rule, plot_directory)
+    # plot_week(parameter, weather_data, plot_directory)
+    # # compare monthly energy
+    # #ToDo RMSE?
+    # monthly_energy_feedin_3 = feedin_3.resample('1M').sum()
+    # monthly_energy_feedin_3.plot()
+    # mpl.savefig('telko/pv/feedin_wr3_energy.pdf')
+    #
+    # # module 4
+    # setup_and_run_modelchain(module_4, location, fred_weather_data)
+    # # calculate monthly correlation
+    # resample_rule = '1M'
+    # parameter = 'feedin_wr4'
+    # weather_data = 'open_FRED'
+    # feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
+    # feedin.rename(columns={'p_mp': 'energy_calculated',
+    #                        'P_DC': 'energy_measured'},
+    #               inplace=True)
+    # compare_parameters(feedin, parameter, resample_rule, plot_directory)
+    # plot_week(parameter, weather_data, plot_directory)
+    #
+    # ##############################################################################
+    # # call modelchain with HTW data
+    # ##############################################################################
+    #
+    # # module 3
+    # htw_weather_data_modified = fred_weather_data.copy()
+    # htw_weather_data_modified['ghi'] = htw_weather_data['ghi']
+    # htw_weather_data_modified['dhi'] = htw_weather_data_modified['ghi'] -\
+    #                                    htw_weather_data_modified['dirhi']
+    # mc = setup_and_run_modelchain(module_3, location,
+    #                               htw_weather_data_modified)
+    # # calculate monthly correlation
+    # resample_rule = '1M'
+    # parameter = 'feedin_wr3'
+    # weather_data = 'open_FRED'
+    # feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
+    # feedin.rename(columns={'p_mp': 'energy_calculated',
+    #                        'P_DC': 'energy_measured'},
+    #               inplace=True)
+    # compare_parameters(feedin, parameter, resample_rule, plot_directory)
+    # plot_week(parameter, weather_data, plot_directory)
 
-    # module 3
-    mc3 = setup_and_run_modelchain(module_3, location, fred_weather_data)
-    # calculate monthly correlation
-    resample_rule = '1M'
-    parameter = 'feedin_wr3'
-    weather_data = 'open_FRED'
-    feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
-    feedin.rename(columns={'p_mp': 'energy_calculated',
-                           'P_DC': 'energy_measured'},
-                  inplace=True)
-    compare_parameters(feedin, parameter, resample_rule, plot_directory)
-    plot_week(parameter, weather_data, plot_directory)
-    # compare monthly energy
-    #ToDo RMSE?
-    monthly_energy_feedin_3 = feedin_3.resample('1M').sum()
-    monthly_energy_feedin_3.plot()
-    mpl.savefig('telko/pv/feedin_wr3_energy.pdf')
-
-    # module 4
-    setup_and_run_modelchain(module_4, location, fred_weather_data)
-    # calculate monthly correlation
-    resample_rule = '1M'
-    parameter = 'feedin_wr4'
-    weather_data = 'open_FRED'
-    feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
-    feedin.rename(columns={'p_mp': 'energy_calculated',
-                           'P_DC': 'energy_measured'},
-                  inplace=True)
-    compare_parameters(feedin, parameter, resample_rule, plot_directory)
-    plot_week(parameter, weather_data, plot_directory)
-
-    ##############################################################################
-    # call modelchain with HTW data
-    ##############################################################################
-
-    # module 3
-    htw_weather_data_modified = fred_weather_data.copy()
-    htw_weather_data_modified['ghi'] = htw_weather_data['ghi']
-    htw_weather_data_modified['dhi'] = htw_weather_data_modified['ghi'] -\
-                                       htw_weather_data_modified['dirhi']
-    mc = setup_and_run_modelchain(module_3, location,
-                                  htw_weather_data_modified)
-    # calculate monthly correlation
-    resample_rule = '1M'
-    parameter = 'feedin_wr3'
-    weather_data = 'open_FRED'
-    feedin = mc3.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
-    feedin.rename(columns={'p_mp': 'energy_calculated',
-                           'P_DC': 'energy_measured'},
-                  inplace=True)
-    compare_parameters(feedin, parameter, resample_rule, plot_directory)
-    plot_week(parameter, weather_data, plot_directory)
 
 
 
 
-
-    # calculate monthly correlation
-    feedin_3 = mc.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
-    feedin_3.rename(columns={'p_mp': 'energy_calculated',
-                             'P_DC': 'energy_measured'},
-                    inplace=True)
-    corr_feedin_3 = feedin_3.resample('1M').agg(
-        {'corr' : lambda x: x[feedin_3.columns[0]].corr(
-            x[feedin_3.columns[1]])})
-    corr_feedin_3 = corr_feedin_3[corr_feedin_3.columns[0]]
-    # plot correlation
-    corr_feedin_3.plot()
-    mpl.savefig('telko/pv/feedin_wr3_correlation_monthly_htw.pdf')
-    # plot january week
-    index = pd.date_range(start='1/18/2015', end='1/24/2015',
-                          freq='30Min', tz='UTC')
-    feedin_3.loc[index, :].plot()
-    mpl.savefig('telko/pv/feedin_wr3_january_week_htw.pdf')
-    # plot june week
-    index = pd.date_range(start='6/2/2015', end='6/8/2015',
-                          freq='30Min', tz='UTC')
-    feedin_3.loc[index, :].plot()
-    mpl.savefig('telko/pv/feedin_wr3_june_week_htw.pdf')
-
-    # compare monthly energy
-    monthly_energy_feedin_3 = feedin_3.resample('1M').sum()
+    # # calculate monthly correlation
+    # feedin_3 = mc.dc.p_mp.to_frame().join(htw_wr3_data['P_DC'].to_frame())
+    # feedin_3.rename(columns={'p_mp': 'energy_calculated',
+    #                          'P_DC': 'energy_measured'},
+    #                 inplace=True)
+    # corr_feedin_3 = feedin_3.resample('1M').agg(
+    #     {'corr' : lambda x: x[feedin_3.columns[0]].corr(
+    #         x[feedin_3.columns[1]])})
+    # corr_feedin_3 = corr_feedin_3[corr_feedin_3.columns[0]]
+    # # plot correlation
+    # corr_feedin_3.plot()
+    # mpl.savefig('telko/pv/feedin_wr3_correlation_monthly_htw.pdf')
+    # # plot january week
+    # index = pd.date_range(start='1/18/2015', end='1/24/2015',
+    #                       freq='30Min', tz='UTC')
+    # feedin_3.loc[index, :].plot()
+    # mpl.savefig('telko/pv/feedin_wr3_january_week_htw.pdf')
+    # # plot june week
+    # index = pd.date_range(start='6/2/2015', end='6/8/2015',
+    #                       freq='30Min', tz='UTC')
+    # feedin_3.loc[index, :].plot()
+    # mpl.savefig('telko/pv/feedin_wr3_june_week_htw.pdf')
+    #
+    # # compare monthly energy
+    # monthly_energy_feedin_3 = feedin_3.resample('1M').sum()
