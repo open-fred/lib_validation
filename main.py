@@ -100,7 +100,8 @@ validation_pickle_folder = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data'))
 wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
                                        'dumps/wind_farm_data')
-time_series_df_folder = os.path.join(os.path.dirname(__file__), 'dumps')
+time_series_df_folder = os.path.join(os.path.dirname(__file__),
+                                     'dumps/time_series_dfs')
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]

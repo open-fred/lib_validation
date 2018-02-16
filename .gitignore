@@ -24,6 +24,7 @@ dumps/validation_data/**/*
 dumps/validation_objects/**/*
 dumps/weather/**/*
 dumps/wind_farm_data/**/*
+dumps/time_series_dfs/**/*
 
 /untitled0.py
 /ergebnis.csv
