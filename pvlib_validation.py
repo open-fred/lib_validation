@@ -231,6 +231,8 @@ def compare_decomposition_models(merra_df, location, htw_weather_df):
         clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0)
+    df_reindl['gni'] = df_reindl.dni + df_reindl.dhi
+    df_reindl['gni_corrected'] = df_reindl.dni_corrected + df_reindl.dhi
 
     # erbs
     df_erbs = irradiance.erbs(merra_df.ghi, solar_position.zenith,
@@ -242,10 +244,15 @@ def compare_decomposition_models(merra_df, location, htw_weather_df):
         clearsky_tolerance=1.1,
         zenith_threshold_for_zero_dni=88.0,
         zenith_threshold_for_clearsky_limit=80.0)
+    df_erbs['gni'] = df_erbs.dni + df_erbs.dhi
+    df_erbs['gni_corrected'] = df_erbs.dni_corrected + df_erbs.dhi
 
     # disc
     df_disc = irradiance.disc(merra_df.ghi, solar_position.zenith,
                               merra_df.index, merra_df.pressure.mean())
+    df_disc['dhi'] = merra_df.ghi - \
+                     df_disc.dni * pvlib.tools.cosd(solar_position.zenith)
+    df_disc['gni'] = df_disc.dni + df_disc.dhi
     # df_disc['dni_corrected'] = irradiance.dni(
     #     merra_df['ghi'], df_disc['dhi'], solar_position.zenith,
     #     clearsky_dni=location.get_clearsky(
@@ -255,9 +262,27 @@ def compare_decomposition_models(merra_df, location, htw_weather_df):
     #     zenith_threshold_for_clearsky_limit=80.0)
 
     # combine dataframes
-    df_comp = df_reindl.join(df_erbs, how='outer',
-                             rsuffix='_erbs', lsuffix='_reindl')
-    df_comp = df_comp.join(df_disc, how='outer', rsuffix='_disc')
+    df_comp = df_reindl.loc[:, ['gni', 'gni_corrected']].join(
+        df_erbs.loc[:, ['gni', 'gni_corrected']],
+        how='outer', rsuffix='_erbs', lsuffix='_reindl')
+    df_comp = df_comp.join(df_disc.gni.rename('gni_disc').to_frame(),
+                           how='outer', rsuffix='_disc')
+
+    # calculate correlation
+    parameter_list = ['gni_reindl', 'gni_erbs', 'gni_disc',
+                      'gni_corrected_reindl', 'gni_corrected_erbs']
+    count = 0
+    for param in parameter_list:
+        df = htw_weather_df['gni'].to_frame().join(
+            df_comp[param].to_frame(), how='outer')
+        corr = analysis_tools.correlation_tmp(df, '1W', min_count=100).rename(
+            'corr_gni_htw_{}'.format(param))
+        if count == 0:
+            corr_df = corr.to_frame()
+        else:
+            corr_df = corr_df.join(corr.to_frame())
+        count += 1
+    corr_df.plot()
 
     return df_comp
 
@@ -289,7 +314,7 @@ if __name__ == '__main__':
                                'data/MERRA')
     htw_weather_data = read_htw_data.setup_weather_dataframe(
         weather_data='MERRA')
-    compare_decomposition_models(merra_df, location)
+    compare_decomposition_models(merra_df, location, htw_weather_data)
 
     # plot_directory = 'telko/pv'
     # weather_data = 'open_FRED'
