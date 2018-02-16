@@ -183,7 +183,7 @@ def return_wind_farm_data():
             validation_data_name.replace('ArgeNetz', 'argenetz'), year)
             for validation_data_name in validation_data_list if
             validation_data_name is not 'Enertrag']
-        if year == 2016:
+        if (year == 2016 and 'Enertrag' in validation_data_list):
             filenames += ['farm_specification_enertrag_2016.p']
         return get_joined_wind_farm_data(filenames, wind_farm_pickle_folder,
                                          pickle_load_wind_farm_data)
