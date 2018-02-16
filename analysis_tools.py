@@ -311,7 +311,7 @@ def correlation(val_obj, sample_resolution=None):
     return corr
 
 
-def correlation_tmp(df, resample_rule):
+def correlation_tmp(df, resample_rule, min_count=100):
     r"""
     Calculates the correlation between two columns of the given dataframe.
 
@@ -333,6 +333,11 @@ def correlation_tmp(df, resample_rule):
         {'corr': lambda x: x[df.columns[0]].corr(x[df.columns[1]])})
     corr = corr[corr.columns[0]]
     corr.name = corr.name[1]
+
+    # set values to NaN where not enough resample values exist
+    # ToDo make generic
+    count = df.resample(resample_rule).count()
+    corr.loc[count.loc[count.min(axis=1) < min_count].index] = np.nan
     return corr
 
 
