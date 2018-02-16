@@ -341,6 +341,37 @@ def correlation_tmp(df, resample_rule, min_count=100):
     return corr
 
 
+def variability(df, resample_rule, min_count=12, base=0):
+    r"""
+    Calculates the RMSE between two columns of a dataframe.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+       RMSE for the first two columns is calculated.
+    resample_rule : String
+       The offset string representing target conversion of
+       pandas.DataFrame.resample, e.g. '1D' to downsample data to one day.
+    min_count : int
+        Minimum number of non-NaN values to calculate variability.
+    base : int
+        For frequencies that evenly subdivide 1 day, the “origin” of the
+        aggregated intervals.
+
+    Returns
+    -------
+    pandas.Series
+       Series with RMSE values for each time interval.
+
+    """
+    var = df.resample(resample_rule, base=base).agg(
+        {'variability': lambda x: ((x[df.columns[0]] - x[
+            df.columns[1]]) ** 2).mean() ** .5}).iloc[:, 0]
+    count = df.resample(resample_rule, base=base).count()
+    var.loc[count.loc[count.min(axis=1) < min_count].index] = np.nan
+    return var
+
+
 if __name__ == "__main__":
     # Load validation objects - choose power output or hourly/monthly energy output
 #    path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
