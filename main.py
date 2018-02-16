@@ -13,6 +13,7 @@ from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
 from enertrag_data import get_enertrag_data
+from analysis_tools import ValidationObject
 
 # Other imports
 import os
@@ -298,7 +299,7 @@ def get_time_series_df(weather_data_name):
 # ------------------------------ Data Evaluation ---------------------------- #
 # Create list of wind farm names
 wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
-val_obj_dict = {}
+val_obj_dict = {method : {} for method in output_methods}
 for weather_data_name in weather_data_list:
     time_series_df = get_time_series_df(weather_data_name)
     # Set value of measured series to nan if respective calculated value
@@ -336,19 +337,39 @@ for weather_data_name in weather_data_list:
             # annual_energy_output(time_series_pair[0]), annual_energy_output(time_series_pair[0])
             pass
         # TODO: resample (energy output!), latex tables
-    if 'no_resample' in output_methods:
-        pass
-        # TODO: no resampling, get validation objects,
-        # val_obj_dict['no_resample'] = val_obj_list_no_resample
-    if 'hourly' in output_methods:
-        pass
-    if 'monthly' in output_methods:
-        pass
+    for time_series_pair in time_series_pairs:
+        wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
+        approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
+        if 'no_resample' in output_methods:
+            val_obj_dict['no_resample'][approach_string] = ValidationObject(
+                object_name=wf_string,
+                validation_series=time_series_pair.iloc[:, 0],
+                simulation_series=time_series_pair.iloc[:, 1],
+                output_method='no_resample',
+                weather_data_name=weather_data_name, approach=approach_string)
+        if 'hourly' in output_methods:
+            hourly_series = time_series_pair.resample('H').mean()
+            val_obj_dict['hourly'][approach_string] = ValidationObject(
+                object_name=wf_string,
+                validation_series=hourly_series.iloc[:, 0],
+                simulation_series=hourly_series.iloc[:, 1],
+                output_method='hourly',
+                weather_data_name=weather_data_name, approach=approach_string)
+        if 'monthly' in output_methods:
+            monthly_series = time_series_pair.resample('M').mean()
+            val_obj_dict['monthly'][approach_string] = ValidationObject(
+                object_name=wf_string,
+                validation_series=monthly_series.iloc[:, 0],
+                simulation_series=monthly_series.iloc[:, 1],
+                output_method='monthly',
+                weather_data_name=weather_data_name, approach=approach_string)
 
     # Visualization #
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
         for time_series_pair in time_series_pairs:
+            # TODO: add: pairs or grouped by approaches! if you do so attention:
+            # naming of plots: other approach_string! 'multiple_approaches'
             if time_period is not None:
                 save_folder_add_on = (
                     '{0}_{1}/'.format(time_period[0], time_period[1]))
@@ -365,7 +386,7 @@ for weather_data_name in weather_data_list:
                 method_string = (method if method is not 'no_resample'
                                  else 'hourly' if weather_data_name is 'MERRA'
                                  else 'half-hourly')
-                approach_string = '_'.join(list(time_series_pair)[1].split( # TODO: solve copy problem
+                approach_string = '_'.join(list(time_series_pair)[1].split(
                     '_')[3:])
                 wf_string = '_'.join(list(time_series_pair)[0].split(
                     '_')[:2])
@@ -393,79 +414,7 @@ for weather_data_name in weather_data_list:
                             tick_label=None, start=start_end[0], end=start_end[1])
     print('l')
 
-# ------------------------------ Old ---------------------------- #
-# Initialise array for filenames of pickle dumped validation objects
-filenames_validation_objects = []
-# Iterate through all approaches, validation data and weather data, dump
-# validation sets and utilize visualization methods
-for approach in approach_list:
-    for validation_data_name in validation_data_list:
-        validation_farms, wind_farm_data = get_validation_farms(
-            validation_data_name)
-        for weather_data_name in weather_data_list:
-            simulation_farms = get_simulation_farms(
-                weather_data_name, validation_data_name,
-                wind_farm_data, approach, validation_farms)
-
-            if (weather_data_name == 'open_FRED' and year == 2016):
-                # For open_FRED data in 2016 data does not exist for december
-                # validation_data, converted = tools.convert_time_zone_of_index(
-                #     validation_data, 'local', local_time_zone='Europe/Berlin')
-                for validation_farm in validation_farms:
-                    validation_farm.power_output = (
-                        validation_farm.power_output.loc[
-                            validation_farm.power_output.index <= '2016-11-30'])
-                # if converted:
-                #     weather.index = weather.index.tz_convert('UTC')
-                #     weather = weather.drop(weather.index[
-                #                            int(-60 / weather.index.freq.n):])
-            # Produce validation sets
-            # (one set for each farms list and output method)
-            validation_sets = []
-            if 'annual_energy_output' in output_methods:
-                validation_sets.append(
-                    analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms,
-                        'annual_energy_output', validation_data_name,
-                        weather_data_name, time_period, time_zone, 'A'))
-            if 'hourly_energy_output' in output_methods:
-                validation_sets.append(
-                    analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms,
-                        'hourly_energy_output', validation_data_name,
-                        weather_data_name, time_period, time_zone, 'H'))
-            if 'monthly_energy_output' in output_methods:
-                validation_sets.append(
-                    analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms,
-                        'monthly_energy_output', validation_data_name,
-                        weather_data_name, time_period, time_zone, 'M'))
-            if 'power_output' in output_methods:
-                for farm in simulation_farms:
-                    farm.power_output = tools.upsample_series(
-                        farm.power_output,
-                        validation_farms[0].power_output.index.freq.n)
-                validation_sets.append(
-                    analysis_tools.evaluate_feedin_time_series(
-                        validation_farms, simulation_farms, 'power_output',
-                        validation_data_name, weather_data_name, time_period,
-                        time_zone))
-
-            # Dump validation_sets
-            # TODO: dump could be in function evaluate....()
-            if latex_output.size or extra_plots.size:
-                for validation_set in validation_sets:
-                    filename = os.path.join(
-                        os.path.dirname(__file__),
-                        'dumps/validation_objects',
-                        'validation_sets_{0}_{1}_{2}_{3}_{4}.p'.format(
-                            year, weather_data_name,
-                            validation_data_name, approach,
-                            validation_set[0].output_method))
-                    pickle.dump(validation_set, open(filename, 'wb'))
-                    filenames_validation_objects.append(filename)
-
-            # --------------- Visualization of data evaluation -------------- #
+# --------------- OLD OLD OLD  Visualization of data evaluation -------------- #
             # Specify folder and title add on for saving the plots
             if time_period is not None:
                 save_folder = (

@@ -110,7 +110,7 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
     plt.close()
 
 
-def plot_feedin_comparison(data, method, filename='Tests/feedin_test.pdf',
+def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
                            start=None, end=None):
     r"""
@@ -122,9 +122,10 @@ def plot_feedin_comparison(data, method, filename='Tests/feedin_test.pdf',
     Parameters
     ----------
     data : pd.DataFrame
-        ...
+        Contains data for plot with column names as label names.
     method: String
-        ...
+        Contains method for resampling. Options: 'monthly', 'hourly'.
+        Default: None.
     filename : String
         Filename including path relatively to the active folder for saving
         the figure. Default: 'Tests/feedin_test.pdf'.
