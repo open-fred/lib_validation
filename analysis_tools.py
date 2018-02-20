@@ -16,10 +16,8 @@ class ValidationObject(object):
     ----------
     object_name : String
         Name of ValidationObject (name of wind farm or region).
-    validation_series : pandas.Series
-            Validation feedin output time series.
-    simulation_series : pandas.Series
-            Simulated feedin output time series.
+    data : pd.DataFrame
+        # TODO: add here and adapt attributes
     output_method : String
         Specifies the form of the time series (`simulation_series` and
         `validation_series`) for the validation.
@@ -32,15 +30,15 @@ class ValidationObject(object):
         Indicates the origin of the validation feedin time series.
         This parameter will be set as an attribute of ValidationObject and is
         used for giving filenames etc.
+    approach : String
+        ...
+    min_periods_pearson : Integer
+        ...
 
     Attributes
     ----------
     object_name : String
         Name of ValidationObject (name of wind farm or region).
-    validation_series : pandas.Series
-            Validation feedin output time series.
-    simulation_series : pandas.Series
-            Simulated feedin output time series.
     output_method : String
         Specifies the form of the time series (`simulation_series` and
         `validation_series`) for the validation.
@@ -53,6 +51,10 @@ class ValidationObject(object):
         Indicates the origin of the validation feedin time series.
         This parameter will be set as an attribute of ValidationObject and is
         used for giving filenames etc.
+    validation_series : pandas.Series
+            Validation feedin output time series.
+    simulation_series : pandas.Series
+            Simulated feedin output time series.
     bias : pd.Series
         Bias of `simulation_series` from `validation_series`.
     mean_bias : Float
@@ -65,31 +67,37 @@ class ValidationObject(object):
         `validation_series`.
     rmse_monthly : List
         Root mean square error for each month.
+    rmse_normalized : Float
+        With the average annual power output normalized RMSE.
     standard_deviation : Float
         Standard deviation of the bias time series (`bias`).
 
     """
-    def __init__(self, object_name, validation_series, simulation_series,
-                 output_method=None, weather_data_name=None,
-                 validation_name=None, approach=None):
+    def __init__(self, object_name, data, output_method=None,
+                 weather_data_name=None, validation_name=None, approach=None,
+                 min_periods_pearson=None):
         self.object_name = object_name
-        self.validation_series = validation_series
-        self.simulation_series = simulation_series
+        self.data = data
         self.output_method = output_method
         self.weather_data_name = weather_data_name
         self.validation_name = validation_name
         self.approach = approach
+        self.min_periods_pearson = min_periods_pearson
 
+        self.validation_series = data.iloc[:, 0]
+        self.simulation_series = data.iloc[:, 1]
         self.bias = self.get_bias()
         self.mean_bias = self.bias.mean()
         self.rmse = self.get_rmse()
-        #        self.rmse_monthly = self.get_rmse('monthly')
         self.rmse_monthly = None
+        self.rmse_normalized = self.get_rmse(normalized=True)
         self.standard_deviation = self.get_standard_deviation(self.bias)
+        self.pearson_s_r_pandas = self.get_pearson_s_r_pandas()
+
         if output_method is not 'annual_energy_output':
             self.pearson_s_r = self.get_pearson_s_r()
+
     # TODO: add some kind of percentage bias/rmse
-    # TODO: add annual energy output deviation [%] as attribute (for latex output)
 
     def get_standard_deviation(self, data_series):
         r"""
@@ -111,7 +119,7 @@ class ValidationObject(object):
         variance = ((data_series - average)**2).sum() / len(data_series)
         return np.sqrt(variance)
 
-    def get_rmse(self, time_scale=None):
+    def get_rmse(self, time_scale=None, normalized=False):
         r"""
         Calculate root mean square error of simulation from validation series.
 
@@ -120,6 +128,9 @@ class ValidationObject(object):
         time_scale : String
             The time scale the RMSE will be calculated for. Options: 'annual',
             'monthly'. Add other options if needed.
+        normalized : Boolean
+            If True the RMSE is normalized with the average annual power
+            output.
 
         Returns
         -------
@@ -141,6 +152,9 @@ class ValidationObject(object):
                 monthly_rmse = np.sqrt(((sim_series - val_series)**2).sum() /
                                        len(self.simulation_series))
                 rmse.append(monthly_rmse)
+        if normalized:
+            rmse = (rmse /
+                    self.validation_series.resample('A').mean().values * 100)
         return rmse
 
     def get_bias(self):
@@ -176,19 +190,12 @@ class ValidationObject(object):
 
     def get_pearson_s_r(self):
         r"""
-        Calculates the Pearson's correlation coeffiecient of two series.
-
-        Parameters
-        ----------
-        validation_series : pandas.Series
-            Validation power output time series.
-        series_simulated : pandas.Series
-            Simulated power output time series.
+        Calculates the Pearson's correlation coefficient of two series.
 
         Returns
         -------
         float
-            Pearson's correlation coeffiecient (Pearson's R)
+            Pearson's correlation coefficient (Pearson's R)
             of the input series.
 
         """
@@ -199,6 +206,21 @@ class ValidationObject(object):
                           self.validation_series.mean())**2).sum() *
                         ((self.simulation_series -
                           self.simulation_series.mean())**2).sum()))
+
+    def get_pearson_s_r_pandas(self):
+        r"""
+        Calculates the Pearson's correlation coefficient of two series.
+
+        Returns
+        -------
+        float
+            Pearson's correlation coeffiecient (Pearson's R)
+            of the input series.
+
+        """
+        correlation = self.data.corr(
+            method='pearson', min_periods=self.min_periods_pearson).iloc[1, 0]
+        return correlation
 
 
 def correlation(val_obj, sample_resolution=None):
