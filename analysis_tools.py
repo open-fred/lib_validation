@@ -92,10 +92,7 @@ class ValidationObject(object):
         self.rmse_monthly = None
         self.rmse_normalized = self.get_rmse(normalized=True)
         self.standard_deviation = self.get_standard_deviation(self.bias)
-        self.pearson_s_r_pandas = self.get_pearson_s_r_pandas()
-
-        if output_method is not 'annual_energy_output':
-            self.pearson_s_r = self.get_pearson_s_r()
+        self.pearson_s_r = self.get_pearson_s_r()
 
     # TODO: add some kind of percentage bias/rmse
 
@@ -189,25 +186,6 @@ class ValidationObject(object):
         return mean_biases
 
     def get_pearson_s_r(self):
-        r"""
-        Calculates the Pearson's correlation coefficient of two series.
-
-        Returns
-        -------
-        float
-            Pearson's correlation coefficient (Pearson's R)
-            of the input series.
-
-        """
-        return (((self.validation_series - self.validation_series.mean()) *
-                 (self.simulation_series -
-                  self.simulation_series.mean())).sum() /
-                np.sqrt(((self.validation_series -
-                          self.validation_series.mean())**2).sum() *
-                        ((self.simulation_series -
-                          self.simulation_series.mean())**2).sum()))
-
-    def get_pearson_s_r_pandas(self):
         r"""
         Calculates the Pearson's correlation coefficient of two series.
 
