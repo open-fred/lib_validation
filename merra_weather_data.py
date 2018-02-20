@@ -54,6 +54,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
     if pickle_load:
         weather_df = pickle.load(open(filename, 'rb'))
     else:
+        print('---- MERRA-2 data of {0} is being loaded. ----'.format(year))
         # Load data from csv
         data_frame = pd.read_csv(os.path.join(
             os.path.dirname(__file__), 'data/Merra',
@@ -89,6 +90,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                 weather_df = rename_columns(data_frame)
         else:
             weather_df = data_frame
+        print('---- Loading of MERRA-2 data of {0} Done. ----'.format(year))
         pickle.dump(weather_df, open(filename, 'wb'))
     return weather_df
 

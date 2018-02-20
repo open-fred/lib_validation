@@ -169,15 +169,15 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps/validation_data',
                                         filename_pickle))
-    if year == 2015:
-        filename_column_names = 'helper_files/column_names_2015.txt'
-        replace = 'PT5M'
-    if (year == 2016 or year == 2017):
-        filename_column_names = 'helper_files/column_names_2016_2017.txt'
-        replace = 'PT1M'
     if pickle_load:
         df = pickle.load(open(path, 'rb'))
     else:
+        if year == 2015:
+            filename_column_names = 'helper_files/column_names_2015.txt'
+            replace = 'PT5M'
+        if (year == 2016 or year == 2017):
+            filename_column_names = 'helper_files/column_names_2016_2017.txt'
+            replace = 'PT1M'
         with open(filename_files) as file:
             df = pd.DataFrame()
             for line in file:
@@ -199,8 +199,8 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
         freq = pd.infer_freq(df.index)
         df.index.freq = pd.tseries.frequencies.to_offset(freq)
         if filter_interpolated_data:
-            print('---- The interpolated data of ArgeNetz data is ' +
-                  'being filtered. ----')
+            print('---- The interpolated data of ArgeNetz data in {0} '.format(
+                      year) + 'is being filtered. ----')
             df_corrected = df.copy()
             for column_name in list(df):
                 if 'power_output' in column_name:
@@ -208,7 +208,7 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                         df[column_name], window_size=10, tolerance=0.0011,
                         replacement_character=np.nan, plot=False)
             df = df_corrected
-            print('---- Filtering Done. ----')
+            print('---- Filtering of {0} Done. ----'.format(year))
         pickle.dump(df, open(path, 'wb'))
     return df
 
