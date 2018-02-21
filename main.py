@@ -63,21 +63,25 @@ output_methods = [
 
 visualization_methods = [
 #    'box_plots',
-    'feedin_comparison',
+#    'feedin_comparison',
 #    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
+feedin_comparsion_all_in_one = False  # Plots all calculated series for one
+                                      # wind farm in one plot
+
 latex_output = np.array([
      'annual_energy_weather',  # Annual energy output of all weather sets
+     'annual_energy_approaches',  # ...
+     'annual_energy_weather_approaches',  # ...
     # 'key_figures_weather',     # Key figures of all weather sets
-    # 'key_figures_approaches',  # Key figures of all approaches
-     'annual_energy_approaches'  # ...
+    # 'key_figures_approaches'  # Key figures of all approaches
      ])
 
 # Select time of day you want to observe or None for all day
 time_period = (
-       6, 22  # time of day to be selected (from h to h)
-        # None   # complete time series will be observed
+#       6, 22  # time of day to be selected (from h to h)
+         None   # complete time series will be observed
         ) 
 
 # Start and end date for time period to be plotted when 'feedin_comparison' is
@@ -92,7 +96,7 @@ extra_plots = np.array([
 #    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
     ])
 # relative path to latex tables folder
-latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/'
+latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/automatic/'
 
 # Other plots
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
@@ -109,7 +113,7 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__),
 temperature_heights = [60, 64, 65, 105, 114]
 
 # Wind farms that will not be examined also if they are in the time series df
-restiction_list = []
+restriction_list = ['wf_3']
 
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not pickle_load_arge
@@ -275,6 +279,8 @@ def get_calculated_data(weather_data_name):
 def get_time_series_df(weather_data_name):
     r"""
 
+    If there are any values in restriction_list, the columns containing these
+    strings are dropped. This takes place after dumping.
 
     """
     time_series_filename = os.path.join(time_series_df_folder,
@@ -312,6 +318,14 @@ def get_time_series_df(weather_data_name):
         pickle.dump(time_series_df, open(time_series_filename, 'wb'))
     if csv_dump_time_series_df:
         time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
+    # Drop columns that contain at least one item of `restriction_list` in
+    # their name
+    drop_list = []
+    for restriction in restriction_list:
+        drop_list.extend([column_name for column_name in list(time_series_df)
+                          if restriction in column_name])
+    time_series_df.drop([column_name for column_name in drop_list],
+                        axis=1, inplace=True)
     return time_series_df
 
 
@@ -324,44 +338,92 @@ def initialize_dictionary(dict_type, time_series_pairs=None):
                                           for method in output_methods}
                       for weather_data_name in weather_data_list}
     if dict_type == 'annual_energy':
-        if time_series_pairs is None:
+        if (time_series_pairs is None):
             raise ValueError("`time_series_pairs` has to be given.")
         wf_strings = ['_'.join(list(time_series_pair)[0].split('_')[:2])
                       for time_series_pair in time_series_pairs]
-        dictionary = {wf_string: {weather_data_name: {approach: []
-                                                      for approach
-                                                      in approach_list}
-                                  for weather_data_name in weather_data_list}
-                      for wf_string in wf_strings}
+        dictionary = {
+            wf_string: {approach: {'energy': None,
+                                   'deviation': None}
+            # wf_string: {approach: {'energy [MWh]': None,
+            #                        'deviation [%]': None}
+                        for approach in approach_list}
+            for wf_string in wf_strings}
     return dictionary
+
+
+def join_dictionaries(list_of_dicts):
+    # Start with copy of first entry
+    z = list_of_dicts[0].copy()
+    # Update with the remaining dictionaries
+    for i in range(len(list_of_dicts) - 1):
+        z.update(list_of_dicts[i + 1])
+    return z
+
+
 # ------------------------------ Data Evaluation ---------------------------- #
 # Create list of wind farm names
 wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
 # Initialize dictionary for validation objects
 val_obj_dict = initialize_dictionary(dict_type='validation_objects')
+# Initialize dict for annual energy output of each weather data set
+annual_energy_dicts = {weather_data_name: None
+                       for weather_data_name in weather_data_list}
 for weather_data_name in weather_data_list:
     time_series_df = get_time_series_df(weather_data_name)
-    # TODO: restrictions in timer series df?
     if (pickle_load_time_series_df or csv_load_time_series_df):
         # Check if all needed data exists
         pass  # TODO: add
     # Create list of time series data frames (for each wind farm for each
     # approach) - measured and calculated data
+    time_series_df_parts = [
+        time_series_df.loc[:, [
+            column_name for column_name in list(time_series_df)
+            if wf_name in column_name]] for wf_name in wind_farm_names
+            if wf_name not in restriction_list]
     time_series_pairs = [time_series_df.loc[:, ['{0}_measured'.format(wf_name),
                                                 '{0}_calculated_{1}'.format(
                                                     wf_name, approach)]]
                          for wf_name in wind_farm_names
                          for approach in approach_list
-                         if (wf_name not in restiction_list and
-                             approach not in restiction_list)]
+                         if '{0}_calculated_{1}'.format(
+                             wf_name, approach) in list(time_series_df)]
     # Initialize dictionary for annual energy output
-    annual_energy_dict = initialize_dictionary(
+    annual_energy_dict_weather = initialize_dictionary(
         dict_type='annual_energy', time_series_pairs=time_series_pairs)
-    if 'annual' in output_methods:
-        for time_series_pair in time_series_pairs:
-            # annual_energy_output(time_series_pair[0]), annual_energy_output(time_series_pair[0])
-            pass
-        # TODO: resample (energy output!), latex tables
+    if ('annual_energy_approaches' in latex_output
+            or 'annual_energy_weather' in latex_output):
+        # Write annual energy outputs and deviations into `annual_energy_dict`
+        for time_series_df_part in time_series_df_parts:
+            wf_string = '_'.join(list(time_series_df_part)[0].split('_')[:2])
+            # Measured annual energy output
+            measured_output = tools.annual_energy_output(
+                time_series_df_part.loc[:, '{0}_measured'.format(wf_string)])
+            annual_energy_dict_weather[
+                wf_string]['measured_annual_energy'] = measured_output
+            # Calculated annual energy output and deviation from measured in %
+            for column_name in list(time_series_df_part):
+                if column_name != '{0}_measured'.format(wf_string):
+                    approach_string = '_'.join(column_name.split('_')[3:])
+                    calculated_output = tools.annual_energy_output(
+                        time_series_df_part.loc[:,'{0}_calculated_{1}'.format(
+                            wf_string, approach_string)])
+                    annual_energy_dict_weather[wf_string][
+                        approach_string]['energy'] = (
+                            calculated_output)
+                    annual_energy_dict_weather[wf_string][
+                        approach_string]['deviation'] = (
+                            (calculated_output - measured_output) /
+                            measured_output * 100)
+                # annual_energy_dict_weather[wf_string][
+                #     approach_string]['energy [MWh]'] = (
+                #     calculated_output)
+                # annual_energy_dict_weather[wf_string][
+                #     approach_string]['deviation [%]'] = (
+                #     (calculated_output - measured_output) /
+                #     measured_output * 100)
+        # Add dictionary to `annual_energy_dicts`
+        annual_energy_dicts[weather_data_name] = annual_energy_dict_weather
     for time_series_pair in time_series_pairs:
         wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
         approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
@@ -391,13 +453,17 @@ for weather_data_name in weather_data_list:
                     weather_data_name=weather_data_name,
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
-    print('l')
+
     # Visualization #
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
-        for time_series_pair in time_series_pairs:
-            # TODO: add: pairs or grouped by approaches! if you do so attention:
-            # naming of plots: other approach_string! 'multiple_approaches'
+        if feedin_comparsion_all_in_one:
+           plot_dfs = time_series_df_parts # TODO: test
+           approach_string = 'multiple'
+        else:
+            plot_dfs = time_series_pairs
+            approach_string = None
+        for plot_df in plot_dfs:
             if time_period is not None:
                 save_folder_add_on = (
                     '{0}_{1}/'.format(time_period[0], time_period[1]))
@@ -408,15 +474,16 @@ for weather_data_name in weather_data_list:
                 title_add_on = ''
             save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
                 year, weather_data_name,
-                '_'.join(list(time_series_pair)[1].split('_')[3:]),
+                '_'.join(list(plot_df)[1].split('_')[3:]),
                 save_folder_add_on)
             for method in output_methods:
                 method_string = (method if method is not 'no_resample'
                                  else 'hourly' if weather_data_name is 'MERRA'
                                  else 'half-hourly')
-                approach_string = '_'.join(list(time_series_pair)[1].split(
-                    '_')[3:])
-                wf_string = '_'.join(list(time_series_pair)[0].split(
+                if approach_string is None:
+                    approach_string = '_'.join(list(plot_df)[1].split(
+                        '_')[3:])
+                wf_string = '_'.join(list(plot_df)[0].split(
                     '_')[:2])
                 for start_end in start_end_list:
                     if (method == 'monthly' and start_end[0] is not None):
@@ -424,12 +491,12 @@ for weather_data_name in weather_data_list:
                         pass
                     else:
                         visualization_tools.plot_feedin_comparison(
-                            data=time_series_pair, method=method,
+                            data=plot_df, method=method,
                             filename=(
                                 save_folder +
                                 '{0}_feedin_{1}_{2}_{3}_{4}_{5}{6}.png'.format(
                                     method_string,
-                                    list(time_series_pair)[0].split('_')[0],
+                                    list(plot_df)[0].split('_')[0],
                                     weather_data_name, year, approach_string,
                                     (start_end[0].split(':')[0] if start_end[0]
                                      else ''), (start_end[1].split(':')[0]
@@ -440,98 +507,98 @@ for weather_data_name in weather_data_list:
                                     weather_data_name, year, approach_string) +
                                 title_add_on),
                             tick_label=None, start=start_end[0], end=start_end[1])
-    print('l')
+
 
 # --------------- OLD OLD OLD  Visualization of data evaluation -------------- #
-# Specify folder and title add on for saving the plots
-if time_period is not None:
-    save_folder = (
-        '../Plots/{0}/{1}_{2}/{3}/time_period/{4}_{5}/'.format(
-            year, weather_data_name, validation_data_name,
-            approach, time_period[0], time_period[1]))
-    title_add_on = ' time of day: {0}:00 - {1}:00'.format(
-        time_period[0], time_period[1])
-else:
-    save_folder = '../Plots/{0}/{1}_{2}/{3}/'.format(
-        year, weather_data_name, validation_data_name, approach)
-    title_add_on = ''
-# Use visualization methods for each validation set
-for validation_set in validation_sets:
-    if (validation_set[0].output_method is not
-            'annual_energy_output'):
-        if 'box_plots' in visualization_methods:
-            # Store all bias time series of a validation set in one
-            # DataFrame for Boxplot
-            bias_df = pd.DataFrame()
-            for validation_object in validation_set:
-                if 'all' not in validation_object.object_name:
-                    df_part = pd.DataFrame(
-                        data=validation_object.bias,
-                        columns=[validation_object.object_name])
-                    bias_df = pd.concat([bias_df, df_part], axis=1)
-            # Specify filename
-            filename = (save_folder +
-                        '{0}_Boxplot_{1}_{2}_{3}_{4}.pdf'.format(
-                            validation_set[0].output_method, year,
-                            validation_data_name,
-                            weather_data_name, approach))
-            title = (
-                'Deviation of ' +
-                '{0} {1} from {2}\n in {3} ({4} approach)'.format(
-                    weather_data_name,
-                    validation_set[0].output_method.replace('_',
-                                                            ' '),
-                    validation_data_name, year, approach) +
-                title_add_on)
-            visualization_tools.box_plots_bias(
-                bias_df, filename=filename, title=title)
-
-        if 'feedin_comparison' in visualization_methods:
-        # TODO: rename this method for better understanding
-            if (start is None and end is None and
-                    validation_set[0].output_method
-                    is not 'monthly_energy_output'):
-                filename_add_on = ''
-            else:
-                filename_add_on = '_{0}_{1}'.format(start, end)
-            for validation_object in validation_set:
-                filename = (
-                    save_folder +
-                    '{0}_{1}_Feedin_{2}_{3}_{4}_{5}{6}.png'.format(
-                        validation_set[0].output_method,
-                        validation_object.object_name, year,
-                        validation_data_name, weather_data_name,
-                        approach, filename_add_on))
-                title = (
-                    '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
-                        validation_set[0].output_method.replace(
-                            '_', ' '),
-                        weather_data_name, validation_data_name,
-                        validation_object.object_name, year,
-                        approach) + 'approach)' + title_add_on)
-                visualization_tools.plot_feedin_comparison(
-                    validation_object, filename=filename,
-                    title=title, start=start, end=end)
-
-        if 'plot_correlation' in visualization_methods:
-            for validation_object in validation_set:
-                filename = (
-                    save_folder +
-                    '{0}_{1}_Correlation_{2}_{3}_{4}_{5}.png'.format(
-                        validation_set[0].output_method,
-                        validation_object.object_name, year,
-                        validation_data_name, weather_data_name,
-                        approach))
-                title = (
-                    '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
-                        validation_set[0].output_method.replace(
-                            '_', ' '),
-                        weather_data_name, validation_data_name,
-                        validation_object.object_name, year,
-                        approach) + 'approach)' + title_add_on)
-                visualization_tools.plot_correlation(
-                    validation_object, filename=filename,
-                    title=title)
+# # Specify folder and title add on for saving the plots
+# if time_period is not None:
+#     save_folder = (
+#         '../Plots/{0}/{1}_{2}/{3}/time_period/{4}_{5}/'.format(
+#             year, weather_data_name, validation_data_name,
+#             approach, time_period[0], time_period[1]))
+#     title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+#         time_period[0], time_period[1])
+# else:
+#     save_folder = '../Plots/{0}/{1}_{2}/{3}/'.format(
+#         year, weather_data_name, validation_data_name, approach)
+#     title_add_on = ''
+# # Use visualization methods for each validation set
+# for validation_set in validation_sets:
+#     if (validation_set[0].output_method is not
+#             'annual_energy_output'):
+#         if 'box_plots' in visualization_methods:
+#             # Store all bias time series of a validation set in one
+#             # DataFrame for Boxplot
+#             bias_df = pd.DataFrame()
+#             for validation_object in validation_set:
+#                 if 'all' not in validation_object.object_name:
+#                     df_part = pd.DataFrame(
+#                         data=validation_object.bias,
+#                         columns=[validation_object.object_name])
+#                     bias_df = pd.concat([bias_df, df_part], axis=1)
+#             # Specify filename
+#             filename = (save_folder +
+#                         '{0}_Boxplot_{1}_{2}_{3}_{4}.pdf'.format(
+#                             validation_set[0].output_method, year,
+#                             validation_data_name,
+#                             weather_data_name, approach))
+#             title = (
+#                 'Deviation of ' +
+#                 '{0} {1} from {2}\n in {3} ({4} approach)'.format(
+#                     weather_data_name,
+#                     validation_set[0].output_method.replace('_',
+#                                                             ' '),
+#                     validation_data_name, year, approach) +
+#                 title_add_on)
+#             visualization_tools.box_plots_bias(
+#                 bias_df, filename=filename, title=title)
+#
+#         if 'feedin_comparison' in visualization_methods:
+#         # TODO: rename this method for better understanding
+#             if (start is None and end is None and
+#                     validation_set[0].output_method
+#                     is not 'monthly_energy_output'):
+#                 filename_add_on = ''
+#             else:
+#                 filename_add_on = '_{0}_{1}'.format(start, end)
+#             for validation_object in validation_set:
+#                 filename = (
+#                     save_folder +
+#                     '{0}_{1}_Feedin_{2}_{3}_{4}_{5}{6}.png'.format(
+#                         validation_set[0].output_method,
+#                         validation_object.object_name, year,
+#                         validation_data_name, weather_data_name,
+#                         approach, filename_add_on))
+#                 title = (
+#                     '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
+#                         validation_set[0].output_method.replace(
+#                             '_', ' '),
+#                         weather_data_name, validation_data_name,
+#                         validation_object.object_name, year,
+#                         approach) + 'approach)' + title_add_on)
+#                 visualization_tools.plot_feedin_comparison(
+#                     validation_object, filename=filename,
+#                     title=title, start=start, end=end)
+#
+#         if 'plot_correlation' in visualization_methods:
+#             for validation_object in validation_set:
+#                 filename = (
+#                     save_folder +
+#                     '{0}_{1}_Correlation_{2}_{3}_{4}_{5}.png'.format(
+#                         validation_set[0].output_method,
+#                         validation_object.object_name, year,
+#                         validation_data_name, weather_data_name,
+#                         approach))
+#                 title = (
+#                     '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
+#                         validation_set[0].output_method.replace(
+#                             '_', ' '),
+#                         weather_data_name, validation_data_name,
+#                         validation_object.object_name, year,
+#                         approach) + 'approach)' + title_add_on)
+#                 visualization_tools.plot_correlation(
+#                     validation_object, filename=filename,
+#                     title=title)
 
 
 # ---------------------------------- LaTeX Output --------------------------- #
@@ -541,6 +608,89 @@ if time_period is not None:
     filename_add_on = '_{0}_{1}'.format(time_period[0], time_period[1])
 else:
     filename_add_on = ''
+
+if 'annual_energy_approaches' in latex_output:
+    for weather_data_name in weather_data_list:
+        latex_df = pd.DataFrame()
+        for outerKey, innerDict in annual_energy_dicts[
+                weather_data_name].items():
+            df_part = pd.DataFrame({(innerKey, innerstKey): [values] for
+                                    innerKey, innerstDict in
+                                    innerDict.items() if
+                                    innerKey != 'measured_annual_energy' for
+                                    innerstKey, values in innerstDict.items()},
+                                   index=[outerKey]).round(2)
+            df_part['measured', '[MWh]'] = round(
+                annual_energy_dicts[weather_data_name][outerKey][
+                    'measured_annual_energy'], 2)
+            latex_df = pd.concat([latex_df, df_part], axis=0)
+        latex_df.sort_index(axis=1, ascending=False, inplace=True)
+        # TODO put simple method to front
+        filename_table = os.path.join(
+            path_latex_tables, 'annual_energy_approach_{0}_{1}{2}.tex'.format(
+                year, weather_data_name, filename_add_on))
+        latex_df.to_latex(buf=filename_table,
+                          column_format=latex_tables.create_column_format(len(
+                              latex_df.columns), 'c'),
+                          multicolumn_format='c')
+
+if 'annual_energy_weather' in latex_output:
+    for approach in approach_list:
+        latex_df = pd.DataFrame()
+        for weather_data_name in weather_data_list:
+            df_part_weather = pd.DataFrame()
+            for outerKey, innerDict in annual_energy_dicts[
+                    weather_data_name].items():
+                df_part = pd.DataFrame(
+                    {(weather_data_name, innerstKey): [values] for
+                     innerKey, innerstDict in innerDict.items() if
+                     (innerKey == approach and innerKey not in
+                      restriction_list) for
+                     innerstKey, values in innerstDict.items()},
+                    index=[outerKey]).round(2)
+                if weather_data_name == weather_data_list[0]:
+                    df_part['measured', '[MWh]'] = round(
+                        annual_energy_dicts[weather_data_name][outerKey][
+                            'measured_annual_energy'], 2)
+                df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
+            latex_df = pd.concat([latex_df, df_part_weather], axis=1)
+        # Sort columns and index
+        latex_df.sort_index(axis=1, ascending=False, inplace=True)
+        latex_df.sort_index(axis=0, inplace=True)
+        filename_table = os.path.join(
+            path_latex_tables,
+            'annual_energy_weather_{0}_{1}{2}.tex'.format(
+                year, approach, filename_add_on))
+        latex_df.to_latex(buf=filename_table,
+                          column_format=latex_tables.create_column_format(len(
+                              latex_df.columns), 'c'),
+                          multicolumn_format='c')
+
+if 'annual_energy_weather_approaches' in latex_output:
+    latex_df = pd.DataFrame()
+    for weather_data_name in weather_data_list:
+        df_part_weather = pd.DataFrame()
+        for outerKey, innerDict in annual_energy_dicts[
+                weather_data_name].items():
+            df_part = pd.DataFrame(
+                {(innerKey, weather_data_name): [values] for
+                 innerKey, innerstDict in innerDict.items() if
+                 innerKey != 'measured_annual_energy'for
+                 innerstKey, values in innerstDict.items() if innerstKey == 'deviation'},
+                index=[outerKey]).round(2)
+            df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
+        latex_df = pd.concat([latex_df, df_part_weather], axis=1)
+    # Sort columns and index
+    latex_df.sort_index(axis=1, ascending=False, inplace=True)
+    latex_df.sort_index(axis=0, inplace=True)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'annual_energy_weather_approaches_{0}{1}.tex'.format(
+            year, filename_add_on))
+    latex_df.to_latex(buf=filename_table,
+                      column_format=latex_tables.create_column_format(len(
+                          latex_df.columns), 'c'),
+                      multicolumn_format='c')
 
 if 'annual_energy_weather' in latex_output:
     if 'annual_energy_output' not in output_methods:
