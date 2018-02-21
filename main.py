@@ -692,59 +692,6 @@ if 'annual_energy_weather_approaches' in latex_output:
                           latex_df.columns), 'c'),
                       multicolumn_format='c')
 
-if 'annual_energy_weather' in latex_output:
-    if 'annual_energy_output' not in output_methods:
-        raise ValueError("'annual_energy_output' not in `output_methods` - " +
-                         "cannot generate 'annual_energy_weather' table")
-    # TODO: check create_dataframe() of outputlib!
-    for approach in approach_list:
-        validation_sets = []
-        # Initialise DataFrame for latex output
-        latex_df = pd.DataFrame()
-        for filename in filenames_validation_objects:
-            if (approach in filename and str(year) in filename and
-                    'annual_energy_output' in filename):
-                val_sets = pickle.load(open(filename, 'rb'))
-                validation_sets.append(val_sets)
-        for validation_data_name in validation_data_list:
-            validation_sets_part = [
-                val_set for val_set in validation_sets
-                if val_set[0].validation_name == validation_data_name]
-            # Initialise DataFrame for latex output
-            df_part = pd.DataFrame()
-            i = 0 # TODO: check: maybe first part not necessary
-            for validation_set in validation_sets:
-                index = [val_obj.object_name for val_obj in validation_set]
-                if i == 0:
-                    # Add measured data (validation data) to DataFrame
-                    data = [round(val_obj.validation_series.values[0], 2)
-                            for val_obj in validation_set]
-                    columns = [['Measured'], ['[MWh]']]
-                    df_temp = pd.DataFrame(data=data, index=index,
-                                           columns=columns)
-                    df_part = pd.concat([df_part, df_temp], axis=1)
-                # Add simulated data and its deviaton from validation data
-                data_1 = [round(val_obj.simulation_series.values[0], 2)
-                          for val_obj in validation_set]
-                data_2 = [round(val_obj.bias.values[0] /
-                                val_obj.validation_series.values[0] * 100, 2)
-                          for val_obj in validation_set]
-                data = np.array([data_1, data_2]).transpose()
-                columns = [np.array([validation_set[0].weather_data_name,
-                                     validation_set[0].weather_data_name]),
-                           np.array(['[MWh]', '[%]'])]
-                df_temp = pd.DataFrame(data=data, index=index, columns=columns)
-                df_part = pd.concat([df_part, df_temp], axis=1)
-                i += 1
-            latex_df = pd.concat([latex_df, df_part])
-        filename_table = os.path.join(
-            path_latex_tables,
-            'Annual_energy_weather_{0}_{1}{2}.tex'.format(
-                year, approach, filename_add_on))
-        latex_df.to_latex(buf=filename_table,
-                          column_format=latex_tables.create_column_format(len(
-                              latex_df.columns), 'c'),
-                          multicolumn_format='c')
 
 if 'key_figures_weather' in latex_output:
     # Do not include data of annual energy output
@@ -810,60 +757,6 @@ if 'key_figures_weather' in latex_output:
                               len(latex_df.columns), 'c'),
                           multicolumn_format='c')
 
-
-if 'annual_energy_approaches' in latex_output:
-    if 'annual_energy_output' not in output_methods:
-        raise ValueError("'annual_energy_output' not in `output_methods` - " +
-                         "cannot generate 'annual_energy_weather' table")
-    # TODO: check create_dataframe() of outputlib!
-    for weather_data_name in weather_data_list:
-        validation_sets = []
-        # Initialise DataFrame for latex output
-        latex_df = pd.DataFrame()
-        for filename in filenames_validation_objects:
-            if (weather_data_name in filename and str(year) in filename and
-                    'annual_energy_output' in filename):
-                val_sets = pickle.load(open(filename, 'rb'))
-                validation_sets.append(val_sets)
-        for validation_data_name in validation_data_list:
-            validation_sets_part = [
-                val_set for val_set in validation_sets
-                if val_set[0].validation_name == validation_data_name]
-            # Initialise DataFrame for latex output
-            df_part = pd.DataFrame()
-            i = 0 # TODO: check: maybe first part not necessary
-            for validation_set in validation_sets:
-                index = [val_obj.object_name for val_obj in validation_set]
-                if i == 0:
-                    # Add measured data (validation data) to DataFrame
-                    data = [round(val_obj.validation_series.values[0], 2)
-                            for val_obj in validation_set]
-                    columns = [['Measured'], ['[MWh]']]
-                    df_temp = pd.DataFrame(data=data, index=index,
-                                           columns=columns)
-                    df_part = pd.concat([df_part, df_temp], axis=1)
-                # Add simulated data and its deviaton from validation data
-                data_1 = [round(val_obj.simulation_series.values[0], 2)
-                          for val_obj in validation_set]
-                data_2 = [round(val_obj.bias.values[0] /
-                                val_obj.validation_series.values[0] * 100, 2)
-                          for val_obj in validation_set]
-                data = np.array([data_1, data_2]).transpose()
-                columns = [np.array([approach_list[0], approach_list[1]]),
-                           np.array(['[MWh]', '[%]'])]
-                df_temp = pd.DataFrame(data=data, index=index, columns=columns)
-                df_part = pd.concat([df_part, df_temp], axis=1)
-                i += 1
-            latex_df = pd.concat([latex_df, df_part])
-        filename_table = os.path.join(
-            path_latex_tables,
-            'Annual_energy_approach_{0}_{1}{2}.tex'.format(
-                year, weather_data_name, filename_add_on))
-        latex_df.to_latex(buf=filename_table,
-                          column_format=latex_tables.create_column_format(len(
-                              latex_df.columns), 'c'),
-                          multicolumn_format='c')
-        # TODO: check order
 
 if 'key_figures_approaches' in latex_output:
     # Do not include data of annual energy output
