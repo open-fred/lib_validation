@@ -72,10 +72,10 @@ feedin_comparsion_all_in_one = False  # Plots all calculated series for one
 
 latex_output = np.array([
      'annual_energy_weather',  # Annual energy output of all weather sets
-     'annual_energy_approaches',  # ...
-     'annual_energy_weather_approaches',  # ...
+#     'annual_energy_approaches',  # ...
+#     'annual_energy_weather_approaches',  # ...
     # 'key_figures_weather',     # Key figures of all weather sets
-    # 'key_figures_approaches'  # Key figures of all approaches
+     'key_figures_approaches'  # Key figures of all approaches
      ])
 
 # Select time of day you want to observe or None for all day
@@ -692,6 +692,29 @@ if 'annual_energy_weather_approaches' in latex_output:
                           latex_df.columns), 'c'),
                       multicolumn_format='c')
 
+if 'key_figures_approaches' in latex_output:
+    for weather_data_name in weather_data_list:
+        latex_df = pd.DataFrame()
+
+
+            df_part = pd.DataFrame(
+                {(header_dict[], innerKey): [values] for
+                 innerKey, innerstDict in innerDict.items() if
+                 innerKey != 'measured_annual_energy'for
+                 innerstKey, values in innerstDict.items() if innerstKey == 'deviation'},
+                index=[outerKey + ]).round(2)
+            df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
+        latex_df = pd.concat([latex_df, df_part_weather], axis=1)
+
+
+        filename_table = os.path.join(
+            path_latex_tables,
+            'key_figures_approaches_{0}_{1}{2}.tex'.format(
+                year, weather_data_name, filename_add_on))
+        latex_df.to_latex(buf=filename_table,
+                          column_format=latex_tables.create_column_format(len(
+                              latex_df.columns), 'c'),
+                          multicolumn_format='c')
 
 if 'key_figures_weather' in latex_output:
     # Do not include data of annual energy output
