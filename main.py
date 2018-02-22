@@ -773,7 +773,7 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                                    [outerKey]])
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     latex_df = pd.concat([latex_df, df_wf_part]).round(2)
-        # Sort columns and index
+        # Sort index
         latex_df.sort_index(axis=0, inplace=True)
         filename_table = os.path.join(
             path_latex_tables,
@@ -786,133 +786,78 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
         latex_df.to_latex(buf=filename_table, column_format=column_format,
                           multicolumn_format='c')
 
-# TODO: go on here
 if 'key_figures_weather' in latex_output:
-    # Do not include data of annual energy output
-    ouput_methods_modified = [method for method in output_methods
-                              if method is not 'annual_energy_output']
     for approach in approach_list:
-        # Initialise DataFrame for latex output
         latex_df = pd.DataFrame()
-        # Iteration through validation data
-        for validation_data_name in validation_data_list:
-            # Initialize validation sets list
-            validation_sets = []
-            for filename in filenames_validation_objects: # TODO: function?!
-                if (approach in filename and str(year) in filename and
-                        validation_data_name in filename):
-                    validation_sets.append(pickle.load(open(filename, 'rb')))
-            # Initialize df parts for each wind farm
-            df_parts = [pd.DataFrame() for j in range(len(validation_sets[0]))]
-            for output_method in ouput_methods_modified:
-                validation_sets_part = [
-                    val_set for val_set in validation_sets
-                    if val_set[0].output_method == output_method]
-                for i in range(len(validation_sets_part[0])):
-                    data = np.array([latex_tables.get_data(
-                        validation_sets_part,
-                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i,
-                        len(weather_data_list))])
-                    column_names = ['RMSE [MW]/[MWh]', "Pearson's r",
-                                    'mean bias [MW]/[MWh]',
-                                    'standard deviation [MW]/[MWh]']
-                    columns_2 = [
-                        validation_sets_part[j][0].weather_data_name
-                        for j in range(len(weather_data_list))] * len(
-                        column_names)
-                    columns = [np.array(latex_tables.get_columns(
-                        column_names, len(weather_data_list))),
-                        np.array(columns_2)]
-                    index = ['{0} {1}'.format(
-                        validation_sets_part[0][i].object_name,
-                        validation_sets_part[0][i].output_method.rsplit(
-                            '_')[0])]
-                    df_part = pd.DataFrame(data=data, columns=columns,
-                                           index=index)
-                    df_parts[i] = pd.concat([df_parts[i], df_part], axis=0)
-                    if output_method == 'monthly_energy_output':
-                        pass
-                    for validation_set in validation_sets_part:
-                        if (validation_sets_part[0][i].object_name !=
-                                validation_set[i].object_name):
-                            raise ValueError(
-                                "Careful: Object names differ!! " +
-                                "{0} and {1}".format(
-                                    validation_sets_part[0][i].object_name,
-                                    validation_set[i].object_name))
-            for df_part in df_parts:
-                latex_df = pd.concat([latex_df, df_part], axis=0)
+        for weather_data_name in weather_data_list:
+            df_part_weather = pd.DataFrame()
+            for outerKey, innerDict in val_obj_dict[weather_data_name].items():
+                if outerKey != 'half_hourly':
+                    for wf_name in wind_farm_names:
+                        if wf_name not in restriction_list:
+                            df_wf_part = pd.DataFrame()
+                            if 'rmse' in key_figures_print:
+                                df_part = pd.DataFrame(
+                                    {('RMSE 1', weather_data_name): val_obj.rmse for
+                                     innerKey, innerstList in innerDict.items() for
+                                     val_obj in innerstList if
+                                     val_obj.object_name == wf_name},
+                                    index=[[wf_name.replace('wf_', 'WF ')],
+                                           [outerKey]])
+                                df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                            if 'rmse_normalized' in key_figures_print:
+                                df_part = pd.DataFrame(
+                                    {('RMSE 2', weather_data_name): val_obj.rmse_normalized for
+                                     innerKey, innerstList in
+                                     innerDict.items() for
+                                     val_obj in innerstList if
+                                     val_obj.object_name == wf_name},
+                                    index=[[wf_name.replace('wf_', 'WF ')],
+                                           [outerKey]])
+                                df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                            if 'pearson' in key_figures_print:
+                                df_part = pd.DataFrame(
+                                    {('Pearson coeff.', weather_data_name):
+                                        val_obj.pearson_s_r for
+                                        innerKey, innerstList in innerDict.items() for
+                                     val_obj in innerstList if
+                                     val_obj.object_name == wf_name},
+                                    index=[[wf_name.replace('wf_', 'WF ')],
+                                           [outerKey]])
+                                df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                            if 'mean_bias' in key_figures_print:
+                                df_part = pd.DataFrame(
+                                    {('mean bias', weather_data_name): val_obj.mean_bias for
+                                     innerKey, innerstList in innerDict.items() for
+                                     val_obj in innerstList if
+                                     val_obj.object_name == wf_name},
+                                    index=[[wf_name.replace('wf_', 'WF ')],
+                                           [outerKey]])
+                                df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                            if 'standard_deviation' in key_figures_print:
+                                df_part = pd.DataFrame(
+                                    {('std deviation', weather_data_name):
+                                        val_obj.standard_deviation for
+                                     innerKey, innerstList in innerDict.items() for
+                                     val_obj in innerstList if
+                                     val_obj.object_name == wf_name},
+                                    index=[[wf_name.replace('wf_', 'WF ')],
+                                           [outerKey]])
+                                df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                            df_part_weather = pd.concat([df_part_weather, df_wf_part])
+            latex_df = pd.concat([latex_df, df_part_weather], axis=1).round(2)
+        # Sort columns and index
+        latex_df.sort_index(axis=1, inplace=True)
+        latex_df.sort_index(axis=0, inplace=True)
         filename_table = os.path.join(
             path_latex_tables,
             'Key_figures_weather_{0}_{1}{2}.tex'.format(
                 year, approach, filename_add_on))
-        latex_df.to_latex(buf=filename_table,
-                          column_format=latex_tables.create_column_format(
-                              len(latex_df.columns), 'c'),
-                          multicolumn_format='c')
-
-
-if 'key_figures_approaches' in latex_output:
-    # Do not include data of annual energy output
-    ouput_methods_modified = [method for method in output_methods
-                              if method is not 'annual_energy_output']
-    for weather_data_name in weather_data_list:
-        # Initialise DataFrame for latex output
-        latex_df = pd.DataFrame()
-        # Iteration through validation data
-        for validation_data_name in validation_data_list:
-            # Initialize validation sets list
-            validation_sets = []
-            for filename in filenames_validation_objects: # TODO: function?!
-                if (weather_data_name in filename and str(year) in filename and
-                        validation_data_name in filename):
-                    validation_sets.append(pickle.load(open(filename, 'rb')))
-            # Initialize df parts for each wind farm
-            df_parts = [pd.DataFrame() for j in range(len(validation_sets[0]))]
-            for output_method in ouput_methods_modified:
-                validation_sets_part = [
-                    val_set for val_set in validation_sets
-                    if val_set[0].output_method == output_method]
-                for i in range(len(validation_sets_part[0])):
-                    data = np.array([latex_tables.get_data(
-                        validation_sets_part,
-                        ['RMSE', 'Pr', 'mean bias', 'std. dev.'], i,
-                        len(weather_data_list))])
-                    column_names = ['RMSE [MW]/[MWh]', "Pearson's r",
-                                    'mean bias [MW]/[MWh]',
-                                    'standard deviation [MW]/[MWh]']
-                    columns_2 = [
-                        approach for approach in approach_list] * len(
-                            column_names)
-                    columns = [np.array(latex_tables.get_columns(
-                        column_names, len(weather_data_list))),
-                        np.array(columns_2)]
-                    index = ['{0} {1}'.format(
-                        validation_sets_part[0][i].object_name,
-                        validation_sets_part[0][i].output_method.rsplit(
-                            '_')[0])]
-                    df_part = pd.DataFrame(data=data, columns=columns,
-                                           index=index)
-                    df_parts[i] = pd.concat([df_parts[i], df_part], axis=0)
-                    if output_method == 'monthly_energy_output':
-                        pass # TODO ?
-                    for validation_set in validation_sets_part:
-                        if (validation_sets_part[0][i].object_name !=
-                                validation_set[i].object_name):
-                            raise ValueError(
-                                "Careful: Object names differ!! " +
-                                "{0} and {1}".format(
-                                    validation_sets_part[0][i].object_name,
-                                    validation_set[i].object_name))
-            for df_part in df_parts:
-                latex_df = pd.concat([latex_df, df_part], axis=0)
-        filename_table = os.path.join(
-            path_latex_tables,
-            'Key_figures_approach_{0}_{1}{2}.tex'.format(
-                year, weather_data_name, filename_add_on))
-        latex_df.to_latex(buf=filename_table,
-                          column_format=latex_tables.create_column_format(
-                              len(latex_df.columns), 'c'),
+        column_format = latex_tables.create_column_format(
+            number_of_columns=(
+                len(val_obj_dict[weather_data_name][output_methods[1]]) * len(
+                    key_figures_print)), index_columns='ll')
+        latex_df.to_latex(buf=filename_table, column_format=column_format,
                           multicolumn_format='c')
 
 # ------------------------------- Extra plots ------------------------------- #
