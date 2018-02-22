@@ -72,18 +72,18 @@ feedin_comparsion_all_in_one = False  # Plots all calculated series for one
 
 latex_output = np.array([
     'annual_energy_weather',  # Annual energy output of all weather sets
-#    'annual_energy_approaches',  # ...
-#    'annual_energy_weather_approaches',  # ...
-#    'key_figures_weather',     # Key figures of all weather sets
+    'annual_energy_approaches',  # ...
+    'annual_energy_weather_approaches',  # ...
+    'key_figures_weather',     # Key figures of all weather sets
     'key_figures_approaches'  # Key figures of all approaches
     ])
 
 key_figures_print = [
     'rmse',  # Includes RMSE in key figures latex output
     'rmse_normalized',  # Includes the normalized RMSE in key figures latex o.
-    'pearson',  # Includes RMSE in key figures latex output
-    'mean_bias',  # Includes RMSE in key figures latex output
-    'standard_deviation'  # Includes RMSE in key figures latex output
+    'pearson',  # Includes pearson correlation coeff. in key figures latex o.
+    'mean_bias',  # Includes mean bias in key figures latex output
+    'standard_deviation'  # Includes stanard deviation in key figures latex o.
     ]
 
 # Select time of day you want to observe or None for all day
@@ -340,9 +340,9 @@ def get_time_series_df(weather_data_name):
 # ------------------------------ Helper functions --------------------------- #
 def initialize_dictionary(dict_type, time_series_pairs=None):
     if dict_type == 'validation_objects':
-        dictionary = {weather_data_name: {method: {approach: []
-                                                   for approach in
-                                                   approach_list}
+        dictionary = {weather_data_name: {method: {approach:
+                      [] for approach in approach_list if
+                      approach not in restriction_list}
                                           for method in output_methods}
                       for weather_data_name in weather_data_list}
     if dict_type == 'annual_energy':
@@ -388,7 +388,7 @@ for weather_data_name in weather_data_list:
         time_series_df.loc[:, [
             column_name for column_name in list(time_series_df)
             if wf_name in column_name]] for wf_name in wind_farm_names
-            if wf_name not in restriction_list]
+        if wf_name not in restriction_list]
     time_series_pairs = [time_series_df.loc[:, ['{0}_measured'.format(wf_name),
                                                 '{0}_calculated_{1}'.format(
                                                     wf_name, approach)]]
@@ -396,6 +396,7 @@ for weather_data_name in weather_data_list:
                          for approach in approach_list
                          if '{0}_calculated_{1}'.format(
                              wf_name, approach) in list(time_series_df)]
+
     # Initialize dictionary for annual energy output
     annual_energy_dict_weather = initialize_dictionary(
         dict_type='annual_energy', time_series_pairs=time_series_pairs)
@@ -435,19 +436,19 @@ for weather_data_name in weather_data_list:
         wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
         approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
         if 'half_hourly' in output_methods:
-            
-            val_obj_dict[weather_data_name]['half_hourly'][
-                approach_string].append(ValidationObject(
-                    object_name=wf_string, data=time_series_pair,
-                    output_method='half_hourly',
-                    weather_data_name=weather_data_name,
-                    approach=approach_string,
-                    min_periods_pearson=min_periods_pearson))
+            if time_series_pair.index.freq != 'H':
+                val_obj_dict[weather_data_name]['half_hourly'][
+                    approach_string].append(ValidationObject(
+                        object_name=wf_string, data=time_series_pair,
+                        output_method='half_hourly',
+                        weather_data_name=weather_data_name,
+                        approach=approach_string,
+                        min_periods_pearson=min_periods_pearson))
         if 'hourly' in output_methods:
             hourly_series = time_series_pair.resample('H').mean()
             val_obj_dict[weather_data_name]['hourly'][
                 approach_string].append(ValidationObject(
-                    object_name=wf_string, data=time_series_pair,
+                    object_name=wf_string, data=hourly_series,
                     output_method='hourly',
                     weather_data_name=weather_data_name,
                     approach=approach_string,
@@ -456,11 +457,14 @@ for weather_data_name in weather_data_list:
             monthly_series = time_series_pair.resample('M').mean()
             val_obj_dict[weather_data_name]['monthly'][
                 approach_string].append(ValidationObject(
-                    object_name=wf_string, data=time_series_pair,
+                    object_name=wf_string, data=monthly_series,
                     output_method='monthly',
                     weather_data_name=weather_data_name,
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
+    # Delete entry in dict if half_hourly resolution not possible
+    if time_series_pair.index.freq == 'H':
+        del val_obj_dict[weather_data_name]['half_hourly']
 
     # Visualization #
     if 'feedin_comparison' in visualization_methods:
@@ -627,7 +631,8 @@ if 'annual_energy_approaches' in latex_output:
                                     innerDict.items() if
                                     innerKey != 'measured_annual_energy' for
                                     innerstKey, values in innerstDict.items()},
-                                   index=[outerKey]).round(2)
+                                   index=[outerKey.replace(
+                                       'wf_', 'WF ')]).round(2)
             df_part['measured', '[MWh]'] = round(
                 annual_energy_dicts[weather_data_name][outerKey][
                     'measured_annual_energy'], 2)
@@ -655,7 +660,7 @@ if 'annual_energy_weather' in latex_output:
                      (innerKey == approach and innerKey not in
                       restriction_list) for
                      innerstKey, values in innerstDict.items()},
-                    index=[outerKey]).round(2)
+                    index=[outerKey.replace('wf_', 'WF ')]).round(2)
                 if weather_data_name == weather_data_list[0]:
                     df_part['measured', '[MWh]'] = round(
                         annual_energy_dicts[weather_data_name][outerKey][
@@ -684,8 +689,9 @@ if 'annual_energy_weather_approaches' in latex_output:
                 {(innerKey, weather_data_name): [values] for
                  innerKey, innerstDict in innerDict.items() if
                  innerKey != 'measured_annual_energy'for
-                 innerstKey, values in innerstDict.items() if innerstKey == 'deviation'},
-                index=[outerKey]).round(2)
+                 innerstKey, values in innerstDict.items() if
+                 innerstKey == 'deviation'},
+                index=[outerKey.replace('wf_', 'WF ')]).round(2)
             df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
         latex_df = pd.concat([latex_df, df_part_weather], axis=1)
     # Sort columns and index
@@ -700,7 +706,7 @@ if 'annual_energy_weather_approaches' in latex_output:
                           latex_df.columns), 'c'),
                       multicolumn_format='c')
 
-if 'key_figures_approaches' in latex_output:
+if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
     for weather_data_name in weather_data_list:
         latex_df = pd.DataFrame()
         for outerKey, innerDict in val_obj_dict[
@@ -714,39 +720,63 @@ if 'key_figures_approaches' in latex_output:
                              innerKey, innerstList in innerDict.items() for
                              val_obj in innerstList if
                              val_obj.object_name == wf_name},
-                            index=[[wf_name], [outerKey]])
+                            index=[[wf_name.replace('wf_', 'WF ')],
+                                   [outerKey]])
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     if 'rmse_normalized' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('RMSE ', innerKey): val_obj.rmse_normalized
-                             # TODO add units
-                             for
+                            {('RMSE 2', innerKey): val_obj.rmse_normalized for
                              innerKey, innerstList in
                              innerDict.items() for
                              val_obj in innerstList if
                              val_obj.object_name == wf_name},
-                            index=[[wf_name], [outerKey]])
+                            index=[[wf_name.replace('wf_', 'WF ')],
+                                   [outerKey]])
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
-                latex_df = pd.concat([latex_df, df_wf_part])
-        print(latex_df)
-
-
-
-
-
-            #     df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
-            # latex_df = pd.concat([latex_df, df_part_weather], axis=1)
-
-
+                    if 'pearson' in key_figures_print:
+                        df_part = pd.DataFrame(
+                            {('Pearson coeff.', innerKey):
+                                val_obj.pearson_s_r for
+                                innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
+                            index=[[wf_name.replace('wf_', 'WF ')],
+                                   [outerKey]])
+                        df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                    if 'mean_bias' in key_figures_print:
+                        df_part = pd.DataFrame(
+                            {('mean bias', innerKey): val_obj.mean_bias for
+                             innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
+                            index=[[wf_name.replace('wf_', 'WF ')],
+                                   [outerKey]])
+                        df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                    if 'standard_deviation' in key_figures_print:
+                        df_part = pd.DataFrame(
+                            {('std deviation', innerKey):
+                                val_obj.standard_deviation for
+                             innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
+                            index=[[wf_name.replace('wf_', 'WF ')],
+                                   [outerKey]])
+                        df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                    latex_df = pd.concat([latex_df, df_wf_part]).round(2)
+        # Sort columns and index
+        latex_df.sort_index(axis=0, inplace=True)
         filename_table = os.path.join(
             path_latex_tables,
             'key_figures_approaches_{0}_{1}{2}.tex'.format(
                 year, weather_data_name, filename_add_on))
-        latex_df.to_latex(buf=filename_table,
-                          column_format=latex_tables.create_column_format(len(
-                              latex_df.columns), 'c'),
+        column_format = latex_tables.create_column_format(
+            number_of_columns=(
+                len(val_obj_dict[weather_data_name][output_methods[1]]) * len(
+                    key_figures_print)), index_columns='ll')
+        latex_df.to_latex(buf=filename_table, column_format=column_format,
                           multicolumn_format='c')
 
+# TODO: go on here
 if 'key_figures_weather' in latex_output:
     # Do not include data of annual energy output
     ouput_methods_modified = [method for method in output_methods
