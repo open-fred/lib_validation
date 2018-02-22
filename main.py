@@ -62,7 +62,7 @@ output_methods = [
 
 visualization_methods = [
 #    'box_plots',
-#    'feedin_comparison',
+    'feedin_comparison',
 #    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
@@ -70,11 +70,11 @@ feedin_comparsion_all_in_one = False  # Plots all calculated series for one
                                       # wind farm in one plot
 
 latex_output = np.array([
-    'annual_energy_weather',  # Annual energy output of all weather sets
-    'annual_energy_approaches',  # ...
-    'annual_energy_weather_approaches',  # ...
-    'key_figures_weather',     # Key figures of all weather sets
-    'key_figures_approaches'  # Key figures of all approaches
+#    'annual_energy_weather',  # Annual energy output of all weather sets
+#    'annual_energy_approaches',  # ...
+#    'annual_energy_weather_approaches',  # ...
+#    'key_figures_weather',     # Key figures of all weather sets
+#    'key_figures_approaches'  # Key figures of all approaches
     ])
 
 key_figures_print = [
@@ -96,7 +96,8 @@ time_period = (
 start_end_list = [
     (None, None),
 #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
-    ('{0}-10-01'.format(year), '{0}-10-03'.format(year))
+    ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
+    ('{0}-06-01'.format(year), '{0}-06-07'.format(year))
     ]
 
 extra_plots = np.array([
@@ -462,19 +463,21 @@ for weather_data_name in weather_data_list:
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
     # Delete entry in dict if half_hourly resolution not possible
-    if time_series_pair.index.freq == 'H':
+    if (time_series_pair.index.freq == 'H' and
+        'half_hourly' in val_obj_dict[weather_data_name]):
         del val_obj_dict[weather_data_name]['half_hourly']
 
-    # Visualization #
+    ###### Visualization ######
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
         if feedin_comparsion_all_in_one:
-           plot_dfs = time_series_df_parts # TODO: test
+           plot_dfs = time_series_df_parts
            approach_string = 'multiple'
         else:
             plot_dfs = time_series_pairs
             approach_string = None
         for plot_df in plot_dfs:
+            # Specify save folder and title add on
             if time_period is not None:
                 save_folder_add_on = (
                     '{0}_{1}/'.format(time_period[0], time_period[1]))
@@ -506,8 +509,7 @@ for weather_data_name in weather_data_list:
                             filename=(
                                 save_folder +
                                 '{0}_feedin_{1}_{2}_{3}_{4}_{5}{6}.png'.format(
-                                    method_string,
-                                    list(plot_df)[0].split('_')[0],
+                                    method_string, wf_string,
                                     weather_data_name, year, approach_string,
                                     (start_end[0].split(':')[0] if start_end[0]
                                      else ''), (start_end[1].split(':')[0]
