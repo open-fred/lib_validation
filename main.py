@@ -50,7 +50,7 @@ weather_data_list = [
     ]
 validation_data_list = [
     'ArgeNetz',
-    # 'Enertrag',
+    'Enertrag',
     # 'GreenWind'
     ]
 
@@ -70,11 +70,11 @@ feedin_comparsion_all_in_one = False  # Plots all calculated series for one
                                       # wind farm in one plot
 
 latex_output = np.array([
-#    'annual_energy_weather',  # Annual energy output of all weather sets
-#    'annual_energy_approaches',  # ...
-#    'annual_energy_weather_approaches',  # ...
-#    'key_figures_weather',     # Key figures of all weather sets
-#    'key_figures_approaches'  # Key figures of all approaches
+    'annual_energy_weather',  # Annual energy output of all weather sets
+    'annual_energy_approaches',  # ...
+    'annual_energy_weather_approaches',  # ...
+    'key_figures_weather',     # Key figures of all weather sets
+    'key_figures_approaches'  # Key figures of all approaches
     ])
 
 key_figures_print = [
