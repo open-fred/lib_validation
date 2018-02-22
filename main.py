@@ -63,7 +63,7 @@ output_methods = [
 visualization_methods = [
 #    'box_plots',
     'feedin_comparison',
-#    'plot_correlation'  # Attention: this takes a long time for high resolution
+    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
 feedin_comparsion_all_in_one = False  # Plots all calculated series for one
@@ -464,15 +464,15 @@ for weather_data_name in weather_data_list:
                     min_periods_pearson=min_periods_pearson))
     # Delete entry in dict if half_hourly resolution not possible
     if (time_series_pair.index.freq == 'H' and
-        'half_hourly' in val_obj_dict[weather_data_name]):
+            'half_hourly' in val_obj_dict[weather_data_name]):
         del val_obj_dict[weather_data_name]['half_hourly']
 
     ###### Visualization ######
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
         if feedin_comparsion_all_in_one:
-           plot_dfs = time_series_df_parts
-           approach_string = 'multiple'
+            plot_dfs = time_series_df_parts
+            approach_string = 'multiple'
         else:
             plot_dfs = time_series_pairs
             approach_string = None
@@ -491,9 +491,6 @@ for weather_data_name in weather_data_list:
                 '_'.join(list(plot_df)[1].split('_')[3:]),
                 save_folder_add_on)
             for method in output_methods:
-                method_string = (method if method is not 'no_resample'
-                                 else 'hourly' if weather_data_name is 'MERRA'
-                                 else 'half-hourly')
                 if approach_string is None:
                     approach_string = '_'.join(list(plot_df)[1].split(
                         '_')[3:])
@@ -503,42 +500,65 @@ for weather_data_name in weather_data_list:
                     if (method == 'monthly' and start_end[0] is not None):
                         # Do not plot
                         pass
+                    elif (method == 'half_hourly' and
+                            weather_data_name == 'MERRA'):
+                        pass
                     else:
                         visualization_tools.plot_feedin_comparison(
                             data=plot_df, method=method,
                             filename=(
                                 save_folder +
                                 '{0}_feedin_{1}_{2}_{3}_{4}_{5}{6}.png'.format(
-                                    method_string, wf_string,
-                                    weather_data_name, year, approach_string,
+                                    method, wf_string, weather_data_name, year,
+                                    approach_string,
                                     (start_end[0].split(':')[0] if start_end[0]
                                      else ''), (start_end[1].split(':')[0]
                                                 if start_end[0] else ''))),
                             title=(
                                 '{0} power output of {1} calculated with {2} data\n in {3} ({4} approach)'.format(
-                                    method_string, wf_string,
-                                    weather_data_name, year, approach_string) +
-                                title_add_on),
+                                    method.replace('_', ' '), wf_string, weather_data_name, year,
+                                    approach_string) + title_add_on),
                             tick_label=None, start=start_end[0], end=start_end[1])
 
+    if 'plot_correlation' in visualization_methods:
+        for time_series_pair in time_series_pairs:
+            # Specify save folder and title add on
+            if time_period is not None:
+                save_folder_add_on = (
+                    '{0}_{1}/'.format(time_period[0], time_period[1]))
+                title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+                    time_period[0], time_period[1])
+            else:
+                save_folder_add_on = 'None/'
+                title_add_on = ''
+            save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
+                year, weather_data_name,
+                '_'.join(list(time_series_pair)[1].split('_')[3:]),
+                save_folder_add_on)
+            for method in output_methods:
+                if (method == 'half_hourly' and
+                            weather_data_name == 'MERRA'):
+                    # Do not plot
+                    pass
+                else:
+                    approach_string = '_'.join(
+                        list(time_series_pair)[1].split('_')[3:])
+                    wf_string = '_'.join(
+                        list(time_series_pair)[0].split('_')[:2])
+                    visualization_tools.plot_correlation(
+                        data=time_series_pair, method=method,
+                        filename=(
+                            save_folder +
+                            '{0}_Correlation_{1}_{2}_{3}_{4}.png'.format(
+                                method, wf_string, weather_data_name, year,
+                                approach_string)),
+                        title=(
+                            '{0} power output of {1} in {2}\n {3} ({4} '.format(
+                               method.replace('_', ' '), weather_data_name,
+                                wf_string, year, approach_string) + 'approach)' +
+                            title_add_on),
+                        color='darkblue', marker_size=3)
 
-# --------------- OLD OLD OLD  Visualization of data evaluation -------------- #
-# # Specify folder and title add on for saving the plots
-# if time_period is not None:
-#     save_folder = (
-#         '../Plots/{0}/{1}_{2}/{3}/time_period/{4}_{5}/'.format(
-#             year, weather_data_name, validation_data_name,
-#             approach, time_period[0], time_period[1]))
-#     title_add_on = ' time of day: {0}:00 - {1}:00'.format(
-#         time_period[0], time_period[1])
-# else:
-#     save_folder = '../Plots/{0}/{1}_{2}/{3}/'.format(
-#         year, weather_data_name, validation_data_name, approach)
-#     title_add_on = ''
-# # Use visualization methods for each validation set
-# for validation_set in validation_sets:
-#     if (validation_set[0].output_method is not
-#             'annual_energy_output'):
 #         if 'box_plots' in visualization_methods:
 #             # Store all bias time series of a validation set in one
 #             # DataFrame for Boxplot
@@ -565,54 +585,6 @@ for weather_data_name in weather_data_list:
 #                 title_add_on)
 #             visualization_tools.box_plots_bias(
 #                 bias_df, filename=filename, title=title)
-#
-#         if 'feedin_comparison' in visualization_methods:
-#         # TODO: rename this method for better understanding
-#             if (start is None and end is None and
-#                     validation_set[0].output_method
-#                     is not 'monthly_energy_output'):
-#                 filename_add_on = ''
-#             else:
-#                 filename_add_on = '_{0}_{1}'.format(start, end)
-#             for validation_object in validation_set:
-#                 filename = (
-#                     save_folder +
-#                     '{0}_{1}_Feedin_{2}_{3}_{4}_{5}{6}.png'.format(
-#                         validation_set[0].output_method,
-#                         validation_object.object_name, year,
-#                         validation_data_name, weather_data_name,
-#                         approach, filename_add_on))
-#                 title = (
-#                     '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
-#                         validation_set[0].output_method.replace(
-#                             '_', ' '),
-#                         weather_data_name, validation_data_name,
-#                         validation_object.object_name, year,
-#                         approach) + 'approach)' + title_add_on)
-#                 visualization_tools.plot_feedin_comparison(
-#                     validation_object, filename=filename,
-#                     title=title, start=start, end=end)
-#
-#         if 'plot_correlation' in visualization_methods:
-#             for validation_object in validation_set:
-#                 filename = (
-#                     save_folder +
-#                     '{0}_{1}_Correlation_{2}_{3}_{4}_{5}.png'.format(
-#                         validation_set[0].output_method,
-#                         validation_object.object_name, year,
-#                         validation_data_name, weather_data_name,
-#                         approach))
-#                 title = (
-#                     '{0} of {1} and {2} in {3}\n {4} ({5} '.format(
-#                         validation_set[0].output_method.replace(
-#                             '_', ' '),
-#                         weather_data_name, validation_data_name,
-#                         validation_object.object_name, year,
-#                         approach) + 'approach)' + title_add_on)
-#                 visualization_tools.plot_correlation(
-#                     validation_object, filename=filename,
-#                     title=title)
-
 
 # ---------------------------------- LaTeX Output --------------------------- #
 path_latex_tables = os.path.join(os.path.dirname(__file__),

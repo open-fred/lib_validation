@@ -162,7 +162,7 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
 #                    ha='center', va='bottom', fontsize=6)
 
     # Drop nans and rename columns
-    data = deepcopy(data).rename(columns={ # TODO: remove deepcopy if not necesarry
+    data = deepcopy(data).rename(columns={ # TODO: remove deepcopy if not necessary
         old_name: new_name.replace('_', ' ') for old_name, new_name in
         zip(list(data), list(data))})
     fig, ax = plt.subplots()
@@ -193,8 +193,8 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
     plt.close()
 
 
-def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
-                     title='Test'):
+def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
+                     title='Test', color='darkblue', marker_size=3):
     r"""
     Visualize the correlation between two feedin time series.
 
@@ -212,41 +212,41 @@ def plot_correlation(validation_object, filename='Tests/correlation_test.pdf',
 
     """
     # TODO: think of bins.. maybe like in Shap's phd
-    if 'energy' in validation_object.output_method:
-        label_part = 'MWh'
-    if 'power' in validation_object.output_method:
-        label_part = 'MW'
-    fig = plt.figure()
-    plt.scatter(validation_object.simulation_series,
-                validation_object.validation_series)
-    plt.ylabel('{0} of {1} in {2}'.format(
-        validation_object.output_method.replace('_', ' '),
-        validation_object.validation_name, label_part))
-    plt.xlabel('{0} of {1} in {2}'.format(
-        validation_object.output_method.replace('_', ' '),
-        validation_object.weather_data_name, label_part))
     # Maximum value for xlim and ylim and line
-    maximum = max(validation_object.validation_series.max(),
-                  validation_object.simulation_series.max()) + 5
+    maximum = max(data.iloc[:, 0].max(), data.iloc[:, 1].max())
+    if method == 'hourly':
+        data.resample('H').mean()
+    if method == 'monthly':
+        data = data.resample('M').mean().dropna() # TODO: remove months that only contain some values..
+        marker_size = 10
+    fig, ax = plt.subplots()
+    data.plot.scatter(x=list(data)[1], y=list(data)[0],
+                      ax=ax, c=color, s=marker_size)
+    plt.xlabel('{0} {1} power output [MW] of {2}'.format(
+        list(data)[1].split('_')[2], method.replace('_','-'),
+        ' '.join(list(data)[1].split('_')[:2])))
+    plt.ylabel('{0} {1} power output [MW] of {2}'.format(
+        list(data)[0].split('_')[2], method.replace('_','-'),
+        ' '.join(list(data)[0].split('_')[:2])))
     plt.xlim(xmin=0, xmax=maximum)
     plt.ylim(ymin=0, ymax=maximum)
     ideal, = plt.plot([0, maximum], [0, maximum], color='black',
                       linestyle='--', label='ideal correlation')
-    deviation_100, = plt.plot([0, maximum], [0, maximum * 2], color='purple',
+    deviation_100, = plt.plot([0, maximum], [0, maximum * 2], color='orange',
                               linestyle='--', label='100 % deviation')
-    plt.plot([0, maximum * 2], [0, maximum], color='purple', linestyle='--')
+    plt.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
     plt.title(title)
     plt.legend(handles=[ideal, deviation_100])
     # Add certain values to plot as text
-    plt.annotate(
-        'RMSE = {0} \n Pr = {1} \n mean bias = {2}{3} \n std dev = {4}'.format(
-            round(validation_object.rmse, 2),
-            round(validation_object.pearson_s_r, 2),
-            round(validation_object.mean_bias, 2), label_part,
-            round(validation_object.standard_deviation, 2)) + label_part,
-        xy=(1, 1), xycoords='axes fraction',
-        xytext=(-6, -6), textcoords='offset points',
-        ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
+    # plt.annotate(
+    #     'RMSE = {0} \n Pr = {1} \n mean bias = {2}{3} \n std dev = {4}'.format(
+    #         round(validation_object.rmse, 2),
+    #         round(validation_object.pearson_s_r, 2),
+    #         round(validation_object.mean_bias, 2), 'MW',
+    #         round(validation_object.standard_deviation, 2)) + 'MW',
+    #     xy=(1, 1), xycoords='axes fraction',
+    #     xytext=(-6, -6), textcoords='offset points',
+    #     ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
