@@ -703,36 +703,32 @@ if 'annual_energy_weather_approaches' in latex_output:
 if 'key_figures_approaches' in latex_output:
     for weather_data_name in weather_data_list:
         latex_df = pd.DataFrame()
-        if 'rmse' in key_figures_print:
-            rmse_df = pd.DataFrame()
-            for outerKey, innerDict in val_obj_dict[
-                    weather_data_name].items():
-                for wf_name in wind_farm_names:
-                    if wf_name not in restriction_list:
+        for outerKey, innerDict in val_obj_dict[
+            weather_data_name].items():
+            for wf_name in wind_farm_names:
+                if wf_name not in restriction_list:
+                    df_wf_part = pd.DataFrame()
+                    if 'rmse' in key_figures_print:
                         df_part = pd.DataFrame(
                             {('RMSE 1', innerKey): val_obj.rmse for
                              innerKey, innerstList in innerDict.items() for
-                             val_obj in innerstList if val_obj.object_name == wf_name},
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
                             index=[[wf_name], [outerKey]])
-                        rmse_df = pd.concat([rmse_df, df_part])
-            latex_df = pd.concat([latex_df, rmse_df])
-        if 'rmse_normalized' in key_figures_print:
-            rmse_norm_df = pd.DataFrame()
-            for outerKey, innerDict in val_obj_dict[
-                weather_data_name].items():
-                for wf_name in wind_farm_names:
-                    if wf_name not in restriction_list:
+                        df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                    if 'rmse_normalized' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('RMSE ', innerKey): val_obj.rmse_normalized # TODO add units
+                            {('RMSE ', innerKey): val_obj.rmse_normalized
+                             # TODO add units
                              for
                              innerKey, innerstList in
                              innerDict.items() for
                              val_obj in innerstList if
                              val_obj.object_name == wf_name},
                             index=[[wf_name], [outerKey]])
-                        rmse_norm_df = pd.concat([rmse_norm_df, df_part])
-            latex_df = pd.concat([latex_df, rmse_norm_df], axis=1)
-            
+                        df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
+                latex_df = pd.concat([latex_df, df_wf_part])
+        print(latex_df)
 
 
 
