@@ -103,7 +103,11 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                         'measured_annual_energy'], 2)
                 latex_df = pd.concat([latex_df, df_part], axis=0)
             latex_df.sort_index(axis=1, ascending=False, inplace=True)
-            # TODO put simple method to front
+            latex_df.sort_index(axis=0, inplace=True)
+            # Column order
+            order = ['measured']
+            order.extend(approach_list)
+            latex_df = latex_df[order]
             filename_table = os.path.join(
                 path_latex_tables,
                 'annual_energy_approach_{0}_{1}{2}.tex'.format(
@@ -138,6 +142,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             # Sort columns and index
             latex_df.sort_index(axis=1, ascending=False, inplace=True)
             latex_df.sort_index(axis=0, inplace=True)
+            # Column order
+            order = ['measured']
+            order.extend(weather_data_list)
+            latex_df = latex_df[order]
             filename_table = os.path.join(
                 path_latex_tables,
                 'annual_energy_weather_{0}_{1}{2}.tex'.format(
@@ -164,6 +172,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         # Sort columns and index
         latex_df.sort_index(axis=1, ascending=False, inplace=True)
         latex_df.sort_index(axis=0, inplace=True)
+        # Column order
+        latex_df = latex_df[approach_list]
         filename_table = os.path.join(
             path_latex_tables,
             'annual_energy_weather_approaches_{0}{1}.tex'.format(
