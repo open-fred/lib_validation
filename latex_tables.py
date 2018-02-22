@@ -1,6 +1,6 @@
 
 
-def create_column_format(number_of_columns, position):
+def create_column_format(number_of_columns, position='c', index_columns='l'):
         r"""
         Creates column format for pd.DataFrame.to_latex() function.
 
@@ -12,7 +12,7 @@ def create_column_format(number_of_columns, position):
             Position of text in columns. For example: 'c', 'l', 'r'.
 
         """
-        column_format = 'l'
+        column_format = index_columns
         for i in range(number_of_columns):
             column_format = column_format.__add__(position)
         return column_format
