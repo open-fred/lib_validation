@@ -56,7 +56,7 @@ validation_data_list = [
     ]
 
 output_methods = [
-    'no_resample',  # Time series stay in the given temporal resolution
+    'half_hourly',  # Only if possible
     'hourly',
     'monthly'
     ]
@@ -71,12 +71,20 @@ feedin_comparsion_all_in_one = False  # Plots all calculated series for one
                                       # wind farm in one plot
 
 latex_output = np.array([
-     'annual_energy_weather',  # Annual energy output of all weather sets
-#     'annual_energy_approaches',  # ...
-#     'annual_energy_weather_approaches',  # ...
-    # 'key_figures_weather',     # Key figures of all weather sets
-     'key_figures_approaches'  # Key figures of all approaches
-     ])
+    'annual_energy_weather',  # Annual energy output of all weather sets
+#    'annual_energy_approaches',  # ...
+#    'annual_energy_weather_approaches',  # ...
+#    'key_figures_weather',     # Key figures of all weather sets
+    'key_figures_approaches'  # Key figures of all approaches
+    ])
+
+key_figures_print = [
+    'rmse',  # Includes RMSE in key figures latex output
+    'rmse_normalized',  # Includes the normalized RMSE in key figures latex o.
+    'pearson',  # Includes RMSE in key figures latex output
+    'mean_bias',  # Includes RMSE in key figures latex output
+    'standard_deviation'  # Includes RMSE in key figures latex output
+    ]
 
 # Select time of day you want to observe or None for all day
 time_period = (
@@ -406,15 +414,14 @@ for weather_data_name in weather_data_list:
                 if column_name != '{0}_measured'.format(wf_string):
                     approach_string = '_'.join(column_name.split('_')[3:])
                     calculated_output = tools.annual_energy_output(
-                        time_series_df_part.loc[:,'{0}_calculated_{1}'.format(
+                        time_series_df_part.loc[:, '{0}_calculated_{1}'.format(
                             wf_string, approach_string)])
                     annual_energy_dict_weather[wf_string][
-                        approach_string]['energy'] = (
-                            calculated_output)
+                        approach_string]['energy'] = calculated_output
                     annual_energy_dict_weather[wf_string][
                         approach_string]['deviation'] = (
-                            (calculated_output - measured_output) /
-                            measured_output * 100)
+                        (calculated_output - measured_output) /
+                        measured_output * 100)
                 # annual_energy_dict_weather[wf_string][
                 #     approach_string]['energy [MWh]'] = (
                 #     calculated_output)
@@ -427,11 +434,12 @@ for weather_data_name in weather_data_list:
     for time_series_pair in time_series_pairs:
         wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
         approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
-        if 'no_resample' in output_methods:
-            val_obj_dict[weather_data_name]['no_resample'][
+        if 'half_hourly' in output_methods:
+            
+            val_obj_dict[weather_data_name]['half_hourly'][
                 approach_string].append(ValidationObject(
                     object_name=wf_string, data=time_series_pair,
-                    output_method='no_resample',
+                    output_method='half_hourly',
                     weather_data_name=weather_data_name,
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
@@ -695,16 +703,43 @@ if 'annual_energy_weather_approaches' in latex_output:
 if 'key_figures_approaches' in latex_output:
     for weather_data_name in weather_data_list:
         latex_df = pd.DataFrame()
+        if 'rmse' in key_figures_print:
+            rmse_df = pd.DataFrame()
+            for outerKey, innerDict in val_obj_dict[
+                    weather_data_name].items():
+                for wf_name in wind_farm_names:
+                    if wf_name not in restriction_list:
+                        df_part = pd.DataFrame(
+                            {('RMSE 1', innerKey): val_obj.rmse for
+                             innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if val_obj.object_name == wf_name},
+                            index=[[wf_name], [outerKey]])
+                        rmse_df = pd.concat([rmse_df, df_part])
+            latex_df = pd.concat([latex_df, rmse_df])
+        if 'rmse_normalized' in key_figures_print:
+            rmse_norm_df = pd.DataFrame()
+            for outerKey, innerDict in val_obj_dict[
+                weather_data_name].items():
+                for wf_name in wind_farm_names:
+                    if wf_name not in restriction_list:
+                        df_part = pd.DataFrame(
+                            {('RMSE ', innerKey): val_obj.rmse_normalized # TODO add units
+                             for
+                             innerKey, innerstList in
+                             innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
+                            index=[[wf_name], [outerKey]])
+                        rmse_norm_df = pd.concat([rmse_norm_df, df_part])
+            latex_df = pd.concat([latex_df, rmse_norm_df], axis=1)
+            
 
 
-            df_part = pd.DataFrame(
-                {(header_dict[], innerKey): [values] for
-                 innerKey, innerstDict in innerDict.items() if
-                 innerKey != 'measured_annual_energy'for
-                 innerstKey, values in innerstDict.items() if innerstKey == 'deviation'},
-                index=[outerKey + ]).round(2)
-            df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
-        latex_df = pd.concat([latex_df, df_part_weather], axis=1)
+
+
+
+            #     df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
+            # latex_df = pd.concat([latex_df, df_part_weather], axis=1)
 
 
         filename_table = os.path.join(
