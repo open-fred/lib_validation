@@ -83,7 +83,7 @@ key_figures_print = [
     'rmse_normalized',  # Includes the normalized RMSE in key figures latex o.
     'pearson',  # Includes pearson correlation coeff. in key figures latex o.
     'mean_bias',  # Includes mean bias in key figures latex output
-    'standard_deviation'  # Includes stanard deviation in key figures latex o.
+    # 'standard_deviation'  # Includes stanard deviation in key figures latex o.
     ]
 
 # Select time of day you want to observe or None for all day
@@ -716,7 +716,9 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                     df_wf_part = pd.DataFrame()
                     if 'rmse' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('RMSE 1', innerKey): val_obj.rmse for
+                            {('RMSE 1', innerKey.replace(
+                                'ity_correction', '. corr.').replace(
+                                    '_wf', '')): val_obj.rmse for
                              innerKey, innerstList in innerDict.items() for
                              val_obj in innerstList if
                              val_obj.object_name == wf_name},
@@ -725,7 +727,9 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     if 'rmse_normalized' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('RMSE 2', innerKey): val_obj.rmse_normalized for
+                            {('RMSE 2', innerKey.replace(
+                                'ity_correction', '. corr.').replace(
+                                    '_wf', '')): val_obj.rmse_normalized for
                              innerKey, innerstList in
                              innerDict.items() for
                              val_obj in innerstList if
@@ -735,7 +739,9 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     if 'pearson' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('Pearson coeff.', innerKey):
+                            {('Pearson coeff.', innerKey.replace(
+                                'ity_correction', '. corr.').replace(
+                                    '_wf', '')):
                                 val_obj.pearson_s_r for
                                 innerKey, innerstList in innerDict.items() for
                              val_obj in innerstList if
@@ -745,7 +751,9 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     if 'mean_bias' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('mean bias', innerKey): val_obj.mean_bias for
+                            {('mean bias', innerKey.replace(
+                                'ity_correction', '. corr.').replace(
+                                    '_wf', '')): val_obj.mean_bias for
                              innerKey, innerstList in innerDict.items() for
                              val_obj in innerstList if
                              val_obj.object_name == wf_name},
@@ -754,7 +762,9 @@ if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
                         df_wf_part = pd.concat([df_wf_part, df_part], axis=1)
                     if 'standard_deviation' in key_figures_print:
                         df_part = pd.DataFrame(
-                            {('std deviation', innerKey):
+                            {('std deviation', innerKey.replace(
+                                'ity_correction', '. corr.').replace(
+                                    '_wf', '')):
                                 val_obj.standard_deviation for
                              innerKey, innerstList in innerDict.items() for
                              val_obj in innerstList if
