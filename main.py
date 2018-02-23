@@ -51,13 +51,13 @@ weather_data_list = [
     'open_FRED'
     ]
 validation_data_list = [
-    'ArgeNetz',
-    'Enertrag',
+     'ArgeNetz',
+#    'Enertrag',
     # 'GreenWind'
     ]
 
 output_methods = [
-    'half_hourly',  # Only if possible
+    # 'half_hourly',  # Only if possible
     'hourly',
     'monthly'
     ]
@@ -65,7 +65,7 @@ output_methods = [
 visualization_methods = [
 #    'box_plots',
     'feedin_comparison',
-    'plot_correlation'  # Attention: this takes a long time for high resolution
+   # 'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
 feedin_comparsion_all_in_one = False  # Plots all calculated series for one
@@ -137,6 +137,8 @@ if (year == 2015 and validation_data_list[0] == 'Enertrag' and
         validation_data_list[-1] == 'Enertrag'):
     raise ValueError("Enertrag data not available for 2015 - select other " +
                      "validation data or year 2016")
+
+
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_data(frequency):
     r"""
@@ -303,7 +305,13 @@ def get_calculated_data(weather_data_name):
                     name='{0}_calculated_constant_efficiency_80_%'.format(
                         wind_farm.object_name)))
         if 'efficiency_curve' in approach_list:
-            pass
+            efficiency_curve = tools.get_wind_efficiency_curve()
+            calculation_df_list.append(modelchain_usage.power_output_wind_farm(
+                wind_farm, weather, cluster=False, density_correction=False,
+                wake_losses_method='wind_efficiency_curve', smoothing=False,
+                wind_farm_efficiency=efficiency_curve).to_frame(
+                name='{0}_calculated_efficiency_curve'.format(
+                    wind_farm.object_name)))
 
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
