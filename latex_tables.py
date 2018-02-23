@@ -186,7 +186,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
-                weather_data_name].items():
+                    weather_data_name].items():
                 for wf_name in wind_farm_names:
                     if wf_name not in restriction_list:
                         df_wf_part = pd.DataFrame()
@@ -194,7 +194,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                             df_part = pd.DataFrame(
                                 {('RMSE 1', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
-                                    '_wf', '')): val_obj.rmse for
+                                    '_wf', '').replace(
+                                        'ant_efficiency_', '. eff.').replace(
+                                            '_%', '')): val_obj.rmse for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -206,7 +208,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                             df_part = pd.DataFrame(
                                 {('RMSE 2', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
-                                    '_wf', '')): val_obj.rmse_normalized for
+                                    '_wf', '').replace(
+                                        'ant_efficiency_', '. eff.').replace(
+                                            '_%', '')):
+                                 val_obj.rmse_normalized for
                                  innerKey, innerstList in
                                  innerDict.items() for
                                  val_obj in innerstList if
@@ -219,8 +224,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                             df_part = pd.DataFrame(
                                 {('Pearson coeff.', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
-                                    '_wf', '')):
-                                     val_obj.pearson_s_r for
+                                    '_wf', '').replace(
+                                        'ant_efficiency_', '. eff.').replace(
+                                            '_%', '')): val_obj.pearson_s_r for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -232,7 +238,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                             df_part = pd.DataFrame(
                                 {('mean bias', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
-                                    '_wf', '')): val_obj.mean_bias for
+                                    '_wf', '').replace(
+                                        'ant_efficiency_', '. eff.').replace(
+                                            '_%', '')): val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -244,8 +252,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                             df_part = pd.DataFrame(
                                 {('std deviation', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
-                                    '_wf', '')):
-                                     val_obj.standard_deviation for
+                                    '_wf', '').replace(
+                                        'ant_efficiency_', '. eff.').replace(
+                                            '_%', '')):
+                                 val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
