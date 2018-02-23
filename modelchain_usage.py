@@ -59,10 +59,12 @@ def power_output_simple(wind_turbine_fleet, weather_df,
     return tools.power_output_simple_aggregation(wind_turbine_fleet)
 
 
-def power_output_smooth_wf(wind_farm, weather_df, cluster=False,
-                           density_correction=False, wake_losses=False,
+def power_output_wind_farm(wind_farm, weather_df, cluster=False,
+                           density_correction=False,
+                           wake_losses_method= None,
                            smoothing=True, block_width=0.5,
-                           standard_deviation_method='turbulence_intensity'):
+                           standard_deviation_method='turbulence_intensity',
+                           wind_farm_efficiency=None):
     r"""
     Calculate power output of... TODO: add to docstring
 
@@ -81,10 +83,11 @@ def power_output_smooth_wf(wind_farm, weather_df, cluster=False,
     wf_modelchain_data = {
         'cluster': cluster,
         'density_correction': density_correction,
-        'wake_losses': wake_losses,
+        'wake_losses_method': wake_losses_method,
         'smoothing': smoothing,
         'block_width': block_width,
-        'standard_deviation_method': standard_deviation_method}
+        'standard_deviation_method': standard_deviation_method,
+        'wind_farm_efficiency': wind_farm_efficiency}
     wf_mc = WindFarmModelChain(wind_farm,
                                **wf_modelchain_data).run_model(weather_df)
     return wf_mc.power_output
