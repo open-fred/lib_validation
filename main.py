@@ -100,11 +100,12 @@ start_end_list = [
     ('{0}-06-01'.format(year), '{0}-06-07'.format(year))
     ]
 
-extra_plots = np.array([
-#    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
-    ])
+#extra_plots = np.array([
+##    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
+#    ])
 # relative path to latex tables folder
-latex_tables_folder = '../../../User-Shares/Masterarbeit/Latex/Tables/automatic/'
+latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
+                       'automatic/')
 
 # Other plots
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
@@ -124,13 +125,14 @@ temperature_heights = [60, 64, 65, 105, 114]
 restriction_list = ['wf_3']
 
 # If pickle_load options not all True:
-if (not pickle_load_merra or not pickle_load_open_fred or not pickle_load_arge
-        or not pickle_load_enertrag or not pickle_load_wind_farm_data):
+if (not pickle_load_merra or not pickle_load_open_fred or not
+        pickle_load_arge or not pickle_load_enertrag or not
+        pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
 # ---------------------------------- Warning -------------------------------- #
 if (year == 2015 and validation_data_list[0] == 'Enertrag' and
-    validation_data_list[-1] == 'Enertrag'):
+        validation_data_list[-1] == 'Enertrag'):
     raise ValueError("Enertrag data not available for 2015 - select other " +
                      "validation data or year 2016")
 # -------------------------- Validation Feedin Data ------------------------- #
@@ -404,8 +406,8 @@ for weather_data_name in weather_data_list:
     # Initialize dictionary for annual energy output
     annual_energy_dict_weather = initialize_dictionary(
         dict_type='annual_energy', time_series_pairs=time_series_pairs)
-    if ('annual_energy_approaches' in latex_output
-            or 'annual_energy_weather' in latex_output):
+    if ('annual_energy_approaches' in latex_output or
+            'annual_energy_weather' in latex_output):
         # Write annual energy outputs and deviations into `annual_energy_dict`
         for time_series_df_part in time_series_df_parts:
             wf_string = '_'.join(list(time_series_df_part)[0].split('_')[:2])
@@ -520,9 +522,11 @@ for weather_data_name in weather_data_list:
                                                 if start_end[0] else ''))),
                             title=(
                                 '{0} power output of {1} calculated with {2} data\n in {3} ({4} approach)'.format(
-                                    method.replace('_', ' '), wf_string, weather_data_name, year,
-                                    approach_string) + title_add_on),
-                            tick_label=None, start=start_end[0], end=start_end[1])
+                                    method.replace('_', ' '), wf_string,
+                                    weather_data_name, year, approach_string) +
+                                title_add_on),
+                            tick_label=None, start=start_end[0],
+                            end=start_end[1])
 
     if 'plot_correlation' in visualization_methods:
         for time_series_pair in time_series_pairs:
@@ -541,7 +545,7 @@ for weather_data_name in weather_data_list:
                 save_folder_add_on)
             for method in output_methods:
                 if (method == 'half_hourly' and
-                            weather_data_name == 'MERRA'):
+                        weather_data_name == 'MERRA'):
                     # Do not plot
                     pass
                 else:
@@ -559,8 +563,8 @@ for weather_data_name in weather_data_list:
                         title=(
                             '{0} power output of {1} in {2}\n {3} ({4} '.format(
                                method.replace('_', ' '), weather_data_name,
-                                wf_string, year, approach_string) + 'approach)' +
-                            title_add_on),
+                               wf_string, year, approach_string) +
+                            'approach)' + title_add_on),
                         color='darkblue', marker_size=3)
 
 #         if 'box_plots' in visualization_methods:
