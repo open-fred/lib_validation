@@ -12,6 +12,7 @@ ATTENTION: gondel position is not correct!!
 Additionally the sum of the power output of all wind turbines is available in
 column 'wf_9_power_output'.
 
+DateTimeIndex in 'Europe/Berlin' time zone.
 """
 
 # Imports from lib_validation
