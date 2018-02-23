@@ -501,6 +501,7 @@ for weather_data_name in weather_data_list:
             approach_string = 'multiple'
         else:
             plot_dfs = time_series_pairs
+            approach_string = None
         for plot_df in plot_dfs:
             # Specify save folder and title add on
             if time_period is not None:
@@ -513,7 +514,7 @@ for weather_data_name in weather_data_list:
                 title_add_on = ''
             save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
                 year, weather_data_name, approach_string if
-                approach_string != 'multiple' else
+                approach_string == 'multiple' else
                 '_'.join(list(plot_df)[1].split('_')[3:]), save_folder_add_on)
             for method in output_methods:
                 if approach_string != 'multiple':
