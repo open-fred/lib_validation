@@ -536,3 +536,19 @@ def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
         data_corrected.plot()
         plt.show()
     return data_corrected
+
+
+def get_wind_efficiency_curve():
+    path = os.path.join(os.path.dirname(__file__), 'helper_files',
+                        'wind_efficiency_curve_1.csv')
+    raw_curve = pd.read_csv(path)
+    wind_speed = pd.Series(np.arange(0, 25.5, 0.5))
+    efficiency = np.interp(wind_speed, raw_curve['x'], raw_curve['Curve1'])
+    efficiency_curve = pd.DataFrame(data=[wind_speed.values,
+                                          efficiency],).transpose()
+    efficiency_curve.columns = ['wind_speed', 'efficiency']
+    return curve
+
+if __name__ == "__main__":
+    curve = get_wind_efficiency_curve()
+    curve.plot()
