@@ -5,7 +5,6 @@ from windpowerlib import (power_output, wind_speed, density, temperature)
 # Imports from lib_validation
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-import tools
 import matplotlib.pyplot as plt
 
 # Other imports
@@ -62,8 +61,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                 year, filename=fred_path, pickle_filename=filename)
         pickle.dump(data_frame, open(filename, 'rb'))
     # Find closest coordinates to weather data point and create weather_df
-    closest_coordinates = tools.get_closest_coordinates(data_frame,
-                                                        coordinates)
+    closest_coordinates = get_closest_coordinates(data_frame, coordinates)
     data_frame = data_frame
     data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame

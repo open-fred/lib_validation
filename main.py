@@ -128,7 +128,11 @@ if (not pickle_load_merra or not pickle_load_open_fred or not pickle_load_arge
         or not pickle_load_enertrag or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
-
+# ---------------------------------- Warning -------------------------------- #
+if (year == 2015 and validation_data_list[0] == 'Enertrag' and
+    validation_data_list[-1] == 'Enertrag'):
+    raise ValueError("Enertrag data not available for 2015 - select other " +
+                     "validation data or year 2016")
 # -------------------------- Validation Feedin Data ------------------------- #
 def get_validation_data(frequency):
     r"""
@@ -463,7 +467,7 @@ for weather_data_name in weather_data_list:
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
     # Delete entry in dict if half_hourly resolution not possible
-    if (time_series_pair.index.freq == 'H' and
+    if (time_series_pairs[0].index.freq == 'H' and
             'half_hourly' in val_obj_dict[weather_data_name]):
         del val_obj_dict[weather_data_name]['half_hourly']
 
