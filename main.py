@@ -22,7 +22,6 @@ import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
 year = 2015
-time_zone = 'Europe/Berlin'
 min_periods_pearson = None  # Integer
 # TODO: add logging info ?!
 
@@ -42,7 +41,10 @@ csv_dump_time_series_df = False  # Dump df as csv
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
     'density_correction',  # density corrected power curve, simple aggregation
-    'smooth_wf'  # Smoothed power curves at wind farm level
+    'smooth_wf',  # Smoothed power curves at wind farm level
+    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
+    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
+#    'efficiency_curve'  # Wind farm efficiency curve
     ]
 weather_data_list = [
     'MERRA',
@@ -278,12 +280,30 @@ def get_calculated_data(weather_data_name):
                     name='{0}_calculated_density_correction'.format(
                         wind_farm.object_name)))
         if 'smooth_wf' in approach_list:
-            calculation_df_list.append(modelchain_usage.power_output_smooth_wf(
+            calculation_df_list.append(modelchain_usage.power_output_wind_farm(
                 wind_farm, weather, cluster=False, density_correction=False,
-                wake_losses=False, smoothing=True, block_width=0.5,
-                standard_deviation_method='turbulence_intensity').to_frame(
+                wake_losses_method=None, smoothing=True,
+                block_width=0.5,
+                standard_deviation_method='turbulence_intensity',
+                wind_farm_efficiency=None).to_frame(
                     name='{0}_calculated_smooth_wf'.format(
                         wind_farm.object_name)))
+        if 'constant_efficiency_90_%' in approach_list:
+            calculation_df_list.append(modelchain_usage.power_output_wind_farm(
+                wind_farm, weather, cluster=False, density_correction=False,
+                wake_losses_method='constant_efficiency', smoothing=False,
+                wind_farm_efficiency=0.9).to_frame(
+                    name='{0}_calculated_constant_efficiency_90_%'.format(
+                        wind_farm.object_name)))
+        if 'constant_efficiency_80_%' in approach_list:
+            calculation_df_list.append(modelchain_usage.power_output_wind_farm(
+                wind_farm, weather, cluster=False, density_correction=False,
+                wake_losses_method='constant_efficiency', smoothing=False,
+                wind_farm_efficiency=0.8).to_frame(
+                    name='{0}_calculated_constant_efficiency_80_%'.format(
+                        wind_farm.object_name)))
+        if 'efficiency_curve' in approach_list:
+            pass
 
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
@@ -481,7 +501,6 @@ for weather_data_name in weather_data_list:
             approach_string = 'multiple'
         else:
             plot_dfs = time_series_pairs
-            approach_string = None
         for plot_df in plot_dfs:
             # Specify save folder and title add on
             if time_period is not None:
@@ -493,11 +512,11 @@ for weather_data_name in weather_data_list:
                 save_folder_add_on = 'None/'
                 title_add_on = ''
             save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
-                year, weather_data_name,
-                '_'.join(list(plot_df)[1].split('_')[3:]),
-                save_folder_add_on)
+                year, weather_data_name, approach_string if
+                approach_string != 'multiple' else
+                '_'.join(list(plot_df)[1].split('_')[3:]), save_folder_add_on)
             for method in output_methods:
-                if approach_string is None:
+                if approach_string != 'multiple':
                     approach_string = '_'.join(list(plot_df)[1].split(
                         '_')[3:])
                 wf_string = '_'.join(list(plot_df)[0].split(
