@@ -6,10 +6,8 @@ TODO: The time stamps are in UTC. in the tools module a function converts them.
 Try is this would work with the whole dataframe (with all locations) - took lots of time
 
 """
-# Imports from lib_validation
-import tools
 
-# Other imports
+# Imports
 import pandas as pd
 import os
 import pickle
