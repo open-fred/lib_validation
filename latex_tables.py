@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+
 def create_column_format(number_of_columns, position='c', index_columns='l'):
         r"""
         Creates column format for pd.DataFrame.to_latex() function.

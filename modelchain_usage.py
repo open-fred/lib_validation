@@ -1,12 +1,9 @@
 # Imports from Windpowerlib
-from windpowerlib import (power_output, wind_speed, density, temperature)
 from windpowerlib.modelchain import ModelChain
 from windpowerlib.wind_farm_modelchain import WindFarmModelChain
 
 # Imports from lib_validation
 import tools
-
-# Other imports
 
 
 def power_output_simple(wind_turbine_fleet, weather_df,
@@ -61,7 +58,7 @@ def power_output_simple(wind_turbine_fleet, weather_df,
 
 def power_output_wind_farm(wind_farm, weather_df, cluster=False,
                            density_correction=False,
-                           wake_losses_method= None,
+                           wake_losses_method=None,
                            smoothing=True, block_width=0.5,
                            standard_deviation_method='turbulence_intensity',
                            wind_farm_efficiency=None):
