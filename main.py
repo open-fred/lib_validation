@@ -51,13 +51,13 @@ weather_data_list = [
     'open_FRED'
     ]
 validation_data_list = [
-     'ArgeNetz',
-#    'Enertrag',
+    'ArgeNetz',
+    'Enertrag',
     # 'GreenWind'
     ]
 
 output_methods = [
-    # 'half_hourly',  # Only if possible
+    'half_hourly',  # Only if possible
     'hourly',
     'monthly'
     ]
