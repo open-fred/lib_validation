@@ -547,7 +547,7 @@ def get_wind_efficiency_curve():
     efficiency_curve = pd.DataFrame(data=[wind_speed.values,
                                           efficiency],).transpose()
     efficiency_curve.columns = ['wind_speed', 'efficiency']
-    return curve
+    return efficiency_curve
 
 if __name__ == "__main__":
     curve = get_wind_efficiency_curve()
