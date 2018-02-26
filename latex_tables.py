@@ -196,8 +196,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('RMSE 1', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'ant_efficiency_', '. eff.').replace(
-                                            '_%', '')): val_obj.rmse for
+                                        'efficiency', 'eff.').replace(
+                                            '_%', '').replace(
+                                                'constant', 'const.').replace(
+                                                    '_', ' ')): val_obj.rmse for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -210,8 +212,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('RMSE 2', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'ant_efficiency_', '. eff.').replace(
-                                            '_%', '')):
+                                        'efficiency', 'eff.').replace(
+                                            '_%', '').replace(
+                                                'constant', 'const.').replace(
+                                                    '_', ' ')):
                                  val_obj.rmse_normalized for
                                  innerKey, innerstList in
                                  innerDict.items() for
@@ -226,8 +230,11 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('Pearson coeff.', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'ant_efficiency_', '. eff.').replace(
-                                            '_%', '')): val_obj.pearson_s_r for
+                                        'efficiency', 'eff.').replace(
+                                            '_%', '').replace(
+                                                'constant', 'const.').replace(
+                                                    '_', ' ')):
+                                 val_obj.pearson_s_r for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -240,8 +247,11 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('mean bias', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'ant_efficiency_', '. eff.').replace(
-                                            '_%', '')): val_obj.mean_bias for
+                                        'efficiency', 'eff.').replace(
+                                            '_%', '').replace(
+                                                'constant', 'const.').replace(
+                                                    '_', ' ')):
+                                 val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -254,8 +264,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('std deviation', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'ant_efficiency_', '. eff.').replace(
-                                            '_%', '')):
+                                        'efficiency', 'eff.').replace(
+                                            '_%', '').replace(
+                                                'constant', 'const.').replace(
+                                                    '_', ' ')):
                                  val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
