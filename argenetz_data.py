@@ -360,10 +360,10 @@ def check_theoretical_power(df, year, start=None, end=None):
         power_output_by_wind_speed = (
             turbine_amount[0] * power_output.power_curve(
                 df[name + '_wind_speed'], e66.power_curve['wind_speed'],
-                e66.power_curve['values']) +
+                e66.power_curve['power']) +
             turbine_amount[1] * power_output.power_curve(
                 df[name + '_wind_speed'], e70.power_curve['wind_speed'],
-                e70.power_curve['values'])) / (1*10**6)
+                e70.power_curve['power'])) / (1*10**6)
         power_output_by_wind_speed = pd.Series(
             data=power_output_by_wind_speed.values, index=indices)
         val_obj = analysis_tools.ValidationObject(

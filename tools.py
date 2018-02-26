@@ -151,7 +151,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, data_height):
             power_output.power_curve(
                 wind_speed_hub,
                 turbine_type['wind_turbine'].power_curve['wind_speed'],
-                turbine_type['wind_turbine'].power_curve['values']))
+                turbine_type['wind_turbine'].power_curve['power']))
     return power_output_simple_aggregation(wind_turbine_fleet)
 
 
@@ -198,7 +198,7 @@ def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
             power_output.power_curve_density_correction(
                 wind_speed_hub,
                 turbine_type['wind_turbine'].power_curve['wind_speed'],
-                turbine_type['wind_turbine'].power_curve['values'],
+                turbine_type['wind_turbine'].power_curve['power'],
                 density_hub))
     return power_output_simple_aggregation(wind_turbine_fleet, weather_df,
                                            data_height)
