@@ -39,12 +39,13 @@ csv_load_time_series_df = False  # Load time series data frame from csv dump
 csv_dump_time_series_df = False  # Dump df as csv
 
 approach_list = [
-    'simple',  # logarithmic wind profile, simple aggregation for farm output
-    'density_correction',  # density corrected power curve, simple aggregation
-    'smooth_wf',  # Smoothed power curves at wind farm level
+#    'simple',  # logarithmic wind profile, simple aggregation for farm output
+#    'density_correction',  # density corrected power curve, simple aggregation
+#    'smooth_wf',  # Smoothed power curves at wind farm level
     'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
-    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-#    'efficiency_curve'  # Wind farm efficiency curve
+#    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
+    'efficiency_curve',  # Wind farm efficiency curve without smoothing
+    'eff_curve_smooth'   # Wind farm efficiency curve with smoothing
     ]
 weather_data_list = [
     'MERRA',
@@ -311,6 +312,14 @@ def get_calculated_data(weather_data_name):
                 wake_losses_method='wind_efficiency_curve', smoothing=False,
                 wind_farm_efficiency=efficiency_curve).to_frame(
                 name='{0}_calculated_efficiency_curve'.format(
+                    wind_farm.object_name)))
+        if 'eff_curve_smooth' in approach_list:
+            efficiency_curve = tools.get_wind_efficiency_curve()
+            calculation_df_list.append(modelchain_usage.power_output_wind_farm(
+                wind_farm, weather, cluster=False, density_correction=False,
+                wake_losses_method='wind_efficiency_curve', smoothing=True,
+                wind_farm_efficiency=efficiency_curve).to_frame(
+                name='{0}_calculated_eff_curve_smooth'.format(
                     wind_farm.object_name)))
 
     # Join DataFrames - power output in MW
