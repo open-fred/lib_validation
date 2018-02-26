@@ -11,7 +11,7 @@ from wind_farm_specifications import (get_joined_wind_farm_data,
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
-from enertrag_data import get_enertrag_data
+from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
 
 # Other imports
@@ -184,7 +184,7 @@ def get_validation_data(frequency):
             pickle_load=pickle_load_enertrag,
             filename=os.path.join(validation_pickle_folder, 'enertrag_data.p'),
             resample=True, plot=False, x_limit=None)
-        # Select aggregated power output of wind farm and rename
+        # Select aggregated power output of wind farm (rename) and curtailment
         enertrag_data = enertrag_data[['wf_9_power_output']].rename(
             columns={'wf_9_power_output': 'wf_9_measured'})
         # Resample the DataFrame columns with `frequency` and add to list
@@ -321,9 +321,16 @@ def get_calculated_data(weather_data_name):
                 wind_farm_efficiency=efficiency_curve).to_frame(
                 name='{0}_calculated_eff_curve_smooth'.format(
                     wind_farm.object_name)))
-
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
+    for column_name in list(calculation_df):
+        if column_name.split('_')[1] == '9':
+            curtailment = get_enertrag_curtailment_data(
+                weather.index.freq).rename({'curtail_rel': 'curtailment'},
+                                           axis=1)
+            # Add curtailment to data frame
+            df = pd.concat([calculation_df[[column_name]], curtailment], axis=1)
+            calculation_df[column_name] = df[column_name] * df['curtailment']
     return calculation_df
 
 

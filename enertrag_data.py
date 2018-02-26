@@ -28,7 +28,7 @@ import os
 import pickle
 
 
-def read_data(filename, **kwargs):
+def read_data(filename):
     r"""
     Fetches data from a csv file.
 
@@ -36,13 +36,6 @@ def read_data(filename, **kwargs):
     ----------
     filename : string
         Name of data file.
-
-    Other Parameters
-    ----------------
-    datapath : string, optional
-        Path where the data file is stored. Default: './data'
-    usecols : list of strings or list of integers, optional
-        TODO: add explanation Default: None
 
     Returns
     -------
@@ -56,7 +49,8 @@ def read_data(filename, **kwargs):
 
 
 def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
-                      resample=True, plot=False, x_limit=None, frequency='30T'):
+                      resample=True, plot=False, x_limit=None,
+                      frequency='30T', curtailment=True):
     # TODO: add plots to check data
     r"""
     Fetches Enertrag data.
@@ -78,6 +72,9 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
         wanted. Default: None.
     frequency : String (or freq object...?)
         # TODO add
+    curtailment : Boolean
+        If True an average (30min) curtailment of the wind farm power output is
+        added.
 
     Returns
     -------
@@ -125,6 +122,19 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
             pickle.dump(enertrag_df, open(filename, 'wb'))
     return enertrag_df
 
+
+def get_enertrag_curtailment_data(frequency):
+    r"""
+
+    """
+    data = read_data(
+        'windpark_nechlin_production_and_curtailment_2016_15min.csv')
+    data.index = pd.to_datetime(data.index).tz_localize(
+        'UTC').tz_convert('Europe/Berlin')
+    curtailment_data = data.drop(
+        ['power_rel', 'wind_mean'], axis=1).resample(frequency).mean()
+    return curtailment_data
+
 if __name__ == "__main__":
     # Decide whether to resample to a certain frequency
     resample = True
@@ -132,4 +142,3 @@ if __name__ == "__main__":
     filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
                             'enertrag_data_2016.p') # Filename for pickle dump
     df = get_enertrag_data(resample=resample, filename=filename)
-
