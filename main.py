@@ -13,6 +13,7 @@ from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
+from greenwind_data import get_greenwind_data
 
 # Other imports
 import os
@@ -27,7 +28,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the above pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -39,22 +40,22 @@ csv_load_time_series_df = False  # Load time series data frame from csv dump
 csv_dump_time_series_df = False  # Dump df as csv
 
 approach_list = [
-#    'simple',  # logarithmic wind profile, simple aggregation for farm output
+    'simple',  # logarithmic wind profile, simple aggregation for farm output
 #    'density_correction',  # density corrected power curve, simple aggregation
 #    'smooth_wf',  # Smoothed power curves at wind farm level
-    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
+#    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
 #    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-    'efficiency_curve',  # Wind farm efficiency curve without smoothing
+#    'efficiency_curve',  # Wind farm efficiency curve without smoothing
     'eff_curve_smooth'   # Wind farm efficiency curve with smoothing
     ]
 weather_data_list = [
-    'MERRA',
+#    'MERRA',
     'open_FRED'
     ]
 validation_data_list = [
     'ArgeNetz',
     'Enertrag',
-    # 'GreenWind'
+    'GreenWind'
     ]
 
 output_methods = [
@@ -65,8 +66,8 @@ output_methods = [
 
 visualization_methods = [
 #    'box_plots',
-    'feedin_comparison',
-   # 'plot_correlation'  # Attention: this takes a long time for high resolution
+#    'feedin_comparison',
+#    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
 feedin_comparsion_all_in_one = False  # Plots all calculated series for one
@@ -125,7 +126,7 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__),
 temperature_heights = [60, 64, 65, 105, 114]
 
 # Wind farms that will not be examined also if they are in the time series df
-restriction_list = ['wf_3']
+restriction_list = []
 
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not
@@ -184,14 +185,14 @@ def get_validation_data(frequency):
             pickle_load=pickle_load_enertrag,
             filename=os.path.join(validation_pickle_folder, 'enertrag_data.p'),
             resample=True, plot=False, x_limit=None)
-        # Select aggregated power output of wind farm (rename) and curtailment
+        # Select aggregated power output of wind farm (rename)
         enertrag_data = enertrag_data[['wf_9_power_output']].rename(
             columns={'wf_9_power_output': 'wf_9_measured'})
         # Resample the DataFrame columns with `frequency` and add to list
         validation_df_list.append(enertrag_data.resample(frequency).mean())
     if 'GreenWind' in validation_data_list:
         # Get GreenWind data
-        pass
+
     # Join DataFrames - power output in MW
     validation_df = pd.concat(validation_df_list, axis=1) / 1000
     return validation_df
@@ -336,7 +337,6 @@ def get_calculated_data(weather_data_name):
 
 def get_time_series_df(weather_data_name):
     r"""
-
     If there are any values in restriction_list, the columns containing these
     strings are dropped. This takes place after dumping.
 

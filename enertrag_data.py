@@ -5,7 +5,7 @@ feed-in time series from a Enertrag wind farm.
 The following data is available (year 2016) for the 17 turbines:
 - meter (Zählerstand) in kW
 - power output in kW
-- wind speed in m/s  # TODO: korregiert???
+- wind speed in m/s
 - wind direction (gondel position) in °
 ATTENTION: gondel position is not correct!!
 
@@ -55,13 +55,15 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
     r"""
     Fetches Enertrag data.
 
+    Parameters
+    ----------
     pickle_load : Boolean
         If True data frame is loaded from the pickle dump if False the data is
         loaded from the original csv files (or from smaller csv file that was
         created in an earlier run if `csv_load` is True).
         Either set `pickle_load` or `csv_load` to True. Default: False.
     filename : String
-        Filename including path of pickle dump. Default: 'pickle_dump.p'.
+        Filename including path of pickle dump. Default: 'enertrag_dump.p'.
     resample : Boolean
         If True the data will be resampled to the `frequency`. (mean power)
     plot : Boolean
