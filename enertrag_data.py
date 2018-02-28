@@ -15,11 +15,6 @@ column 'wf_9_power_output'.
 DateTimeIndex in 'Europe/Berlin' time zone.
 """
 
-# Imports from lib_validation
-import visualization_tools
-import analysis_tools
-import tools
-
 # Other imports
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -103,8 +98,7 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
                     'Leistung[kW]': 'wf_9_{0}_power_output'.format(
                         turbine_name),
                     'Gondelposition': 'wf_9_{0}_wind_dir'.format(
-                        turbine_name)},
-                               inplace=True)
+                        turbine_name)}, inplace=True)
                 # Add to DataFrame
                 enertrag_df = pd.concat([enertrag_df, df_part], axis=1)
             # Convert index to DatetimeIndex and make time zone aware
@@ -116,11 +110,9 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
             freq = pd.infer_freq(enertrag_df.index)
             enertrag_df.index.freq = pd.tseries.frequencies.to_offset(freq)
             # Get wind farm power output
-            enertrag_df['wf_9_power_output'] = enertrag_df.loc[:,
-                                               [column for column in
-                                                list(enertrag_df) if
-                                                'power_output' in column]].sum(
-                skipna=True, axis=1)
+            enertrag_df['wf_9_power_output'] = enertrag_df.loc[
+                :, [column for column in list(enertrag_df) if
+                    'power_output' in column]].sum(skipna=True, axis=1)
             pickle.dump(enertrag_df, open(filename, 'wb'))
     return enertrag_df
 
@@ -142,5 +134,5 @@ if __name__ == "__main__":
     resample = True
     frequency = '30T'
     filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
-                            'enertrag_data_2016.p') # Filename for pickle dump
+                            'enertrag_data_2016.p')  # Filename for pickle dump
     df = get_enertrag_data(resample=resample, filename=filename)
