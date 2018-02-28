@@ -22,13 +22,24 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2015
+year = 2016
+
+# Wind farms and approaches that will not be examined also if they are in the
+# time series df
+restriction_list = [
+    'constant_efficiency_90_%', 'constant_efficiency_80_%',
+    'density_correction',
+    'wf_1', 'wf_2',
+    'wf_3',
+    'wf_4', 'wf_5'
+    ]
+
 min_periods_pearson = None  # Integer
 # TODO: add logging info ?!
 
 # Pickle load time series data frame - if one of the above pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -41,21 +52,21 @@ csv_dump_time_series_df = False  # Dump df as csv
 
 approach_list = [
     'simple',  # logarithmic wind profile, simple aggregation for farm output
-#    'density_correction',  # density corrected power curve, simple aggregation
-#    'smooth_wf',  # Smoothed power curves at wind farm level
-#    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
-#    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-#    'efficiency_curve',  # Wind farm efficiency curve without smoothing
+    'density_correction',  # density corrected power curve, simple aggregation
+    'smooth_wf',  # Smoothed power curves at wind farm level
+    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
+    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
+    'efficiency_curve',  # Wind farm efficiency curve without smoothing
     'eff_curve_smooth'   # Wind farm efficiency curve with smoothing
     ]
 weather_data_list = [
-#    'MERRA',
+    'MERRA',
     'open_FRED'
     ]
 validation_data_list = [
     'ArgeNetz',
     'Enertrag',
-    'GreenWind'
+    # 'GreenWind'
     ]
 
 output_methods = [
@@ -66,8 +77,8 @@ output_methods = [
 
 visualization_methods = [
 #    'box_plots',
-#    'feedin_comparison',
-#    'plot_correlation'  # Attention: this takes a long time for high resolution
+   'feedin_comparison',
+    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
 feedin_comparsion_all_in_one = False  # Plots all calculated series for one
@@ -86,7 +97,7 @@ key_figures_print = [
     'rmse_normalized',  # Includes the normalized RMSE in key figures latex o.
     'pearson',  # Includes pearson correlation coeff. in key figures latex o.
     'mean_bias',  # Includes mean bias in key figures latex output
-    # 'standard_deviation'  # Includes stanard deviation in key figures latex o.
+    # 'standard_deviation'  # Includes standard deviation in key figures latex o.
     ]
 
 # Select time of day you want to observe or None for all day
@@ -124,9 +135,6 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__),
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
-
-# Wind farms that will not be examined also if they are in the time series df
-restriction_list = []
 
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not
@@ -192,11 +200,10 @@ def get_validation_data(frequency):
         validation_df_list.append(enertrag_data.resample(frequency).mean())
     if 'GreenWind' in validation_data_list:
         # Get GreenWind data
-
+        pass
     # Join DataFrames - power output in MW
     validation_df = pd.concat(validation_df_list, axis=1) / 1000
     return validation_df
-
 
 # ------------------------------ Wind farm data ----------------------------- #
 def return_wind_farm_data():
@@ -401,10 +408,8 @@ def initialize_dictionary(dict_type, time_series_pairs=None):
         wf_strings = ['_'.join(list(time_series_pair)[0].split('_')[:2])
                       for time_series_pair in time_series_pairs]
         dictionary = {
-            wf_string: {approach: {'energy': None,
-                                   'deviation': None}
-            # wf_string: {approach: {'energy [MWh]': None,
-            #                        'deviation [%]': None}
+            wf_string: {approach: {'energy [MWh]': None,
+                                   'deviation [%]': None}
                         for approach in approach_list}
             for wf_string in wf_strings}
     return dictionary
@@ -468,18 +473,12 @@ for weather_data_name in weather_data_list:
                         time_series_df_part.loc[:, '{0}_calculated_{1}'.format(
                             wf_string, approach_string)])
                     annual_energy_dict_weather[wf_string][
-                        approach_string]['energy'] = calculated_output
+                        approach_string]['energy [MWh]'] = (
+                        calculated_output)
                     annual_energy_dict_weather[wf_string][
-                        approach_string]['deviation'] = (
+                        approach_string]['deviation [%]'] = (
                         (calculated_output - measured_output) /
                         measured_output * 100)
-                # annual_energy_dict_weather[wf_string][
-                #     approach_string]['energy [MWh]'] = (
-                #     calculated_output)
-                # annual_energy_dict_weather[wf_string][
-                #     approach_string]['deviation [%]'] = (
-                #     (calculated_output - measured_output) /
-                #     measured_output * 100)
         # Add dictionary to `annual_energy_dicts`
         annual_energy_dicts[weather_data_name] = annual_energy_dict_weather
     for time_series_pair in time_series_pairs:
@@ -606,8 +605,8 @@ for weather_data_name in weather_data_list:
                                 approach_string)),
                         title=(
                             '{0} power output of {1} in {2}\n {3} ({4} '.format(
-                               method.replace('_', ' '), weather_data_name,
-                               wf_string, year, approach_string) +
+                                method.replace('_', ' '), weather_data_name,
+                                wf_string, year, approach_string) +
                             'approach)' + title_add_on),
                         color='darkblue', marker_size=3)
 
