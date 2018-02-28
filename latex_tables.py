@@ -80,7 +80,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                     axis=0)
                     latex_df = pd.concat([latex_df, df_part_weather], axis=1)
                 # Sort columns and index
-                latex_df.sort_index(axis=1, ascending=False, inplace=True)
+                latex_df.sort_index(axis=1, ascending=True, inplace=True)
                 latex_df.sort_index(axis=0, inplace=True)
                 # Column order
                 order = ['measured']
@@ -111,7 +111,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
             latex_df = pd.concat([latex_df, df_part_weather], axis=1)
         # Sort columns and index
-        latex_df.sort_index(axis=1, ascending=False, inplace=True)
+        latex_df.sort_index(axis=1, ascending=True, inplace=True)
         latex_df.sort_index(axis=0, inplace=True)
         # Column order
         latex_df = latex_df[[approach for approach in approach_list if

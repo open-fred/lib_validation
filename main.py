@@ -22,16 +22,21 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2016
+year = 2015
 
 # Wind farms and approaches that will not be examined also if they are in the
 # time series df
 restriction_list = [
     'simple',
     'density_correction',
-    'constant_efficiency_90_%', 'constant_efficiency_80_%',
-#    'smooth_wf',
-    'wf_1', 'wf_2',
+    'smooth_wf',
+    'constant_efficiency_90_%',
+    'constant_efficiency_80_%',
+    'efficiency_curve',
+#    'eff_curve_smooth',
+#    'linear_interpolation'
+#    'wf_1',
+#    'wf_2',
     'wf_3',
     'wf_4', 'wf_5'
     ]
@@ -59,7 +64,8 @@ approach_list = [
     'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
     'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
     'efficiency_curve',  # Wind farm efficiency curve without smoothing
-    'eff_curve_smooth'   # Wind farm efficiency curve with smoothing
+    'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
+    'linear_interpolation'
     ]
 weather_data_list = [
     'MERRA',
@@ -80,10 +86,10 @@ output_methods = [
 visualization_methods = [
 #    'box_plots',
    'feedin_comparison',
-    'plot_correlation'  # Attention: this takes a long time for high resolution
+#    'plot_correlation'  # Attention: this takes a long time for high resolution
     ]
 
-feedin_comparsion_all_in_one = False  # Plots all calculated series for one
+feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot
 
 latex_output = np.array([
@@ -296,7 +302,8 @@ def get_calculated_data(weather_data_name):
             calculation_df_list.append(modelchain_usage.power_output_wind_farm(
                 wind_farm, weather, cluster=False, density_correction=False,
                 wake_losses_method=None, smoothing=True,
-                block_width=0.5,
+                block_width=0.5, roughness_length=weather[
+                    'roughness_length'][0].mean(),
                 standard_deviation_method='turbulence_intensity',
                 wind_farm_efficiency=None).to_frame(
                     name='{0}_calculated_smooth_wf'.format(
@@ -328,9 +335,25 @@ def get_calculated_data(weather_data_name):
             calculation_df_list.append(modelchain_usage.power_output_wind_farm(
                 wind_farm, weather, cluster=False, density_correction=False,
                 wake_losses_method='wind_efficiency_curve', smoothing=True,
-                wind_farm_efficiency=efficiency_curve).to_frame(
+                wind_farm_efficiency=efficiency_curve,
+                roughness_length=weather[
+                    'roughness_length'][0].mean()).to_frame(
                 name='{0}_calculated_eff_curve_smooth'.format(
                     wind_farm.object_name)))
+        if 'linear_interpolation' in approach_list:
+            if len(list(weather['wind_speed'])) > 1:
+                efficiency_curve = tools.get_wind_efficiency_curve()
+                calculation_df_list.append(
+                    modelchain_usage.power_output_wind_farm(
+                        wind_farm, weather, cluster=False,
+                        density_correction=False,
+                        wake_losses_method='wind_efficiency_curve',
+                        smoothing=True, wind_farm_efficiency=efficiency_curve,
+                        wind_speed_model='interpolation_extrapolation',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_linear_interpolation'.format(
+                            wind_farm.object_name)))
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
     for column_name in list(calculation_df):
@@ -339,7 +362,8 @@ def get_calculated_data(weather_data_name):
                 weather.index.freq).rename({'curtail_rel': 'curtailment'},
                                            axis=1)
             # Add curtailment to data frame
-            df = pd.concat([calculation_df[[column_name]], curtailment], axis=1)
+            df = pd.concat([calculation_df[[column_name]], curtailment],
+                           axis=1)
             calculation_df[column_name] = df[column_name] * df['curtailment']
     return calculation_df
 
