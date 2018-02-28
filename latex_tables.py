@@ -60,39 +60,40 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
 
     if 'annual_energy_weather' in latex_output:
         for approach in approach_list:
-            latex_df = pd.DataFrame()
-            for weather_data_name in weather_data_list:
-                df_part_weather = pd.DataFrame()
-                for outerKey, innerDict in annual_energy_dicts[
-                    weather_data_name].items():
-                    df_part = pd.DataFrame(
-                        {(weather_data_name, innerstKey): [values] for
-                         innerKey, innerstDict in innerDict.items() if
-                         (innerKey == approach and innerKey not in
-                          restriction_list) for
-                         innerstKey, values in innerstDict.items()},
-                        index=[outerKey.replace('wf_', 'WF ')]).round(2)
-                    if weather_data_name == weather_data_list[0]:
-                        df_part['measured', '[MWh]'] = round(
-                            annual_energy_dicts[weather_data_name][outerKey][
-                                'measured_annual_energy'], 2)
-                    df_part_weather = pd.concat([df_part_weather, df_part],
-                                                axis=0)
-                latex_df = pd.concat([latex_df, df_part_weather], axis=1)
-            # Sort columns and index
-            latex_df.sort_index(axis=1, ascending=False, inplace=True)
-            latex_df.sort_index(axis=0, inplace=True)
-            # Column order
-            order = ['measured']
-            order.extend(weather_data_list)
-            latex_df = latex_df[order]
-            filename_table = os.path.join(
-                path_latex_tables,
-                'annual_energy_weather_{0}_{1}{2}.tex'.format(
-                    year, approach, filename_add_on))
-            latex_df.to_latex(
-                buf=filename_table, column_format=create_column_format(
-                    len(latex_df.columns), 'c'), multicolumn_format='c')
+            if approach not in restriction_list:
+                latex_df = pd.DataFrame()
+                for weather_data_name in weather_data_list:
+                    df_part_weather = pd.DataFrame()
+                    for outerKey, innerDict in annual_energy_dicts[
+                        weather_data_name].items():
+                        df_part = pd.DataFrame(
+                            {(weather_data_name, innerstKey): [values] for
+                             innerKey, innerstDict in innerDict.items() if
+                             (innerKey == approach and innerKey not in
+                              restriction_list) for
+                             innerstKey, values in innerstDict.items()},
+                            index=[outerKey.replace('wf_', 'WF ')]).round(2)
+                        if weather_data_name == weather_data_list[0]:
+                            df_part['measured', '[MWh]'] = round(
+                                annual_energy_dicts[weather_data_name][outerKey][
+                                    'measured_annual_energy'], 2)
+                        df_part_weather = pd.concat([df_part_weather, df_part],
+                                                    axis=0)
+                    latex_df = pd.concat([latex_df, df_part_weather], axis=1)
+                # Sort columns and index
+                latex_df.sort_index(axis=1, ascending=False, inplace=True)
+                latex_df.sort_index(axis=0, inplace=True)
+                # Column order
+                order = ['measured']
+                order.extend(weather_data_list)
+                latex_df = latex_df[order]
+                filename_table = os.path.join(
+                    path_latex_tables,
+                    'annual_energy_weather_{0}_{1}{2}.tex'.format(
+                        year, approach, filename_add_on))
+                latex_df.to_latex(
+                    buf=filename_table, column_format=create_column_format(
+                        len(latex_df.columns), 'c'), multicolumn_format='c')
 
     if 'annual_energy_weather_approaches' in latex_output:
         latex_df = pd.DataFrame()
@@ -105,7 +106,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                      innerKey, innerstDict in innerDict.items() if
                      innerKey != 'measured_annual_energy' for
                      innerstKey, values in innerstDict.items() if
-                     innerstKey == 'deviation'},
+                     innerstKey == 'deviation [%]'},
                     index=[outerKey.replace('wf_', 'WF ')]).round(2)
                 df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
             latex_df = pd.concat([latex_df, df_part_weather], axis=1)
@@ -132,13 +133,13 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                         df_wf_part = pd.DataFrame()
                         if 'rmse' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('RMSE 1', innerKey.replace(
+                                {('RMSE [MW]', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'efficiency', 'eff.').replace(
-                                            '_%', '').replace(
-                                                'constant', 'const.').replace(
-                                                    '_', ' ')): val_obj.rmse for
+                                    'efficiency', 'eff.').replace(
+                                    '_%', '').replace(
+                                    'constant', 'const.').replace('_', ' ')):
+                                 val_obj.rmse for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
@@ -148,13 +149,12 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                    axis=1)
                         if 'rmse_normalized' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('RMSE 2', innerKey.replace(
+                                {('RMSE [%]', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'efficiency', 'eff.').replace(
-                                            '_%', '').replace(
-                                                'constant', 'const.').replace(
-                                                    '_', ' ')):
+                                    'efficiency', 'eff.').replace(
+                                    '_%', '').replace(
+                                    'constant', 'const.').replace('_', ' ')):
                                  val_obj.rmse_normalized for
                                  innerKey, innerstList in
                                  innerDict.items() for
@@ -169,10 +169,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 {('Pearson coeff.', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'efficiency', 'eff.').replace(
-                                            '_%', '').replace(
-                                                'constant', 'const.').replace(
-                                                    '_', ' ')):
+                                    'efficiency', 'eff.').replace(
+                                    '_%', '').replace(
+                                    'constant', 'const.').replace('_', ' ')):
                                  val_obj.pearson_s_r for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
@@ -183,13 +182,12 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                    axis=1)
                         if 'mean_bias' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('mean bias', innerKey.replace(
+                                {('mean bias [MW]', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'efficiency', 'eff.').replace(
-                                            '_%', '').replace(
-                                                'constant', 'const.').replace(
-                                                    '_', ' ')):
+                                    'efficiency', 'eff.').replace(
+                                    '_%', '').replace(
+                                    'constant', 'const.').replace('_', ' ')):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
@@ -200,13 +198,12 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                    axis=1)
                         if 'standard_deviation' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('std deviation', innerKey.replace(
+                                {('std deviation [MW]', innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
-                                        'efficiency', 'eff.').replace(
-                                            '_%', '').replace(
-                                                'constant', 'const.').replace(
-                                                    '_', ' ')):
+                                    'efficiency', 'eff.').replace(
+                                    '_%', '').replace(
+                                    'constant', 'const.').replace('_', ' ')):
                                  val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
@@ -225,8 +222,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             column_format = create_column_format(
                 number_of_columns=(
                     len(val_obj_dict[weather_data_name][
-                            output_methods[1]]) * len(
-                        key_figures_print)), index_columns='ll')
+                        output_methods[1]]) * len(key_figures_print)),
+                index_columns='ll')
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
 
@@ -236,14 +233,14 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             for weather_data_name in weather_data_list:
                 df_part_weather = pd.DataFrame()
                 for outerKey, innerDict in val_obj_dict[
-                    weather_data_name].items():
+                        weather_data_name].items():
                     if outerKey != 'half_hourly':
                         for wf_name in wind_farm_names:
                             if wf_name not in restriction_list:
                                 df_wf_part = pd.DataFrame()
                                 if 'rmse' in key_figures_print:
                                     df_part = pd.DataFrame(
-                                        {('RMSE 1',
+                                        {('RMSE [MW]',
                                           weather_data_name): val_obj.rmse for
                                          innerKey, innerstList in
                                          innerDict.items() for
@@ -255,9 +252,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                         [df_wf_part, df_part], axis=1)
                                 if 'rmse_normalized' in key_figures_print:
                                     df_part = pd.DataFrame(
-                                        {('RMSE 2',
-                                          weather_data_name): val_obj.rmse_normalized
-                                         for
+                                        {('RMSE [%]',
+                                          weather_data_name):
+                                         val_obj.rmse_normalized for
                                          innerKey, innerstList in
                                          innerDict.items() for
                                          val_obj in innerstList if
@@ -269,7 +266,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                 if 'pearson' in key_figures_print:
                                     df_part = pd.DataFrame(
                                         {('Pearson coeff.', weather_data_name):
-                                             val_obj.pearson_s_r for
+                                         val_obj.pearson_s_r for
                                          innerKey, innerstList in
                                          innerDict.items() for
                                          val_obj in innerstList if
@@ -280,9 +277,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                         [df_wf_part, df_part], axis=1)
                                 if 'mean_bias' in key_figures_print:
                                     df_part = pd.DataFrame(
-                                        {('mean bias',
-                                          weather_data_name): val_obj.mean_bias
-                                         for
+                                        {('mean bias [MW]',
+                                          weather_data_name):
+                                         val_obj.mean_bias for
                                          innerKey, innerstList in
                                          innerDict.items() for
                                          val_obj in innerstList if
@@ -293,8 +290,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                         [df_wf_part, df_part], axis=1)
                                 if 'standard_deviation' in key_figures_print:
                                     df_part = pd.DataFrame(
-                                        {('std deviation', weather_data_name):
-                                             val_obj.standard_deviation for
+                                        {('std deviation [MW]',
+                                          weather_data_name):
+                                         val_obj.standard_deviation for
                                          innerKey, innerstList in
                                          innerDict.items() for
                                          val_obj in innerstList if
@@ -317,7 +315,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             column_format = create_column_format(
                 number_of_columns=(
                     len(val_obj_dict[weather_data_name][
-                            output_methods[1]]) * len(
-                        key_figures_print)), index_columns='ll')
+                        output_methods[1]]) * len(key_figures_print)),
+                index_columns='ll')
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
