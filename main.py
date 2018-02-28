@@ -27,8 +27,10 @@ year = 2016
 # Wind farms and approaches that will not be examined also if they are in the
 # time series df
 restriction_list = [
-    'constant_efficiency_90_%', 'constant_efficiency_80_%',
+    'simple',
     'density_correction',
+    'constant_efficiency_90_%', 'constant_efficiency_80_%',
+#    'smooth_wf',
     'wf_1', 'wf_2',
     'wf_3',
     'wf_4', 'wf_5'
@@ -408,7 +410,7 @@ def initialize_dictionary(dict_type, time_series_pairs=None):
         wf_strings = ['_'.join(list(time_series_pair)[0].split('_')[:2])
                       for time_series_pair in time_series_pairs]
         dictionary = {
-            wf_string: {approach: {'energy [MWh]': None,
+            wf_string: {approach: {'[MWh]': None,
                                    'deviation [%]': None}
                         for approach in approach_list}
             for wf_string in wf_strings}
@@ -473,7 +475,7 @@ for weather_data_name in weather_data_list:
                         time_series_df_part.loc[:, '{0}_calculated_{1}'.format(
                             wf_string, approach_string)])
                     annual_energy_dict_weather[wf_string][
-                        approach_string]['energy [MWh]'] = (
+                        approach_string]['[MWh]'] = (
                         calculated_output)
                     annual_energy_dict_weather[wf_string][
                         approach_string]['deviation [%]'] = (
@@ -604,9 +606,9 @@ for weather_data_name in weather_data_list:
                                 method, wf_string, weather_data_name, year,
                                 approach_string)),
                         title=(
-                            '{0} power output of {1} in {2}\n {3} ({4} '.format(
-                                method.replace('_', ' '), weather_data_name,
-                                wf_string, year, approach_string) +
+                            '{0} power output of {1} calculated with {2}\n {3} ({4} '.format(
+                                method.replace('_', ' '), wf_string,
+                                weather_data_name, year, approach_string) +
                             'approach)' + title_add_on),
                         color='darkblue', marker_size=3)
 

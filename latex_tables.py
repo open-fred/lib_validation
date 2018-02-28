@@ -28,7 +28,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in annual_energy_dicts[
-                weather_data_name].items():
+                    weather_data_name].items():
                 df_part = pd.DataFrame({(innerKey, innerstKey): [values] for
                                         innerKey, innerstDict in
                                         innerDict.items() if
