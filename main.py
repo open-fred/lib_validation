@@ -328,14 +328,19 @@ for approach in approach_list:
             # Dump validation_sets
             # TODO: dump could be in function evaluate....()
             if latex_output.size or extra_plots.size:
+                if time_period is not None:
+                    filename_add = '_{0}_{1}'.format(time_period[0],
+                                                        time_period[1])
+                else:
+                    filename_add = ''
                 for validation_set in validation_sets:
                     filename = os.path.join(
                         os.path.dirname(__file__),
                         'dumps/validation_objects',
-                        'validation_sets_{0}_{1}_{2}_{3}_{4}.p'.format(
+                        'validation_sets_{0}_{1}_{2}_{3}_{4}{5}.p'.format(
                             year, weather_data_name,
                             validation_data_name, approach,
-                            validation_set[0].output_method))
+                            validation_set[0].output_method, filename_add))
                     pickle.dump(validation_set, open(filename, 'wb'))
                     filenames_validation_objects.append(filename)
 
