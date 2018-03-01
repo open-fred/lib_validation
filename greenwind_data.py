@@ -88,14 +88,14 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         greenwind_df = pickle.load(open(filename, 'rb'))
     else:
         filenames = [
-            # 'WF1_{0}.csv'.format(year), # TODO: WF1: doppelte Zeitschritte
+            'WF1_{0}.csv'.format(year),
             'WF2_{0}.csv'.format(year),
-                     'WF3_{0}.csv'.format(year)]
+            'WF3_{0}.csv'.format(year)]
         greenwind_df = pd.DataFrame()
         for name in filenames:
             df_part = read_data(name)
             # Add to DataFrame
-            greenwind_df = pd.concat([greenwind_df, df_part], axis=1)
+            greenwind_df = pd.concat([greenwind_df, df_part], axis=0)
         # Convert index to DatetimeIndex and make time zone aware
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
             'UTC').tz_convert('Europe/Berlin')
@@ -112,7 +112,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
 if __name__ == "__main__":
     years = [
         2015,
-        # 2016
+        2016
     ]
     # Decide whether to resample to a certain frequency
     resample = True
