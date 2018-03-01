@@ -126,7 +126,8 @@ start_end_list = [
 #extra_plots = np.array([
 ##    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
 #    ])
-# relative path to latex tables folder
+
+# Relative path to latex tables folder
 latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                        'automatic/')
 
