@@ -10,9 +10,7 @@ The following data is available for 5 wind farms (year 2015) or 4 wind farms
 - theoretical power [kW]
 - installed power [kW]
 
-If only `only_get_power` of get_argenetz_data() is set to True only the first
-variable (measured feed-in is returned/dumped).
-TODO: adjust this information
+The time stamps are in local time 'Europe/Berlin'.
 
 """
 
@@ -171,18 +169,15 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         'dumps/validation_data',
                                         filename_pickle))
-    if year == 2015:
-        filename_column_names = 'helper_files/column_names_2015.txt'
-        indices = tools.get_indices_for_series(
-            temporal_resolution=5, time_zone='Europe/Berlin',
-            start='5/1/2015', end='1/1/2016')
-    if (year == 2016 or year == 2017):
-        filename_column_names = 'helper_files/column_names_2016_2017.txt'
-        indices = tools.get_indices_for_series(
-            temporal_resolution=1, time_zone='Europe/Berlin', year=year)
     if pickle_load:
         df = pickle.load(open(path, 'rb'))
     else:
+        if year == 2015:
+            filename_column_names = 'helper_files/column_names_2015.txt'
+            replace = 'PT5M'
+        if (year == 2016 or year == 2017):
+            filename_column_names = 'helper_files/column_names_2016_2017.txt'
+            replace = 'PT1M'
         with open(filename_files) as file:
             df = pd.DataFrame()
             for line in file:
@@ -195,10 +190,17 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                         new_column_names(year))},
                                inplace=True)
                 df = pd.concat([df, df_part])
-        df.index = indices
+        # Convert string index to Datetime index
+        df.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
+                    index in df.index]
+        # Convert to local time zone
+        df.index = df.index.tz_convert('Europe/Berlin')
+        # Add frequency attribute
+        freq = pd.infer_freq(df.index)
+        df.index.freq = pd.tseries.frequencies.to_offset(freq)
         if filter_interpolated_data:
-            print('---- The interpolated data of ArgeNetz data is ' +
-                  'being filtered. ----')
+            print('---- The interpolated data of ArgeNetz data in {0} '.format(
+                      year) + 'is being filtered. ----')
             df_corrected = df.copy()
             for column_name in list(df):
                 if 'power_output' in column_name:
@@ -206,7 +208,7 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                         df[column_name], window_size=10, tolerance=0.0011,
                         replacement_character=np.nan, plot=False)
             df = df_corrected
-            print('---- Filtering Done. ----')
+            print('---- Filtering of {0} Done. ----'.format(year))
         pickle.dump(df, open(path, 'wb'))
     return df
 
@@ -358,10 +360,10 @@ def check_theoretical_power(df, year, start=None, end=None):
         power_output_by_wind_speed = (
             turbine_amount[0] * power_output.power_curve(
                 df[name + '_wind_speed'], e66.power_curve['wind_speed'],
-                e66.power_curve['values']) +
+                e66.power_curve['power']) +
             turbine_amount[1] * power_output.power_curve(
                 df[name + '_wind_speed'], e70.power_curve['wind_speed'],
-                e70.power_curve['values'])) / (1*10**6)
+                e70.power_curve['power'])) / (1*10**6)
         power_output_by_wind_speed = pd.Series(
             data=power_output_by_wind_speed.values, index=indices)
         val_obj = analysis_tools.ValidationObject(

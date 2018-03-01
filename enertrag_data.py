@@ -5,19 +5,15 @@ feed-in time series from a Enertrag wind farm.
 The following data is available (year 2016) for the 17 turbines:
 - meter (Zählerstand) in kW
 - power output in kW
-- wind speed in m/s  # TODO: korregiert???
+- wind speed in m/s
 - wind direction (gondel position) in °
 ATTENTION: gondel position is not correct!!
 
 Additionally the sum of the power output of all wind turbines is available in
 column 'wf_9_power_output'.
 
+DateTimeIndex in 'Europe/Berlin' time zone.
 """
-
-# Imports from lib_validation
-import visualization_tools
-import analysis_tools
-import tools
 
 # Other imports
 from matplotlib import pyplot as plt
@@ -27,7 +23,7 @@ import os
 import pickle
 
 
-def read_data(filename, **kwargs):
+def read_data(filename):
     r"""
     Fetches data from a csv file.
 
@@ -35,13 +31,6 @@ def read_data(filename, **kwargs):
     ----------
     filename : string
         Name of data file.
-
-    Other Parameters
-    ----------------
-    datapath : string, optional
-        Path where the data file is stored. Default: './data'
-    usecols : list of strings or list of integers, optional
-        TODO: add explanation Default: None
 
     Returns
     -------
@@ -55,18 +44,21 @@ def read_data(filename, **kwargs):
 
 
 def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
-                      resample=True, plot=False, x_limit=None, frequency='30T'):
+                      resample=True, plot=False, x_limit=None,
+                      frequency='30T', curtailment=True):
     # TODO: add plots to check data
     r"""
     Fetches Enertrag data.
 
+    Parameters
+    ----------
     pickle_load : Boolean
         If True data frame is loaded from the pickle dump if False the data is
         loaded from the original csv files (or from smaller csv file that was
         created in an earlier run if `csv_load` is True).
         Either set `pickle_load` or `csv_load` to True. Default: False.
     filename : String
-        Filename including path of pickle dump. Default: 'pickle_dump.p'.
+        Filename including path of pickle dump. Default: 'enertrag_dump.p'.
     resample : Boolean
         If True the data will be resampled to the `frequency`. (mean power)
     plot : Boolean
@@ -77,6 +69,9 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
         wanted. Default: None.
     frequency : String (or freq object...?)
         # TODO add
+    curtailment : Boolean
+        If True an average (30min) curtailment of the wind farm power output is
+        added.
 
     Returns
     -------
@@ -103,28 +98,41 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
                     'Leistung[kW]': 'wf_9_{0}_power_output'.format(
                         turbine_name),
                     'Gondelposition': 'wf_9_{0}_wind_dir'.format(
-                        turbine_name)},
-                               inplace=True)
+                        turbine_name)}, inplace=True)
                 # Add to DataFrame
                 enertrag_df = pd.concat([enertrag_df, df_part], axis=1)
-            # Convert index to DatetimeIndex
-            enertrag_df.index = pd.to_datetime(enertrag_df.index)
+            # Convert index to DatetimeIndex and make time zone aware
+            enertrag_df.index = pd.to_datetime(enertrag_df.index).tz_localize(
+                'UTC').tz_convert('Europe/Berlin')
             if resample:
                 enertrag_df = enertrag_df.resample(frequency).mean()
+            # Add frequency attribute
+            freq = pd.infer_freq(enertrag_df.index)
+            enertrag_df.index.freq = pd.tseries.frequencies.to_offset(freq)
             # Get wind farm power output
-            enertrag_df['wf_9_power_output'] = enertrag_df.loc[:,
-                                               [column for column in
-                                                list(enertrag_df) if
-                                                'power_output' in column]].sum(
-                skipna=True, axis=1)
+            enertrag_df['wf_9_power_output'] = enertrag_df.loc[
+                :, [column for column in list(enertrag_df) if
+                    'power_output' in column]].sum(skipna=True, axis=1)
             pickle.dump(enertrag_df, open(filename, 'wb'))
     return enertrag_df
+
+
+def get_enertrag_curtailment_data(frequency):
+    r"""
+
+    """
+    data = read_data(
+        'windpark_nechlin_production_and_curtailment_2016_15min.csv')
+    data.index = pd.to_datetime(data.index).tz_localize(
+        'UTC').tz_convert('Europe/Berlin')
+    curtailment_data = data.drop(
+        ['power_rel', 'wind_mean'], axis=1).resample(frequency).mean()
+    return curtailment_data
 
 if __name__ == "__main__":
     # Decide whether to resample to a certain frequency
     resample = True
     frequency = '30T'
     filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
-                            'enertrag_data.p') # Filename for pickle dump
+                            'enertrag_data_2016.p')  # Filename for pickle dump
     df = get_enertrag_data(resample=resample, filename=filename)
-

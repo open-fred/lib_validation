@@ -12,18 +12,9 @@
 *.egg-info/
 /htw_2015/
 
-data/ArgeNetz/**/*
-data/Enertrag/**/*
-data/GreenWind/**/*
-data/Daten_Twele/**/*
-data/Merra/**/*
-data/open_FRED/**/*
-data/Renewables_ninja_capacity_factors/**/*
-
-dumps/validation_data/**/*
-dumps/validation_objects/**/*
-dumps/weather/**/*
-dumps/wind_farm_data/**/*
+data/**/*
+dumps/**/*
+Plots/**/*
 
 /untitled0.py
 /ergebnis.csv
@@ -31,4 +22,4 @@ dumps/wind_farm_data/**/*
 /table.tex
 /table_2.tex
 /untitled1.py
-
+/helper_files/wf_coordinates.csv

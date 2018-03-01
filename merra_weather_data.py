@@ -1,3 +1,12 @@
+"""
+The ``merra_weather_data`` module contains functions to read and dump the
+MERRA-2 weather data from csv files.
+
+TODO: The time stamps are in UTC. in the tools module a function converts them.
+Try is this would work with the whole dataframe (with all locations) - took lots of time
+
+"""
+
 # Imports from Windpowerlib
 from windpowerlib import temperature
 
@@ -45,11 +54,13 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
     if pickle_load:
         weather_df = pickle.load(open(filename, 'rb'))
     else:
+        print('---- MERRA-2 data of {0} is being loaded. ----'.format(year))
         # Load data from csv
         data_frame = pd.read_csv(os.path.join(
             os.path.dirname(__file__), 'data/Merra',
             'weather_data_GER_{0}.csv'.format(year)),
             sep=',', decimal='.', index_col=0)
+        data_frame.index = pd.to_datetime(data_frame.index, utc=True)
         if not raw_data:
             if multi_index:
                 if heights is not None:
@@ -79,6 +90,7 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                 weather_df = rename_columns(data_frame)
         else:
             weather_df = data_frame
+        print('---- Loading of MERRA-2 data of {0} Done. ----'.format(year))
         pickle.dump(weather_df, open(filename, 'wb'))
     return weather_df
 

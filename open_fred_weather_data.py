@@ -1,4 +1,13 @@
-# Other imports
+"""
+The ``open_fred_weather_data`` module contains functions to read and dump the
+open_FRED weather data from csv files.
+
+TODO: The time stamps are in UTC. in the tools module a function converts them.
+Try is this would work with the whole dataframe (with all locations) - took lots of time
+
+"""
+
+# Imports
 import pandas as pd
 import os
 import pickle

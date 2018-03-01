@@ -26,7 +26,7 @@ def smooth_pc(plot=True, print_out=False):
         turbulence_intensity = tools.estimate_turbulence_intensity(
             turbine.hub_height, z0.mean())
         smoothed_power_curve = power_output.smooth_power_curve(
-            turbine.power_curve.wind_speed, turbine.power_curve['values'],
+            turbine.power_curve.wind_speed, turbine.power_curve['power'],
             block_width=block_width,
             standard_deviation_method=standard_deviation_method,
             turbulence_intensity=turbulence_intensity)
@@ -36,9 +36,9 @@ def smooth_pc(plot=True, print_out=False):
         if plot:
             fig = plt.figure()
             a, = plt.plot(turbine.power_curve['wind_speed'],
-                         turbine.power_curve['values']/1000, label='original')
+                         turbine.power_curve['power']/1000, label='original')
             b, = plt.plot(smoothed_power_curve['wind_speed'],
-                         smoothed_power_curve['values']/1000, label='smoothed')
+                         smoothed_power_curve['power']/1000, label='smoothed')
             plt.ylabel('Power in kW')
             plt.xlabel('Wind speed in m/s')
             plt.title(turbine.object_name)
@@ -94,7 +94,7 @@ def summarized_pc(plot=False):
     summarized_power_curve_df = summarized_power_curve(**parameters)
     if plot:
         plt.plot(summarized_power_curve_df['wind_speed'],
-                 summarized_power_curve_df['values'])
+                 summarized_power_curve_df['power'])
         plt.show()
         plt.close()
     return summarized_power_curve_df

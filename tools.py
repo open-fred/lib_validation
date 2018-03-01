@@ -5,7 +5,6 @@ from windpowerlib import (power_output, wind_speed, density, temperature)
 # Imports from lib_validation
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-import tools
 import matplotlib.pyplot as plt
 
 # Other imports
@@ -16,7 +15,7 @@ import pickle
 import os
 
 
-def get_weather_data(weather_data_name, coordinates, pickle_load=None,
+def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                      filename='pickle_dump.p', year=None,
                      temperature_heights=None):
     r"""
@@ -30,7 +29,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
     pickle_load : Boolean
-        True if data has already been dumped before.
+        True if data has already been dumped before. Default: False.
     filename : String
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
@@ -60,9 +59,9 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                 'fred_data_{0}_sh.csv'.format(year))
             data_frame = get_open_fred_data(
                 year, filename=fred_path, pickle_filename=filename)
+        pickle.dump(data_frame, open(filename, 'rb'))
     # Find closest coordinates to weather data point and create weather_df
-    closest_coordinates = tools.get_closest_coordinates(data_frame,
-                                                        coordinates)
+    closest_coordinates = get_closest_coordinates(data_frame, coordinates)
     data_frame = data_frame
     data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame
@@ -70,25 +69,14 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=None,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]),:].reset_index(
                                 level=[1,2], drop=True)
-    # Set index to standardized form
-    if weather_data_name == 'MERRA':
-        weather_df.index = tools.get_indices_for_series(
-            temporal_resolution=60, time_zone='UTC', year=year)
     if weather_data_name == 'open_FRED':
-        # series = weather_df['roughness_length']
-        # series.index = series.index.tz_localize('UTC')
-        # z0_series = tools.upsample_series(
-        #     series, output_resolution=30,
-        #     input_resolution='H')
-        # weather_df['roughness_length'] = z0_series.values
-        # TODO: indices für 2016....
-        # TODO: check: to_datetime possible??
-        # weather_df.index = tools.get_indices_for_series(
-        #     temporal_resolution=30, time_zone='UTC', year=year)
+        # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')
-        # Add frequency attribute
-        freq = pd.infer_freq(weather_df.index)
-        weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
+    # Add frequency attribute
+    freq = pd.infer_freq(weather_df.index)
+    weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
+    # Convert index to local time zone
+    weather_df.index = weather_df.index.tz_convert('Europe/Berlin')
     return weather_df
 
 
@@ -163,7 +151,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, data_height):
             power_output.power_curve(
                 wind_speed_hub,
                 turbine_type['wind_turbine'].power_curve['wind_speed'],
-                turbine_type['wind_turbine'].power_curve['values']))
+                turbine_type['wind_turbine'].power_curve['power']))
     return power_output_simple_aggregation(wind_turbine_fleet)
 
 
@@ -210,7 +198,7 @@ def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
             power_output.power_curve_density_correction(
                 wind_speed_hub,
                 turbine_type['wind_turbine'].power_curve['wind_speed'],
-                turbine_type['wind_turbine'].power_curve['values'],
+                turbine_type['wind_turbine'].power_curve['power'],
                 density_hub))
     return power_output_simple_aggregation(wind_turbine_fleet, weather_df,
                                            data_height)
@@ -548,3 +536,19 @@ def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
         data_corrected.plot()
         plt.show()
     return data_corrected
+
+
+def get_wind_efficiency_curve():
+    path = os.path.join(os.path.dirname(__file__), 'helper_files',
+                        'wind_efficiency_curve_1.csv')
+    raw_curve = pd.read_csv(path)
+    wind_speed = pd.Series(np.arange(0, 25.5, 0.5))
+    efficiency = np.interp(wind_speed, raw_curve['x'], raw_curve['Curve1'])
+    efficiency_curve = pd.DataFrame(data=[wind_speed.values,
+                                          efficiency],).transpose()
+    efficiency_curve.columns = ['wind_speed', 'efficiency']
+    return efficiency_curve
+
+if __name__ == "__main__":
+    curve = get_wind_efficiency_curve()
+    curve.plot()
