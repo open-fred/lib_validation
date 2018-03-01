@@ -1,0 +1,8 @@
+2015-05-01+02P1M_neu.csv
+2015-06-01+02P1M_neu.csv
+2015-07-01+02P1M_neu.csv
+2015-08-01+02P1M_neu.csv
+2015-09-01+02P1M_neu.csv
+2015-10-01+02P1M_neu.csv
+2015-11-01+01P1M_neu.csv
+2015-12-01+01P1M_neu.csv
