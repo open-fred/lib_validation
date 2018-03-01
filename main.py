@@ -52,6 +52,7 @@ pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
 pickle_load_enertrag = True
+pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
@@ -74,7 +75,7 @@ weather_data_list = [
 validation_data_list = [
     'ArgeNetz',
     'Enertrag',
-    # 'GreenWind'
+    'GreenWind'
     ]
 
 output_methods = [
@@ -148,7 +149,7 @@ temperature_heights = [60, 64, 65, 105, 114]
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_arge or not pickle_load_enertrag or not
-        pickle_load_wind_farm_data):
+        pickle_load_greenwind or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
 # ---------------------------------- Warning -------------------------------- #
@@ -200,16 +201,30 @@ def get_validation_data(frequency):
         # Get Enertrag Data
         enertrag_data = get_enertrag_data(
             pickle_load=pickle_load_enertrag,
-            filename=os.path.join(validation_pickle_folder, 'enertrag_data.p'),
-            resample=True, plot=False, x_limit=None)
+            filename=os.path.join(validation_pickle_folder, 'enertrag_data.p'))
         # Select aggregated power output of wind farm (rename)
         enertrag_data = enertrag_data[['wf_9_power_output']].rename(
             columns={'wf_9_power_output': 'wf_9_measured'})
         # Resample the DataFrame columns with `frequency` and add to list
         validation_df_list.append(enertrag_data.resample(frequency).mean())
     if 'GreenWind' in validation_data_list:
-        # Get GreenWind data
-        pass
+        # Get wind farm data
+        wind_farm_data_gw = get_wind_farm_data(
+            'farm_specification_greenwind_{0}.p'.format(year),
+            wind_farm_pickle_folder, pickle_load_wind_farm_data)
+        # Get Greenwind data
+        greenwind_data = get_greenwind_data(
+            year, pickle_load=pickle_load_greenwind,
+            filename=os.path.join(validation_pickle_folder,
+                                  'greenwind_data_{0}.p'.format(year)))
+        # Select aggregated power output of wind farm (rename)
+        greenwind_data = greenwind_data[[
+            '{0}_power_output'.format(data['object_name']) for
+                data in wind_farm_data_gw]].rename(
+            columns={col: col.replace('power_output', 'measured') for col in
+                     greenwind_data.columns})
+        # Resample the DataFrame columns with `frequency` and add to list
+        validation_df_list.append(greenwind_data.resample(frequency).mean())
     # Join DataFrames - power output in MW
     validation_df = pd.concat(validation_df_list, axis=1) / 1000
     return validation_df
@@ -226,7 +241,8 @@ def return_wind_farm_data():
 
         """
         filenames = ['farm_specification_{0}_{1}.p'.format(
-            validation_data_name.replace('ArgeNetz', 'argenetz'), year)
+            validation_data_name.replace('ArgeNetz', 'argenetz').replace(
+                'GreenWind', 'greenwind'), year)
             for validation_data_name in validation_data_list if
             validation_data_name is not 'Enertrag']
         if (year == 2016 and 'Enertrag' in validation_data_list):
