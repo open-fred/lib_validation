@@ -381,6 +381,26 @@ def check_theoretical_power(df, year, start=None, end=None):
                 year, name),
             title='{0}'.format(name))
 
+
+def correlation_of_wind_speed_and_power(year):
+    # Get ArgeNetz Data
+    pickle_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
+                     'arge_netz_data_{0}.p'.format(year)))
+    arge_netz_data = get_argenetz_data(year, pickle_load=True,
+                                       filename=pickle_path, plot=False)
+    if year == 2015:
+        wind_farm_names = ['wf_1', 'wf_4']
+    if year == 2016:
+        wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
+    for wind_farm_name in wind_farm_names:
+        df = arge_netz_data[['{0}_power_output'.format(wind_farm_name),
+                             '{0}_wind_speed'.format(wind_farm_name)]]
+        df.corr().to_csv(os.path.join(os.path.dirname(__file__),
+                         'Evaluation/argenetz/',
+                         'correlation_wind_speed_power_{0}_{1}.csv'.format(
+                             wind_farm_name, year)))
+
 if __name__ == "__main__":
     years = [
         2015,
@@ -401,8 +421,13 @@ if __name__ == "__main__":
 
 # Other paramterts:
 #    evaluate_data = False  # Check which variables are given for which farm
+    correlation_wind_power = False
     check_theo_power = False  # theoretical power against wind speed if True
 
+    if correlation_wind_power:
+        years = [2015, 2016]
+        for year in years:
+            correlation_of_wind_speed_and_power(year)
 #    if evaluate_data:
 #        # Filenames: filenames_all.txt, filenames_2016.txt,.. see helper_files
 #        df_compare = data_evaluation('helper_files/filenames_2016.txt')
