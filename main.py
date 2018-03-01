@@ -458,7 +458,7 @@ def initialize_dictionary(dict_type, time_series_pairs=None):
     return dictionary
 
 
-def join_dictionaries(list_of_dicts):
+def join_dictionaries(list_of_dicts): # TODO: delete if not needed
     # Start with copy of first entry
     z = list_of_dicts[0].copy()
     # Update with the remaining dictionaries
@@ -477,9 +477,11 @@ annual_energy_dicts = {weather_data_name: None
                        for weather_data_name in weather_data_list}
 for weather_data_name in weather_data_list:
     time_series_df = get_time_series_df(weather_data_name)
-    if (pickle_load_time_series_df or csv_load_time_series_df):
-        # Check if all needed data exists
-        pass  # TODO: add
+    if time_period is not None:
+        # TODO: is now for all wind farms. if decided to use time period for argenetz -
+        # TODO: only apply on arge (put values to nan, that are outside the period)- leave this for times of day evaluation
+        time_series_df = tools.select_certain_time_steps(time_series_df,
+                                                         time_period)
     # Create list of time series data frames (for each wind farm for each
     # approach) - measured and calculated data
     time_series_df_parts = [

@@ -47,6 +47,14 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
         pickle.dump(weather_df, open(pickle_filename, 'wb'))
     return weather_df
 
+
+#def join_of_data(path1, path2, year):
+#    df1 = get_open_fred_data(filename=path1)
+#    df2 = get_open_fred_data(filename=path2)
+#    df = pd.concat([df1, df2], axis=1).to_csv(
+#        os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+#            'fred_data_{0}_sh_.csv'.format(year)))
+ 
 if __name__ == "__main__":
     years = [
         2015,
@@ -62,3 +70,8 @@ if __name__ == "__main__":
         # Get data
         weather_df = get_open_fred_data(filename=fred_path,
                                         pickle_filename=pickle_path)
+#    join_of_data(
+#        os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+#                     'fred_data_2016_sh.csv'),
+#        os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+#                     'fred_data_2016_Enertrag_Windfarm.csv'), 2016)
