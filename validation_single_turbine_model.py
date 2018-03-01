@@ -14,8 +14,42 @@ from analysis_tools import ValidationObject
 from greenwind_data import get_greenwind_data
 
 # Other imports
+from matplotlib import pyplot as plt
 import os
 import pandas as pd
 import numpy as np
 import pickle
 
+
+# -------------------------- Check wind directions -------------------------- #
+def wind_directions_to_csv(frequency=None):
+    if frequency is None:
+        resample = False
+    else:
+        resample = True
+    # Get Enertrag data
+    enertrag_data = get_enertrag_data(
+        pickle_load=True, filename=os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data/',
+            'enertrag_data_check_wind_dir.p'),
+        resample=resample, frequency=frequency, plot=False, x_limit=None)
+    # Select wind directions
+    wind_directions_df = enertrag_data[[
+        column_name for column_name in list(enertrag_data) if
+            '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
+    if resample:
+        wind_directions_df = wind_directions_df.resample(frequency)
+    wind_directions_df.to_csv(
+        'Evaluation/enertrag_wind_direction/wind_direction_enertrag_resample_{0}.csv'.format(frequency))
+    wind_directions_df.corr().to_csv(
+        'Evaluation/enertrag_wind_direction/correlation_wind_direction_enertrag_resample_{0}.csv'.format(frequency))
+    # fig = plt.figure()
+    # wind_directions_df.plot(legend=True)
+    # fig.savefig(os.path.join(
+    #     os.path.dirname(__file__), 'Plots/others/enertrag_wind_direction',
+    #     'resample_{0}.pdf'.format(frequency)))
+    # plt.close()
+
+if __name__ == "__main__":
+    frequency = '10T'
+    plot_wind_directions(frequency)
