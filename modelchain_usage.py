@@ -61,7 +61,8 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
                            wake_losses_method=None,
                            smoothing=True, block_width=0.5,
                            standard_deviation_method='turbulence_intensity',
-                           wind_farm_efficiency=None, **kwargs):
+                           density_correction_order='before_summation', # TODO add to docstring
+                           smoothing_order='before_summation', **kwargs):
     r"""
     Calculate power output of... TODO: add to docstring
 
@@ -100,11 +101,6 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         distribution. Options: 'turbulence_intensity', 'Norgaard', 'Staffell'.
         Default in :py:func:`~.power_output.smooth_power_curve`:
         'turbulence_intensity'.
-    wind_farm_efficiency : float or pd.DataFrame or Dictionary
-        Efficiency of the wind farm. Either constant (float) or wind efficiency
-        curve (pd.DataFrame or Dictionary) contianing 'wind_speed' and
-        'efficiency' columns/keys with wind speeds in m/s and the
-        corresponding dimensionless wind farm efficiency. Default: None.
 
     Other Parameters
     ----------------
@@ -150,7 +146,8 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         'smoothing': smoothing,
         'block_width': block_width,
         'standard_deviation_method': standard_deviation_method,
-        'wind_farm_efficiency': wind_farm_efficiency}
+        'density_correction_order': density_correction_order,
+        'smoothing_order': smoothing_order}
     # Add to modelchain data
     if 'wind_speed_model' in kwargs:
         wf_modelchain_data['wind_speed_model'] = kwargs['wind_speed_model']
