@@ -357,15 +357,17 @@ def get_calculated_data(weather_data_name):
                             wind_farm.object_name)))
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
+    # Add curtailment for Enertrag wind farm
     for column_name in list(calculation_df):
         if column_name.split('_')[1] == '9':
-            curtailment = get_enertrag_curtailment_data(
-                weather.index.freq).rename({'curtail_rel': 'curtailment'},
-                                           axis=1)
+            curtailment = get_enertrag_curtailment_data(weather.index.freq)
+            # Replace values of 0 with nan as they should not be considered
+            # in the validation
+            curtailment.replace(0.0, np.nan, inplace=True)
             # Add curtailment to data frame
             df = pd.concat([calculation_df[[column_name]], curtailment],
                            axis=1)
-            calculation_df[column_name] = df[column_name] * df['curtailment']
+            calculation_df[column_name] = df[column_name] * df['curtail_rel']
     return calculation_df
 
 

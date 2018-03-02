@@ -7,7 +7,7 @@ The following data is available (year 2016) for the 17 turbines:
 - power output in kW
 - wind speed in m/s
 - wind direction (gondel position) in °
-ATTENTION: gondel position is not correct!!
+ATTENTION: gondel position of some wind turbines is not correct!!
 
 Additionally the sum of the power output of all wind turbines is available in
 column 'wf_9_power_output'.
