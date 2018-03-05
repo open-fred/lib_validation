@@ -332,7 +332,7 @@ def get_calculated_data(weather_data_name):
 #                name='{0}_calculated_efficiency_curve'.format(
 #                    wind_farm.object_name)))
         if 'eff_curve_smooth' in approach_list:
-            wind_farm.efficiency = tools.get_wind_efficiency_curve()
+            wind_farm.efficiency = tools.get_wind_efficiency_curve() # TODO: everywhere: efficiency curve from wind_farm module and delete in tools
             calculation_df_list.append(modelchain_usage.power_output_wind_farm(
                 wind_farm, weather, cluster=False, density_correction=False,
                 wake_losses_method='wind_efficiency_curve', smoothing=True,
