@@ -30,37 +30,44 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
         'enerconE70': {
             'object_name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
             'hub_height': 64,  # in m
-            'rotor_diameter': 71  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 71,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_1800_65': {
             'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
             'hub_height': 65,  # in m
-            'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 70,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_1800_98': {
             'object_name': 'ENERCON E 66 1800',
             'hub_height': 98,  # in m
-            'rotor_diameter': 70  # in m
+            'rotor_diameter': 70,  # in m
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_2000': {
             'object_name': 'ENERCON E 66 2000',
             'hub_height': 138.3,  # in m
-            'rotor_diameter': 82  # in m
+            'rotor_diameter': 82,  # in m
+            'fetch_curve': 'power_curve'
         },
         'vestasV90': {
             'object_name': 'VESTAS V 90 2000',
             'hub_height': 105,  # in m
-            'rotor_diameter': 90  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 90,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'vestasV80': {
             'object_name': 'VESTAS V 80 2000',
             'hub_height': 60,  # in m
-            'rotor_diameter': 80  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 80,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'ge_1500': {
             'object_name': 'GE 1,5 SLE',
             'hub_height': 100,  # in m
-            'rotor_diameter': 77  # in m
+            'rotor_diameter': 77,  # in m
+            'fetch_curve': 'power_curve'
         }
     }
 
