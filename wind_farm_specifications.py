@@ -133,8 +133,8 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 wind_farm_data = [wf_2, wf_3, wf_4, wf_5]
             if filename == 'farm_specification_argenetz_2016.p':
                 wind_farm_data = [wf_1, wf_3, wf_4, wf_5]  # no wf_2 for 2016
-        if (filename == 'farm_specification_GreenWind_2015.p' or
-                    filename == 'farm_specification_GreenWind_2016.p'):
+        if (filename == 'farm_specification_greenwind_2015.p' or
+                    filename == 'farm_specification_greenwind_2016.p'):
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
                 'object_name': 'wf_6',
@@ -193,7 +193,9 @@ if __name__ == "__main__":
     filenames = [
         'farm_specification_argenetz_2015.p',
         'farm_specification_argenetz_2016.p',
-        'farm_specification_enertrag_2016.p' # TODO add
+        'farm_specification_enertrag_2016.p',
+        'farm_specification_greenwind_2015.p',
+        'farm_specification_greenwind_2016.p'
         ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
