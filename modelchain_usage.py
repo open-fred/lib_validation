@@ -1,6 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib.modelchain import ModelChain
-from windpowerlib.wind_farm_modelchain import WindFarmModelChain
+from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
 # Imports from lib_validation
 import tools
@@ -56,20 +56,21 @@ def power_output_simple(wind_turbine_fleet, weather_df,
     return tools.power_output_simple_aggregation(wind_turbine_fleet)
 
 
-def power_output_wind_farm(wind_farm, weather_df, cluster=False,
-                           density_correction=False,
-                           wake_losses_method=None,
-                           smoothing=True, block_width=0.5,
-                           standard_deviation_method='turbulence_intensity',
-                           density_correction_order='before_summation', # TODO add to docstring
-                           smoothing_order='before_summation', **kwargs):
+def power_output_cluster(wind_object, weather_df, density_correction=False,
+                         wake_losses_method=None, smoothing=True,
+                         block_width=0.5,
+                         standard_deviation_method='turbulence_intensity',
+                         density_correction_order='wind_farm_power_curves',
+                         smoothing_order='wind_farm_power_curves', **kwargs):
     r"""
     Calculate power output of... TODO: add to docstring
 
     Parameters
     ----------
-    wind_farm : object
-        A :class:`~.wind_farm.WindFarm` object representing the wind farm.
+    wind_object : WindFarm or WindTurbineCluster
+        A :class:`~.wind_farm.WindFarm` object representing the wind farm or
+        a :class:`~.wind_turbine_cluster.WindTurbineCluster` object
+        representing the wind turbine cluster.
     weather_df : pandas.DataFrame
         DataFrame with time series for wind speed `wind_speed` in m/s, and
         roughness length `roughness_length` in m, as well as optionally
@@ -82,8 +83,6 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         measured at a height of 10 m). See documentation of
         :func:`modelchain.ModelChain.run_model` for an example on how to
         create the weather_df DataFrame.
-    cluster : Boolean
-        TODO: add
     density_correction : Boolean
         If True a density correction will be applied to the power curves
         before the summation. Default: False.
@@ -101,6 +100,16 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         distribution. Options: 'turbulence_intensity', 'Norgaard', 'Staffell'.
         Default in :py:func:`~.power_output.smooth_power_curve`:
         'turbulence_intensity'.
+    density_correction_order : String
+        Defines when the density correction takes place if `density_correction`
+        is True. Options: 'turbine_power_curves' (to the single turbine power
+        curves), 'wind_farm_power_curves' or 'cluster_power_curve'.
+        Default: 'wind_farm_power_curves'.
+    smoothing_order : String
+        Defines when the smoothing takes place if `smoothing` is True. Options:
+        'turbine_power_curves' (to the single turbine power curves),
+        'wind_farm_power_curves' or 'cluster_power_curve'.
+        Default: 'wind_farm_power_curves'.
 
     Other Parameters
     ----------------
@@ -140,7 +149,6 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         Simulated power output of wind farm.
     """
     wf_modelchain_data = {
-        'cluster': cluster,
         'density_correction': density_correction,
         'wake_losses_method': wake_losses_method,
         'smoothing': smoothing,
@@ -148,7 +156,6 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         'standard_deviation_method': standard_deviation_method,
         'density_correction_order': density_correction_order,
         'smoothing_order': smoothing_order}
-    wf_mc = WindFarmModelChain(wind_farm,
-                               **wf_modelchain_data).run_model(weather_df,
-                                                               **kwargs)
+    wf_mc = TurbineClusterModelChain(
+        wind_object, **wf_modelchain_data).run_model(weather_df, **kwargs)
     return wf_mc.power_output
