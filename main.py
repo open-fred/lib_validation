@@ -364,13 +364,14 @@ def get_calculated_data(weather_data_name):
         # TODO: think of approaches and adjust
         if 'linear_interpolation' in approach_list:
             if len(list(weather['wind_speed'])) > 1:
-                efficiency_curve = tools.get_wind_efficiency_curve()
+                wind_farm.efficiency = wf.read_wind_efficiency_curve(
+                    curve_name='dena_mean', plot=False)
                 calculation_df_list.append(
                     modelchain_usage.power_output_wind_farm(
                         wind_farm, weather, cluster=False,
                         density_correction=False,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=True, wind_farm_efficiency=efficiency_curve,
+                        smoothing=True,
                         wind_speed_model='interpolation_extrapolation',
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
