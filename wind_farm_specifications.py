@@ -30,37 +30,44 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
         'enerconE70': {
             'object_name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
             'hub_height': 64,  # in m
-            'rotor_diameter': 71  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 71,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_1800_65': {
             'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
             'hub_height': 65,  # in m
-            'rotor_diameter': 70  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 70,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_1800_98': {
             'object_name': 'ENERCON E 66 1800',
             'hub_height': 98,  # in m
-            'rotor_diameter': 70  # in m
+            'rotor_diameter': 70,  # in m
+            'fetch_curve': 'power_curve'
         },
         'enerconE66_2000': {
             'object_name': 'ENERCON E 66 2000',
             'hub_height': 138.3,  # in m
-            'rotor_diameter': 82  # in m
+            'rotor_diameter': 82,  # in m
+            'fetch_curve': 'power_curve'
         },
         'vestasV90': {
             'object_name': 'VESTAS V 90 2000',
             'hub_height': 105,  # in m
-            'rotor_diameter': 90  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 90,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'vestasV80': {
             'object_name': 'VESTAS V 80 2000',
             'hub_height': 60,  # in m
-            'rotor_diameter': 80  # in m    source: www.wind-turbine-models.com
+            'rotor_diameter': 80,  # in m    source: www.wind-turbine-models.com
+            'fetch_curve': 'power_curve'
         },
         'ge_1500': {
             'object_name': 'GE 1,5 SLE',
             'hub_height': 100,  # in m
-            'rotor_diameter': 77  # in m
+            'rotor_diameter': 77,  # in m
+            'fetch_curve': 'power_curve'
         }
     }
 
@@ -126,8 +133,8 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 wind_farm_data = [wf_2, wf_3, wf_4, wf_5]
             if filename == 'farm_specification_argenetz_2016.p':
                 wind_farm_data = [wf_1, wf_3, wf_4, wf_5]  # no wf_2 for 2016
-        if (filename == 'farm_specification_GreenWind_2015.p' or
-                    filename == 'farm_specification_GreenWind_2016.p'):
+        if (filename == 'farm_specification_greenwind_2015.p' or
+                    filename == 'farm_specification_greenwind_2016.p'):
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
                 'object_name': 'wf_6',
@@ -186,7 +193,9 @@ if __name__ == "__main__":
     filenames = [
         'farm_specification_argenetz_2015.p',
         'farm_specification_argenetz_2016.p',
-        'farm_specification_enertrag_2016.p' # TODO add
+        'farm_specification_enertrag_2016.p',
+        'farm_specification_greenwind_2015.p',
+        'farm_specification_greenwind_2016.p'
         ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
