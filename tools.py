@@ -521,9 +521,9 @@ def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
 
     """
     data_corrected = series.copy()
-    # calculate the sum of the gradient of the feed-in data over |window_size| time
-    # steps, if it is about zero over the whole time window the data is assumed to
-    # be interpolated
+    # calculate the sum of the gradient of the feed-in data over |window_size|
+    # time steps, if it is about zero over the whole time window the data is
+    # assumed to be interpolated
     data_gradient_sum = series.diff().diff().rolling(
         window=window_size, min_periods=window_size).sum()
     for i, v in data_gradient_sum.iteritems():
@@ -536,19 +536,3 @@ def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
         data_corrected.plot()
         plt.show()
     return data_corrected
-
-
-def get_wind_efficiency_curve():
-    path = os.path.join(os.path.dirname(__file__), 'helper_files',
-                        'wind_efficiency_curve_1.csv')
-    raw_curve = pd.read_csv(path)
-    wind_speed = pd.Series(np.arange(0, 25.5, 0.5))
-    efficiency = np.interp(wind_speed, raw_curve['x'], raw_curve['Curve1'])
-    efficiency_curve = pd.DataFrame(data=[wind_speed.values,
-                                          efficiency],).transpose()
-    efficiency_curve.columns = ['wind_speed', 'efficiency']
-    return efficiency_curve
-
-if __name__ == "__main__":
-    curve = get_wind_efficiency_curve()
-    curve.plot()
