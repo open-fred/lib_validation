@@ -148,21 +148,6 @@ def power_output_wind_farm(wind_farm, weather_df, cluster=False,
         'standard_deviation_method': standard_deviation_method,
         'density_correction_order': density_correction_order,
         'smoothing_order': smoothing_order}
-    # Add to modelchain data
-    if 'wind_speed_model' in kwargs:
-        wf_modelchain_data['wind_speed_model'] = kwargs['wind_speed_model']
-    if 'temperature_model' in kwargs:
-        wf_modelchain_data['temperature_model'] = kwargs['temperature_model']
-    if 'density_model' in kwargs:
-        wf_modelchain_data['density_model'] = kwargs['density_model']
-    if 'power_output_model' in kwargs:
-        wf_modelchain_data['power_output_model'] = kwargs['power_output_model']
-    if 'density_correction' in kwargs:
-        wf_modelchain_data['density_correction'] = kwargs['density_correction']
-    if 'obstacle_height' in kwargs:
-        wf_modelchain_data['obstacle_height'] = kwargs['obstacle_height']
-    if 'hellman_exp' in kwargs:
-        wf_modelchain_data['hellman_exp'] = kwargs['hellman_exp']
     wf_mc = WindFarmModelChain(wind_farm,
                                **wf_modelchain_data).run_model(weather_df,
                                                                **kwargs)
