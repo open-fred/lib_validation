@@ -77,7 +77,7 @@ weather_data_list = [
 validation_data_list = [
     'ArgeNetz',
     'Enertrag',
-    # 'GreenWind'
+    'GreenWind'
     ]
 
 output_methods = [
