@@ -252,7 +252,6 @@ def return_wind_farm_data():
         return get_joined_wind_farm_data(filenames, wind_farm_pickle_folder,
                                          pickle_load_wind_farm_data)
 
-
 # ------------------------- Power output simulation ------------------------- #
 def get_calculated_data(weather_data_name):
     r"""
@@ -415,6 +414,7 @@ def get_time_series_df(weather_data_name):
     strings are dropped. This takes place after dumping.
 
     """
+    # TODO: if config_module: filename time series df dependent on validation case
     time_series_filename = os.path.join(time_series_df_folder,
                                         'time_series_df_{0}_{1}.p'.format(
                                             weather_data_name, year))
