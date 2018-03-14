@@ -50,7 +50,7 @@ def read_data(filename):
 
 def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                       resample=True, plot=False, x_limit=None,
-                      frequency='30T', pickle_dump=True):
+                      frequency='30T', pickle_dump=True, filter_errors=True):
     # TODO: add plots to check data
     r"""
     Fetches GreenWind data.
@@ -79,6 +79,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         # TODO add
     pickle_dump : Boolean
         If True the data frame is dumped to `filename`. Default: True.
+    filter_errors : Booelan
+        If True errors are filtered via the error code column. Default: True.
 
     Returns
     -------
@@ -101,6 +103,34 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         # Convert index to DatetimeIndex and make time zone aware
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
             'UTC').tz_convert('Europe/Berlin')
+        if filter_errors:
+            no_error_numbers = pd.read_csv(
+                os.path.join(os.path.dirname(__file__),
+                             'data/GreenWind', 'no_errors.csv'))[
+                'error_number'].values
+            # no_error_numbers = [float(item) for item in no_error_numbers]
+            error_columns = [column_name for column_name in list(greenwind_df) if
+                       'error_number' in column_name]
+            for error_column in error_columns:
+                turbine_name = '_'.join(error_column.split('_')[:3])
+                # Get columns to be edited (same wind turbine and wind farm)
+                columns = [
+                    column for column in list(greenwind_df) if
+                    (turbine_name in column or
+                     column == '{}_power_output'.format('_'.join(
+                         turbine_name.split('_')[:2])))]
+                # Add column with boolean depending on error number
+                # False is error, True is no error
+                greenwind_df['{}_boolean'.format(turbine_name)] = [
+                    True if value in no_error_numbers else False for value in  # TODO: why does this not work with np.nan?
+                    greenwind_df[error_column].values]
+                for column_name in columns:
+                    greenwind_df[column_name] = greenwind_df[
+                        '{}_boolean'.format(turbine_name)] * greenwind_df[
+                            column_name]
+                # Drop Boolean column
+                greenwind_df.drop('{}_boolean'.format(turbine_name), axis=1,
+                                  inplace=True)
         if resample:
             greenwind_df = greenwind_df.resample(frequency).mean()
         else:
@@ -133,12 +163,15 @@ if __name__ == "__main__":
     # Decide whether to resample to a certain frequency
     resample = True
     frequency = '30T'
+    # Decide whether to filter out time steps with error codes (not filtered
+    # is: error code 0 and error codes that are not an error but information)
+    filter_errors = True
     for year in years:
         filename = os.path.join(os.path.dirname(__file__),
                                 'dumps/validation_data',
                                 'greenwind_data_{0}.p'.format(year))
         df = get_greenwind_data(year=year, resample=resample,
-                                filename=filename)
+                                filename=filename, filter_errors=filter_errors)
 
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
@@ -147,8 +180,9 @@ if __name__ == "__main__":
         for year in years:
             error_numbers = get_error_numbers(year)
             error_numbers.to_csv(
-                '../../../User-Shares/Masterarbeit/Daten/Twele/' +
-                'error_numbers_{}.csv'.format(year))
+                os.path.join(os.path.dirname(__file__),
+                             '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                             'error_numbers_{}.csv'.format(year)))
             error_numbers_total.extend(error_numbers)
         sorted_error_numbers_total = pd.Series(
             pd.Series(error_numbers_total ).unique()).sort_values()

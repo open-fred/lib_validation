@@ -218,7 +218,8 @@ def get_validation_data(frequency):
         greenwind_data = get_greenwind_data(
             year, pickle_load=pickle_load_greenwind,
             filename=os.path.join(validation_pickle_folder,
-                                  'greenwind_data_{0}.p'.format(year)))
+                                  'greenwind_data_{0}.p'.format(year)),
+            filter_errors=True)
         # Select aggregated power output of wind farm (rename)
         greenwind_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
