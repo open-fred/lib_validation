@@ -113,12 +113,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
 
 
 def get_error_numbers(year):
-    filename = os.path.join(
-        os.path.dirname(__file__), 'dumps/validation_data',
-        'greenwind_data_{0}.p'.format(year))
     df = get_greenwind_data(year=year, resample=False,
-                            pickle_load=False, filename=filename,
-                            pickle_dump=False)
+                            pickle_load=False, pickle_dump=False)
     error_numbers = []
     for column_name in list(df):
         if 'error_number' in column_name:
@@ -134,13 +130,15 @@ if __name__ == "__main__":
         2015,
         2016
     ]
-    Decide whether to resample to a certain frequency
+    # Decide whether to resample to a certain frequency
     resample = True
     frequency = '30T'
     for year in years:
-        filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
+        filename = os.path.join(os.path.dirname(__file__),
+                                'dumps/validation_data',
                                 'greenwind_data_{0}.p'.format(year))
-        df = get_greenwind_data(year=year, resample=resample, filename=filename)
+        df = get_greenwind_data(year=year, resample=resample,
+                                filename=filename)
 
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
@@ -157,4 +155,5 @@ if __name__ == "__main__":
         sorted_error_numbers_total.index = np.arange(
             len(sorted_error_numbers_total ))
         sorted_error_numbers_total.to_csv(
-            '../../../User-Shares/Masterarbeit/Daten/Twele/error_numbers_total.csv')
+            '../../../User-Shares/Masterarbeit/Daten/Twele/' +
+            'error_numbers_total.csv')
