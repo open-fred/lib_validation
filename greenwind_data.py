@@ -49,8 +49,9 @@ def read_data(filename):
 
 
 def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
-                      resample=True, plot=False, x_limit=None,
-                      frequency='30T', pickle_dump=True, filter_errors=True):
+                       resample=True, plot=False, x_limit=None,
+                       frequency='30T', pickle_dump=True, filter_errors=True,
+                       print_error_amount=False):
     # TODO: add plots to check data
     r"""
     Fetches GreenWind data.
@@ -104,35 +105,65 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
             'UTC').tz_convert('Europe/Berlin')
         if filter_errors:
-            no_error_numbers = pd.read_csv(
-                os.path.join(os.path.dirname(__file__),
-                             'data/GreenWind', 'no_errors.csv'))[
-                'error_number'].values
-            # no_error_numbers = [float(item) for item in no_error_numbers]
-            error_columns = [column_name for column_name in list(greenwind_df) if
-                       'error_number' in column_name]
+            print("---- Errors of GreenWind data in " +
+                  "{} are being filtered. ----".format(year))
+            # Initialize dictionary for amount of error time steps
+            error_dict = {}
+            # Get numbers that do display an error
+            error_numbers = pd.read_csv(
+                os.path.join(os.path.dirname(__file__), 'data/GreenWind',
+                             'errors.csv'))['error_numbers'].dropna().values
+            # # Get numbers that do not display an error
+            # no_error_numbers = pd.read_csv(
+            #     os.path.join(os.path.dirname(__file__),
+            #                  'data/GreenWind', 'no_errors.csv'))[
+            #     'error_number'].values
+            error_columns = [
+                column_name for column_name in list(greenwind_df) if
+                    'error_number' in column_name]
             for error_column in error_columns:
                 turbine_name = '_'.join(error_column.split('_')[:3])
                 # Get columns to be edited (same wind turbine and wind farm)
                 columns = [
                     column for column in list(greenwind_df) if
-                    (turbine_name in column or
-                     column == '{}_power_output'.format('_'.join(
-                         turbine_name.split('_')[:2])))]
+                    ((turbine_name + '_' in column or
+                      column == '{}_power_output'.format('_'.join(
+                          turbine_name.split('_')[:2]))) and
+                      column != '{}_error_number'.format(turbine_name))]
                 # Add column with boolean depending on error number
-                # False is error, True is no error
+                # np.nan is error, True is no error
                 greenwind_df['{}_boolean'.format(turbine_name)] = [
-                    True if value in no_error_numbers else False for value in  # TODO: why does this not work with np.nan?
+                    np.nan if value in error_numbers else True for value in
                     greenwind_df[error_column].values]
+                # Set values of columns to nan where boolean column is nan
                 for column_name in columns:
                     greenwind_df[column_name] = greenwind_df[
                         '{}_boolean'.format(turbine_name)] * greenwind_df[
                             column_name]
-                # Drop Boolean column
+                # Write amount of error time step to dictionary
+                # and drop Boolean column
+                error_dict[turbine_name] = greenwind_df[
+                        '{}_boolean'.format(turbine_name)].isna().sum()
                 greenwind_df.drop('{}_boolean'.format(turbine_name), axis=1,
                                   inplace=True)
+            # Add amount of error time steps of wind farm power output to dict
+            wind_farm_names = list(set(['_'.join(item.split('_')[:2]) for
+                                        item in error_columns]))
+            turbine_names = ['_'.join(item.split('_')[:3]) for
+                             item in error_columns]
+            for item in wind_farm_names:
+                error_dict[item] = sum(error_dict[name] for
+                                       name in turbine_names if item in name)
+            if print_error_amount:
+                # Print amount of time steps set to nan
+                df = pd.DataFrame(error_dict, index=['amount']).transpose()
+                visualization_tools.print_whole_dataframe(df)
+                df.to_csv(os.path.join(os.path.dirname(__file__),
+                          '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                          'filtered_error_amount_{}.csv'.format(year)))
+        print('---- Error filtering of {0} Done. ----'.format(year))
         if resample:
-            greenwind_df = greenwind_df.resample(frequency).mean()
+            greenwind_df = greenwind_df.resample(frequency).mean()  # TODO do not resample if most of the values are nans
         else:
             # Add frequency attribute
             freq = pd.infer_freq(greenwind_df.index)
@@ -165,13 +196,16 @@ if __name__ == "__main__":
     frequency = '30T'
     # Decide whether to filter out time steps with error codes (not filtered
     # is: error code 0 and error codes that are not an error but information)
+    # and whether to print the amount of time steps being filtered
     filter_errors = True
+    print_error_amount = True
     for year in years:
         filename = os.path.join(os.path.dirname(__file__),
                                 'dumps/validation_data',
                                 'greenwind_data_{0}.p'.format(year))
         df = get_greenwind_data(year=year, resample=resample,
-                                filename=filename, filter_errors=filter_errors)
+                                filename=filename, filter_errors=filter_errors,
+                                print_error_amount=print_error_amount)
 
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
@@ -189,5 +223,6 @@ if __name__ == "__main__":
         sorted_error_numbers_total.index = np.arange(
             len(sorted_error_numbers_total ))
         sorted_error_numbers_total.to_csv(
-            '../../../User-Shares/Masterarbeit/Daten/Twele/' +
-            'error_numbers_total.csv')
+            os.path.join(os.path.dirname(__file__),
+                         '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                         'error_numbers_total.csv'.format(year)))
