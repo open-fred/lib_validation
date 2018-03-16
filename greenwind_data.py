@@ -173,6 +173,59 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     return greenwind_df
 
 
+def evaluate_duplicates(years):
+    duplicates_dict = {}
+    for year in years:
+        duplicates_dict[year] = {}
+        filenames = [
+            'WF1_{0}.csv'.format(year),
+            'WF2_{0}.csv'.format(year),
+            'WF3_{0}.csv'.format(year)]
+        for name in filenames:
+            df_part = read_data(name)
+            # Get duplicates
+            duplicates = df_part.index.get_duplicates()
+            # Data frame with only duplicated indices
+            duplicates_df = df_part.loc[duplicates]
+            # Get amount of duplicates per time step before drop
+            duplicates_per_step = {}
+            for time_step in duplicates:
+                duplicates_per_step[time_step] = len(
+                    duplicates_df.loc[time_step])
+            # Drop duplicates
+            df_part.drop_duplicates(inplace=True)
+            # Get remaining duplicated indices
+            duplicates_after_drop = df_part.index.get_duplicates()
+            # Create duplicates dict
+            duplicates_dict[year][name.split('_')[0]] = {
+                'duplicates_before_drop': duplicates,
+                'duplicates_after_drop': duplicates_after_drop,
+                'duplicates_df': duplicates_df,
+                'duplicates_df_after_drop':
+                df_part.loc[duplicates_after_drop],
+                'duplicates_per_step_before_drop': duplicates_per_step}
+    print('--- duplicates dict ---')
+    print(duplicates_dict)
+    print('--- The duplicates dict should be looked at in debugging mode ---')
+    return duplicates_dict
+
+
+def evaluate_nans(years):
+    df = pd.DataFrame()
+    for year in years:
+        df_part_year = pd.DataFrame()
+        filenames = [
+            'WF1_{0}.csv'.format(year),
+            'WF2_{0}.csv'.format(year),
+            'WF3_{0}.csv'.format(year)]
+        for name in filenames:
+            df_part = pd.DataFrame(read_data(name).isnull().sum()).sort_index()
+            df_part.columns = [year]
+            df_part_year = pd.concat([df_part_year, df_part], axis=0)
+        df = pd.concat([df, df_part_year], axis=1)
+    return df
+
+
 def get_error_numbers(year):
     df = get_greenwind_data(year=year, resample=False,
                             pickle_load=False, pickle_dump=False)
@@ -207,10 +260,24 @@ if __name__ == "__main__":
                                 filename=filename, filter_errors=filter_errors,
                                 print_error_amount=print_error_amount)
 
+    # Evaluation of nans
+    nans_evaluation = True
+    if nans_evaluation:
+        nans_df = evaluate_nans(years)
+        nans_df.to_csv(os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Daten/Twele/',
+            'nans_evaluation.csv'))
+
+    # Evaluation of duplicates
+    duplicates_evaluation = False
+    if duplicates_evaluation:
+        duplicates_dict = evaluate_duplicates(years)
+
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
     if error_numbers:
-        error_numbers_total =[]
+        error_numbers_total = []
         for year in years:
             error_numbers = get_error_numbers(year)
             error_numbers.to_csv(
@@ -219,9 +286,9 @@ if __name__ == "__main__":
                              'error_numbers_{}.csv'.format(year)))
             error_numbers_total.extend(error_numbers)
         sorted_error_numbers_total = pd.Series(
-            pd.Series(error_numbers_total ).unique()).sort_values()
+            pd.Series(error_numbers_total).unique()).sort_values()
         sorted_error_numbers_total.index = np.arange(
-            len(sorted_error_numbers_total ))
+            len(sorted_error_numbers_total))
         sorted_error_numbers_total.to_csv(
             os.path.join(os.path.dirname(__file__),
                          '../../../User-Shares/Masterarbeit/Daten/Twele/',
