@@ -536,3 +536,32 @@ def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
         data_corrected.plot()
         plt.show()
     return data_corrected
+
+
+def resample_with_nan_theshold(df, frequency, threshold):
+    r"""
+
+    df : pd.DataFrame
+        ...
+    frequency : ...
+
+    threshold : Integer
+        Number of minimum values (not nan) necessary for resampling.
+
+    Returns
+    -------
+    df : pd.DataFrame
+    """
+    if threshold is None:
+        resampled_df = df.resample(frequency).mean()
+    else:
+        resampled_df = pd.DataFrame()
+        df2 = df.resample(frequency, how=['mean', 'count'])
+        column_list = list(set([item[0] for item in list(df2)]))
+        for column in column_list:
+            df_part = pd.DataFrame(df2[column])
+            df_part[column] = np.nan
+            df_part.loc[df_part['count'] >= threshold, column] = df_part['mean']
+            df_part.drop(columns=['count', 'mean'], axis=1, inplace=True)
+            resampled_df = pd.concat([resampled_df, df_part], axis=1)
+    return resampled_df
