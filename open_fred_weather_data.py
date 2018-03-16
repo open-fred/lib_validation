@@ -48,28 +48,43 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
     return weather_df
 
 
-def join_of_data(path1, path2, year):
-   df1 = get_open_fred_data(filename=path1)
-   df2 = get_open_fred_data(filename=path2)
-   df = pd.concat([df1, df2], axis=0).to_csv(
-       os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-           'fred_data_{0}_sh_.csv'.format(year)))
+def join_of_data(path1, paths2, year):
+    r"""
+    Joins several data frames from csv files and saves the result.
+
+    Parameters
+    ----------
+    path1 : String
+        Filename including path to csv file containing data.
+    paths2 : List
+        Contains filenames including paths to csv files to be joined to data
+        frame from `path1`.
+    year : Integer
+        Year.
+
+    """
+    df1 = get_open_fred_data(filename=path1)
+    for path in paths2:
+        df2 = get_open_fred_data(filename=path)
+        df1 = pd.concat([df1, df2], axis=0)
+    df1.to_csv(os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+                'fred_data_{0}_sh_.csv'.format(year)))
  
 if __name__ == "__main__":
     years = [
         2015,
-        # 2016
+        2016
     ]
-    # for year in years:
-    #     pickle_path = os.path.join(
-    #         os.path.dirname(__file__), 'dumps/weather',
-    #         'weather_df_open_FRED_{0}.p'.format(year))
-    #     fred_path = os.path.join(
-    #         os.path.dirname(__file__), 'data/open_FRED',
-    #         'fred_data_{0}_sh.csv'.format(year))
-    #     # Get data
-    #     weather_df = get_open_fred_data(filename=fred_path,
-    #                                     pickle_filename=pickle_path)
+    for year in years:
+        pickle_path = os.path.join(
+            os.path.dirname(__file__), 'dumps/weather',
+            'weather_df_open_FRED_{0}.p'.format(year))
+        fred_path = os.path.join(
+            os.path.dirname(__file__), 'data/open_FRED',
+            'fred_data_{0}_sh.csv'.format(year))
+        # Get data
+        weather_df = get_open_fred_data(filename=fred_path,
+                                        pickle_filename=pickle_path)
 
     # # Enertrag
     # join_of_data(
@@ -78,13 +93,13 @@ if __name__ == "__main__":
     #     os.path.join(os.path.dirname(__file__), 'data/open_FRED',
     #                  'fred_data_2016_Enertrag_Windfarm.csv'), 2016)
 
-    # GreenWind
-    for year in years:
-        for farm_name in ['WF3']:
-        # for farm_name in ['WF1', 'WF2', 'WF3']:
-            join_of_data(
-                os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-                             'fred_data_{}_sh.csv'.format(year)),
-                os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-                             'fred_data_{0}_{1}.csv'.format(year, farm_name)),
-                             year)
+    # # GreenWind
+    # locations = ['Altlandsberg', 'Cottbus', 'Prignitz']
+    # for year in years:
+    #     paths = [
+    #         os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+    #                      'fred_data_{0}_WP_{1}.csv'.format(year, location)) for
+    #              location in locations]
+    #     join_of_data(
+    #         os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+    #                      'fred_data_{}_sh.csv'.format(year)), paths, year)
