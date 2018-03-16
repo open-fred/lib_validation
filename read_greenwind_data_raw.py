@@ -84,7 +84,8 @@ def setup_windfarm_dataframe(year, windfarm):
     column_name = '{}_power_output'.format(windfarm_alias[windfarm])
     power_output_columns = [i for i in list(windfarm_df.columns)
                             if 'power_output' in i]
-    windfarm_df[column_name] = windfarm_df[power_output_columns].sum(axis=1)
+    windfarm_df[column_name] = windfarm_df[power_output_columns].sum(
+        axis=1, skipna=False)
 
     file_directory = 'data/Daten_Twele/processed_data/'
     windfarm_df.to_csv(file_directory + '{}_{}.csv'.format(windfarm, year))
