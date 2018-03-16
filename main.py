@@ -162,7 +162,7 @@ if (year == 2015 and validation_data_list[0] == 'Enertrag' and
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
-def get_validation_data(frequency, threshold=None):
+def get_validation_data(frequency):
     r"""
     Writes all measured power output time series into one DataFrame.
 
@@ -172,8 +172,6 @@ def get_validation_data(frequency, threshold=None):
     ----------
     frequency : ...
         TODO add
-    threshold : Integer
-        Number of minimum values (not nan) necessary for resampling.
 
     Returns
     -------
@@ -182,6 +180,15 @@ def get_validation_data(frequency, threshold=None):
         'wf_1_measured', 'wf_2_measured', etc.
 
     """
+    def get_threshold(frequency, validation_resolution):
+        if (frequency == 'H' or frequency == '60T'):
+            resolution = 60
+        elif frequency == 'M':
+            resolution = 31 * 24 * 60
+        else:
+            resolution = frequency.n
+        return resolution / validation_resolution * 0.5
+
     validation_df_list = []
     if 'ArgeNetz' in validation_data_list:
         # Get wind farm data
@@ -199,7 +206,9 @@ def get_validation_data(frequency, threshold=None):
                                for data in wind_farm_data_arge]].rename(
             columns={col: col.replace('power_output', 'measured') for col in
                      arge_data.columns})
-        # Resample the DataFrame columns with `frequency` and add to list
+        # Resample the DataFrame columns with `frequency` and `threshold`
+        # and add to list
+        threshold = get_threshold(frequency, arge_data.index.freq.n)
         validation_df_list.append(tools.resample_with_nan_theshold(
             df=arge_data, frequency=frequency, threshold=threshold))
     if ('Enertrag' in validation_data_list and year == 2016):
@@ -211,6 +220,7 @@ def get_validation_data(frequency, threshold=None):
         enertrag_data = enertrag_data[['wf_9_power_output']].rename(
             columns={'wf_9_power_output': 'wf_9_measured'})
         # Resample the DataFrame columns with `frequency` and add to list
+        threshold = get_threshold(frequency, enertrag_data.index.freq.n)
         validation_df_list.append(tools.resample_with_nan_theshold(
             df=enertrag_data, frequency=frequency, threshold=threshold))
     if 'GreenWind' in validation_data_list:
@@ -231,6 +241,7 @@ def get_validation_data(frequency, threshold=None):
             columns={col: col.replace('power_output', 'measured') for col in
                      greenwind_data.columns})
         # Resample the DataFrame columns with `frequency` and add to list
+        threshold = get_threshold(frequency, greenwind_data.index.freq.n)
         validation_df_list.append(tools.resample_with_nan_theshold(
             df=greenwind_data, frequency=frequency, threshold=threshold))
     # Join DataFrames - power output in MW
