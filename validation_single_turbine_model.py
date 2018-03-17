@@ -22,32 +22,7 @@ import pickle
 
 
 # -------------------------- Check wind directions -------------------------- #
-def wind_directions_to_csv(frequency=None, corr_min=0.8):
-    if frequency is None:
-        resample = False
-    else:
-        resample = True
-    # Get Enertrag data
-    enertrag_data = get_enertrag_data(
-        pickle_load=True, filename=os.path.join(
-            os.path.dirname(__file__), 'dumps/validation_data/',
-            'enertrag_data_check_wind_dir.p'),
-        resample=resample, frequency=frequency, plot=False, x_limit=None)
-    # Select wind directions
-    wind_directions_df = enertrag_data[[
-        column_name for column_name in list(enertrag_data) if
-            '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
-    if resample:
-        wind_directions_df = wind_directions_df.resample(frequency).mean()
-    wind_directions_df.to_csv(
-        'Evaluation/enertrag_wind_direction/wind_direction_enertrag_resample_{0}.csv'.format(frequency))
-    correlation = wind_directions_df.corr()
-    amount_df = pd.DataFrame(correlation[correlation >= 0.8].count() - 1,
-                             columns=['corr >='.format(corr_min)]).transpose()
-    pd.concat([correlation, amount_df], axis=0).to_csv(
-        'Evaluation/enertrag_wind_direction/correlation_wind_direction_enertrag_resample_{0}_corrmin_{1}.csv'.format(frequency, corr_min))
+
 
 if __name__ == "__main__":
-    frequency = '30T'
-    corr_min = 0.95
-    wind_directions_to_csv(frequency, corr_min)
+
