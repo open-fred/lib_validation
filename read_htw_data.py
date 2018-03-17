@@ -3,7 +3,6 @@ import os
 from datetime import timedelta
 
 
-#ToDo: check localize, are values instantaneous?
 def setup_converter_dataframe(converter, weather_data):
     r"""
     Reads HTW converter data from original files for given converter and sets
@@ -32,11 +31,12 @@ def setup_converter_dataframe(converter, weather_data):
         sep=';', header=[0], index_col=[0], parse_dates=True)
     # resample to same resolution as weather data
     if weather_data == 'open_FRED':
-        data = data.resample('30Min').mean()
+        data = data.resample('30Min', loffset=timedelta(hours=0.25)).mean()
     elif weather_data == 'MERRA':
-        data = data.resample('60Min').mean()
+        data = data.resample('60Min', base=30,
+                             loffset=timedelta(hours=0.5)).mean()
     data = data.tz_localize('Etc/GMT-1')
-    data = data.tz_convert('UTC')
+    data = data.tz_convert('Europe/Berlin')
     return data
 
 
@@ -71,7 +71,7 @@ def setup_weather_dataframe(weather_data):
     data.rename(columns=columns, inplace=True)
     # resample to same resolution as weather data
     if weather_data == 'open_FRED':
-        data = data.resample('30Min').mean()
+        data = data.resample('30Min', loffset=timedelta(hours=0.25)).mean()
     elif weather_data == 'MERRA':
         data = data.resample('60Min', base=30,
                              loffset=timedelta(hours=0.5)).mean()

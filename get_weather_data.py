@@ -283,7 +283,7 @@ def setup_of_weather_df_pvlib(coordinates, csv_directory,
     # half hour instead of the previous (this is then also consistent with
     # pandas resample)
     fred_data.reset_index(inplace=True)
-    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=30)
+    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=15)
     fred_data.set_index(['time', 'lat', 'lon'], drop=True, inplace=True)
     # save as csv
     fred_data.to_csv(os.path.join(csv_directory, filename))
