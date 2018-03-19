@@ -148,6 +148,10 @@ time_series_df_folder = os.path.join(os.path.dirname(__file__),
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
 
+# Threshold factor. F.e. if threshold_factor is 0.5 resampling is only done, if
+# more than 50 percent of the values are not nan.
+threshold_factor = 0.5
+
 # If pickle_load options not all True:
 if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_arge or not pickle_load_enertrag or not
@@ -187,7 +191,7 @@ def get_validation_data(frequency):
             resolution = 31 * 24 * 60
         else:
             resolution = frequency.n
-        return resolution / validation_resolution * 0.5
+        return resolution / validation_resolution * threshold_factor
 
     validation_df_list = []
     if 'ArgeNetz' in validation_data_list:
