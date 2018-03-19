@@ -15,6 +15,7 @@ from argenetz_data import get_argenetz_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
 from greenwind_data import get_greenwind_data
+from config_simulation_cases import get_configuration
 
 # Other imports
 import os
@@ -23,29 +24,17 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2015
+case = [  # Only select one case
+    ''
+]
+year = 2015  # TODO: yearS to config file
 
-# Wind farms and approaches that will not be examined also if they are in the
-# time series df
-restriction_list = [
-    'simple',
-    'density_correction',
-    'smooth_wf',
-    'constant_efficiency_90_%',
-    'constant_efficiency_80_%',
-    'efficiency_curve',
-#    'eff_curve_smooth',
-#    'linear_interpolation'
-#    'wf_1',
-#    'wf_2',
-#     'wf_3',
-#     'wf_4', 'wf_5'
-    ]
+# Get parameters from config file (they are set below)
+parameters = get_configuration(case[0])
 
 min_periods_pearson = None  # Integer
-# TODO: add logging info ?!
 
-# Pickle load time series data frame - if one of the above pickle_load options
+# Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
 pickle_load_time_series_df = False
 
@@ -59,66 +48,16 @@ pickle_load_wind_farm_data = True
 csv_load_time_series_df = False  # Load time series data frame from csv dump
 csv_dump_time_series_df = False  # Dump df as csv
 
-approach_list = [
-    'simple',  # logarithmic wind profile, simple aggregation for farm output
-    'density_correction',  # density corrected power curve, simple aggregation
-    'smooth_wf',  # Smoothed power curves at wind farm level
-    'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
-    'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-    'efficiency_curve',  # Wind farm efficiency curve without smoothing
-    'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
-    'linear_interpolation',
-    'test_cluster'
-    ]
-weather_data_list = [
-    'MERRA',
-    'open_FRED'
-    ]
-validation_data_list = [
-    'ArgeNetz',
-    'Enertrag',
-    'GreenWind'
-    ]
-
-output_methods = [
-    'half_hourly',  # Only if possible
-    'hourly',
-    'monthly'
-    ]
-
-visualization_methods = [
-#    'box_plots',
-#    'feedin_comparison',
-#    'plot_correlation'  # Attention: this takes a long time for high resolution
-    ]
-
-feedin_comparsion_all_in_one = True  # Plots all calculated series for one
+feedin_comparsion_all_in_one = False  # Plots all calculated series for one
                                       # wind farm in one plot
-
-latex_output = np.array([
-    'annual_energy_weather',  # Annual energy output of all weather sets
-    'annual_energy_approaches',  # ...
-    'annual_energy_weather_approaches',  # ...
-    'key_figures_weather',     # Key figures of all weather sets
-    'key_figures_approaches'  # Key figures of all approaches
-    ])
-
-key_figures_print = [
-    'rmse',  # Includes RMSE in key figures latex output
-    'rmse_normalized',  # Includes the normalized RMSE in key figures latex o.
-    'pearson',  # Includes pearson correlation coeff. in key figures latex o.
-    'mean_bias',  # Includes mean bias in key figures latex output
-    # 'standard_deviation'  # Includes standard deviation in key figures latex o.
-    ]
 
 # Select time of day you want to observe or None for all day
 time_period = (
 #       6, 22  # time of day to be selected (from h to h)
          None   # complete time series will be observed
         ) 
-
 # Start and end date for time period to be plotted when 'feedin_comparison' is
-# selected. (not for monthly output)
+# selected. (not for monthly output).
 start_end_list = [
     (None, None),
 #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
@@ -126,11 +65,11 @@ start_end_list = [
     ('{0}-06-01'.format(year), '{0}-06-07'.format(year))
     ]
 
-#extra_plots = np.array([
+#extra_plots = np.array([ # NOTE: not working
 ##    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
 #    ])
 
-# Relative path to latex tables folder
+# Relative path to latex tables folder  # TODO add case to filenames (if approach not in filename
 latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                        'automatic/')
 
@@ -157,6 +96,16 @@ if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_arge or not pickle_load_enertrag or not
         pickle_load_greenwind or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
+
+# Set paramters
+restriction_list = parameters['restriction_list']
+validation_data_list = parameters['validation_data_list']
+weather_data_list = parameters['weather_data_list']
+approach_list = parameters['approach_list']
+output_methods = parameters['output_methods']
+visualization_methods = parameters['visualization_methods']
+latex_output = parameters['latex_output']
+key_figures_print = parameters['key_figures_print']
 
 # ---------------------------------- Warning -------------------------------- #
 if (year == 2015 and validation_data_list[0] == 'Enertrag' and
@@ -435,10 +384,9 @@ def get_time_series_df(weather_data_name):
     strings are dropped. This takes place after dumping.
 
     """
-    # TODO: if config_module: filename time series df dependent on validation case
     time_series_filename = os.path.join(time_series_df_folder,
-                                        'time_series_df_{0}_{1}.p'.format(
-                                            weather_data_name, year))
+                                        'time_series_df_{0}_{1}_{2}.p'.format(
+                                            case, weather_data_name, year))
     if pickle_load_time_series_df:
         time_series_df = pickle.load(open(time_series_filename, 'rb'))
     elif csv_load_time_series_df:
