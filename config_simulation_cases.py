@@ -1,0 +1,103 @@
+import numpy as np
+
+
+def get_standard_case_of_configuration():
+    r"""
+    Returns standard dictionary for configuration of parameters.
+
+    """
+    config_dict = {
+        'restriction_list': [
+            'simple',
+            'density_correction',
+            'smooth_wf',
+            'constant_efficiency_90_%',
+            'constant_efficiency_80_%',
+            'efficiency_curve',
+        #    'eff_curve_smooth',
+        #    'linear_interpolation'
+        #    'wf_1',
+        #    'wf_2',
+        #     'wf_3',
+        #     'wf_4', 'wf_5'
+            ],
+        'approach_list': [  # TODO: wahrscheinlich nicht hier - immer unterschiedlich
+            'simple',  # logarithmic wind profile, simple aggregation for farm output
+            'density_correction',  # density corrected power curve, simple aggregation
+            'smooth_wf',  # Smoothed power curves at wind farm level
+            'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
+            'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
+            'efficiency_curve',  # Wind farm efficiency curve without smoothing
+            'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
+            'linear_interpolation',
+            'test_cluster'
+            ],
+        'weather_data_list': ['MERRA', 'open_FRED'],
+        'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
+        'output_methods': ['half_hourly',  # Only if possible
+                           'hourly', 'monthly'],
+        'visualization_methods': [],
+        'latex_output': np.array([
+            'annual_energy_weather',  # Annual energy output all weather sets
+            'annual_energy_approaches',  # AEO all approaches
+            'annual_energy_weather_approaches',  # AEO all approaches and weather sets
+            'key_figures_weather',     # Key figures of all weather sets
+            'key_figures_approaches'  # Key figures of all approaches
+            ]),
+        'key_figures_print': ['rmse', 'rmse_normalized', 'pearson',
+                              'mean_bias', 'standard_deviation'],
+        }
+    return config_dict
+
+
+#'visualization_methods': [
+#            'box_plots',
+#            'feedin_comparison',
+#            'plot_correlation'  # Attention: this takes a long time for high resolution
+#            ]
+
+def get_configuration(case=None):
+    r"""
+    ...
+
+    Parameters
+    ----------
+    case : string or None
+        Specifies case for which parameters are fetched. If None the standard
+        parameters are used.
+
+    Returns
+    -------
+    config_dict : dictionary
+        Keys are explained in Notes.
+
+    Notes
+    -----
+    Returned dictionary contains the following parameters as keys:
+
+    restriction_list : list
+        Wind farms and approaches that will not be examined also if they are in
+        the time series df
+    approach_list : list
+        Approaches to be calculated.
+    weather_data_list : list
+        Weather data to take into consideration.
+    validation_data_list : list
+        Validation data to take into consideration.
+    output_methods : list
+        Temporal output resolutions to take into consideration.
+    visualization_methods : list
+        Plot applications to take into consideration.
+    latex_output : np.array
+        Type of latex tables to take into consideration.
+    key_figures_print : list
+        Key figures to be printed if a key figures table in `latex_output`.
+
+    """
+    # Get standard case that will remain if the entries are not overwritten
+    config_dict = get_standard_case_of_configuration()
+    if case == '':
+        pass
+        
+    
+    return config_dict
