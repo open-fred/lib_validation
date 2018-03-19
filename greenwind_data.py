@@ -2,15 +2,15 @@
 The ``greenwind_data`` module contains functions to read and dump measured
 feed-in time series from a GreenWind wind farm.
 
-# The following data is available (year 2016) for the 17 turbines:
-# - meter (Zählerstand) in kW
-# - power output in kW
-# - wind speed in m/s
-# - wind direction (gondel position) in °
-# ATTENTION: gondel position is not correct!!
-#
-# Additionally the sum of the power output of all wind turbines is available in
-# column 'wf_9_power_output'.
+ The following data is available (year 2015 and 2016) for the turbines of
+ 3 wind farms:
+ - power output in kW
+ - wind speed in m/s
+ - wind direction in °
+ - error code
+
+ Additionally the sum of the wind farm power output of each wind farm is
+ available.
 
 DateTimeIndex in 'Europe/Berlin' time zone.
 """
