@@ -119,7 +119,12 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
 
 def get_enertrag_curtailment_data(frequency):
     r"""
+    Reads the curtailment data from a csv file and resamples it.
 
+    Returns
+    -------
+    curtailment_data : pd.DataFrame
+        Enertrag wind farm curtailment in column 'curtail_rel'.
     """
     data = read_data(
         'windpark_nechlin_production_and_curtailment_2016_15min.csv')
@@ -129,6 +134,34 @@ def get_enertrag_curtailment_data(frequency):
         ['power_rel', 'wind_mean'], axis=1).resample(frequency).mean()
     return curtailment_data
 
+
+def evaluate_wind_directions(frequency=None, corr_min=0.8):
+    if frequency is None:
+        resample = False
+    else:
+        resample = True
+    # Get Enertrag data
+    enertrag_data = get_enertrag_data(
+        pickle_load=True, filename=os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data/',
+            'enertrag_data_check_wind_dir.p'),
+        resample=resample, frequency=frequency, plot=False, x_limit=None)
+    # Select wind directions
+    wind_directions_df = enertrag_data[[
+        column_name for column_name in list(enertrag_data) if
+            '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
+    if resample:
+        wind_directions_df = wind_directions_df.resample(frequency).mean()
+    wind_directions_df.to_csv(
+        'Evaluation/enertrag_wind_direction/' +
+        'wind_direction_enertrag_resample_{0}.csv'.format(frequency))
+    correlation = wind_directions_df.corr()
+    amount_df = pd.DataFrame(correlation[correlation >= 0.8].count() - 1,
+                             columns=['corr >='.format(corr_min)]).transpose()
+    pd.concat([correlation, amount_df], axis=0).to_csv(
+        'Evaluation/enertrag_wind_direction/correlation_wind_direction_' +
+        'enertrag_resample_{0}_corrmin_{1}.csv'.format(frequency, corr_min))
+
 if __name__ == "__main__":
     # Decide whether to resample to a certain frequency
     resample = True
@@ -136,3 +169,9 @@ if __name__ == "__main__":
     filename = os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
                             'enertrag_data_2016.p')  # Filename for pickle dump
     df = get_enertrag_data(resample=resample, filename=filename)
+
+    # Evaluation of wind directions
+    wind_dir_evaluation = False
+    corr_min = 0.95
+    if wind_dir_evaluation:
+        evaluate_wind_directions(frequency, corr_min)
