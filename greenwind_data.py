@@ -60,9 +60,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         Year to fetch.
     pickle_load : Boolean
         If True data frame is loaded from the pickle dump if False the data is
-        loaded from the original csv files (or from smaller csv file that was
-        created in an earlier run if `csv_load` is True).
-        Either set `pickle_load` or `csv_load` to True. Default: False.
+        loaded from the original csv files. Default: False.
     filename : String
         Filename including path of pickle dump. Default: 'greenwind_dump.p'.
     resample : Boolean
@@ -129,7 +127,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             #     'error_number'].values
             error_columns = [
                 column_name for column_name in list(greenwind_df) if
-                    'error_number' in column_name]
+                'error_number' in column_name]
             for error_column in error_columns:
                 turbine_name = '_'.join(error_column.split('_')[:3])
                 # Get columns to be edited (same wind turbine and wind farm)
@@ -138,7 +136,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                     ((turbine_name + '_' in column or
                       column == '{}_power_output'.format('_'.join(
                           turbine_name.split('_')[:2]))) and
-                      column != '{}_error_number'.format(turbine_name))]
+                     column != '{}_error_number'.format(turbine_name))]
                 # Add column with boolean depending on error number
                 # np.nan is error, True is no error
                 greenwind_df['{}_boolean'.format(turbine_name)] = [
@@ -183,6 +181,111 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         if pickle_dump:
             pickle.dump(greenwind_df, open(filename, 'wb'))
     return greenwind_df
+
+
+def get_first_row_turbine_time_series(year, filename_raw_data,
+                                      pickle_load_raw_data=False,
+                                      filter_errors=True,
+                                      print_error_amount=False,
+                                      pickle_filename='greenwind_first_row.p',
+                                      pickle_load=False, frequency='30T',
+                                      resample=True, threshold=None):
+    r"""
+    Fetches GreenWind data of first row turbine depending on wind direction.
+
+    Parameters
+    ----------
+    year : Integer
+        Year to fetch.
+    filename_raw_data : String
+        Filename including path of pickle dump from the
+        :py:func:`~.get_greenwind_data` function.
+    pickle_load_raw_data : Boolean
+        If True data frame in :py:func:`~.get_greenwind_data` is loaded from
+        the pickle dump if False the data is loaded from the original csv
+        files. Note: if True the frequency is the frequency of the pickel dump
+        of the raw data. Default: False.
+    filter_errors : Booelan
+        If True errors are filtered via the error code column. Default: True.
+    print_error_amount : Boolean
+        If True amount of values set to nan due to error numbers are print for
+        each turbine and wind farm (and printed to csv file). Default: False.
+    pickle_filename : String
+        Filename including path of pickle dump.
+    pickle_load : Boolean
+        If True data frame is loaded from the pickle dump if False the data
+        frame is created. Default: False.
+    frequency : String (or freq object...?)
+        # TODO add
+    resample : Boolean
+        If True the data will be resampled to the `frequency`. Default: True.
+    threshold : Integer or None
+        Number of minimum values (not nan) necessary for resampling.
+        Default: None.
+
+    Returns
+    -------
+    first_row_df : pandas.DataFrame
+        GreenWind first row wind turbine data.
+
+
+    """
+    if pickle_load:
+        green_wind_df = pickle.load(open(pickle_filename, 'rb'))
+    else:
+        # Load greenwind data without resampling and do not dump.
+        green_wind_df = get_greenwind_data(
+            year=year, pickle_load=pickle_load_raw_data,
+            filename=filename_raw_data, resample=False, threshold=threshold,
+            pickle_dump=False, filter_errors=filter_errors,
+            print_error_amount=print_error_amount)
+        turbine_dict = {
+            'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
+            'wf_6_5': (135, 180), 'wf_6_6': (315, 360), 'wf_6_7': (225, 270)  # TODO: add for other wind farms
+        }
+        for turbine_name in turbine_dict:
+            # Get indices of rows where wind direction lies between specified
+            # values in `turbine_dict`. Example for 'wf_6_1': 0 <= x < 90.
+            indices = green_wind_df.loc[
+                (green_wind_df['{}_wind_dir'.format(turbine_name)] >= float(
+                    turbine_dict[turbine_name][0])) &
+                (green_wind_df['{}_wind_dir'.format(turbine_name)] < float(
+                    turbine_dict[turbine_name][1]))].index
+            # Add temporary wind speed column with only nans
+            green_wind_df['wind_speed_temp_{}'.format(turbine_name)] = np.nan
+            # Add wind speed of wind speed column for `indices`
+            green_wind_df['wind_speed_temp_{}'.format(turbine_name)].loc[
+                indices] = (
+                green_wind_df['{}_wind_speed'.format(turbine_name)].loc[indices])
+            # Add temporary power output column with only nans
+            green_wind_df['power_output_temp_{}'.format(turbine_name)] = np.nan
+            # Add wind speed of wind speed column for `indices`
+            green_wind_df['power_output_temp_{}'.format(turbine_name)].loc[
+                indices] = (
+                green_wind_df['{}_power_output'.format(turbine_name)].loc[indices])
+        # Add power output and wind speed as mean from all temporary columns
+        wind_speed_columns = [
+            column_name for column_name in list(green_wind_df) if
+            'wind_speed_temp' in column_name]
+        power_output_columns = [
+            column_name for column_name in list(green_wind_df) if
+            'power_output_temp' in column_name]
+        green_wind_df['wind_speed_measured'] = green_wind_df[
+            wind_speed_columns].sum(axis=1, skipna=True)
+        green_wind_df['power_output_measured'] = green_wind_df[
+            power_output_columns].sum(axis=1, skipna=True)
+        green_wind_df = green_wind_df[['wind_speed_measured',
+                                       'power_output_measured']]
+        pickle.dump(green_wind_df, open(pickle_filename, 'wb'))
+    if resample:
+        first_row_df = tools.resample_with_nan_theshold(
+            df=green_wind_df, frequency=frequency, threshold=threshold)
+    else:
+        # Add frequency attribute
+        first_row_df = pd.DataFrame(green_wind_df)
+        freq = pd.infer_freq(first_row_df.index)
+        first_row_df.index.freq = pd.tseries.frequencies.to_offset(freq)
+    return first_row_df
 
 
 def evaluate_duplicates(years):
@@ -252,28 +355,61 @@ def get_error_numbers(year):
 
 
 if __name__ == "__main__":
-    years = [
-        2015,
-        2016
-    ]
-    # Decide whether to resample to a certain frequency with a certain
-    # threshold
-    resample = True
-    frequency = '30T'
-    threshold = 2
-    # Decide whether to filter out time steps with error codes (not filtered
-    # is: error code 0 and error codes that are not an error but information)
-    # and whether to print the amount of time steps being filtered
-    filter_errors = True
-    print_error_amount = True
-    for year in years:
-        filename = os.path.join(os.path.dirname(__file__),
-                                'dumps/validation_data',
-                                'greenwind_data_{0}.p'.format(year))
-        df = get_greenwind_data(year=year, resample=resample,
-                                frequency=frequency, threshold=threshold,
-                                filename=filename, filter_errors=filter_errors,
-                                print_error_amount=print_error_amount)
+    # ----- Load data -----#
+    load_data = True
+    if load_data:
+        years = [
+            2015,
+            2016
+        ]
+        # Decide whether to resample to a certain frequency with a certain
+        # threshold
+        resample = True
+        frequency = '30T'
+        threshold = 2
+        # Decide whether to filter out time steps with error codes (not
+        # filtered is: error code 0 and error codes that are not an error but
+        # information) and whether to print the amount of time steps being
+        # filtered
+        filter_errors = True
+        print_error_amount = True
+        for year in years:
+            filename = os.path.join(os.path.dirname(__file__),
+                                    'dumps/validation_data',
+                                    'greenwind_data_{0}.p'.format(year))
+            df = get_greenwind_data(
+                year=year, resample=resample,
+                frequency=frequency, threshold=threshold,
+                filename=filename, filter_errors=filter_errors,
+                print_error_amount=print_error_amount)
+
+    # ----- First row turbine -----#
+    evaluate_first_row_turbine = True
+    if evaluate_first_row_turbine:
+        # Parameters
+        years = [
+            2015,
+            2016
+        ]
+        first_row_resample = True
+        first_row_frequency = '30T'
+        first_row_threshold = 2
+        first_row_filter_errors = True
+        first_row_print_error_amount = True
+        for year in years:
+            filename_raw_data = os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'greenwind_data_{0}.p'.format(year))
+            pickle_filename = os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'greenwind_data_first_row_{0}.p'.format(year))
+            df = get_first_row_turbine_time_series(
+                year=year, filename_raw_data=filename_raw_data,
+                pickle_load_raw_data=True,
+                filter_errors=first_row_filter_errors,
+                print_error_amount=first_row_print_error_amount,
+                pickle_filename=pickle_filename, frequency=first_row_frequency,
+                resample=first_row_resample, threshold=first_row_threshold)
 
     # Evaluation of nans
     nans_evaluation = True
