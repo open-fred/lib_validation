@@ -14,7 +14,7 @@ from copy import deepcopy
 
 def print_whole_dataframe(df):
     r"""
-    Prints all entries of a pandas.DataFrame.
+    Prints all entries of a pandas.DataFrame or pandas.Series.
 
     """
     pd.set_option('display.max_rows', len(df))
