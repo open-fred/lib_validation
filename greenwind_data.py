@@ -241,41 +241,54 @@ def get_first_row_turbine_time_series(year, filename_raw_data,
             print_error_amount=print_error_amount)
         turbine_dict = {
             'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-            'wf_6_5': (135, 180), 'wf_6_6': (315, 360), 'wf_6_7': (225, 270)  # TODO: add for other wind farms
-        }
-        for turbine_name in turbine_dict:
-            # Get indices of rows where wind direction lies between specified
-            # values in `turbine_dict`. Example for 'wf_6_1': 0 <= x < 90.
-            indices = green_wind_df.loc[
-                (green_wind_df['{}_wind_dir'.format(turbine_name)] >= float(
-                    turbine_dict[turbine_name][0])) &
-                (green_wind_df['{}_wind_dir'.format(turbine_name)] < float(
-                    turbine_dict[turbine_name][1]))].index
-            # Add temporary wind speed column with only nans
-            green_wind_df['wind_speed_temp_{}'.format(turbine_name)] = np.nan
-            # Add wind speed of wind speed column for `indices`
-            green_wind_df['wind_speed_temp_{}'.format(turbine_name)].loc[
-                indices] = (
-                green_wind_df['{}_wind_speed'.format(turbine_name)].loc[indices])
-            # Add temporary power output column with only nans
-            green_wind_df['power_output_temp_{}'.format(turbine_name)] = np.nan
-            # Add wind speed of wind speed column for `indices`
-            green_wind_df['power_output_temp_{}'.format(turbine_name)].loc[
-                indices] = (
-                green_wind_df['{}_power_output'.format(turbine_name)].loc[indices])
-        # Add power output and wind speed as mean from all temporary columns
-        wind_speed_columns = [
-            column_name for column_name in list(green_wind_df) if
-            'wind_speed_temp' in column_name]
-        power_output_columns = [
-            column_name for column_name in list(green_wind_df) if
-            'power_output_temp' in column_name]
-        green_wind_df['wind_speed_measured'] = green_wind_df[
-            wind_speed_columns].sum(axis=1, skipna=True)
-        green_wind_df['power_output_measured'] = green_wind_df[
-            power_output_columns].sum(axis=1, skipna=True)
-        green_wind_df = green_wind_df[['wind_speed_measured',
-                                       'power_output_measured']]
+            'wf_6_5': (90, 180), 'wf_6_6': (315, 360), 'wf_6_7': (225, 270),
+            'wf_7_2': (225, 270), 'wf_7_5': (135, 180), 'wf_7_7': (270, 360),
+            'wf_7_10': (180, 225), 'wf_7_12': (90, 135), 'wf_7_14': (0, 90),
+            'wf_8_1': (0, 180), 'wf_8_2': (180, 360)}
+        wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
+                                   item in turbine_dict]))
+        first_row_df = pd.DataFrame()
+        for wind_farm_name in wind_farm_names:
+            for turbine_name in turbine_dict:
+                # Get indices of rows where wind direction lies between
+                # specified values in `turbine_dict`.
+                # Example for 'wf_6_1': 0 <= x < 90.
+                indices = green_wind_df.loc[
+                    (green_wind_df['{}_wind_dir'.format(
+                        turbine_name)] >=
+                        float(turbine_dict[turbine_name][0])) &
+                    (green_wind_df['{}_wind_dir'.format(turbine_name)] <
+                     float(turbine_dict[turbine_name][1]))].index
+                # Add temporary wind speed column with only nans
+                green_wind_df['wind_speed_temp_{}'.format(
+                    turbine_name)] = np.nan
+                # Add wind speed of wind speed column for `indices`
+                green_wind_df['wind_speed_temp_{}'.format(turbine_name)].loc[
+                    indices] = green_wind_df['{}_wind_speed'.format(
+                    turbine_name)].loc[indices]
+                # Add temporary power output column with only nans
+                green_wind_df['power_output_temp_{}'.format(
+                    turbine_name)] = np.nan
+                # Add wind speed of wind speed column for `indices`
+                green_wind_df['power_output_temp_{}'.format(turbine_name)].loc[
+                    indices] = green_wind_df['{}_power_output'.format(
+                    turbine_name)].loc[indices]
+            # Add power output and wind speed as mean from all temp columns
+            wind_speed_columns = [
+                column_name for column_name in list(green_wind_df) if
+                'wind_speed_temp' in column_name]
+            power_output_columns = [
+                column_name for column_name in list(green_wind_df) if
+                'power_output_temp' in column_name]
+            green_wind_df['{}_wind_speed_measured'.format(
+                wind_farm_name)] = green_wind_df[wind_speed_columns].sum(
+                axis=1, skipna=True)
+            green_wind_df['{}_power_output_measured'.format(
+                wind_farm_name)] = green_wind_df[power_output_columns].sum(
+                axis=1, skipna=True)
+            first_row_df = pd.concat([first_row_df, green_wind_df[[
+                '{}_wind_speed_measured'.format(wind_farm_name),
+                '{}_power_output_measured'.format(wind_farm_name)]]], axis=1)
         pickle.dump(green_wind_df, open(pickle_filename, 'wb'))
     if resample:
         first_row_df = tools.resample_with_nan_theshold(
