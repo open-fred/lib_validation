@@ -18,6 +18,7 @@ DateTimeIndex in 'Europe/Berlin' time zone.
 # Imports from lib_validation
 import visualization_tools
 import tools
+import latex_tables
 
 # Other imports
 import pandas as pd
@@ -105,6 +106,13 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         for name in filenames:
             # Load data and drop duplicates
             df_part = read_data(name).drop_duplicates()
+            if year == 2016:
+                # Load data from 2015 as it contains data from January 2016
+                name = name.replace('2016', '2015')
+                df_part_2015 = read_data(name).drop_duplicates()
+                df_part = pd.concat([df_part,
+                                     df_part_2015.loc['2015-12-31 23:00:00':]],
+                                    axis=0).sort_index()
             if name == 'WF1_2015.csv':
                 # Set ambiguous duplicates to nan.
                 df_part.loc[df_part.index.get_duplicates()] = np.nan
@@ -114,6 +122,9 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         # Convert index to DatetimeIndex and make time zone aware
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
             'UTC').tz_convert('Europe/Berlin')
+        # Choose time steps of the year only (there are some time steps from
+        # the year before or after)
+        greenwind_df = greenwind_df.loc[str(year)]
         if filter_errors:
             print("---- Errors of GreenWind data in " +
                   "{} are being filtered. ----".format(year))
@@ -393,6 +404,7 @@ if __name__ == "__main__":
         # filtered
         filter_errors = True
         print_error_amount = True
+        print_erroer_amount_total = True
         for year in years:
             filename = os.path.join(os.path.dirname(__file__),
                                     'dumps/validation_data',
@@ -407,6 +419,34 @@ if __name__ == "__main__":
                 filename=filename, filter_errors=filter_errors,
                 print_error_amount=print_error_amount)
 
+        if print_erroer_amount_total and print_error_amount:
+            filenames = [os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_{}.csv'.format(year)) for year in years]
+            dfs = [pd.read_csv(filename, index_col=0).rename(
+                columns={'amount': year}) for
+                   filename, year in zip(filenames, years)]
+            df = pd.concat(dfs, axis=1)
+            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
+                                         ind in error_amout_df.index},
+                                  inplace=True)
+            error_amout_df.to_csv(os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_years.csv'))
+            latex_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/Tables/',
+                'filtered_error_amount_years.tex')
+            error_amout_df.to_latex(
+                buf=latex_filename,
+                column_format=latex_tables.create_column_format(
+                    len(error_amout_df.columns), 'c'),
+                multicolumn_format='c')
+
+
     # ----- First row turbine -----#
     evaluate_first_row_turbine = True
     if evaluate_first_row_turbine:
@@ -419,7 +459,9 @@ if __name__ == "__main__":
         first_row_frequency = '30T'
         first_row_threshold = 2
         first_row_filter_errors = True
-        first_row_print_error_amount = True
+        first_row_print_error_amount = False
+        first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
+        pickle_load_raw_data = True
         for year in years:
             filename_raw_data = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
@@ -433,11 +475,31 @@ if __name__ == "__main__":
                 'filtered_error_amount__first_row{}.csv'.format(year))
             df = get_first_row_turbine_time_series(
                 year=year, filename_raw_data=filename_raw_data,
-                pickle_load_raw_data=True,
+                pickle_load_raw_data=pickle_load_raw_data,
                 filter_errors=first_row_filter_errors,
                 print_error_amount=first_row_print_error_amount,
                 pickle_filename=pickle_filename, frequency=first_row_frequency,
                 resample=first_row_resample, threshold=first_row_threshold)
+
+        if (first_row_print_erroer_amount_total and
+                first_row_print_error_amount):
+            filenames = [os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_first_row{}.csv'.format(year)) for
+                         year in years]
+            dfs = [pd.read_csv(filename, index_col=0).rename(
+                columns={'amount': year}) for
+                   filename, year in zip(filenames, years)]
+            df = pd.concat(dfs, axis=1)
+            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
+                                         ind in error_amout_df.index})
+            error_amout_df.to_csv(os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_years_first_row.csv'))
+
 
     # Evaluation of nans
     nans_evaluation = False
