@@ -7,11 +7,10 @@ import visualization_tools
 # Other imports
 import os
 import pickle
-import pandas as pd
 
 
 def initialize_turbines(turbine_types, plot_wind_turbines=False):
-    # TODO: scale power curves??
+    # TODO: fetch curve as parameter
     """
     Initializes specified turbine types and returns them as objects in a list.
 

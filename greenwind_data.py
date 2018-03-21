@@ -18,6 +18,7 @@ DateTimeIndex in 'Europe/Berlin' time zone.
 # Imports from lib_validation
 import visualization_tools
 import tools
+import latex_tables
 
 # Other imports
 import pandas as pd
@@ -49,7 +50,8 @@ def read_data(filename):
 def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                        resample=True, threshold=None, plot=False, x_limit=None,
                        frequency='30T', pickle_dump=True, filter_errors=True,
-                       print_error_amount=False):
+                       print_error_amount=False,
+                       error_amount_filename='error_amount.csv'):
     # TODO: add plots to check data
     r"""
     Fetches GreenWind data.
@@ -84,6 +86,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     print_error_amount : Boolean
         If True amount of values set to nan due to error numbers are print for
         each turbine and wind farm (and printed to csv file). Default: False.
+    error_amount_filename : String
+        Filname including path of error amount data frame.
 
     Returns
     -------
@@ -102,6 +106,13 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         for name in filenames:
             # Load data and drop duplicates
             df_part = read_data(name).drop_duplicates()
+            if year == 2016:
+                # Load data from 2015 as it contains data from January 2016
+                name = name.replace('2016', '2015')
+                df_part_2015 = read_data(name).drop_duplicates()
+                df_part = pd.concat([df_part,
+                                     df_part_2015.loc['2015-12-31 23:00:00':]],
+                                    axis=0).sort_index()
             if name == 'WF1_2015.csv':
                 # Set ambiguous duplicates to nan.
                 df_part.loc[df_part.index.get_duplicates()] = np.nan
@@ -111,6 +122,9 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         # Convert index to DatetimeIndex and make time zone aware
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
             'UTC').tz_convert('Europe/Berlin')
+        # Choose time steps of the year only (there are some time steps from
+        # the year before or after)
+        greenwind_df = greenwind_df.loc[str(year)]
         if filter_errors:
             print("---- Errors of GreenWind data in " +
                   "{} are being filtered. ----".format(year))
@@ -163,9 +177,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 # Print amount of time steps set to nan
                 df = pd.DataFrame(error_dict, index=['amount']).transpose()
                 visualization_tools.print_whole_dataframe(df)
-                df.to_csv(os.path.join(os.path.dirname(__file__),
-                          '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                          'filtered_error_amount_{}.csv'.format(year)))
+                df.to_csv(error_amount_filename)
         print('---- Error filtering of {0} Done. ----'.format(year))
         if resample:
             # Delete error number columns as it is senseless to resample them
@@ -324,6 +336,8 @@ def evaluate_duplicates(years):
             df_part.drop_duplicates(inplace=True)
             # Get remaining duplicated indices
             duplicates_after_drop = df_part.index.get_duplicates()
+            # Get unique error numbers
+            unique_error_numbers = error_numbers_from_df(duplicates_df)
             # Create duplicates dict
             duplicates_dict[year][name.split('_')[0]] = {
                 'duplicates_before_drop': duplicates,
@@ -331,7 +345,8 @@ def evaluate_duplicates(years):
                 'duplicates_df': duplicates_df,
                 'duplicates_df_after_drop':
                 df_part.loc[duplicates_after_drop],
-                'duplicates_per_step_before_drop': duplicates_per_step}
+                'duplicates_per_step_before_drop': duplicates_per_step,
+                'error_numbers': unique_error_numbers}
     print('--- duplicates dict ---')
     print(duplicates_dict)
     print('--- The duplicates dict should be looked at in debugging mode ---')
@@ -353,10 +368,7 @@ def evaluate_nans(years):
         df = pd.concat([df, df_part_year], axis=1)
     return df
 
-
-def get_error_numbers(year):
-    df = get_greenwind_data(year=year, resample=False,
-                            pickle_load=False, pickle_dump=False)
+def error_numbers_from_df(df):
     error_numbers = []
     for column_name in list(df):
         if 'error_number' in column_name:
@@ -364,6 +376,12 @@ def get_error_numbers(year):
     sorted_error_numbers = pd.Series(
         pd.Series(error_numbers).unique()).sort_values()
     sorted_error_numbers.index = np.arange(len(sorted_error_numbers))
+    return sorted_error_numbers
+
+def get_error_numbers(year):
+    df = get_greenwind_data(year=year, resample=False,
+                            pickle_load=False, pickle_dump=False)
+    sorted_error_numbers = error_numbers_from_df(df)
     return sorted_error_numbers
 
 
@@ -386,15 +404,48 @@ if __name__ == "__main__":
         # filtered
         filter_errors = True
         print_error_amount = True
+        print_erroer_amount_total = True
         for year in years:
             filename = os.path.join(os.path.dirname(__file__),
                                     'dumps/validation_data',
                                     'greenwind_data_{0}.p'.format(year))
+            error_amount_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_{}.csv'.format(year))
             df = get_greenwind_data(
                 year=year, resample=resample,
                 frequency=frequency, threshold=threshold,
                 filename=filename, filter_errors=filter_errors,
                 print_error_amount=print_error_amount)
+
+        if print_erroer_amount_total and print_error_amount:
+            filenames = [os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_{}.csv'.format(year)) for year in years]
+            dfs = [pd.read_csv(filename, index_col=0).rename(
+                columns={'amount': year}) for
+                   filename, year in zip(filenames, years)]
+            df = pd.concat(dfs, axis=1)
+            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
+                                         ind in error_amout_df.index},
+                                  inplace=True)
+            error_amout_df.to_csv(os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_years.csv'))
+            latex_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/Tables/',
+                'filtered_error_amount_years.tex')
+            error_amout_df.to_latex(
+                buf=latex_filename,
+                column_format=latex_tables.create_column_format(
+                    len(error_amout_df.columns), 'c'),
+                multicolumn_format='c')
+
 
     # ----- First row turbine -----#
     evaluate_first_row_turbine = True
@@ -408,7 +459,9 @@ if __name__ == "__main__":
         first_row_frequency = '30T'
         first_row_threshold = 2
         first_row_filter_errors = True
-        first_row_print_error_amount = True
+        first_row_print_error_amount = False
+        first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
+        pickle_load_raw_data = True
         for year in years:
             filename_raw_data = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
@@ -416,17 +469,45 @@ if __name__ == "__main__":
             pickle_filename = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'greenwind_data_first_row_{0}.p'.format(year))
+            error_amount_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount__first_row{}.csv'.format(year))
             df = get_first_row_turbine_time_series(
                 year=year, filename_raw_data=filename_raw_data,
-                pickle_load_raw_data=True,
+                pickle_load_raw_data=pickle_load_raw_data,
                 filter_errors=first_row_filter_errors,
                 print_error_amount=first_row_print_error_amount,
                 pickle_filename=pickle_filename, frequency=first_row_frequency,
                 resample=first_row_resample, threshold=first_row_threshold)
 
+        if (first_row_print_erroer_amount_total and
+                first_row_print_error_amount):
+            filenames = [os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_first_row{}.csv'.format(year)) for
+                         year in years]
+            dfs = [pd.read_csv(filename, index_col=0).rename(
+                columns={'amount': year}) for
+                   filename, year in zip(filenames, years)]
+            df = pd.concat(dfs, axis=1)
+            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
+                                         ind in error_amout_df.index})
+            error_amout_df.to_csv(os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_years_first_row.csv'))
+
+
     # Evaluation of nans
-    nans_evaluation = True
+    nans_evaluation = False
     if nans_evaluation:
+        years = [
+            2015,
+            2016
+        ]
         nans_df = evaluate_nans(years)
         nans_df.to_csv(os.path.join(
             os.path.dirname(__file__),
@@ -436,11 +517,19 @@ if __name__ == "__main__":
     # Evaluation of duplicates
     duplicates_evaluation = False
     if duplicates_evaluation:
+        years = [
+            2015,
+            2016
+        ]
         duplicates_dict = evaluate_duplicates(years)
 
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
     if error_numbers:
+        years = [
+            2015,
+            2016
+        ]
         error_numbers_total = []
         for year in years:
             error_numbers = get_error_numbers(year)
