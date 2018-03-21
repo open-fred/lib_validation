@@ -49,7 +49,8 @@ def read_data(filename):
 def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                        resample=True, threshold=None, plot=False, x_limit=None,
                        frequency='30T', pickle_dump=True, filter_errors=True,
-                       print_error_amount=False):
+                       print_error_amount=False,
+                       error_amount_filename='error_amount.csv'):
     # TODO: add plots to check data
     r"""
     Fetches GreenWind data.
@@ -84,6 +85,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     print_error_amount : Boolean
         If True amount of values set to nan due to error numbers are print for
         each turbine and wind farm (and printed to csv file). Default: False.
+    error_amount_filename : String
+        Filname including path of error amount data frame.
 
     Returns
     -------
@@ -163,9 +166,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 # Print amount of time steps set to nan
                 df = pd.DataFrame(error_dict, index=['amount']).transpose()
                 visualization_tools.print_whole_dataframe(df)
-                df.to_csv(os.path.join(os.path.dirname(__file__),
-                          '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                          'filtered_error_amount_{}.csv'.format(year)))
+                df.to_csv(error_amount_filename)
         print('---- Error filtering of {0} Done. ----'.format(year))
         if resample:
             # Delete error number columns as it is senseless to resample them
@@ -324,6 +325,8 @@ def evaluate_duplicates(years):
             df_part.drop_duplicates(inplace=True)
             # Get remaining duplicated indices
             duplicates_after_drop = df_part.index.get_duplicates()
+            # Get unique error numbers
+            unique_error_numbers = error_numbers_from_df(duplicates_df)
             # Create duplicates dict
             duplicates_dict[year][name.split('_')[0]] = {
                 'duplicates_before_drop': duplicates,
@@ -331,7 +334,8 @@ def evaluate_duplicates(years):
                 'duplicates_df': duplicates_df,
                 'duplicates_df_after_drop':
                 df_part.loc[duplicates_after_drop],
-                'duplicates_per_step_before_drop': duplicates_per_step}
+                'duplicates_per_step_before_drop': duplicates_per_step,
+                'error_numbers': unique_error_numbers}
     print('--- duplicates dict ---')
     print(duplicates_dict)
     print('--- The duplicates dict should be looked at in debugging mode ---')
@@ -353,10 +357,7 @@ def evaluate_nans(years):
         df = pd.concat([df, df_part_year], axis=1)
     return df
 
-
-def get_error_numbers(year):
-    df = get_greenwind_data(year=year, resample=False,
-                            pickle_load=False, pickle_dump=False)
+def error_numbers_from_df(df):
     error_numbers = []
     for column_name in list(df):
         if 'error_number' in column_name:
@@ -364,6 +365,12 @@ def get_error_numbers(year):
     sorted_error_numbers = pd.Series(
         pd.Series(error_numbers).unique()).sort_values()
     sorted_error_numbers.index = np.arange(len(sorted_error_numbers))
+    return sorted_error_numbers
+
+def get_error_numbers(year):
+    df = get_greenwind_data(year=year, resample=False,
+                            pickle_load=False, pickle_dump=False)
+    sorted_error_numbers = error_numbers_from_df(df)
     return sorted_error_numbers
 
 
@@ -390,6 +397,10 @@ if __name__ == "__main__":
             filename = os.path.join(os.path.dirname(__file__),
                                     'dumps/validation_data',
                                     'greenwind_data_{0}.p'.format(year))
+            error_amount_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount_{}.csv'.format(year))
             df = get_greenwind_data(
                 year=year, resample=resample,
                 frequency=frequency, threshold=threshold,
@@ -416,6 +427,10 @@ if __name__ == "__main__":
             pickle_filename = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'greenwind_data_first_row_{0}.p'.format(year))
+            error_amount_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                'filtered_error_amount__first_row{}.csv'.format(year))
             df = get_first_row_turbine_time_series(
                 year=year, filename_raw_data=filename_raw_data,
                 pickle_load_raw_data=True,
@@ -425,8 +440,12 @@ if __name__ == "__main__":
                 resample=first_row_resample, threshold=first_row_threshold)
 
     # Evaluation of nans
-    nans_evaluation = True
+    nans_evaluation = False
     if nans_evaluation:
+        years = [
+            2015,
+            2016
+        ]
         nans_df = evaluate_nans(years)
         nans_df.to_csv(os.path.join(
             os.path.dirname(__file__),
@@ -436,11 +455,19 @@ if __name__ == "__main__":
     # Evaluation of duplicates
     duplicates_evaluation = False
     if duplicates_evaluation:
+        years = [
+            2015,
+            2016
+        ]
         duplicates_dict = evaluate_duplicates(years)
 
     # Evaluation of error numbers - decide whether to execute:
     error_numbers = False
     if error_numbers:
+        years = [
+            2015,
+            2016
+        ]
         error_numbers_total = []
         for year in years:
             error_numbers = get_error_numbers(year)
