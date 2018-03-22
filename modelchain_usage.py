@@ -47,13 +47,19 @@ def power_output_simple(wind_turbine_fleet, weather_df,
         'density_correction': density_correction,
         'obstacle_height': obstacle_height,
         'hellman_exp': hellman_exp}
+    # Get power output of each turbine
     for turbine_type in wind_turbine_fleet:
         # Initialise ModelChain and run model
         mc = ModelChain(turbine_type['wind_turbine'],
                         **modelchain_data).run_model(weather_df)
         # Write power output timeseries to WindTurbine object
         turbine_type['wind_turbine'].power_output = mc.power_output
-    return tools.power_output_simple_aggregation(wind_turbine_fleet)
+    # Sum up the power output
+    farm_power_output = 0
+    for turbine_type in wind_turbine_fleet:
+        farm_power_output += (turbine_type['wind_turbine'].power_output *
+                              turbine_type['number_of_turbines'])
+    return farm_power_output
 
 
 def power_output_cluster(wind_object, weather_df, density_correction=False,

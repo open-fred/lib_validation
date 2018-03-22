@@ -110,9 +110,7 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
 
 
 def power_output_simple(wind_turbine_fleet, weather_df, data_height):
-    # TODO: add weather_data_name to these functions and use modelchain for
-    #       open_FRED data as there are different heights and this is easier
-    #       with the multiindex dataframe
+    # TODO: delete if not used
     r"""
     Calculate power output of several wind turbines by a simple method.
 
@@ -156,6 +154,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, data_height):
 
 
 def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
+    # TODO: delete if not used further
     r"""
 #    Calculate power output of several wind turbines ......
 #
@@ -205,6 +204,7 @@ def power_output_density_corr(wind_turbine_fleet, weather_df, data_height):
 
 
 def power_output_simple_aggregation(wind_turbine_fleet):
+    # TODO: delete if not used further
     r"""
     Calulate power output of wind farm by simple aggregation.
 
