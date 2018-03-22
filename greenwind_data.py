@@ -133,7 +133,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             # Get numbers that do display an error
             error_numbers = pd.read_csv(
                 os.path.join(os.path.dirname(__file__), 'data/GreenWind',
-                             'errors.csv'))['error_numbers'].dropna().values
+                             'errors.csv'))['error_numbers'].dropna().values  # nans?!
             # # Get numbers that do not display an error
             # no_error_numbers = pd.read_csv(
             #     os.path.join(os.path.dirname(__file__),
@@ -195,7 +195,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     return greenwind_df
 
 
-def get_first_row_turbine_time_series(year, filename_raw_data,
+def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       pickle_load_raw_data=False,
                                       filter_errors=True,
                                       print_error_amount=False,
@@ -301,10 +301,10 @@ def get_first_row_turbine_time_series(year, filename_raw_data,
             first_row_df = pd.concat([first_row_df, green_wind_df[[
                 '{}_wind_speed_measured'.format(wind_farm_name),
                 '{}_power_output_measured'.format(wind_farm_name)]]], axis=1)
-        pickle.dump(green_wind_df, open(pickle_filename, 'wb'))
+        pickle.dump(first_row_df, open(pickle_filename, 'wb'))
     if resample:
         first_row_df = tools.resample_with_nan_theshold(
-            df=green_wind_df, frequency=frequency, threshold=threshold)
+            df=first_row_df, frequency=frequency, threshold=threshold)
     else:
         # Add frequency attribute
         first_row_df = pd.DataFrame(green_wind_df)
