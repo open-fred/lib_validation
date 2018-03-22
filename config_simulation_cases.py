@@ -37,13 +37,13 @@ def get_standard_case_of_configuration():
         'output_methods': ['half_hourly',  # Only if possible
                            'hourly', 'monthly'],
         'visualization_methods': [],
-        'latex_output': np.array([
+        'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
             'annual_energy_approaches',  # AEO all approaches
             'annual_energy_weather_approaches',  # AEO approaches, weather sets
             'key_figures_weather',     # Key figures of all weather sets
             'key_figures_approaches'  # Key figures of all approaches
-            ]),
+            ],
         'key_figures_print': ['rmse', 'rmse_normalized', 'pearson',
                               'mean_bias', 'standard_deviation'],
         }
@@ -88,7 +88,7 @@ def get_configuration(case=None):
         Temporal output resolutions to take into consideration.
     visualization_methods : list
         Plot applications to take into consideration.
-    latex_output : np.array
+    latex_output : list
         Type of latex tables to take into consideration.
     key_figures_print : list
         Key figures to be printed if a key figures table in `latex_output`.
@@ -101,11 +101,8 @@ def get_configuration(case=None):
         config_dict['approach_list'] = [
             'logarithmic', 'logarithmic_obstacle', 'hellman', 'hellman_1/7']
         config_dict['validation_data_list'] = ['single']
-        config_dict['latex_output'] = np.array([
-            'annual_energy_weather', 'annual_energy_approaches',
-            'annual_energy_weather_approaches', 'key_figures_weather',
-            'key_figures_approaches'])
-
+        config_dict['latex_output'] = ['key_figures_weather',
+                                                'key_figures_approaches'],
     if case == 'wind_speed_2':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
@@ -113,8 +110,7 @@ def get_configuration(case=None):
             # 'logarithmic_interpolation' TODO: add this function
         ]
         config_dict['validation_data_list'] = ['single']
-        config_dict['latex_output'] = np.array([
-            'annual_energy_weather', 'key_figures_weather',
-            'key_figures_approaches'])
+        config_dict['latex_output'] = ['key_figures_weather',
+                                       'key_figures_approaches']
     
     return config_dict
