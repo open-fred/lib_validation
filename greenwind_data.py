@@ -292,15 +292,15 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             power_output_columns = [
                 column_name for column_name in list(green_wind_df) if
                 'power_output_temp' in column_name]
-            green_wind_df['{}_wind_speed_measured'.format(
+            green_wind_df['{}_wind_speed'.format(
                 wind_farm_name)] = green_wind_df[wind_speed_columns].sum(
                 axis=1, skipna=True)
-            green_wind_df['{}_power_output_measured'.format(
+            green_wind_df['{}_power_output'.format(
                 wind_farm_name)] = green_wind_df[power_output_columns].sum(
                 axis=1, skipna=True)
             first_row_df = pd.concat([first_row_df, green_wind_df[[
-                '{}_wind_speed_measured'.format(wind_farm_name),
-                '{}_power_output_measured'.format(wind_farm_name)]]], axis=1)
+                '{}_wind_speed'.format(wind_farm_name),
+                '{}_power_output'.format(wind_farm_name)]]], axis=1)
         pickle.dump(first_row_df, open(pickle_filename, 'wb'))
     if resample:
         first_row_df = tools.resample_with_nan_theshold(
