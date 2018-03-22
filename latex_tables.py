@@ -23,7 +23,7 @@ def create_column_format(number_of_columns, position='c', index_columns='l'):
 def write_latex_output(latex_output, weather_data_list, approach_list,
                        restriction_list, val_obj_dict, annual_energy_dicts,
                        wind_farm_names, key_figures_print, output_methods,
-                       path_latex_tables, filename_add_on, year):
+                       path_latex_tables, filename_add_on, year, case):
     if 'annual_energy_approaches' in latex_output:
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
@@ -49,8 +49,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             latex_df = latex_df[order]
             filename_table = os.path.join(
                 path_latex_tables,
-                'annual_energy_approach_{0}_{1}{2}.tex'.format(
-                    year, weather_data_name, filename_add_on))
+                'annual_energy_approach_{0}_{1}_{2}{3}.tex'.format(
+                    case, year, weather_data_name, filename_add_on))
             latex_df.to_latex(buf=filename_table,
                               column_format=create_column_format(
                                   len(
@@ -88,8 +88,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 latex_df = latex_df[order]
                 filename_table = os.path.join(
                     path_latex_tables,
-                    'annual_energy_weather_{0}_{1}{2}.tex'.format(
-                        year, approach, filename_add_on))
+                    'annual_energy_weather_{0}_{1}_{2}{3}.tex'.format(
+                        case, year, approach, filename_add_on))
                 latex_df.to_latex(
                     buf=filename_table, column_format=create_column_format(
                         len(latex_df.columns), 'c'), multicolumn_format='c')
@@ -118,13 +118,15 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                              approach not in restriction_list]]
         filename_table = os.path.join(
             path_latex_tables,
-            'annual_energy_weather_approaches_{0}{1}.tex'.format(
-                year, filename_add_on))
+            'annual_energy_weather_approaches_{0}_{1}{2}.tex'.format(
+                case, year, filename_add_on))
         latex_df.to_latex(
             buf=filename_table, column_format=create_column_format(
                 len(latex_df.columns), 'c'), multicolumn_format='c')
 
     if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
+        if 'wind_speed' in case:
+            unit = '[m/s]'
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
@@ -134,7 +136,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                         df_wf_part = pd.DataFrame()
                         if 'rmse' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('RMSE [MW]', innerKey.replace(
+                                {('RMSE {}'.format(unit), innerKey.replace(
                                     'ity_correction', '. corr.').replace(
                                     '_wf', '').replace(
                                     'efficiency', 'eff.').replace(
@@ -184,12 +186,13 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                    axis=1)
                         if 'mean_bias' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('mean bias [MW]', innerKey.replace(
-                                    'ity_correction', '. corr.').replace(
-                                    '_wf', '').replace(
-                                    'efficiency', 'eff.').replace(
-                                    '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')):
+                                {('mean bias {}'.format(unit),
+                                  innerKey.replace(
+                                      'ity_correction', '. corr.').replace(
+                                      '_wf', '').replace(
+                                      'efficiency', 'eff.').replace(
+                                      '_%', '').replace(
+                                      'constant', 'const.').replace('_', ' ')):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
@@ -200,12 +203,13 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                                    axis=1)
                         if 'standard_deviation' in key_figures_print:
                             df_part = pd.DataFrame(
-                                {('std deviation [MW]', innerKey.replace(
-                                    'ity_correction', '. corr.').replace(
-                                    '_wf', '').replace(
-                                    'efficiency', 'eff.').replace(
-                                    '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')):
+                                {('std deviation {}'.format(unit),
+                                  innerKey.replace(
+                                      'ity_correction', '. corr.').replace(
+                                      '_wf', '').replace(
+                                      'efficiency', 'eff.').replace(
+                                      '_%', '').replace(
+                                      'constant', 'const.').replace('_', ' ')):
                                  val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
@@ -219,8 +223,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             latex_df.sort_index(axis=0, inplace=True)
             filename_table = os.path.join(
                 path_latex_tables,
-                'key_figures_approaches_{0}_{1}{2}.tex'.format(
-                    year, weather_data_name, filename_add_on))
+                'key_figures_approaches_{0}_{1}_{2}{3}.tex'.format(
+                    case, year, weather_data_name, filename_add_on))
             column_format = create_column_format(
                 number_of_columns=(
                     len(val_obj_dict[weather_data_name][
@@ -243,7 +247,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     df_wf_part = pd.DataFrame()
                                     if 'rmse' in key_figures_print:
                                         df_part = pd.DataFrame(
-                                            {('RMSE [MW]',
+                                            {('RMSE {}'.format(unit),
                                               weather_data_name):
                                              val_obj.rmse for
                                              innerKey, innerstList in
@@ -285,7 +289,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                             [df_wf_part, df_part], axis=1)
                                     if 'mean_bias' in key_figures_print:
                                         df_part = pd.DataFrame(
-                                            {('mean bias [MW]',
+                                            {('mean bias {}'.format(unit),
                                               weather_data_name):
                                              val_obj.mean_bias for
                                              innerKey, innerstList in
@@ -300,7 +304,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     if ('standard_deviation' in
                                             key_figures_print):
                                         df_part = pd.DataFrame(
-                                            {('std deviation [MW]',
+                                            {('std deviation {}'.format(unit),
                                               weather_data_name):
                                              val_obj.standard_deviation for
                                              innerKey, innerstList in
@@ -321,8 +325,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             latex_df.sort_index(axis=0, inplace=True)
             filename_table = os.path.join(
                 path_latex_tables,
-                'Key_figures_weather_{0}_{1}{2}.tex'.format(
-                    year, approach, filename_add_on))
+                'Key_figures_weather_{0}_{1}_{2}{3}.tex'.format(
+                    case, year, approach, filename_add_on))
             column_format = create_column_format(
                 number_of_columns=(
                     len(val_obj_dict[weather_data_name][

@@ -744,7 +744,7 @@ latex_tables.write_latex_output(
     val_obj_dict=val_obj_dict, annual_energy_dicts=annual_energy_dicts,
     wind_farm_names=wind_farm_names, key_figures_print=key_figures_print,
     output_methods=output_methods, path_latex_tables=path_latex_tables,
-    filename_add_on=filename_add_on, year=year)
+    filename_add_on=filename_add_on, year=year, case=case[0])
 
 # ------------------------------- Extra plots ------------------------------- #
 # if 'annual_bars_weather' in extra_plots:
