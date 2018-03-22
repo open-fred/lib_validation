@@ -14,7 +14,8 @@ from open_fred_weather_data import get_open_fred_data
 from argenetz_data import get_argenetz_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
-from greenwind_data import get_greenwind_data
+from greenwind_data import (get_greenwind_data,
+                            get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
 
 # Other imports
@@ -24,8 +25,10 @@ import numpy as np
 import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
-case = [  # Only select one case
-    'wind_speed_1'
+case = [  # Only select one case (first one is counted)
+    'wind_speed_1',
+    # 'wind_speed_2',
+    # 'single_turbine'
 ]
 year = 2015  # TODO: yearS to config file
 
@@ -125,12 +128,16 @@ def get_validation_data(frequency):
     ----------
     frequency : ...
         TODO add
+    single : Booelan
+        If True first row single turbine data is added instead of wind farm
+        data.
 
     Returns
     -------
     validation_df : pd.DataFrame
         Measured power output in MW. Column names are as follows:
-        'wf_1_measured', 'wf_2_measured', etc.
+        'wf_1_measured', 'wf_2_measured', etc. OR 'single_6_measured',
+        'single_7_measured', 'single_6_measured_wind' etc.
 
     """
     def get_threshold(frequency, validation_resolution):
@@ -186,11 +193,11 @@ def get_validation_data(frequency):
             year, pickle_load=pickle_load_greenwind,
             filename=os.path.join(validation_pickle_folder,
                                   'greenwind_data_{0}.p'.format(year)),
-            filter_errors=True)
+            filter_errors=True, threshold=threshold)
         # Select aggregated power output of wind farm (rename)
         greenwind_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
-                data in wind_farm_data_gw]].rename(
+            data in wind_farm_data_gw]].rename(
             columns={col: col.replace('power_output', 'measured') for col in
                      greenwind_data.columns})
         # Resample the DataFrame columns with `frequency` and add to list
@@ -198,31 +205,67 @@ def get_validation_data(frequency):
         validation_df_list.append(tools.resample_with_nan_theshold(
             df=greenwind_data, frequency=frequency, threshold=threshold))
     if 'single' in validation_data_list:
-        pass  # TODO add
-    # Join DataFrames - power output in MW
-    validation_df = pd.concat(validation_df_list, axis=1) / 1000
+        single_data = get_first_row_turbine_time_series(
+            year=year, filter_errors=True, print_error_amount=False,
+            pickle_filename=os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'greenwind_data_first_row_{0}.p'.format(year)),
+            pickle_load=pickle_load_greenwind)
+        if 'wind_speed' in case[0]:
+            # Get first row single turbine wind speed data and rename columns
+            single_data = single_data[[col for col in list(single_data) if
+                                       'wind_speed' in col]].rename(
+                columns={column: column.replace(
+                    'wind_speed', 'measured').replace('wf', 'single') for
+                    column in list(single_data)})
+        else: # TODO: instead of else: if 'single_turbine' ... else: why 'single' in validation data list
+            single_data = single_data[[col for col in list(single_data) if
+                                       'power_output' in col]].rename(
+                columns={column: column.replace(
+                    'power_output', 'measured').replace('wf', 'single') for
+                    column in list(single_data)}) / 1000
+        # Resample the DataFrame columns with `frequency` and add to list
+        threshold = get_threshold(frequency, single_data.index.freq.n)
+        validation_df_list.append(tools.resample_with_nan_theshold(
+            df=single_data, frequency=frequency, threshold=threshold))
+    # Join DataFrames - power output in MW - wind speed in m/s
+    validation_df = pd.concat(validation_df_list, axis=1)
     return validation_df
 
+
 # ------------------------------ Wind farm data ----------------------------- #
-def return_wind_farm_data():
+def return_wind_farm_data(single=False):
         r"""
         Get wind farm data of all validation data.
+
+        single : Boolean
+            If True the single turbine data is fetched.
 
         Returns
         -------
         List of Dictionaries
-            Contains information about the wind farm.
+            Dictionaries contain information about the wind farm.
 
         """
-        filenames = ['farm_specification_{0}_{1}.p'.format(
-            validation_data_name.replace('ArgeNetz', 'argenetz').replace(
-                'GreenWind', 'greenwind'), year)
-            for validation_data_name in validation_data_list if
-            validation_data_name is not 'Enertrag']
-        if (year == 2016 and 'Enertrag' in validation_data_list):
-            filenames += ['farm_specification_enertrag_2016.p']
-        return get_joined_wind_farm_data(filenames, wind_farm_pickle_folder,
-                                         pickle_load_wind_farm_data)
+        if single:
+            filenames = ['farm_specification_greenwind_{0}.p'.format(year)]
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+            for item in wind_farm_data:
+                item['wind_turbine_fleet'][0]['number_of_turbines'] = 1
+                item['object_name'] = 'single_{}'.format(
+                    item['object_name'].split('_')[1])
+        else:
+            filenames = ['farm_specification_{0}_{1}.p'.format(
+                validation_data_name.replace('ArgeNetz', 'argenetz').replace(
+                    'GreenWind', 'greenwind'), year)
+                for validation_data_name in validation_data_list if
+                validation_data_name is not 'Enertrag']
+            if (year == 2016 and 'Enertrag' in validation_data_list):
+                filenames += ['farm_specification_enertrag_2016.p']
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+        return wind_farm_data
 
 # ------------------------- Power output simulation ------------------------- #
 def get_calculated_data(weather_data_name):
@@ -265,8 +308,8 @@ def get_calculated_data(weather_data_name):
                 pickle_load=False)
 
     # Get wind farm data
-    if case == 'wind_speed_1':
-        wind_farm_data_list = ... TODO: add and TODO: other dataframe in time series df for power output!!!
+    if 'single' in validation_data_list:
+        wind_farm_data_list = return_wind_farm_data(single=True)
     else:
         wind_farm_data_list = return_wind_farm_data()
     # Initialise calculation_df_list and calculate power output
@@ -282,43 +325,58 @@ def get_calculated_data(weather_data_name):
             temperature_heights=temperature_heights)
         # Calculate power output and store in list
         if 'logarithmic' in approach_list:
-        # if (case == 'wind_speed_1' and 'logarithmic' in approach_list):  # TODO: if logarithmic in other case
-            calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                weather_df=weather, wind_speed_model='logarithmic',
-                obstacle_height=0).to_frame(
+        # if (case[0] == 'wind_speed_1' and 'logarithmic' in approach_list):  # TODO: if logarithmic in other case
+            calculation_df_list.append(
+                modelchain_usage.wind_speed_to_hub_height(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    obstacle_height=0).to_frame(
                     name='{0}_calculated_logarithmic'.format(
                         wind_farm.object_name)))
-        if 'logarithmic_obstacle' in approach_list:
-            # TODO: add obstacle height per wind farm (if wf == ... oh = )
-            calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                weather_df=weather, wind_speed_model='logarithmic',
-                obstacle_height=0).to_frame(
-                name='{0}_calculated_logarithmic'.format(
-                    wind_farm.object_name)))
+        # if 'logarithmic_obstacle' in approach_list:
+        #     # TODO: add obstacle height per wind farm (if wf == ... oh = )
+        #     calculation_df_list.append(
+        #         modelchain_usage.wind_speed_to_hub_height(
+        #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+        #             weather_df=weather, wind_speed_model='logarithmic',
+        #             obstacle_height=0).to_frame(
+        #             name='{0}_calculated_logarithmic_obstacle'.format(
+        #                 wind_farm.object_name)))
         if 'hellman' in approach_list:
-            calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                weather_df=weather, wind_speed_model='hellman').to_frame(
-                name='{0}_calculated_logarithmic'.format(
-                    wind_farm.object_name)))
-        if 'hellman_1/7' in approach_list:
-            calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                weather_df=weather, wind_speed_model='hellman',
-                hellman_exponent=1 / 7).to_frame(
-                name='{0}_calculated_logarithmic'.format(
-                    wind_farm.object_name)))
+            calculation_df_list.append(
+                modelchain_usage.wind_speed_to_hub_height(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='hellman',
+                    hellman_exp=None).to_frame(
+                    name='{0}_calculated_hellman'.format(
+                        wind_farm.object_name)))
+        if 'hellman_1_7' in approach_list:
+            calculation_df_list.append(
+                modelchain_usage.wind_speed_to_hub_height(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='hellman',
+                    hellman_exp=1 / 7).to_frame(
+                    name='{0}_calculated_hellman_1_7'.format(
+                        wind_farm.object_name)))
         if 'linear_interpolation' in approach_list:
             if len(list(weather['wind_speed'])) > 1:
                 calculation_df_list.append(
-                    modelchain_usage.power_output_simple(
+                    modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=weather,
-                        wind_speed_model='interpolation_extrapolation').to_frame(
-                        name='{0}_calculated_logarithmic'.format(
+                        wind_speed_model='interpolation_extrapolation',
+                        hellman_exp=1 / 7).to_frame(
+                        name='{0}_calculated_linear_interpolation'.format(
                             wind_farm.object_name)))
+        if 'power_curve' in approach_list:
+            pass
+        if 'cp_curve' in approach_list:
+            pass
+        if 'p_curve_dens_corr' in approach_list:
+            pass
+        if 'cp_curve_dens_corr' in approach_list:
+            pass
+
         # if 'logarithmic_interpolation' in approach_list: # TODO: add function
         #     if len(list(weather['wind_speed'])) > 1:
         #         calculation_df_list.append(
@@ -415,8 +473,11 @@ def get_calculated_data(weather_data_name):
     #         wind_speed_model='logarithmic').to_frame(
     #         name='{0}_calculated_test_cluster'.format(
     #             wind_farm.object_name)))
-    # Join DataFrames - power output in MW
-    calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
+    # Join DataFrames - power output in MW - wind speed in m/s
+    if 'single' in validation_data_list:
+        calculation_df = pd.concat(calculation_df_list, axis=1)
+    else:
+        calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
     # Add curtailment for Enertrag wind farm
     for column_name in list(calculation_df):
         if column_name.split('_')[1] == '9':
@@ -439,7 +500,7 @@ def get_time_series_df(weather_data_name):
     """
     time_series_filename = os.path.join(time_series_df_folder,
                                         'time_series_df_{0}_{1}_{2}.p'.format(
-                                            case, weather_data_name, year))
+                                            case[0], weather_data_name, year))
     if pickle_load_time_series_df:
         time_series_df = pickle.load(open(time_series_filename, 'rb'))
     elif csv_load_time_series_df:
@@ -516,7 +577,11 @@ def join_dictionaries(list_of_dicts): # TODO: delete if not needed
 
 # ------------------------------ Data Evaluation ---------------------------- #
 # Create list of wind farm names
-wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
+if 'single' in validation_data_list:
+    wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
+        single=True)]
+else:
+    wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
 # Initialize dictionary for validation objects
 val_obj_dict = initialize_dictionary(dict_type='validation_objects')
 # Initialize dict for annual energy output of each weather data set
@@ -736,6 +801,7 @@ if time_period is not None:
     filename_add_on = '_{0}_{1}'.format(time_period[0], time_period[1])
 else:
     filename_add_on = ''
+
 
 # Write latex output
 latex_tables.write_latex_output(

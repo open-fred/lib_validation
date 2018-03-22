@@ -1,10 +1,14 @@
 # Imports from Windpowerlib
 from windpowerlib.modelchain import ModelChain
 from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
+from windpowerlib import wind_speed
+from windpowerlib import tools as wpl_tools
 
 # Imports from lib_validation
 import tools
 
+# Other imports
+import logging
 
 def power_output_simple(wind_turbine_fleet, weather_df,
                         wind_speed_model='logarithmic',
@@ -165,3 +169,62 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
     wf_mc = TurbineClusterModelChain(
         wind_object, **wf_modelchain_data).run_model(weather_df, **kwargs)
     return wf_mc.power_output
+
+
+def wind_speed_to_hub_height(wind_turbine_fleet, weather_df,
+                             wind_speed_model='logarithmic',
+                             obstacle_height=0, hellman_exp=None):
+    r"""
+    Calculates the wind speed at hub height. (function from modelchain)
+
+    The method specified by the parameter `wind_speed_model` is used.
+
+    Parameters
+    ----------
+    wind_turbine_fleet : List of Dictionaries
+        Wind turbines of wind farm. Dictionaries must have 'wind_turbine'
+        (contains wind turbine object) and 'number_of_turbines' (number of
+        turbine type in wind farm) as keys.
+    weather_df : pandas.DataFrame
+        DataFrame with time series for wind speed `wind_speed` in m/s and
+        roughness length `roughness_length` in m.
+
+    Returns
+    -------
+        wind_speed_hub : pd.Series
+            Simulated wind speed at hub height.
+    """
+    hub_height = wind_turbine_fleet[0]['wind_turbine'].hub_height
+    if hub_height in weather_df['wind_speed']:
+        wind_speed_hub = weather_df['wind_speed'][hub_height]
+    elif wind_speed_model == 'logarithmic':
+        logging.debug('Calculating wind speed using logarithmic wind '
+                      'profile.')
+        closest_height = weather_df['wind_speed'].columns[
+            min(range(len(weather_df['wind_speed'].columns)),
+                key=lambda i: abs(weather_df['wind_speed'].columns[i] -
+                                  hub_height))]
+        wind_speed_hub = wind_speed.logarithmic_profile(
+            weather_df['wind_speed'][closest_height], closest_height,
+            hub_height, weather_df['roughness_length'].ix[:, 0],
+            obstacle_height)
+    elif wind_speed_model == 'hellman':
+        logging.debug('Calculating wind speed using hellman equation.')
+        closest_height = weather_df['wind_speed'].columns[
+            min(range(len(weather_df['wind_speed'].columns)),
+                key=lambda i: abs(weather_df['wind_speed'].columns[i] -
+                                  hub_height))]
+        wind_speed_hub = wind_speed.hellman(
+            weather_df['wind_speed'][closest_height], closest_height,
+            hub_height, weather_df['roughness_length'].ix[:, 0], hellman_exp)
+    elif wind_speed_model == 'interpolation_extrapolation':
+        logging.debug('Calculating wind speed using linear inter- or '
+                      'extrapolation.')
+        wind_speed_hub = wpl_tools.linear_interpolation_extrapolation(
+            weather_df['wind_speed'], hub_height)
+    else:
+        raise ValueError(
+            "'{0}' is an invalid value. ".format(wind_speed_model) +
+            "`wind_speed_model` must be 'logarithmic', 'hellman' or " +
+            "'interpolation_extrapolation'.")
+    return wind_speed_hub

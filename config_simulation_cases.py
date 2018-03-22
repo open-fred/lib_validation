@@ -99,10 +99,12 @@ def get_configuration(case=None):
     if case == 'wind_speed_1':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
-            'logarithmic', 'logarithmic_obstacle', 'hellman', 'hellman_1/7']
+            'logarithmic',
+            # 'logarithmic_obstacle', # TODO: obstacle height
+            'hellman', 'hellman_1_7']
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
-                                                'key_figures_approaches'],
+                                       'key_figures_approaches']
     if case == 'wind_speed_2':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
@@ -112,5 +114,11 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
+    if case == 'single_turbine':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'power_curve', 'cp_curve', 'p_curve_dens_corr',
+            'cp_curve_dens_corr']
+        config_dict['validation_data_list'] = ['single']
     
     return config_dict
