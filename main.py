@@ -25,7 +25,7 @@ import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
 case = [  # Only select one case
-    ''
+    'wind_speed_1'
 ]
 year = 2015  # TODO: yearS to config file
 
@@ -197,6 +197,8 @@ def get_validation_data(frequency):
         threshold = get_threshold(frequency, greenwind_data.index.freq.n)
         validation_df_list.append(tools.resample_with_nan_theshold(
             df=greenwind_data, frequency=frequency, threshold=threshold))
+    if 'single' in validation_data_list:
+        pass  # TODO add
     # Join DataFrames - power output in MW
     validation_df = pd.concat(validation_df_list, axis=1) / 1000
     return validation_df
@@ -263,7 +265,10 @@ def get_calculated_data(weather_data_name):
                 pickle_load=False)
 
     # Get wind farm data
-    wind_farm_data_list = return_wind_farm_data()
+    if case == 'wind_speed_1':
+        wind_farm_data_list = ... TODO: add and TODO: other dataframe in time series df for power output!!!
+    else:
+        wind_farm_data_list = return_wind_farm_data()
     # Initialise calculation_df_list and calculate power output
     calculation_df_list = []
     # Initialise wind farms
@@ -276,92 +281,140 @@ def get_calculated_data(weather_data_name):
             filename=filename_weather, year=year,
             temperature_heights=temperature_heights)
         # Calculate power output and store in list
-        if 'simple' in approach_list:
+        if 'logarithmic' in approach_list:
+        # if (case == 'wind_speed_1' and 'logarithmic' in approach_list):  # TODO: if logarithmic in other case
             calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_farm.wind_turbine_fleet, weather).to_frame(
-                    name='{0}_calculated_simple'.format(
+                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                weather_df=weather, wind_speed_model='logarithmic',
+                obstacle_height=0).to_frame(
+                    name='{0}_calculated_logarithmic'.format(
                         wind_farm.object_name)))
-        if 'density_correction' in approach_list:
+        if 'logarithmic_obstacle' in approach_list:
+            # TODO: add obstacle height per wind farm (if wf == ... oh = )
             calculation_df_list.append(modelchain_usage.power_output_simple(
-                wind_farm.wind_turbine_fleet, weather,
-                density_correction=True).to_frame(
-                    name='{0}_calculated_density_correction'.format(
-                        wind_farm.object_name)))
-        if 'smooth_wf' in approach_list:
-            calculation_df_list.append(modelchain_usage.power_output_cluster(
-                wind_farm, weather, density_correction=False,
-                wake_losses_method=None, smoothing=True,
-                block_width=0.5,
-                standard_deviation_method='turbulence_intensity',
-                smoothing_order='wind_farm_power_curves',
-                roughness_length=weather[
-                    'roughness_length'][0].mean(),
-                wind_speed_model='logarithmic').to_frame(
-                        name='{0}_calculated_smooth_wf'.format(
-                            wind_farm.object_name)))
-        if 'constant_efficiency_90_%' in approach_list:
-            wind_farm.efficiency = 0.8
-            calculation_df_list.append(modelchain_usage.power_output_cluster(
-                wind_farm, weather, density_correction=False,
-                wake_losses_method='constant_efficiency', smoothing=False).to_frame(
-                    name='{0}_calculated_constant_efficiency_90_%'.format(
-                        wind_farm.object_name)))
-        if 'constant_efficiency_80_%' in approach_list:
-            wind_farm.efficiency = 0.8
-            calculation_df_list.append(modelchain_usage.power_output_cluster(
-                wind_farm, weather, density_correction=False,
-                wake_losses_method='constant_efficiency', smoothing=False).to_frame(
-                    name='{0}_calculated_constant_efficiency_80_%'.format(
-                        wind_farm.object_name)))
-        if 'efficiency_curve' in approach_list:
-            wind_farm.efficiency = wf.read_wind_efficiency_curve(
-                curve_name='dena_mean', plot=False)
-            calculation_df_list.append(modelchain_usage.power_output_cluster(
-                wind_farm, weather, density_correction=False,
-                wake_losses_method='wind_efficiency_curve', smoothing=False).to_frame(
-                name='{0}_calculated_efficiency_curve'.format(
+                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                weather_df=weather, wind_speed_model='logarithmic',
+                obstacle_height=0).to_frame(
+                name='{0}_calculated_logarithmic'.format(
                     wind_farm.object_name)))
-        if 'eff_curve_smooth' in approach_list:
-            wind_farm.efficiency = wf.read_wind_efficiency_curve(
-                curve_name='dena_mean', plot=False)
-            calculation_df_list.append(modelchain_usage.power_output_cluster(
-                wind_farm, weather, density_correction=False,
-                wake_losses_method='wind_efficiency_curve', smoothing=True,
-                density_correction_order='wind_farm_power_curves',
-                smoothing_order='wind_farm_power_curves',
-                roughness_length=weather[
-                    'roughness_length'][0].mean()).to_frame(
-                name='{0}_calculated_eff_curve_smooth'.format(
+        if 'hellman' in approach_list:
+            calculation_df_list.append(modelchain_usage.power_output_simple(
+                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                weather_df=weather, wind_speed_model='hellman').to_frame(
+                name='{0}_calculated_logarithmic'.format(
                     wind_farm.object_name)))
-        # TODO: think of approaches and adjust
+        if 'hellman_1/7' in approach_list:
+            calculation_df_list.append(modelchain_usage.power_output_simple(
+                wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                weather_df=weather, wind_speed_model='hellman',
+                hellman_exponent=1 / 7).to_frame(
+                name='{0}_calculated_logarithmic'.format(
+                    wind_farm.object_name)))
         if 'linear_interpolation' in approach_list:
             if len(list(weather['wind_speed'])) > 1:
-                wind_farm.efficiency = wf.read_wind_efficiency_curve(
-                    curve_name='dena_mean', plot=False)
                 calculation_df_list.append(
-                    modelchain_usage.power_output_cluster(
-                        wind_farm, weather,
-                        density_correction=False,
-                        wake_losses_method='wind_efficiency_curve',
-                        smoothing=True,
-                        wind_speed_model='interpolation_extrapolation',
-                        roughness_length=weather[
-                            'roughness_length'][0].mean()).to_frame(
-                        name='{0}_calculated_linear_interpolation'.format(
+                    modelchain_usage.power_output_simple(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather,
+                        wind_speed_model='interpolation_extrapolation').to_frame(
+                        name='{0}_calculated_logarithmic'.format(
                             wind_farm.object_name)))
-    if 'test_cluster' in approach_list:
-        test_cluster = wtc.WindTurbineCluster('test', wind_farm_list)
-        calculation_df_list.append(modelchain_usage.power_output_cluster(
-            test_cluster, weather, density_correction=False,
-            wake_losses_method=None, smoothing=True,
-            block_width=0.5,
-            standard_deviation_method='turbulence_intensity',
-            smoothing_order='wind_farm_power_curves',
-            roughness_length=weather[
-                'roughness_length'][0].mean(),
-            wind_speed_model='logarithmic').to_frame(
-            name='{0}_calculated_test_cluster'.format(
-                wind_farm.object_name)))
+        # if 'logarithmic_interpolation' in approach_list: # TODO: add function
+        #     if len(list(weather['wind_speed'])) > 1:
+        #         calculation_df_list.append(
+        #             modelchain_usage.power_output_simple(
+        #                 wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+        #                 weather_df=weather,
+        #                 wind_speed_model='logarithmic_interp_extrap').to_frame(
+        #                 name='{0}_calculated_logarithmic'.format(
+        #                     wind_farm.object_name)))
+
+    #     if 'simple' in approach_list:
+    #         calculation_df_list.append(modelchain_usage.power_output_simple(
+    #             wind_farm.wind_turbine_fleet, weather).to_frame(
+    #                 name='{0}_calculated_simple'.format(
+    #                     wind_farm.object_name)))
+    #     if 'density_correction' in approach_list:
+    #         calculation_df_list.append(modelchain_usage.power_output_simple(
+    #             wind_farm.wind_turbine_fleet, weather,
+    #             density_correction=True).to_frame(
+    #                 name='{0}_calculated_density_correction'.format(
+    #                     wind_farm.object_name)))
+    #     if 'smooth_wf' in approach_list:
+    #         calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #             wind_farm, weather, density_correction=False,
+    #             wake_losses_method=None, smoothing=True,
+    #             block_width=0.5,
+    #             standard_deviation_method='turbulence_intensity',
+    #             smoothing_order='wind_farm_power_curves',
+    #             roughness_length=weather[
+    #                 'roughness_length'][0].mean(),
+    #             wind_speed_model='logarithmic').to_frame(
+    #                     name='{0}_calculated_smooth_wf'.format(
+    #                         wind_farm.object_name)))
+    #     if 'constant_efficiency_90_%' in approach_list:
+    #         wind_farm.efficiency = 0.8
+    #         calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #             wind_farm, weather, density_correction=False,
+    #             wake_losses_method='constant_efficiency', smoothing=False).to_frame(
+    #                 name='{0}_calculated_constant_efficiency_90_%'.format(
+    #                     wind_farm.object_name)))
+    #     if 'constant_efficiency_80_%' in approach_list:
+    #         wind_farm.efficiency = 0.8
+    #         calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #             wind_farm, weather, density_correction=False,
+    #             wake_losses_method='constant_efficiency', smoothing=False).to_frame(
+    #                 name='{0}_calculated_constant_efficiency_80_%'.format(
+    #                     wind_farm.object_name)))
+    #     if 'efficiency_curve' in approach_list:
+    #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+    #             curve_name='dena_mean', plot=False)
+    #         calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #             wind_farm, weather, density_correction=False,
+    #             wake_losses_method='wind_efficiency_curve', smoothing=False).to_frame(
+    #             name='{0}_calculated_efficiency_curve'.format(
+    #                 wind_farm.object_name)))
+    #     if 'eff_curve_smooth' in approach_list:
+    #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+    #             curve_name='dena_mean', plot=False)
+    #         calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #             wind_farm, weather, density_correction=False,
+    #             wake_losses_method='wind_efficiency_curve', smoothing=True,
+    #             density_correction_order='wind_farm_power_curves',
+    #             smoothing_order='wind_farm_power_curves',
+    #             roughness_length=weather[
+    #                 'roughness_length'][0].mean()).to_frame(
+    #             name='{0}_calculated_eff_curve_smooth'.format(
+    #                 wind_farm.object_name)))
+    #     # TODO: think of approaches and adjust
+    #     if 'linear_interpolation' in approach_list:
+    #         if len(list(weather['wind_speed'])) > 1:
+    #             wind_farm.efficiency = wf.read_wind_efficiency_curve(
+    #                 curve_name='dena_mean', plot=False)
+    #             calculation_df_list.append(
+    #                 modelchain_usage.power_output_cluster(
+    #                     wind_farm, weather,
+    #                     density_correction=False,
+    #                     wake_losses_method='wind_efficiency_curve',
+    #                     smoothing=True,
+    #                     wind_speed_model='interpolation_extrapolation',
+    #                     roughness_length=weather[
+    #                         'roughness_length'][0].mean()).to_frame(
+    #                     name='{0}_calculated_linear_interpolation'.format(
+    #                         wind_farm.object_name)))
+    # if 'test_cluster' in approach_list:
+    #     test_cluster = wtc.WindTurbineCluster('test', wind_farm_list)
+    #     calculation_df_list.append(modelchain_usage.power_output_cluster(
+    #         test_cluster, weather, density_correction=False,
+    #         wake_losses_method=None, smoothing=True,
+    #         block_width=0.5,
+    #         standard_deviation_method='turbulence_intensity',
+    #         smoothing_order='wind_farm_power_curves',
+    #         roughness_length=weather[
+    #             'roughness_length'][0].mean(),
+    #         wind_speed_model='logarithmic').to_frame(
+    #         name='{0}_calculated_test_cluster'.format(
+    #             wind_farm.object_name)))
     # Join DataFrames - power output in MW
     calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
     # Add curtailment for Enertrag wind farm

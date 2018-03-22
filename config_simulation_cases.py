@@ -7,31 +7,31 @@ def get_standard_case_of_configuration():
 
     """
     config_dict = {
-        'restriction_list': [
-            'simple',
-            'density_correction',
-            'smooth_wf',
-            'constant_efficiency_90_%',
-            'constant_efficiency_80_%',
-            'efficiency_curve',
-        #    'eff_curve_smooth',
-        #    'linear_interpolation'
-        #    'wf_1',
-        #    'wf_2',
-        #     'wf_3',
-        #     'wf_4', 'wf_5'
-            ],
-        'approach_list': [  # TODO: wahrscheinlich nicht hier - immer unterschiedlich
-            'simple',  # logarithmic wind profile, simple aggregation for farm output
-            'density_correction',  # density corrected power curve, simple aggregation
-            'smooth_wf',  # Smoothed power curves at wind farm level
-            'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
-            'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-            'efficiency_curve',  # Wind farm efficiency curve without smoothing
-            'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
-            'linear_interpolation',
-            'test_cluster'
-            ],
+        # 'restriction_list': [ # TODO: still needed? (maybe for wind farms...
+        #     'simple',
+        #     'density_correction',
+        #     'smooth_wf',
+        #     'constant_efficiency_90_%',
+        #     'constant_efficiency_80_%',
+        #     'efficiency_curve',
+        # #    'eff_curve_smooth',
+        # #    'linear_interpolation'
+        # #    'wf_1',
+        # #    'wf_2',
+        # #     'wf_3',
+        # #     'wf_4', 'wf_5'
+        #     ],
+        # 'approach_list': [  # TODO: wahrscheinlich nicht hier - immer unterschiedlich
+        #     'simple',  # logarithmic wind profile, simple aggregation for farm output
+        #     'density_correction',  # density corrected power curve, simple aggregation
+        #     'smooth_wf',  # Smoothed power curves at wind farm level
+        #     'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
+        #     'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
+        #     'efficiency_curve',  # Wind farm efficiency curve without smoothing
+        #     'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
+        #     'linear_interpolation',
+        #     'test_cluster'
+        #     ],
         'weather_data_list': ['MERRA', 'open_FRED'],
         'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
         'output_methods': ['half_hourly',  # Only if possible
@@ -40,7 +40,7 @@ def get_standard_case_of_configuration():
         'latex_output': np.array([
             'annual_energy_weather',  # Annual energy output all weather sets
             'annual_energy_approaches',  # AEO all approaches
-            'annual_energy_weather_approaches',  # AEO all approaches and weather sets
+            'annual_energy_weather_approaches',  # AEO approaches, weather sets
             'key_figures_weather',     # Key figures of all weather sets
             'key_figures_approaches'  # Key figures of all approaches
             ]),
@@ -96,8 +96,25 @@ def get_configuration(case=None):
     """
     # Get standard case that will remain if the entries are not overwritten
     config_dict = get_standard_case_of_configuration()
-    if case == '':
-        pass
-        
+    if case == 'wind_speed_1':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'logarithmic', 'logarithmic_obstacle', 'hellman', 'hellman_1/7']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['latex_output'] = np.array([
+            'annual_energy_weather', 'annual_energy_approaches',
+            'annual_energy_weather_approaches', 'key_figures_weather',
+            'key_figures_approaches'])
+
+    if case == 'wind_speed_2':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'logarithmic', 'hellman', 'linear_interpolation', # TODO or hellman 1/7 and obstacle... see which was better
+            # 'logarithmic_interpolation' TODO: add this function
+        ]
+        config_dict['validation_data_list'] = ['single']
+        config_dict['latex_output'] = np.array([
+            'annual_energy_weather', 'key_figures_weather',
+            'key_figures_approaches'])
     
     return config_dict
