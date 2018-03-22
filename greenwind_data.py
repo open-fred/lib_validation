@@ -243,7 +243,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
 
     """
     if pickle_load:
-        green_wind_df = pickle.load(open(pickle_filename, 'rb'))
+        first_row_df = pickle.load(open(pickle_filename, 'rb'))
     else:
         # Load greenwind data without resampling and do not dump.
         green_wind_df = get_greenwind_data(
@@ -307,7 +307,6 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             df=first_row_df, frequency=frequency, threshold=threshold)
     else:
         # Add frequency attribute
-        first_row_df = pd.DataFrame(green_wind_df)
         freq = pd.infer_freq(first_row_df.index)
         first_row_df.index.freq = pd.tseries.frequencies.to_offset(freq)
     return first_row_df
