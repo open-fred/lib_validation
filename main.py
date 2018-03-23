@@ -714,6 +714,14 @@ for weather_data_name in weather_data_list:
         del val_obj_dict[weather_data_name]['half_hourly']
 
     ###### Visualization ######
+    # Define folder
+    if (case[0] == 'wind_speed_1' or case[0] == 'wind_speed_2'):
+        folder = 'wind_speed'
+    elif (case[0] == 'single_turbine' or case[0] == '...?'):  # TODO!!
+        folder = 'single_turbine'
+    else:
+        folder=''
+
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
         if feedin_comparsion_all_in_one:
@@ -725,17 +733,14 @@ for weather_data_name in weather_data_list:
         for plot_df in plot_dfs:
             # Specify save folder and title add on
             if time_period is not None:
-                save_folder_add_on = (
-                    '{0}_{1}/'.format(time_period[0], time_period[1]))
+                add_on = (
+                    '{0}_{1}'.format(time_period[0], time_period[1]))
                 title_add_on = ' time of day: {0}:00 - {1}:00'.format(
                     time_period[0], time_period[1])
             else:
-                save_folder_add_on = 'None/'
+                add_on = 'None'
                 title_add_on = ''
-            save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
-                year, weather_data_name, approach_string if
-                approach_string == 'multiple' else
-                '_'.join(list(plot_df)[1].split('_')[3:]), save_folder_add_on)
+            save_folder = 'Plots/{0}/'.format(folder)
             for method in output_methods:
                 if approach_string != 'multiple':
                     approach_string = '_'.join(list(plot_df)[1].split(
@@ -754,9 +759,9 @@ for weather_data_name in weather_data_list:
                             data=plot_df, method=method,
                             filename=(
                                 save_folder +
-                                '{0}_feedin_{1}_{2}_{3}_{4}_{5}{6}.png'.format(
+                                '{0}_feedin_{1}_{2}_{3}_{4}_{5}_{6}{7}.png'.format(
                                     method, wf_string, weather_data_name, year,
-                                    approach_string,
+                                    add_on, approach_string,
                                     (start_end[0].split(':')[0] if start_end[0]
                                      else ''), (start_end[1].split(':')[0]
                                                 if start_end[0] else ''))),
@@ -772,17 +777,14 @@ for weather_data_name in weather_data_list:
         for time_series_pair in time_series_pairs:
             # Specify save folder and title add on
             if time_period is not None:
-                save_folder_add_on = (
-                    '{0}_{1}/'.format(time_period[0], time_period[1]))
+                add_on = (
+                    '{0}_{1}'.format(time_period[0], time_period[1]))
                 title_add_on = ' time of day: {0}:00 - {1}:00'.format(
                     time_period[0], time_period[1])
             else:
-                save_folder_add_on = 'None/'
+                add_on = 'None'
                 title_add_on = ''
-            save_folder = 'Plots/{0}/{1}/{2}/time_period/{3}'.format(
-                year, weather_data_name,
-                '_'.join(list(time_series_pair)[1].split('_')[3:]),
-                save_folder_add_on)
+            save_folder = 'Plots/{0}/'.format(folder)
             for method in output_methods:
                 if (method == 'half_hourly' and
                         weather_data_name == 'MERRA'):
@@ -797,9 +799,9 @@ for weather_data_name in weather_data_list:
                         data=time_series_pair, method=method,
                         filename=(
                             save_folder +
-                            '{0}_Correlation_{1}_{2}_{3}_{4}.png'.format(
+                            '{0}_Correlation_{1}_{2}_{3}_{4}_{5}.png'.format(
                                 method, wf_string, weather_data_name, year,
-                                approach_string)),
+                                approach_string, add_on)),
                         title=(
                             '{0} power output of {1} calculated with {2}\n {3} ({4} '.format(
                                 method.replace('_', ' '), wf_string,
