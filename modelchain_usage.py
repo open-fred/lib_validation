@@ -9,8 +9,10 @@ import tools
 
 # Other imports
 import logging
+import pandas as pd
+import numpy as np
 
-def power_output_simple(wind_turbine_fleet, weather_df,
+def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
                         wind_speed_model='logarithmic',
                         density_model='barometric',
                         temperature_model='linear_gradient',
@@ -36,6 +38,9 @@ def power_output_simple(wind_turbine_fleet, weather_df,
     weather_df : pandas.DataFrame
         DataFrame with time series for wind speed `wind_speed` in m/s and
         roughness length `roughness_length` in m. TODO: add from wpl
+    wind_speed : pd.Series or np.array
+        If this parameter is given, this wind_speed instead of the one in
+        `weather_df` is used for calculations. Default: None.
 
     Returns
     -------
@@ -53,6 +58,13 @@ def power_output_simple(wind_turbine_fleet, weather_df,
         'hellman_exp': hellman_exp}
     # Get power output of each turbine
     for turbine_type in wind_turbine_fleet:
+        if wind_speed is not None:
+            df = pd.DataFrame(
+                data=wind_speed.values,
+                index=wind_speed.index,
+                columns=[np.array(['wind_speed']),
+                         np.array([turbine_type['wind_turbine'].hub_height])])
+            weather_df = pd.concat([weather_df, df], axis=1)
         # Initialise ModelChain and run model
         mc = ModelChain(turbine_type['wind_turbine'],
                         **modelchain_data).run_model(weather_df)

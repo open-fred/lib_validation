@@ -29,9 +29,10 @@ logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 case = [  # Only select one case (first one is counted)
-    'wind_speed_1',
+    # 'wind_speed_1',
     # 'wind_speed_2',
-    # 'single_turbine'
+    # 'single_turbine_1',
+    'single_turbine_2'
 ]
 year = 2015  # TODO: yearS to config file
 
@@ -123,6 +124,16 @@ if (year == 2015 and validation_data_list[0] == 'Enertrag' and
 
 
 # -------------------------- Validation Feedin Data ------------------------- #
+def get_threshold(out_frequency, original_resolution):
+    if (out_frequency == 'H' or out_frequency == '60T'):
+        resolution = 60
+    elif out_frequency == 'M':
+        resolution = 31 * 24 * 60
+    else:
+        resolution = out_frequency.n
+    return resolution / original_resolution * threshold_factor
+
+
 def get_validation_data(frequency):
     r"""
     Writes all measured power output time series into one DataFrame.
@@ -145,15 +156,6 @@ def get_validation_data(frequency):
         'single_7_measured', 'single_6_measured_wind' etc.
 
     """
-    def get_threshold(frequency, validation_resolution):
-        if (frequency == 'H' or frequency == '60T'):
-            resolution = 60
-        elif frequency == 'M':
-            resolution = 31 * 24 * 60
-        else:
-            resolution = frequency.n
-        return resolution / validation_resolution * threshold_factor
-
     validation_df_list = []
     if 'ArgeNetz' in validation_data_list:
         # Get wind farm data
@@ -328,6 +330,16 @@ def get_calculated_data(weather_data_name):
             weather_data_name, wind_farm.coordinates, pickle_load=True,
             filename=filename_weather, year=year,
             temperature_heights=temperature_heights)
+        if case[0] == 'single_turbine_2':
+            # Use wind speed from first row GreenWind turbines as weather data
+            single_data_raw = get_first_row_turbine_time_series(
+                year=year, filter_errors=True, print_error_amount=False,
+                pickle_filename=os.path.join(
+                    os.path.dirname(__file__), 'dumps/validation_data',
+                    'greenwind_data_first_row_{0}.p'.format(year)),
+                pickle_load=pickle_load_greenwind)
+            wind_speed_data = single_data_raw[['wf_{}_wind_speed'.format(
+                wind_farm.object_name.split('_')[1])]]
         # Calculate power output and store in list
         if 'logarithmic' in approach_list:
         # if (case[0] == 'wind_speed_1' and 'logarithmic' in approach_list):  # TODO: if logarithmic in other case
@@ -374,11 +386,22 @@ def get_calculated_data(weather_data_name):
                         wind_speed_model='log_interpolation_extrapolation',).to_frame(
                         name='{0}_calculated_logarithmic_interpolation'.format(
                             wind_farm.object_name)))
+        if case[0] == 'single_turbine_2':
+            wind_speed = (wind_speed_data if
+                          weather_data_name == 'open_FRED' else
+                          tools.resample_with_nan_theshold(
+                              df=wind_speed_data, frequency=weather.index.freq,
+                              threshold=get_threshold(
+                                  out_frequency=weather.index.freq,
+                                  original_resolution=wind_speed_data.index.freq.n)))
+        else:
+            wind_speed = None
         if 'power_curve' in approach_list:
             calculation_df_list.append(
                 modelchain_usage.power_output_simple(
                     wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                    weather_df=weather, wind_speed_model='logarithmic',
+                    weather_df=weather, wind_speed=wind_speed,
+                    wind_speed_model='logarithmic',
                     density_model='ideal_gas',
                     temperature_model='linear_gradient',
                     power_output_model='power_curve', density_correction=False,
@@ -389,7 +412,8 @@ def get_calculated_data(weather_data_name):
             calculation_df_list.append(
                 modelchain_usage.power_output_simple(
                     wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                    weather_df=weather, wind_speed_model='logarithmic',
+                    weather_df=weather, wind_speed=wind_speed,
+                    wind_speed_model='logarithmic',
                     density_model='ideal_gas',
                     temperature_model='linear_gradient',
                     power_output_model='power_coefficient_curve',
@@ -401,7 +425,8 @@ def get_calculated_data(weather_data_name):
             calculation_df_list.append(
                 modelchain_usage.power_output_simple(
                     wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                    weather_df=weather, wind_speed_model='logarithmic',
+                    weather_df=weather, wind_speed=wind_speed,
+                    wind_speed_model='logarithmic',
                     density_model='ideal_gas',
                     temperature_model='linear_gradient',
                     power_output_model='power_coefficient_curve',
@@ -413,7 +438,8 @@ def get_calculated_data(weather_data_name):
             calculation_df_list.append(
                 modelchain_usage.power_output_simple(
                     wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                    weather_df=weather, wind_speed_model='logarithmic',
+                    weather_df=weather, wind_speed=wind_speed,
+                    wind_speed_model='logarithmic',
                     density_model='ideal_gas',
                     temperature_model='linear_gradient',
                     power_output_model='power_coefficient_curve',
@@ -705,7 +731,7 @@ for weather_data_name in weather_data_list:
                     approach=approach_string,
                     min_periods_pearson=min_periods_pearson))
         if 'monthly' in output_methods:
-            monthly_series = time_series_pair.resample('M').mean()
+            monthly_series = time_series_pair.resample('M').mean()  # TODO: resample with threshold
             val_obj_dict[weather_data_name]['monthly'][
                 approach_string].append(ValidationObject(
                     object_name=wf_string, data=monthly_series,
@@ -722,7 +748,7 @@ for weather_data_name in weather_data_list:
     # Define folder
     if (case[0] == 'wind_speed_1' or case[0] == 'wind_speed_2'):
         folder = 'wind_speed'
-    elif (case[0] == 'single_turbine' or case[0] == '...?'):  # TODO!!
+    elif (case[0] == 'single_turbine_1' or case[0] == 'single_turbine_2'):
         folder = 'single_turbine'
     else:
         folder=''
@@ -891,4 +917,5 @@ latex_tables.write_latex_output(
 #                     columns.extend([name for name in weather_data_list])
 #                     data = []
 
-print('# ----------- Done ----------- #')
+logging.info("--- Simulation with case {0} in year {1} end---".format(
+    case[0], year))

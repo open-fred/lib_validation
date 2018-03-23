@@ -297,10 +297,12 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             # Add power output and wind speed as mean from all temp columns
             wind_speed_columns = [
                 column_name for column_name in list(green_wind_df) if
-                'wind_speed_temp' in column_name]
+                ('wind_speed_temp' in column_name and
+                 wind_farm_name in column_name)]
             power_output_columns = [
                 column_name for column_name in list(green_wind_df) if
-                'power_output_temp' in column_name]
+                ('power_output_temp' in column_name and
+                 wind_farm_name in column_name)]
             green_wind_df['{}_wind_speed'.format(
                 wind_farm_name)] = green_wind_df[wind_speed_columns].sum(
                 axis=1, skipna=True)
@@ -309,10 +311,12 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 axis=1, skipna=True)
             # Set wind speed and power output column to nan if all temporary
             # columns are nan
-            wind_indices = green_wind_df.loc[green_wind_df[wind_speed_columns].isnull().sum(axis=1) == len(wind_speed_columns)].index
+            wind_indices = green_wind_df.loc[green_wind_df[
+                wind_speed_columns].isnull().sum(axis=1) == len(
+                wind_speed_columns)].index
             power_indices = green_wind_df.loc[green_wind_df[
                 power_output_columns].isnull().sum(axis=1) == len(
-                    wind_speed_columns)].index
+                wind_speed_columns)].index
             green_wind_df['{}_wind_speed'.format(
                 wind_farm_name)].loc[wind_indices] = np.nan
             green_wind_df['{}_power_output'.format(
@@ -405,7 +409,7 @@ def get_error_numbers(year):
 
 if __name__ == "__main__":
     # ----- Load data -----#
-    load_data = True
+    load_data = False
     if load_data:
         years = [
             2015,

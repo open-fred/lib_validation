@@ -119,5 +119,11 @@ def get_configuration(case=None):
             'power_curve', 'cp_curve', 'p_curve_dens_corr',
             'cp_curve_dens_corr']
         config_dict['validation_data_list'] = ['single']
+    if case == 'single_turbine_2':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'power_curve', 'cp_curve', 'p_curve_dens_corr',
+            'cp_curve_dens_corr']
+        config_dict['validation_data_list'] = ['single']
     
     return config_dict
