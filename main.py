@@ -64,7 +64,7 @@ feedin_comparsion_all_in_one = True  # Plots all calculated series for one
 time_period = (
 #       6, 22  # time of day to be selected (from h to h)
          None   # complete time series will be observed
-        ) 
+        )
 # Start and end date for time period to be plotted when 'feedin_comparison' is
 # selected. (not for monthly output).
 start_end_list = [
@@ -602,6 +602,10 @@ def get_time_series_df(weather_data_name):
                     time_series_df.loc[:, column_name[0]].loc[
                         time_series_df.loc[
                         :, column_name[0]].isnull() == True].index] = np.nan
+        # Only keep columns within the right year
+        time_series_df['boolean'] = time_series_df.index.year == 2015
+        time_series_df = time_series_df.loc[
+            time_series_df.loc[time_series_df['boolean']].index]
         pickle.dump(time_series_df, open(time_series_filename, 'wb'))
     if csv_dump_time_series_df:
         time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
