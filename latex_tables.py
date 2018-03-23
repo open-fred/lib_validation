@@ -127,6 +127,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
     if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
         if 'wind_speed' in case:
             unit = '[m/s]'
+        else:
+            unit= '[MW]'
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
@@ -234,6 +236,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                               multicolumn_format='c')
 
     if 'key_figures_weather' in latex_output:
+        if 'wind_speed' in case:
+            unit = '[m/s]'
+        else:
+            unit= '[MW]'
         for approach in approach_list:
             if approach not in restriction_list:
                 latex_df = pd.DataFrame()
