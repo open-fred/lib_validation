@@ -23,15 +23,20 @@ import os
 import pandas as pd
 import numpy as np
 import pickle
+import logging
+
+logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 case = [  # Only select one case (first one is counted)
-    # 'wind_speed_1',
+    'wind_speed_1',
     # 'wind_speed_2',
-    'single_turbine'
+    # 'single_turbine'
 ]
 year = 2015  # TODO: yearS to config file
 
+logging.info("--- Simulation with case {0} in year {1} starts---".format(
+    case[0], year))
 # Get parameters from config file (they are set below)
 parameters = get_configuration(case[0])
 
@@ -49,9 +54,9 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = False  # Dump df as csv
+csv_dump_time_series_df = True  # Dump df as csv
 
-feedin_comparsion_all_in_one = False  # Plots all calculated series for one
+feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot
 
 # Select time of day you want to observe or None for all day
@@ -218,7 +223,7 @@ def get_validation_data(frequency):
                 columns={column: column.replace(
                     'wind_speed', 'measured').replace('wf', 'single') for
                     column in list(single_data)})
-        else: # TODO: instead of else: if 'single_turbine' ... else: why 'single' in validation data list
+        else: # TODO: instead of else: elif 'single_turbine' ... else: why 'single' in validation data list
             single_data = single_data[[col for col in list(single_data) if
                                        'power_output' in col]].rename(
                 columns={column: column.replace(
@@ -343,13 +348,13 @@ def get_calculated_data(weather_data_name):
                     hellman_exp=None).to_frame(
                     name='{0}_calculated_hellman'.format(
                         wind_farm.object_name)))
-        if 'hellman_1_7' in approach_list:
+        if 'hellman_2' in approach_list:
             calculation_df_list.append(
                 modelchain_usage.wind_speed_to_hub_height(
                     wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                     weather_df=weather, wind_speed_model='hellman',
                     hellman_exp=1 / 7).to_frame(
-                    name='{0}_calculated_hellman_1_7'.format(
+                    name='{0}_calculated_hellman_2'.format(
                         wind_farm.object_name)))
         if 'linear_interpolation' in approach_list:
             if len(list(weather['wind_speed'])) > 1:
@@ -721,6 +726,11 @@ for weather_data_name in weather_data_list:
         folder = 'single_turbine'
     else:
         folder=''
+    # Define y label add on
+    if (case[0] == 'wind_speed_1' or case[0] == 'wind_speed_2'):
+        y_label_add_on = 'wind speed in m/s'
+    else:
+        y_label_add_on = 'power output in MW'
 
     if 'feedin_comparison' in visualization_methods:
         # Specify folder and title add on for saving the plots
@@ -759,9 +769,9 @@ for weather_data_name in weather_data_list:
                             data=plot_df, method=method,
                             filename=(
                                 save_folder +
-                                '{0}_feedin_{1}_{2}_{3}_{4}_{5}_{6}{7}.png'.format(
-                                    method, wf_string, weather_data_name, year,
-                                    add_on, approach_string,
+                                '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
+                                    case[0], method, wf_string, year,
+                                    weather_data_name, add_on, approach_string,
                                     (start_end[0].split(':')[0] if start_end[0]
                                      else ''), (start_end[1].split(':')[0]
                                                 if start_end[0] else ''))),
@@ -771,7 +781,7 @@ for weather_data_name in weather_data_list:
                                     weather_data_name, year, approach_string) +
                                 title_add_on),
                             tick_label=None, start=start_end[0],
-                            end=start_end[1])
+                            end=start_end[1], y_label_add_on=y_label_add_on)
 
     if 'plot_correlation' in visualization_methods:
         for time_series_pair in time_series_pairs:
@@ -799,15 +809,16 @@ for weather_data_name in weather_data_list:
                         data=time_series_pair, method=method,
                         filename=(
                             save_folder +
-                            '{0}_Correlation_{1}_{2}_{3}_{4}_{5}.png'.format(
-                                method, wf_string, weather_data_name, year,
-                                approach_string, add_on)),
+                            '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
+                                case[0], method, wf_string, year,
+                                weather_data_name, approach_string, add_on)),
                         title=(
                             '{0} power output of {1} calculated with {2}\n {3} ({4} '.format(
                                 method.replace('_', ' '), wf_string,
                                 weather_data_name, year, approach_string) +
                             'approach)' + title_add_on),
-                        color='darkblue', marker_size=3)
+                        color='darkblue', marker_size=3,
+                        y_label_add_on=y_label_add_on)
 
 #         if 'box_plots' in visualization_methods:
 #             # Store all bias time series of a validation set in one

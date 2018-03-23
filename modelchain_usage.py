@@ -222,9 +222,14 @@ def wind_speed_to_hub_height(wind_turbine_fleet, weather_df,
                       'extrapolation.')
         wind_speed_hub = wpl_tools.linear_interpolation_extrapolation(
             weather_df['wind_speed'], hub_height)
+    elif wind_speed_model == 'log_interpolation_extrapolation':
+        logging.debug('Calculating wind speed using logarithmic inter- or '
+                      'extrapolation.')
+        wind_speed_hub = wpl_tools.logarithmic_interpolation_extrapolation(
+            weather_df['wind_speed'], hub_height)
     else:
-        raise ValueError(
-            "'{0}' is an invalid value. ".format(wind_speed_model) +
-            "`wind_speed_model` must be 'logarithmic', 'hellman' or " +
-            "'interpolation_extrapolation'.")
+        raise ValueError("'{0}' is an invalid value. ".format(
+            wind_speed_model) + "`wind_speed_model` must be "
+            "'logarithmic', 'hellman', 'interpolation_extrapolation' " +
+            "or 'log_interpolation_extrapolation'.")
     return wind_speed_hub
