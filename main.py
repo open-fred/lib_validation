@@ -26,9 +26,9 @@ import pickle
 
 # ----------------------------- Set parameters ------------------------------ #
 case = [  # Only select one case (first one is counted)
-    'wind_speed_1',
+    # 'wind_speed_1',
     # 'wind_speed_2',
-    # 'single_turbine'
+    'single_turbine'
 ]
 year = 2015  # TODO: yearS to config file
 
@@ -335,13 +335,6 @@ def get_calculated_data(weather_data_name):
                         wind_farm.object_name)))
         # if 'logarithmic_obstacle' in approach_list:
         #     # TODO: add obstacle height per wind farm (if wf == ... oh = )
-        #     calculation_df_list.append(
-        #         modelchain_usage.wind_speed_to_hub_height(
-        #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-        #             weather_df=weather, wind_speed_model='logarithmic',
-        #             obstacle_height=0).to_frame(
-        #             name='{0}_calculated_logarithmic_obstacle'.format(
-        #                 wind_farm.object_name)))
         if 'hellman' in approach_list:
             calculation_df_list.append(
                 modelchain_usage.wind_speed_to_hub_height(
@@ -364,18 +357,65 @@ def get_calculated_data(weather_data_name):
                     modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=weather,
-                        wind_speed_model='interpolation_extrapolation',
-                        hellman_exp=1 / 7).to_frame(
+                        wind_speed_model='interpolation_extrapolation').to_frame(
                         name='{0}_calculated_linear_interpolation'.format(
                             wind_farm.object_name)))
+        if 'logarithmic_interpolation' in approach_list:
+            if len(list(weather['wind_speed'])) > 1:
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather,
+                        wind_speed_model='log_interpolation_extrapolation',).to_frame(
+                        name='{0}_calculated_logarithmic_interpolation'.format(
+                            wind_farm.object_name)))
         if 'power_curve' in approach_list:
-            pass
+            calculation_df_list.append(
+                modelchain_usage.power_output_simple(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    density_model='ideal_gas',
+                    temperature_model='linear_gradient',
+                    power_output_model='power_curve', density_correction=False,
+                    obstacle_height=0, hellman_exp=None).to_frame(
+                        name='{0}_calculated_power_curve'.format(
+                            wind_farm.object_name)))
         if 'cp_curve' in approach_list:
-            pass
+            calculation_df_list.append(
+                modelchain_usage.power_output_simple(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    density_model='ideal_gas',
+                    temperature_model='linear_gradient',
+                    power_output_model='power_coefficient_curve',
+                    density_correction=False,
+                    obstacle_height=0, hellman_exp=None).to_frame(
+                    name='{0}_calculated_cp_curve'.format(
+                        wind_farm.object_name)))
         if 'p_curve_dens_corr' in approach_list:
-            pass
+            calculation_df_list.append(
+                modelchain_usage.power_output_simple(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    density_model='ideal_gas',
+                    temperature_model='linear_gradient',
+                    power_output_model='power_coefficient_curve',
+                    density_correction=True,
+                    obstacle_height=0, hellman_exp=None).to_frame(
+                    name='{0}_calculated_p_curve_dens_corr'.format(
+                        wind_farm.object_name)))
         if 'cp_curve_dens_corr' in approach_list:
-            pass
+            calculation_df_list.append(
+                modelchain_usage.power_output_simple(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    density_model='ideal_gas',
+                    temperature_model='linear_gradient',
+                    power_output_model='power_coefficient_curve',
+                    density_correction=True,
+                    obstacle_height=0, hellman_exp=None).to_frame(
+                    name='{0}_calculated_cp_curve_dens_corr'.format(
+                        wind_farm.object_name)))
 
         # if 'logarithmic_interpolation' in approach_list: # TODO: add function
         #     if len(list(weather['wind_speed'])) > 1:

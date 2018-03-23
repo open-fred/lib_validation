@@ -88,6 +88,7 @@ def get_configuration(case=None):
         Temporal output resolutions to take into consideration.
     visualization_methods : list
         Plot applications to take into consideration.
+        Options: 'feedin_comparison', ..
     latex_output : list
         Type of latex tables to take into consideration.
     key_figures_print : list
@@ -109,7 +110,7 @@ def get_configuration(case=None):
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
             'logarithmic', 'hellman', 'linear_interpolation', # TODO or hellman 1/7 and obstacle... see which was better
-            # 'logarithmic_interpolation' TODO: add this function
+            'logarithmic_interpolation'
         ]
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
