@@ -252,25 +252,34 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
         turbine_dict = {
-            'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-            'wf_6_5': (90, 180), 'wf_6_6': (315, 360), 'wf_6_7': (225, 270),
-            'wf_7_2': (225, 270), 'wf_7_5': (135, 180), 'wf_7_7': (270, 360),
-            'wf_7_10': (180, 225), 'wf_7_12': (90, 135), 'wf_7_14': (0, 90),
-            'wf_8_1': (0, 180), 'wf_8_2': (180, 360)}
+            'wf_6': {
+                'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
+                'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
+                'wf_6_7': (225, 270)
+                },
+            'wf_7': {
+                'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
+                'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
+                'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
+                },
+            'wf_8': {
+                'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
+                }}
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
         for wind_farm_name in wind_farm_names:
-            for turbine_name in turbine_dict:
+            for turbine_name in turbine_dict[wind_farm_name]:
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
                 # Example for 'wf_6_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
                     (green_wind_df['{}_wind_dir'.format(
                         turbine_name)] >=
-                        float(turbine_dict[turbine_name][0])) &
+                        float(turbine_dict[wind_farm_name][turbine_name][0])) &
                     (green_wind_df['{}_wind_dir'.format(turbine_name)] <
-                     float(turbine_dict[turbine_name][1]))].index
+                     float(
+                         turbine_dict[wind_farm_name][turbine_name][1]))].index
                 # Add temporary wind speed column with only nans
                 green_wind_df['wind_speed_temp_{}'.format(
                     turbine_name)] = np.nan
