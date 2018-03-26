@@ -414,7 +414,7 @@ def get_error_numbers(year):
 
 if __name__ == "__main__":
     # ----- Load data -----#
-    load_data = False
+    load_data = True
     if load_data:
         years = [
             2015,

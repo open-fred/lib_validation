@@ -45,7 +45,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -65,6 +65,7 @@ time_period = (
 #       6, 22  # time of day to be selected (from h to h)
          None   # complete time series will be observed
         )
+
 # Relative path to latex tables folder  # TODO add case to filenames (if approach not in filename
 latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                        'automatic/')
@@ -236,7 +237,7 @@ def run_main(case, year):
                     columns={column: column.replace(
                         'wind_speed', 'measured').replace('wf', 'single') for
                         column in list(single_data)})
-            else: # TODO: instead of else: elif 'single_turbine' ... else: why 'single' in validation data list
+            else:
                 single_data = single_data[[col for col in list(single_data) if
                                            'power_output' in col]].rename(
                     columns={column: column.replace(
