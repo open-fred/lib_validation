@@ -181,6 +181,9 @@ def run_main(case, year):
                                    for data in wind_farm_data_arge]].rename(
                 columns={col: col.replace('power_output', 'measured') for col in
                          arge_data.columns})
+            # Set negative values to nan (for Enertrag and GreenWind this
+            # happens in the separate modules)
+            arge_data = tools.negative_values_to_nan(arge_data)
             # Resample the DataFrame columns with `frequency` and `threshold`
             # and add to list
             threshold = get_threshold(frequency, arge_data.index.freq.n)
