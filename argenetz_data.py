@@ -31,7 +31,6 @@ import os
 import pickle
 
 
-# TODO: move read_data and restructure_data to tools module to be free to use
 # for other validation data modules, too
 def read_data(filename, **kwargs):
     r"""
@@ -98,10 +97,10 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     df = read_data(filename, **kwargs)
     if filter_cols:
         cols = read_file_to_list(filename_column_names)
-        df2 = df.filter(items=cols, axis=1)
+        df = df.filter(items=cols, axis=1)
     if drop_na:
-        df2 = df.dropna(axis='columns', how='all')
-    return df2
+        df = df.dropna(axis='columns', how='all')
+    return df
 
 
 def read_file_to_list(filename):
