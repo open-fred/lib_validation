@@ -112,7 +112,7 @@ def box_plots_bias(df, filename='Tests/test.pdf', title='Test'):
 
 def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
                            title='Test', tick_label=None,
-                           start=None, end=None):
+                           start=None, end=None, y_label_add_on='values'):
     r"""
     Plot simulation and validation feedin time series.
 
@@ -181,7 +181,7 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
     else:
         data.plot(
             legend=True, ax=ax)
-    plt.ylabel('Calculated and measured average power output in MW')
+    plt.ylabel('Calculated and measured average {}'.format(y_label_add_on))
     plt.xticks(rotation='vertical')
     if (start is not None and end is not None and
             method is not 'monthly'):
@@ -194,7 +194,8 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
 
 
 def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
-                     title='Test', color='darkblue', marker_size=3):
+                     title='Test', color='darkblue', marker_size=3,
+                     y_label_add_on='values'):
     r"""
     Visualize the correlation between two feedin time series.
 
@@ -217,17 +218,17 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     if method == 'hourly':
         data.resample('H').mean()
     if method == 'monthly':
-        data = data.resample('M').mean().dropna() # TODO: remove months that only contain some values..
+        data = data.resample('M').mean().dropna()
         marker_size = 10
     fig, ax = plt.subplots()
     data.plot.scatter(x=list(data)[1], y=list(data)[0],
                       ax=ax, c=color, s=marker_size)
-    plt.xlabel('{0} {1} power output [MW] of {2}'.format(
+    plt.xlabel('{0} {1} {2} of {3}'.format(
         list(data)[1].split('_')[2], method.replace('_','-'),
-        ' '.join(list(data)[1].split('_')[:2])))
-    plt.ylabel('{0} {1} power output [MW] of {2}'.format(
+        y_label_add_on, ' '.join(list(data)[1].split('_')[:2])))
+    plt.ylabel('{0} {1} {2} of {3}'.format(
         list(data)[0].split('_')[2], method.replace('_','-'),
-        ' '.join(list(data)[0].split('_')[:2])))
+        y_label_add_on, ' '.join(list(data)[0].split('_')[:2])))
     plt.xlim(xmin=0, xmax=maximum)
     plt.ylim(ymin=0, ymax=maximum)
     ideal, = plt.plot([0, maximum], [0, maximum], color='black',

@@ -74,13 +74,18 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     # Initialize WindTurbine objects
     for turbine_type in turbine_types:
         turbine = wt.WindTurbine(**turbine_dict[turbine_type])
+        if (turbine_type == 'vestasV90' or turbine_type == 'vestasV80'):
+            # Add power coefficient curve
+            turbine.fetch_curve = 'power_coefficient_curve'
+            turbine.fetch_turbine_data()
         turbine_list.append(turbine)
         if plot_wind_turbines:
             visualization_tools.plot_or_print_turbine(turbine)
     return turbine_list
 
 
-def get_wind_farm_data(filename, save_folder='', pickle_load=False):
+def get_wind_farm_data(filename, save_folder='', pickle_load=False,
+                       first_row_greenwind=False):
     """
     Get wind farm specifications for specified validation data.
 
@@ -133,7 +138,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             if filename == 'farm_specification_argenetz_2016.p':
                 wind_farm_data = [wf_1, wf_3, wf_4, wf_5]  # no wf_2 for 2016
         if (filename == 'farm_specification_greenwind_2015.p' or
-                    filename == 'farm_specification_greenwind_2016.p'):
+                filename == 'farm_specification_greenwind_2016.p'):
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
             wf_6 = {
                 'object_name': 'wf_6',

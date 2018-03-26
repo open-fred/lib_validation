@@ -133,7 +133,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             # Get numbers that do display an error
             error_numbers = pd.read_csv(
                 os.path.join(os.path.dirname(__file__), 'data/GreenWind',
-                             'errors.csv'))['error_numbers'].dropna().values
+                             'errors.csv'))['error_numbers'].dropna().values  # nans?!
             # # Get numbers that do not display an error
             # no_error_numbers = pd.read_csv(
             #     os.path.join(os.path.dirname(__file__),
@@ -195,7 +195,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     return greenwind_df
 
 
-def get_first_row_turbine_time_series(year, filename_raw_data,
+def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       pickle_load_raw_data=False,
                                       filter_errors=True,
                                       print_error_amount=False,
@@ -243,7 +243,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data,
 
     """
     if pickle_load:
-        green_wind_df = pickle.load(open(pickle_filename, 'rb'))
+        first_row_df = pickle.load(open(pickle_filename, 'rb'))
     else:
         # Load greenwind data without resampling and do not dump.
         green_wind_df = get_greenwind_data(
@@ -252,25 +252,34 @@ def get_first_row_turbine_time_series(year, filename_raw_data,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
         turbine_dict = {
-            'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-            'wf_6_5': (90, 180), 'wf_6_6': (315, 360), 'wf_6_7': (225, 270),
-            'wf_7_2': (225, 270), 'wf_7_5': (135, 180), 'wf_7_7': (270, 360),
-            'wf_7_10': (180, 225), 'wf_7_12': (90, 135), 'wf_7_14': (0, 90),
-            'wf_8_1': (0, 180), 'wf_8_2': (180, 360)}
+            'wf_6': {
+                'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
+                'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
+                'wf_6_7': (225, 270)
+                },
+            'wf_7': {
+                'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
+                'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
+                'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
+                },
+            'wf_8': {
+                'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
+                }}
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
         for wind_farm_name in wind_farm_names:
-            for turbine_name in turbine_dict:
+            for turbine_name in turbine_dict[wind_farm_name]:
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
                 # Example for 'wf_6_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
                     (green_wind_df['{}_wind_dir'.format(
                         turbine_name)] >=
-                        float(turbine_dict[turbine_name][0])) &
+                        float(turbine_dict[wind_farm_name][turbine_name][0])) &
                     (green_wind_df['{}_wind_dir'.format(turbine_name)] <
-                     float(turbine_dict[turbine_name][1]))].index
+                     float(
+                         turbine_dict[wind_farm_name][turbine_name][1]))].index
                 # Add temporary wind speed column with only nans
                 green_wind_df['wind_speed_temp_{}'.format(
                     turbine_name)] = np.nan
@@ -288,26 +297,39 @@ def get_first_row_turbine_time_series(year, filename_raw_data,
             # Add power output and wind speed as mean from all temp columns
             wind_speed_columns = [
                 column_name for column_name in list(green_wind_df) if
-                'wind_speed_temp' in column_name]
+                ('wind_speed_temp' in column_name and
+                 wind_farm_name in column_name)]
             power_output_columns = [
                 column_name for column_name in list(green_wind_df) if
-                'power_output_temp' in column_name]
-            green_wind_df['{}_wind_speed_measured'.format(
-                wind_farm_name)] = green_wind_df[wind_speed_columns].sum(
+                ('power_output_temp' in column_name and
+                 wind_farm_name in column_name)]
+            green_wind_df['{}_wind_speed'.format(
+                wind_farm_name)] = green_wind_df[wind_speed_columns].mean(
                 axis=1, skipna=True)
-            green_wind_df['{}_power_output_measured'.format(
-                wind_farm_name)] = green_wind_df[power_output_columns].sum(
+            green_wind_df['{}_power_output'.format(
+                wind_farm_name)] = green_wind_df[power_output_columns].mean(
                 axis=1, skipna=True)
+            # Set wind speed and power output column to nan if all temporary
+            # columns are nan
+            wind_indices = green_wind_df.loc[green_wind_df[
+                wind_speed_columns].isnull().sum(axis=1) == len(
+                wind_speed_columns)].index
+            power_indices = green_wind_df.loc[green_wind_df[
+                power_output_columns].isnull().sum(axis=1) == len(
+                wind_speed_columns)].index
+            green_wind_df['{}_wind_speed'.format(
+                wind_farm_name)].loc[wind_indices] = np.nan
+            green_wind_df['{}_power_output'.format(
+                wind_farm_name)].loc[power_indices] = np.nan
             first_row_df = pd.concat([first_row_df, green_wind_df[[
-                '{}_wind_speed_measured'.format(wind_farm_name),
-                '{}_power_output_measured'.format(wind_farm_name)]]], axis=1)
-        pickle.dump(green_wind_df, open(pickle_filename, 'wb'))
+                '{}_wind_speed'.format(wind_farm_name),
+                '{}_power_output'.format(wind_farm_name)]]], axis=1)
+        pickle.dump(first_row_df, open(pickle_filename, 'wb'))
     if resample:
         first_row_df = tools.resample_with_nan_theshold(
-            df=green_wind_df, frequency=frequency, threshold=threshold)
+            df=first_row_df, frequency=frequency, threshold=threshold)
     else:
         # Add frequency attribute
-        first_row_df = pd.DataFrame(green_wind_df)
         freq = pd.infer_freq(first_row_df.index)
         first_row_df.index.freq = pd.tseries.frequencies.to_offset(freq)
     return first_row_df
@@ -387,7 +409,7 @@ def get_error_numbers(year):
 
 if __name__ == "__main__":
     # ----- Load data -----#
-    load_data = True
+    load_data = False
     if load_data:
         years = [
             2015,
