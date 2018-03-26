@@ -28,11 +28,13 @@ import logging
 logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
-cases = [  # Only select one case (first one is counted)
-    'wind_speed_1',
-    'wind_speed_2',
-    'single_turbine_1',
-    'single_turbine_2'
+cases = [
+    # 'wind_speed_1',
+    # 'wind_speed_2',
+    # 'single_turbine_1',
+    # 'single_turbine_2',
+    'smoothing_1',
+    # 'density_correction_1'
 ]
 years = [
     2015,
@@ -456,6 +458,18 @@ def run_main(case, year):
                         obstacle_height=0, hellman_exp=None).to_frame(
                         name='{0}_calculated_cp-curve_(d._c.)'.format(
                             wind_farm.object_name)))
+            if ('turbine' in approach_list and case == 'smoothing_1'):
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method=None, smoothing=True,
+                        block_width=0.5,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='turbine_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                            name='{0}_calculated_turbine'.format(
+                                wind_farm.object_name)))
 
 
         #     if 'simple' in approach_list:
