@@ -304,10 +304,10 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 ('power_output_temp' in column_name and
                  wind_farm_name in column_name)]
             green_wind_df['{}_wind_speed'.format(
-                wind_farm_name)] = green_wind_df[wind_speed_columns].sum(
+                wind_farm_name)] = green_wind_df[wind_speed_columns].mean(
                 axis=1, skipna=True)
             green_wind_df['{}_power_output'.format(
-                wind_farm_name)] = green_wind_df[power_output_columns].sum(
+                wind_farm_name)] = green_wind_df[power_output_columns].mean(
                 axis=1, skipna=True)
             # Set wind speed and power output column to nan if all temporary
             # columns are nan
