@@ -43,7 +43,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -135,6 +135,8 @@ def run_main(case, year):
             resolution = 31 * 24 * 60
         else:
             resolution = out_frequency.n
+        if original_resolution == 1:
+            original_resolution = 60
         return resolution / original_resolution * threshold_factor
 
 
@@ -243,7 +245,7 @@ def run_main(case, year):
         if (case == 'wind_speed_1' or case == 'wind_speed_2'):
             validation_df = pd.concat(validation_df_list, axis=1)
         else:
-            validation_df = pd.concat(validation_df_list, axis=1) / (1 * 10 ** 6)
+            validation_df = pd.concat(validation_df_list, axis=1) / 1000
         return validation_df
 
 
@@ -375,23 +377,23 @@ def run_main(case, year):
                         hellman_exp=1 / 7).to_frame(
                         name='{0}_calculated_hellman_2'.format(
                             wind_farm.object_name)))
-            if 'linear_interpolation' in approach_list:
+            if 'lin._interp.' in approach_list:
                 if len(list(weather['wind_speed'])) > 1:
                     calculation_df_list.append(
                         modelchain_usage.wind_speed_to_hub_height(
                             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                             weather_df=weather,
                             wind_speed_model='interpolation_extrapolation').to_frame(
-                            name='{0}_calculated_linear_interpolation'.format(
+                            name='{0}_calculated_lin._interp.'.format(
                                 wind_farm.object_name)))
-            if 'logarithmic_interpolation' in approach_list:
+            if 'log._interp.' in approach_list:
                 if len(list(weather['wind_speed'])) > 1:
                     calculation_df_list.append(
                         modelchain_usage.wind_speed_to_hub_height(
                             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                             weather_df=weather,
                             wind_speed_model='log_interpolation_extrapolation',).to_frame(
-                            name='{0}_calculated_logarithmic_interpolation'.format(
+                            name='{0}_calculated_log._interp.'.format(
                                 wind_farm.object_name)))
             if case == 'single_turbine_2':
                 wind_speed = (wind_speed_data if
@@ -403,7 +405,7 @@ def run_main(case, year):
                                       original_resolution=wind_speed_data.index.freq.n)))
             else:
                 wind_speed = None
-            if 'power_curve' in approach_list:
+            if 'p-curve' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
@@ -413,9 +415,9 @@ def run_main(case, year):
                         temperature_model='linear_gradient',
                         power_output_model='power_curve', density_correction=False,
                         obstacle_height=0, hellman_exp=None).to_frame(
-                            name='{0}_calculated_power_curve'.format(
+                            name='{0}_calculated_p-curve'.format(
                                 wind_farm.object_name)))
-            if 'cp_curve' in approach_list:
+            if 'cp-curve' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
@@ -426,9 +428,9 @@ def run_main(case, year):
                         power_output_model='power_coefficient_curve',
                         density_correction=False,
                         obstacle_height=0, hellman_exp=None).to_frame(
-                        name='{0}_calculated_cp_curve'.format(
+                        name='{0}_calculated_cp-curve'.format(
                             wind_farm.object_name)))
-            if 'p_curve_dens_corr' in approach_list:
+            if 'p-curve_(d._c.)' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
@@ -439,9 +441,9 @@ def run_main(case, year):
                         power_output_model='power_coefficient_curve',
                         density_correction=True,
                         obstacle_height=0, hellman_exp=None).to_frame(
-                        name='{0}_calculated_p_curve_dens_corr'.format(
+                        name='{0}_calculated_p-curve_(d._c.)'.format(
                             wind_farm.object_name)))
-            if 'cp_curve_dens_corr' in approach_list:
+            if 'cp-curve_(d._c.)' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
@@ -452,18 +454,9 @@ def run_main(case, year):
                         power_output_model='power_coefficient_curve',
                         density_correction=True,
                         obstacle_height=0, hellman_exp=None).to_frame(
-                        name='{0}_calculated_cp_curve_dens_corr'.format(
+                        name='{0}_calculated_cp-curve_(d._c.)'.format(
                             wind_farm.object_name)))
 
-            # if 'logarithmic_interpolation' in approach_list: # TODO: add function
-            #     if len(list(weather['wind_speed'])) > 1:
-            #         calculation_df_list.append(
-            #             modelchain_usage.power_output_simple(
-            #                 wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-            #                 weather_df=weather,
-            #                 wind_speed_model='logarithmic_interp_extrap').to_frame(
-            #                 name='{0}_calculated_logarithmic'.format(
-            #                     wind_farm.object_name)))
 
         #     if 'simple' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
@@ -522,8 +515,7 @@ def run_main(case, year):
         #                 'roughness_length'][0].mean()).to_frame(
         #             name='{0}_calculated_eff_curve_smooth'.format(
         #                 wind_farm.object_name)))
-        #     # TODO: think of approaches and adjust
-        #     if 'linear_interpolation' in approach_list:
+        #     if 'lin._interp.' in approach_list:
         #         if len(list(weather['wind_speed'])) > 1:
         #             wind_farm.efficiency = wf.read_wind_efficiency_curve(
         #                 curve_name='dena_mean', plot=False)
@@ -536,7 +528,7 @@ def run_main(case, year):
         #                     wind_speed_model='interpolation_extrapolation',
         #                     roughness_length=weather[
         #                         'roughness_length'][0].mean()).to_frame(
-        #                     name='{0}_calculated_linear_interpolation'.format(
+        #                     name='{0}_calculated_lin._interp.'.format(
         #                         wind_farm.object_name)))
         # if 'test_cluster' in approach_list:
         #     test_cluster = wtc.WindTurbineCluster('test', wind_farm_list)
@@ -725,7 +717,7 @@ def run_main(case, year):
             wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
             approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
             if 'half_hourly' in output_methods:
-                if time_series_pair.index.freq != 'H':
+                if weather_data_name == 'open_FRED':
                     val_obj_dict[weather_data_name]['half_hourly'][
                         approach_string].append(ValidationObject(
                             object_name=wf_string, data=time_series_pair,
@@ -734,7 +726,13 @@ def run_main(case, year):
                             approach=approach_string,
                             min_periods_pearson=min_periods_pearson))
             if 'hourly' in output_methods:
-                hourly_series = time_series_pair.resample('H').mean()
+                if weather_data_name == 'open_FRED':
+                    hourly_series = tools.resample_with_nan_theshold(
+                        df=time_series_pair, frequency='H',
+                        threshold=get_threshold('H',
+                                                time_series_pair.index.freq.n))
+                else:
+                    hourly_series = time_series_pair
                 val_obj_dict[weather_data_name]['hourly'][
                     approach_string].append(ValidationObject(
                         object_name=wf_string, data=hourly_series,
@@ -743,7 +741,10 @@ def run_main(case, year):
                         approach=approach_string,
                         min_periods_pearson=min_periods_pearson))
             if 'monthly' in output_methods:
-                monthly_series = time_series_pair.resample('M').mean()  # TODO: resample with threshold
+                monthly_series = tools.resample_with_nan_theshold(
+                    df=time_series_pair, frequency='M',
+                    threshold=get_threshold('M',
+                                            time_series_pair.index.freq.n))
                 val_obj_dict[weather_data_name]['monthly'][
                     approach_string].append(ValidationObject(
                         object_name=wf_string, data=monthly_series,
@@ -766,9 +767,11 @@ def run_main(case, year):
             folder=''
         # Define y label add on
         if (case == 'wind_speed_1' or case == 'wind_speed_2'):
-            y_label_add_on = 'wind speed in m/s'
+            examined_value = 'wind speed'
+            y_label_add_on = '{0} in m/s'.format(examined_value)
         else:
-            y_label_add_on = 'power output in MW'
+            examined_value = 'power output'
+            y_label_add_on = '{0} in MW'.format(examined_value)
 
         if 'feedin_comparison' in visualization_methods:
             # Specify folder and title add on for saving the plots
@@ -814,8 +817,8 @@ def run_main(case, year):
                                          else ''), (start_end[1].split(':')[0]
                                                     if start_end[0] else ''))),
                                 title=(
-                                    '{0} power output of {1} calculated with {2} data\n in {3} ({4} approach)'.format(
-                                        method.replace('_', ' '), wf_string,
+                                    '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
+                                        method.replace('_', ' '), examined_value, wf_string,
                                         weather_data_name, year, approach_string) +
                                     title_add_on),
                                 tick_label=None, start=start_end[0],
@@ -851,8 +854,8 @@ def run_main(case, year):
                                     case, method, wf_string, year,
                                     weather_data_name, approach_string, add_on)),
                             title=(
-                                '{0} power output of {1} calculated with {2}\n {3} ({4} '.format(
-                                    method.replace('_', ' '), wf_string,
+                                '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
+                                    method.replace('_', ' '), examined_value, wf_string,
                                     weather_data_name, year, approach_string) +
                                 'approach)' + title_add_on),
                             color='darkblue', marker_size=3,

@@ -29,7 +29,7 @@ def get_standard_case_of_configuration():
         #     'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
         #     'efficiency_curve',  # Wind farm efficiency curve without smoothing
         #     'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
-        #     'linear_interpolation',
+        #     'lin._interp.',
         #     'test_cluster'
         #     ],
         'weather_data_list': ['MERRA', 'open_FRED'],
@@ -38,8 +38,8 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           # 'feedin_comparison',
-           # 'plot_correlation'  # Attention: this takes a long time for high resolution
+           'feedin_comparison',
+           'plot_correlation'  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -109,21 +109,20 @@ def get_configuration(case=None):
     if case == 'wind_speed_2':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
-            'logarithmic', 'linear_interpolation', 'logarithmic_interpolation']
+            'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
     if case == 'single_turbine_1':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
-            'power_curve', 'cp_curve', 'p_curve_dens_corr',
-            'cp_curve_dens_corr']
+            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
+        config_dict['restriction_list'] = ['cp-curve_(d._c.)']
     if case == 'single_turbine_2':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
-            'power_curve', 'cp_curve', 'p_curve_dens_corr',
-            'cp_curve_dens_corr']
+            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
-    
+        config_dict['restriction_list'] = ['cp-curve_(d._c.)']
     return config_dict

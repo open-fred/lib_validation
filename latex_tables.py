@@ -143,7 +143,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     '_wf', '').replace(
                                     'efficiency', 'eff.').replace(
                                     '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')):
+                                    'constant', 'const.').replace('_', ' ')): # TODO: some of replace not needed
                                  val_obj.rmse for
                                  innerKey, innerstList in innerDict.items() if
                                  innerKey not in restriction_list for

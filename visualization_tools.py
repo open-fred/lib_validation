@@ -218,7 +218,7 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     if method == 'hourly':
         data.resample('H').mean()
     if method == 'monthly':
-        data = data.resample('M').mean().dropna() # TODO: remove months that only contain some values..
+        data = data.resample('M').mean().dropna()
         marker_size = 10
     fig, ax = plt.subplots()
     data.plot.scatter(x=list(data)[1], y=list(data)[0],
