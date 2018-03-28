@@ -133,27 +133,51 @@ def apply_decomposition_model(weather_df, model, location):
 
 
 def compare_decomposition_models(merra_df, location, htw_weather_df,
-                                 plot=False):
+                                 plot=False,
+                                 plot_directory='plot/decomposition'):
     """
     Compares the decomposition models Reindl, Erbs and Disc. Calculates
     correlation and RMSE and optionally plots these plus a winter and summer
     week.
 
+    Parameters
+    ----------
+    merra_df : :pandas:`DataFrame`
+         MERRA weather DataFrame.
+    location : :pvlib:`Location`
+    htw_weather_df : :pandas:`DataFrame`
+         HTW weather DataFrame.
+    plot : Boolean
+        If true plots are created. Default: False.
+    plot_directory : :obj:`str`
+        Path to directory plot is saved to.
+
+    Returns
+    -------
+    :pandas:`DataFrame`
+        DataFrame with GNI and corrected GNI of the three models.
+
     """
+    # hard-coded inputs
+    weather_data = 'MERRA'
+    measured_data = 'HTW'
+    weeks = [('1/25/2015', '2/1/2015'), ('6/2/2015', '6/8/2015')]
+    resample_rule = '1W'
 
     # reindl
-    df_reindl = decomposition(merra_df, 'reindl', location=location)
+    df_reindl = apply_decomposition_model(merra_df, 'reindl',
+                                          location=location)
     df_reindl['gni'] = (df_reindl.dni + df_reindl.dhi).fillna(0)
     df_reindl['gni_corrected'] = (df_reindl.dni_corrected +
                                   df_reindl.dhi).fillna(0)
 
     # erbs
-    df_erbs = decomposition(merra_df, 'erbs', location=location)
+    df_erbs = apply_decomposition_model(merra_df, 'erbs', location=location)
     df_erbs['gni'] = df_erbs.dni + df_erbs.dhi
     df_erbs['gni_corrected'] = df_erbs.dni_corrected + df_erbs.dhi
 
     # disc
-    df_disc = decomposition(merra_df, 'disc', location=location)
+    df_disc = apply_decomposition_model(merra_df, 'disc', location=location)
 
     # combine dataframes
     df_comp = df_reindl.loc[:, ['gni', 'gni_corrected']].join(
@@ -163,28 +187,28 @@ def compare_decomposition_models(merra_df, location, htw_weather_df,
                            how='outer', rsuffix='_disc')
 
     # calculate correlation and rmse
-    plot_directory = 'plot'
-    weather_data = 'MERRA'
-    measured_data = 'HTW'
-
     parameter_list = ['gni_disc', 'gni_corrected_reindl', 'gni_corrected_erbs']
     count = 0
     for param in parameter_list:
         df = htw_weather_df['gni'].to_frame().join(
             df_comp[param].to_frame(), how='outer')
-        corr = analysis_tools.correlation_tmp(df, '1W', min_count=100).rename(
+        corr = analysis_tools.correlation_tmp(
+            df, resample_rule, min_count=100).rename(
             'corr_gni_htw_{}'.format(param))
-        var = analysis_tools.variability(df, '1W', min_count=100).rename(
+        var = analysis_tools.variability(
+            df, resample_rule, min_count=100).rename(
             'rmse_gni_htw_{}'.format(param))
-        corr_year = analysis_tools.correlation_tmp(df, '1Y')
-        print('Correlation {}: {}'.format(param, corr_year.iloc[0]))
-        var_year = analysis_tools.variability(df, '1Y')
-        print('RMSE {}: {}'.format(param, var_year.iloc[0]))
+        corr_year = np.round(analysis_tools.correlation_tmp(df, '1Y').iloc[0],
+                             2)
+        var_year = np.round(analysis_tools.variability(df, '1Y').iloc[0], 2)
         if plot:
-            plot_week(df.fillna(0), param, weather_data, measured_data,
-                      plot_directory,
-                      winter_week=('1/25/2015', '2/1/2015'),
-                      summer_week=('6/2/2015', '6/8/2015'))
+            for week in weeks:
+                filename = 'decomposition_comparison_week_{}_to_{}_{}_{}_{}_' \
+                           'annual_corr_{}_annual_RMSE_{}'.format(
+                    week[0].replace('/', '_'), week[1].replace('/', '_'),
+                    param, weather_data, measured_data, corr_year, var_year)
+                plot_time_range(df.fillna(0), week, filename, plot_directory,
+                                weather_data)
         if count == 0:
             corr_df = corr.to_frame()
             var_df = var.to_frame()
@@ -194,16 +218,34 @@ def compare_decomposition_models(merra_df, location, htw_weather_df,
         count += 1
 
     if plot:
-        corr_df.plot()
+        # plot correlation
+        corr_df.plot(title='Correlation')
+        mpl.ylabel('Correlation coefficient')
         mpl.savefig(
-            os.path.join(plot_directory, '{}_winter_week_{}_{}.png'.format(
-                'correlation', weather_data, measured_data)))
-        var_df.plot()
+            os.path.join(
+                plot_directory, 'decomposition_comparison_correlation_'
+                                '{}_{}_{}.png'.format(
+                    resample_rule, weather_data, measured_data)))
+        mpl.clf()
+        # plot RMSE
+        var_df.plot(title='RMSE')
+        mpl.ylabel('RMSE in W/m²')
         mpl.savefig(
-            os.path.join(plot_directory, '{}_winter_week_{}_{}.png'.format(
-                'RMSE', weather_data, measured_data)))
-
-
+            os.path.join(
+                plot_directory, 'decomposition_comparison_RMSE_'
+                                '{}_{}_{}.png'.format(
+                    resample_rule, weather_data, measured_data)))
+        # plot weeks
+        df_week = df_comp.loc[:, ['gni_disc', 'gni_corrected_reindl',
+                                  'gni_corrected_erbs']].fillna(0).join(
+            htw_weather_df['gni'].to_frame())
+        for week in weeks:
+            filename = 'decomposition_comparison_week_{}_to_{}_' \
+                       'GNI_all_models_{}_{}'.format(
+                week[0].replace('/', '_'), week[1].replace('/', '_'),
+                weather_data, measured_data)
+            plot_time_range(df_week, week, filename, plot_directory,
+                            weather_data)
     return df_comp
 
 
@@ -236,6 +278,69 @@ if __name__ == '__main__':
     # htw_weather_data = read_htw_data.setup_weather_dataframe(
     #     weather_data='MERRA')
     # compare_decomposition_models(merra_df, location, htw_weather_data)
+
+def get_index(start_date, end_date, weather_data):
+    """
+    Sets up index to select date range from data set.
+
+    Parameters
+    -----------
+    start_date :  :obj:`str`
+        String with start of date range, e.g. '1/25/2015'.
+    end_date :  :obj:`str`
+        String with end of date range.
+    weather_data :  :obj:`str`
+        Weather data set used. Possible choices are 'MERRA' or 'open_FRED'.
+
+    Returns
+    -------
+    :pandas:`DateTimeIndex`
+
+    """
+    if weather_data == 'open_FRED':
+        index = pd.date_range(start=start_date, end=end_date,
+                              freq='30Min', tz='UTC') \
+                - pd.Timedelta(minutes=15)
+    elif weather_data == 'MERRA':
+        index = pd.date_range(start=start_date, end=end_date,
+                              freq='60Min', tz='UTC')
+    return index
+
+
+def plot_time_range(data, time_range, filename, plot_directory,
+                    weather_data, ylabel=None, legend_loc=None, title=None):
+    """
+    Plots data for the given time range.
+
+    Parameters
+    -----------
+    data : :pandas:`DataFrame`
+        Data to plot.
+    time_range : :obj:`tuple`
+        Tuple with start and end date, e.g. ('1/25/2015', '2/1/2015').
+    filename : :obj:`str`
+    plot_directory : :obj:`str`
+        Path to directory plot is saved to.
+    weather_data : :obj:`str`
+        Weather data set used. Possible choices are 'MERRA' or 'open_FRED'.
+    ylabel : :obj:`str`, optional
+        Label of y-axis. Default: None.
+    legend_loc : :obj:`int`, optional
+        Location of legend.
+    title : :obj:`str`, optional
+
+    """
+
+    # set frequency of index
+    index = get_index(time_range[0], time_range[1], weather_data)
+
+    data.loc[index, :].plot(title=title)
+    if ylabel:
+        mpl.ylabel(ylabel)
+    if legend_loc:
+        mpl.legend(loc=legend_loc)
+    mpl.savefig(os.path.join(plot_directory, '{}.png'.format(filename)))
+
 
     plot_directory = 'plot'
     weather_data = 'MERRA'
