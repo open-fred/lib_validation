@@ -230,11 +230,10 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                 zip(old_names, new_names)},
                            inplace=True)
             # Convert string index to Datetime index
-            df_wf_2.index = [pd.to_datetime(index.replace(replace, ''), utc=True)
-                        for
-                        index in df.index]
-            # Convert to local time zone
-            df_wf_2.index = df.index.tz_convert('Europe/Berlin')
+            df_wf_2.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
+                             index in df_wf_2.index]
+            # Set time zone
+            df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
             df = pd.concat([df, df_wf_2], axis=1)
         # Add frequency attribute
         freq = pd.infer_freq(df.index)
