@@ -66,7 +66,7 @@ time_period = (
          None   # complete time series will be observed
         )
 
-# Relative path to latex tables folder  # TODO add case to filenames (if approach not in filename
+# Relative path to latex tables folder
 latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                        'automatic/')
 
@@ -100,8 +100,8 @@ def run_main(case, year):
     # Get parameters from config file (they are set below)
     parameters = get_configuration(case)
 
-    # Start and end date for time period to be plotted when 'feedin_comparison' is
-    # selected. (not for monthly output).
+    # Start and end date for time period to be plotted when 'feedin_comparison'
+    # is selected. (not for monthly output).
     start_end_list = [
         (None, None),
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
@@ -123,14 +123,14 @@ def run_main(case, year):
     latex_output = parameters['latex_output']
     key_figures_print = parameters['key_figures_print']
 
-    # ---------------------------------- Warning -------------------------------- #
+    # -------------------------------- Warning ------------------------------ #
     if (year == 2015 and validation_data_list[0] == 'Enertrag' and
             validation_data_list[-1] == 'Enertrag'):
         raise ValueError("Enertrag data not available for 2015 - select other " +
                          "validation data or year 2016")
 
 
-    # -------------------------- Validation Feedin Data ------------------------- #
+    # ------------------------ Validation Feedin Data ----------------------- #
     def get_threshold(out_frequency, original_resolution):
         if (out_frequency == 'H' or out_frequency == '60T'):
             resolution = 60
@@ -151,11 +151,9 @@ def run_main(case, year):
 
         Parameters
         ----------
-        frequency : ...
-            TODO add
-        single : Booelan
-            If True first row single turbine data is added instead of wind farm
-            data.
+        frequency : string
+            Frequency for resampling. Examples: 'H' for hourly, '30T' for half-
+            hourly, 'M' for monthly.
 
         Returns
         -------
@@ -178,10 +176,11 @@ def run_main(case, year):
                                       'arge_netz_data_{0}.p'.format(year)),
                 csv_dump=False, plot=plot_arge_feedin)
             # Select only columns containing the power output and rename them
-            arge_data = arge_data[['{0}_power_output'.format(data['object_name'])
-                                   for data in wind_farm_data_arge]].rename(
-                columns={col: col.replace('power_output', 'measured') for col in
-                         arge_data.columns})
+            arge_data = arge_data[[
+                '{0}_power_output'.format(data['object_name']) for
+                data in wind_farm_data_arge]].rename(
+                columns={col: col.replace('power_output', 'measured') for
+                         col in arge_data.columns})
             # Set negative values to nan (for Enertrag and GreenWind this
             # happens in the separate modules)
             arge_data = tools.negative_values_to_nan(arge_data)
@@ -194,7 +193,8 @@ def run_main(case, year):
             # Get Enertrag Data
             enertrag_data = get_enertrag_data(
                 pickle_load=pickle_load_enertrag,
-                filename=os.path.join(validation_pickle_folder, 'enertrag_data.p'))
+                filename=os.path.join(validation_pickle_folder,
+                                      'enertrag_data.p'))
             # Select aggregated power output of wind farm (rename)
             enertrag_data = enertrag_data[['wf_9_power_output']].rename(
                 columns={'wf_9_power_output': 'wf_9_measured'})
@@ -217,8 +217,8 @@ def run_main(case, year):
             greenwind_data = greenwind_data[[
                 '{0}_power_output'.format(data['object_name']) for
                 data in wind_farm_data_gw]].rename(
-                columns={col: col.replace('power_output', 'measured') for col in
-                         greenwind_data.columns})
+                columns={col: col.replace('power_output', 'measured') for
+                         col in greenwind_data.columns})
             # Resample the DataFrame columns with `frequency` and add to list
             threshold = get_threshold(frequency, greenwind_data.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
@@ -231,7 +231,7 @@ def run_main(case, year):
                     'greenwind_data_first_row_{0}.p'.format(year)),
                 pickle_load=pickle_load_greenwind)
             if 'wind_speed' in case:
-                # Get first row single turbine wind speed data and rename columns
+                # Get first row single turbine wind speed and rename columns
                 single_data = single_data[[col for col in list(single_data) if
                                            'wind_speed' in col]].rename(
                     columns={column: column.replace(
@@ -255,7 +255,7 @@ def run_main(case, year):
         return validation_df
 
 
-    # ------------------------------ Wind farm data ----------------------------- #
+    # ---------------------------- Wind farm data --------------------------- #
     def return_wind_farm_data(single=False):
             r"""
             Get wind farm data of all validation data.
@@ -272,30 +272,33 @@ def run_main(case, year):
             if single:
                 filenames = ['farm_specification_greenwind_{0}.p'.format(year)]
                 wind_farm_data = get_joined_wind_farm_data(
-                    filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+                    filenames, wind_farm_pickle_folder,
+                    pickle_load_wind_farm_data)
                 for item in wind_farm_data:
                     item['wind_turbine_fleet'][0]['number_of_turbines'] = 1
                     item['object_name'] = 'single_{}'.format(
                         item['object_name'].split('_')[1])
             else:
                 filenames = ['farm_specification_{0}_{1}.p'.format(
-                    validation_data_name.replace('ArgeNetz', 'argenetz').replace(
+                    validation_data_name.replace('ArgeNetz',
+                                                 'argenetz').replace(
                         'GreenWind', 'greenwind'), year)
                     for validation_data_name in validation_data_list if
                     validation_data_name is not 'Enertrag']
                 if (year == 2016 and 'Enertrag' in validation_data_list):
                     filenames += ['farm_specification_enertrag_2016.p']
                 wind_farm_data = get_joined_wind_farm_data(
-                    filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+                    filenames, wind_farm_pickle_folder,
+                    pickle_load_wind_farm_data)
             return wind_farm_data
 
-    # ------------------------- Power output simulation ------------------------- #
+    # ----------------------- Power output simulation ----------------------- #
     def get_calculated_data(weather_data_name):
         r"""
         Calculates time series with different approaches.
 
-        Data is saved in a DataFrame that can later be joined with the validation
-        data frame.
+        Data is saved in a DataFrame that can later be joined with the
+        validation data frame.
 
         Parameters
         ----------
@@ -310,10 +313,10 @@ def run_main(case, year):
 
         """
         # Get weather data
-        # Generate weather filename (including path) for pickle dumps (and loads)
-        filename_weather = os.path.join(os.path.dirname(__file__), 'dumps/weather',
-                                        'weather_df_{0}_{1}.p'.format(
-                                            weather_data_name, year))
+        # Generate weather filename (including path) for pickle dumps (loads)
+        filename_weather = os.path.join(
+            os.path.dirname(__file__), 'dumps/weather',
+            'weather_df_{0}_{1}.p'.format(weather_data_name, year))
         # Read csv files that contains weather data (pd.DataFrame is dumped)
         # to save time below
         if weather_data_name == 'MERRA':
@@ -346,7 +349,7 @@ def run_main(case, year):
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
             if case == 'single_turbine_2':
-                # Use wind speed from first row GreenWind turbines as weather data
+                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
                     pickle_filename=os.path.join(
@@ -398,14 +401,15 @@ def run_main(case, year):
                         modelchain_usage.wind_speed_to_hub_height(
                             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                             weather_df=weather,
-                            wind_speed_model='log_interpolation_extrapolation',).to_frame(
+                            wind_speed_model='log_interpolation_extrapolation').to_frame(
                             name='{0}_calculated_log._interp.'.format(
                                 wind_farm.object_name)))
             if case == 'single_turbine_2':
                 wind_speed = (wind_speed_data if
                               weather_data_name == 'open_FRED' else
                               tools.resample_with_nan_theshold(
-                                  df=wind_speed_data, frequency=weather.index.freq,
+                                  df=wind_speed_data,
+                                  frequency=weather.index.freq,
                                   threshold=get_threshold(
                                       out_frequency=weather.index.freq,
                                       original_resolution=wind_speed_data.index.freq.n)))
@@ -419,10 +423,11 @@ def run_main(case, year):
                         wind_speed_model='logarithmic',
                         density_model='ideal_gas',
                         temperature_model='linear_gradient',
-                        power_output_model='power_curve', density_correction=False,
-                        obstacle_height=0, hellman_exp=None).to_frame(
-                            name='{0}_calculated_p-curve'.format(
-                                wind_farm.object_name)))
+                        power_output_model='power_curve',
+                        density_correction=False, obstacle_height=0,
+                        hellman_exp=None).to_frame(
+                        name='{0}_calculated_p-curve'.format(
+                            wind_farm.object_name)))
             if 'cp-curve' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
@@ -565,7 +570,8 @@ def run_main(case, year):
         if (case == 'wind_speed_1' or case == 'wind_speed_2'):
             calculation_df = pd.concat(calculation_df_list, axis=1)
         else:
-            calculation_df = pd.concat(calculation_df_list, axis=1) / (1 * 10 ** 6)
+            calculation_df = pd.concat(
+                calculation_df_list, axis=1) / (1 * 10 ** 6)
         # Add curtailment for Enertrag wind farm
         for column_name in list(calculation_df):
             if column_name.split('_')[1] == '9':
@@ -576,19 +582,19 @@ def run_main(case, year):
                 # Add curtailment to data frame
                 df = pd.concat([calculation_df[[column_name]], curtailment],
                                axis=1)
-                calculation_df[column_name] = df[column_name] * df['curtail_rel']
+                calculation_df[column_name] = df[column_name] * df[
+                    'curtail_rel']
         return calculation_df
-
 
     def get_time_series_df(weather_data_name):
         r"""
-        If there are any values in restriction_list, the columns containing these
-        strings are dropped. This takes place after dumping.
+        If there are any values in restriction_list, the columns containing
+        these strings are dropped. This takes place after dumping.
 
         """
-        time_series_filename = os.path.join(time_series_df_folder,
-                                            'time_series_df_{0}_{1}_{2}.p'.format(
-                                                case, weather_data_name, year))
+        time_series_filename = os.path.join(
+            time_series_df_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
+                case, weather_data_name, year))
         if pickle_load_time_series_df:
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
         elif csv_load_time_series_df:
@@ -602,8 +608,8 @@ def run_main(case, year):
                 frequency=calculation_df.index.freq)
             # Join data frames
             time_series_df = pd.concat([validation_df, calculation_df], axis=1)
-            # Set value of measured series to nan if respective calculated value
-            # is nan and the other way round
+            # Set value of measured series to nan if respective calculated
+            # value is nan and the other way round
             column_name_lists = [
                 [name for name in list(time_series_df) if wf_name in name] for
                 wf_name in wind_farm_names]
@@ -631,20 +637,20 @@ def run_main(case, year):
         # their name
         drop_list = []
         for restriction in restriction_list:
-            drop_list.extend([column_name for column_name in list(time_series_df)
-                              if restriction in column_name])
+            drop_list.extend(
+                [column_name for column_name in list(time_series_df) if
+                 restriction in column_name])
         time_series_df.drop([column_name for column_name in drop_list],
                             axis=1, inplace=True)
         return time_series_df
 
-
-    # ------------------------------ Helper functions --------------------------- #
+    # ---------------------------- Helper functions ------------------------- #
     def initialize_dictionary(dict_type, time_series_pairs=None):
         if dict_type == 'validation_objects':
             dictionary = {weather_data_name: {method: {approach:
                           [] for approach in approach_list if
-                          approach not in restriction_list}
-                                              for method in output_methods}
+                          approach not in restriction_list} for
+                                              method in output_methods}
                           for weather_data_name in weather_data_list}
         if dict_type == 'annual_energy':
             if (time_series_pairs is None):
@@ -668,13 +674,14 @@ def run_main(case, year):
         return z
 
 
-    # ------------------------------ Data Evaluation ---------------------------- #
+    # ---------------------------- Data Evaluation -------------------------- #
     # Create list of wind farm names
     if 'single' in validation_data_list:
         wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
             single=True)]
     else:
-        wind_farm_names = [data['object_name'] for data in return_wind_farm_data()]
+        wind_farm_names = [data['object_name'] for
+                           data in return_wind_farm_data()]
     # Initialize dictionary for validation objects
     val_obj_dict = initialize_dictionary(dict_type='validation_objects')
     # Initialize dict for annual energy output of each weather data set
@@ -694,33 +701,36 @@ def run_main(case, year):
                 column_name for column_name in list(time_series_df)
                 if wf_name in column_name]] for wf_name in wind_farm_names
             if wf_name not in restriction_list]
-        time_series_pairs = [time_series_df.loc[:, ['{0}_measured'.format(wf_name),
-                                                    '{0}_calculated_{1}'.format(
-                                                        wf_name, approach)]]
-                             for wf_name in wind_farm_names
-                             for approach in approach_list
-                             if '{0}_calculated_{1}'.format(
-                                 wf_name, approach) in list(time_series_df)]
+        time_series_pairs = [time_series_df.loc[:, [
+            '{0}_measured'.format(wf_name), '{0}_calculated_{1}'.format(
+                wf_name, approach)]] for
+            wf_name in wind_farm_names for approach in approach_list if
+            '{0}_calculated_{1}'.format(wf_name, approach) in list(
+                time_series_df)]
 
         # Initialize dictionary for annual energy output
         annual_energy_dict_weather = initialize_dictionary(
             dict_type='annual_energy', time_series_pairs=time_series_pairs)
         if ('annual_energy_approaches' in latex_output or
                 'annual_energy_weather' in latex_output):
-            # Write annual energy outputs and deviations into `annual_energy_dict`
+            # Write annual energy outputs and deviations into
+            # `annual_energy_dict`
             for time_series_df_part in time_series_df_parts:
-                wf_string = '_'.join(list(time_series_df_part)[0].split('_')[:2])
+                wf_string = '_'.join(
+                    list(time_series_df_part)[0].split('_')[:2])
                 # Measured annual energy output
                 measured_output = tools.annual_energy_output(
-                    time_series_df_part.loc[:, '{0}_measured'.format(wf_string)])
+                    time_series_df_part.loc[:,
+                                            '{0}_measured'.format(wf_string)])
                 annual_energy_dict_weather[
                     wf_string]['measured_annual_energy'] = measured_output
-                # Calculated annual energy output and deviation from measured in %
+                # Calculated annual energy output and deviation from measured
+                # in %
                 for column_name in list(time_series_df_part):
                     if column_name != '{0}_measured'.format(wf_string):
                         approach_string = '_'.join(column_name.split('_')[3:])
                         calculated_output = tools.annual_energy_output(
-                            time_series_df_part.loc[:, '{0}_calculated_{1}'.format(
+                            time_series_df_part.loc[:,'{0}_calculated_{1}'.format(
                                 wf_string, approach_string)])
                         annual_energy_dict_weather[wf_string][
                             approach_string]['[MWh]'] = (
@@ -733,7 +743,8 @@ def run_main(case, year):
             annual_energy_dicts[weather_data_name] = annual_energy_dict_weather
         for time_series_pair in time_series_pairs:
             wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
-            approach_string = '_'.join(list(time_series_pair)[1].split('_')[3:])
+            approach_string = '_'.join(
+                list(time_series_pair)[1].split('_')[3:])
             if 'half_hourly' in output_methods:
                 if weather_data_name == 'open_FRED':
                     val_obj_dict[weather_data_name]['half_hourly'][
@@ -782,7 +793,7 @@ def run_main(case, year):
         elif (case == 'single_turbine_1' or case == 'single_turbine_2'):
             folder = 'single_turbine'
         else:
-            folder=''
+            folder = ''
         # Define y label add on
         if (case == 'wind_speed_1' or case == 'wind_speed_2'):
             examined_value = 'wind speed'
@@ -830,17 +841,21 @@ def run_main(case, year):
                                     save_folder +
                                     '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
                                         case, method, wf_string, year,
-                                        weather_data_name, add_on, approach_string,
-                                        (start_end[0].split(':')[0] if start_end[0]
-                                         else ''), (start_end[1].split(':')[0]
-                                                    if start_end[0] else ''))),
+                                        weather_data_name, add_on,
+                                        approach_string,
+                                        (start_end[0].split(':')[0] if
+                                         start_end[0] else ''),
+                                        (start_end[1].split(':')[0] if
+                                         start_end[0] else ''))),
                                 title=(
                                     '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
-                                        method.replace('_', ' '), examined_value, wf_string,
-                                        weather_data_name, year, approach_string) +
-                                    title_add_on),
+                                        method.replace('_', ' '),
+                                        examined_value, wf_string,
+                                        weather_data_name, year,
+                                        approach_string) + title_add_on),
                                 tick_label=None, start=start_end[0],
-                                end=start_end[1], y_label_add_on=y_label_add_on)
+                                end=start_end[1],
+                                y_label_add_on=y_label_add_on)
 
         if 'plot_correlation' in visualization_methods:
             for time_series_pair in time_series_pairs:
@@ -870,11 +885,13 @@ def run_main(case, year):
                                 save_folder +
                                 '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
                                     case, method, wf_string, year,
-                                    weather_data_name, approach_string, add_on)),
+                                    weather_data_name, approach_string,
+                                    add_on)),
                             title=(
                                 '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
-                                    method.replace('_', ' '), examined_value, wf_string,
-                                    weather_data_name, year, approach_string) +
+                                    method.replace('_', ' '), examined_value,
+                                    wf_string, weather_data_name, year,
+                                    approach_string) +
                                 'approach)' + title_add_on),
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)

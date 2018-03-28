@@ -29,9 +29,9 @@ import pandas as pd
 import numpy as np
 import os
 import pickle
+import sys
 
 
-# TODO: move read_data and restructure_data to tools module to be free to use
 # for other validation data modules, too
 def read_data(filename, **kwargs):
     r"""
@@ -98,10 +98,10 @@ def restructure_data(filename, filename_column_names=None, filter_cols=False,
     df = read_data(filename, **kwargs)
     if filter_cols:
         cols = read_file_to_list(filename_column_names)
-        df2 = df.filter(items=cols, axis=1)
+        df = df.filter(items=cols, axis=1)
     if drop_na:
-        df2 = df.dropna(axis='columns', how='all')
-    return df2
+        df = df.dropna(axis='columns', how='all')
+    return df
 
 
 def read_file_to_list(filename):
@@ -191,10 +191,50 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
                                inplace=True)
                 df = pd.concat([df, df_part])
         # Convert string index to Datetime index
-        df.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
-                    index in df.index]
+        df.index = [
+            pd.to_datetime(index.replace(replace, ''), utc=True) for
+            index in df.index]
         # Convert to local time zone
         df.index = df.index.tz_convert('Europe/Berlin')
+        if year == 2016:
+            # Get one wind farm from different data set
+            file_dir = os.path.join(os.path.dirname(__file__),
+                                'data/ArgeNetz/single_turbines/wf_2')
+            df_wf_2 = pd.DataFrame()
+            filenames = [filename for filename in os.listdir(
+                            os.path.join(sys.path[0], file_dir)) if
+                         filename.startswith('2016')]
+            for filename in filenames:
+                df_part = restructure_data(
+                    filename, filter_cols=True,
+                    filename_column_names='helper_files/column_names_2016_wf_2.txt',
+                    datapath=file_dir)
+                df_wf_2 = pd.concat([df_wf_2, df_part])
+            # Rename columns
+            old_names = list(df_wf_2)
+            new_names = []
+            for old_name in old_names:
+                if 'Elektrische Wirkleistung' in old_name:
+                    string = 'power_output'
+                elif 'Windgeschwindigkeit' in old_name:
+                    string = 'wind_speed'
+                elif 'Windrichtung (' in old_name:
+                    # Bracket is necessary as also 'Windrichtung relativ zur
+                    # Gondelposition' exists
+                    string = 'wind_dir'
+                else:
+                    string = 'drop_col'
+                new_names.append('wf_2_{0}'.format(string))
+            df_wf_2.rename(columns={
+                old_name: new_name for old_name, new_name in
+                zip(old_names, new_names)},
+                           inplace=True)
+            # Convert string index to Datetime index
+            df_wf_2.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
+                             index in df_wf_2.index]
+            # Set time zone
+            df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
+            df = pd.concat([df, df_wf_2], axis=1)
         # Add frequency attribute
         freq = pd.infer_freq(df.index)
         df.index.freq = pd.tseries.frequencies.to_offset(freq)
