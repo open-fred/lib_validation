@@ -33,8 +33,7 @@ cases = [
     # 'wind_speed_2',
     # 'single_turbine_1',
     # 'single_turbine_2',
-    'smoothing_1',
-    # 'density_correction_1'
+    'smoothing_1'
 ]
 years = [
     2015,

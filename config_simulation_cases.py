@@ -123,10 +123,11 @@ def get_configuration(case=None):
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
         config_dict['restriction_list'] = ['cp-curve_(d._c.)']
+    # if case == 'density_correction_1':  # NOTE: probably density correction will always be done at the end
+    #     config_dict['restriction_list'] = []
+    #     config_dict['approach_list'] = ['turbine', 'farm', 'turbine_smooth',
+    #                                     'farm_smooth']
     if case == 'smoothing_1':
-        config_dict['restriction_list'] = []
-        config_dict['approach_list'] = ['turbine', 'farm']
-    if case == 'density_correction_1':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = ['turbine', 'farm']
     return config_dict
