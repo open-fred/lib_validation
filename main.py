@@ -66,7 +66,7 @@ time_period = (
          None   # complete time series will be observed
         )
 
-# Relative path to latex tables folder  # TODO add case to filenames (if approach not in filename
+# Relative path to latex tables folder
 latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                        'automatic/')
 
@@ -151,11 +151,9 @@ def run_main(case, year):
 
         Parameters
         ----------
-        frequency : ...
-            TODO add
-        single : Booelan
-            If True first row single turbine data is added instead of wind farm
-            data.
+        frequency : string
+            Frequency for resampling. Examples: 'H' for hourly, '30T' for half-
+            hourly, 'M' for monthly.
 
         Returns
         -------
