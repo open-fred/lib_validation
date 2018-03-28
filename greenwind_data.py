@@ -179,6 +179,11 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 visualization_tools.print_whole_dataframe(df)
                 df.to_csv(error_amount_filename)
         print('---- Error filtering of {0} Done. ----'.format(year))
+        # Set negative values to nan
+        columns = [column for column in list(greenwind_df) if
+                   'power_output' in column]
+        greenwind_df = tools.negative_values_to_nan(greenwind_df,
+                                                    columns=columns)
         if resample:
             # Delete error number columns as it is senseless to resample them
             greenwind_df.drop([column for column in list(greenwind_df) if
@@ -409,7 +414,7 @@ def get_error_numbers(year):
 
 if __name__ == "__main__":
     # ----- Load data -----#
-    load_data = False
+    load_data = True
     if load_data:
         years = [
             2015,

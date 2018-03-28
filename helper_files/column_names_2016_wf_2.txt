@@ -1,0 +1,3 @@
+Nordstrand :: Elektrische Wirkleistung :: [kW]
+Nordstrand :: Windgeschwindigkeit :: [ m/s]
+Nordstrand :: Windrichtung (0°=Nord) :: [ °]

@@ -15,6 +15,9 @@ column 'wf_9_power_output'.
 DateTimeIndex in 'Europe/Berlin' time zone.
 """
 
+# Imports from lib_validation
+import tools
+
 # Other imports
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -104,6 +107,11 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
             # Convert index to DatetimeIndex and make time zone aware
             enertrag_df.index = pd.to_datetime(enertrag_df.index).tz_localize(
                 'UTC').tz_convert('Europe/Berlin')
+            # Set negative values to nan
+            columns = [column for column in list(enertrag_df) if
+                       'power_output' in column]
+            enertrag_df = tools.negative_values_to_nan(enertrag_df,
+                                                        columns=columns)
             if resample:
                 enertrag_df = enertrag_df.resample(frequency).mean()
             # Add frequency attribute

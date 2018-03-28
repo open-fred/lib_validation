@@ -38,13 +38,13 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           'feedin_comparison',
-           'plot_correlation'  # Attention: this takes a long time for high resolution
+           # 'feedin_comparison',
+           # 'plot_correlation'  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
             'annual_energy_approaches',  # AEO all approaches
-            'annual_energy_weather_approaches',  # AEO approaches, weather sets
+            'annual_energy_weather_approaches',  # AEO all approaches and weather sets
             'key_figures_weather',     # Key figures of all weather sets
             'key_figures_approaches'  # Key figures of all approaches
             ],
@@ -114,15 +114,19 @@ def get_configuration(case=None):
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
     if case == 'single_turbine_1':
-        config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
         config_dict['restriction_list'] = ['cp-curve_(d._c.)']
     if case == 'single_turbine_2':
-        config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
         config_dict['restriction_list'] = ['cp-curve_(d._c.)']
+    if case == 'smoothing_1':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = ['turbine', 'farm']
+    if case == 'density_correction_1':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = ['turbine', 'farm']
     return config_dict

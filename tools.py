@@ -565,3 +565,12 @@ def resample_with_nan_theshold(df, frequency, threshold):
             df_part.drop(columns=['count', 'mean'], axis=1, inplace=True)
             resampled_df = pd.concat([resampled_df, df_part], axis=1)
     return resampled_df
+
+
+def negative_values_to_nan(df, columns=None):
+    if columns is None:
+        columns = [column for column in list(df)]
+    for column in columns:
+        indices = df.loc[df[column] < 0.0].index
+        df[column].loc[indices] = np.nan
+    return df
