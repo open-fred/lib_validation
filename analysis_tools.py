@@ -365,7 +365,7 @@ def variability(df, resample_rule, min_count=12, base=0):
 
     """
     var = df.resample(resample_rule, base=base).agg(
-        {'variability': lambda x: ((x[df.columns[0]] - x[
+        {'rmse': lambda x: ((x[df.columns[0]] - x[
             df.columns[1]]) ** 2).mean() ** .5}).iloc[:, 0]
     count = df.resample(resample_rule, base=base).count()
     var.loc[count.loc[count.min(axis=1) < min_count].index] = np.nan
