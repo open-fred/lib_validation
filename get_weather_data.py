@@ -279,11 +279,10 @@ def setup_of_weather_df_pvlib(coordinates, csv_directory,
     fred_data['ghi'] = fred_data['dhi'] + fred_data['dirhi']
     # convert temperature from K to °C
     fred_data['temp_air'] = fred_data['temp_air'] - 273.15
-    # shift time index by half an hour to have mean values for the following
-    # half hour instead of the previous (this is then also consistent with
-    # pandas resample)
+    # shift time index by minus 15 minutes to have time index in the middle of
+    # the half hour for which it applies
     fred_data.reset_index(inplace=True)
-    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=30)
+    fred_data['time'] = fred_data.time - pd.Timedelta(minutes=15)
     fred_data.set_index(['time', 'lat', 'lon'], drop=True, inplace=True)
     # save as csv
     fred_data.to_csv(os.path.join(csv_directory, filename))
@@ -340,6 +339,7 @@ def setup_of_weather_df_windpowerlib(coordinates, csv_directory,
         data = pd.read_csv(file_path, header=[0], index_col=[0, 2, 3],
                            parse_dates=True)
 
+        data.dropna(axis=0, inplace=True)
         data.sort_index(inplace=True)
         # set column multiindex
         data.columns = [[col_name],[col_height]]
@@ -492,8 +492,10 @@ if __name__ == '__main__':
     # # SH lat_min = 54.4, lat_max = 54.7, lon_min = 8.9, lon_max = 9.1
     # # Berlin NW: 52.661962, 13.102158
     # # Berlin SO: 52.255534, 13.866914
-    # # BB NW: 52.905026, 11.982852
-    # # BB SO: 51.517393, 14.860673
+    # # BB NW: 53.573291, 11.228509
+    # # BB SO: 51.352445, 14.860673
+    # # Detmold 51.935547, 8.879361
+    # # Jakob 51.165691, 10.451526
     # year = 2015
     # lat_min = 54.4
     # lat_max = 54.7
@@ -534,38 +536,38 @@ if __name__ == '__main__':
     # files
     ##########################################################################
 
-    # # coordinates_wf_1 = [52.407386, 13.966889]
-    # # coordinates_wf_2 = [51.775147, 13.560156]
-    # # coordinates_wf_3 = [52.860588, 13.070485]
-    # coordinates = None
-    # csv_directory = 'data/Fred/SH_2015'
-    # parameter_list = ['wind_speed-10m.csv', 'wind_speed-80m.csv',
-    #                   'wind_speed-100m.csv', 'wind_speed-120m.csv',
-    #                   'wind_direction-10m.csv', 'wind_direction-80m.csv',
-    #                   'wind_direction-100m.csv', 'wind_direction-120m.csv',
-    #                   'pressure-10m.csv', 'pressure-80m.csv',
-    #                   'pressure-100m.csv', 'pressure-120m.csv',
-    #                   'temperature-10m.csv', 'temperature-80m.csv',
-    #                   'temperature-100m.csv', 'temperature-120m.csv',
-    #                   'roughness_length-0m.csv']
-    # windpowerlib_weather_df = setup_of_weather_df_windpowerlib(
-    #     coordinates, csv_directory, parameter_list,
-    #     filename='fred_data_2015_SH.csv')
+    # coordinates Altlandsberg = [52.603613, 13.785923]
+    # coordinates Cottbus Halde = [51.808207, 14.447661]
+    # coordinates Prignitz = [53.132604, 12.106356]
+    coordinates = [52.603613, 13.785923]
+    csv_directory = 'data/Fred/BB_2016'
+    parameter_list = ['wind_speed-10m.csv', 'wind_speed-80m.csv',
+                      'wind_speed-100m.csv', 'wind_speed-120m.csv',
+                      'wind_direction-10m.csv', 'wind_direction-80m.csv',
+                      'wind_direction-100m.csv', 'wind_direction-120m.csv',
+                      'pressure-10m.csv', 'pressure-80m.csv',
+                      'pressure-100m.csv', 'pressure-120m.csv',
+                      'temperature-10m.csv', 'temperature-80m.csv',
+                      'temperature-100m.csv', 'temperature-120m.csv',
+                      'roughness_length-0m.csv']
+    windpowerlib_weather_df = setup_of_weather_df_windpowerlib(
+        coordinates, csv_directory, parameter_list,
+        filename='fred_data_2016_WP_Altlandsberg.csv')
 
     ##########################################################################
     # read multiindex weather dataframe for windpowerlib from csv
     ##########################################################################
 
-    # coordinates = [54.516, 8.96]
-    # path = 'data/Fred/SH_2015'
-    # filename = 'fred_data_2015_sh.csv'
+    # coordinates = [51.165691, 10.451526] #52.85783, 13.9431
+    # path = 'data/Fred/Muehlhausen'
+    # filename = 'fred_data_2016_Muehlhausen.csv'
     # read_of_weather_df_windpowerlib_from_csv(path, filename, coordinates)
 
     ##########################################################################
     # read weather dataframe for pvlib from csv
     ##########################################################################
 
-    coordinates = [54.516, 8.96]
-    path = 'data/Fred/Berlin_2015'
-    filename = 'fred_data_2015_sh.csv'
-    read_of_weather_df_pvlib_from_csv(path, filename, coordinates)
+    # coordinates = [51.935547, 8.879361]
+    # path = 'data/Fred/Detmold'
+    # filename = 'Detmold_2015.csv'
+    # read_of_weather_df_pvlib_from_csv(path, filename, coordinates)

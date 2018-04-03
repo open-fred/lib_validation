@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as mpl
+import numpy as np
 
 from windpowerlib.modelchain import ModelChain
 from windpowerlib.wind_turbine import WindTurbine
@@ -8,29 +9,8 @@ from windpowerlib.wind_turbine import WindTurbine
 import get_weather_data
 import read_greenwind_data
 import analysis_tools
-
-
-def rmse(df, resample_rule):
-    r"""
-    Calculates the RMSE between two columns of a dataframe.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-       RMSE for the first two columns is calculated.
-    resample_rule : String
-       The offset string representing target conversion of
-       pandas.DataFrame.resample, e.g. '1D' to downsample data to one day.
-
-    Returns
-    -------
-    pandas.Series
-       Series with RMSE values for each time interval.
-
-    """
-    return df.resample(resample_rule).agg(
-        {'variability': lambda x: ((x[df.columns[0]] - x[
-            df.columns[1]]) ** 2).mean() ** .5}).iloc[:, 0]
+import wind_farm_specifications
+from argenetz_data import get_argenetz_data
 
 
 def get_data(year, windfarm, weather_data_directory, weather_data_file,
@@ -143,25 +123,125 @@ def plot(df, windfarm, plot_directory, parameter):
         windfarm))
 
 
+def run_arge_validation(year):
+    # Get wind farm data
+    wind_farm_data = wind_farm_specifications.get_wind_farm_data(
+        'farm_specification_argenetz_{0}.p'.format(year),
+        os.path.join(os.path.dirname(__file__),
+                     'dumps/wind_farm_data'),
+        pickle_load=True)
+    # Get ArgeNetz Data
+    arge_pickle_filename = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), 'dumps/validation_data',
+        'arge_netz_data_{0}.p'.format(year)))
+    validation_data = get_argenetz_data(
+        year, pickle_load=True, filename=arge_pickle_filename,
+        csv_dump=False, plot=False)
+
+    # Nordstrand
+    '{}_power_output'
+    return
+
+
 if __name__ == '__main__':
 
-    windfarm = 'WF3'  # {'WF1', 'WF2', 'WF3'}
     year = 2015
+    windfarms = ['wf_1', 'wf_2', 'wf_3','wf_4', 'wf_5']
 
-    # read windfarm and weather data
-    weather_data_directory = 'data/Fred/BB_2015'
-    weather_data_file = 'fred_data_2015_{}.csv'.format(windfarm)
-    weather_data = 'open_FRED'
-    windfarm_df, weather_data = get_data(
-        year, windfarm, weather_data_directory, weather_data_file,
-        weather_data)
+    # compare daily variability
+    var_merra = pd.read_csv(
+        'Auswertungen_20180212/daily_variability_SH_MERRA_{}.csv'.format(year),
+        header=[0], index_col=[0], parse_dates=True)
+    var_fred = pd.read_csv(
+        'Auswertungen_20180212/daily_variability_SH_open_FRED_{}.csv'.format(
+            year),
+        header=[0], index_col=[0], parse_dates=True)
 
-    # calculate and plot monthly correlation for wind speed and direction
-    resample_rule = '1M'
-    plot_directory = 'telko/wind'
-    parameter = 'wind_speed'
-    wind_speed_df = compare_weather_parameters(
-        windfarm_df, weather_data, parameter, resample_rule, plot_directory)
-    parameter = 'wind_dir'
-    wind_dir_df = compare_weather_parameters(
-        windfarm_df, weather_data, parameter, resample_rule, plot_directory)
+    windfarm = 'wf_2'
+    col_1 = var_merra['daily_variability_{}'.format(windfarm)]
+    col_2 = var_fred['daily_variability_{}'.format(windfarm)]
+    df = col_1.to_frame().join(
+        col_2.to_frame(), how='outer',
+        lsuffix='_merra', rsuffix='_fred').dropna(how='all')
+    df.plot()
+    mpl.savefig('daily_variability_{}_MERRA_FRED_{}.png'.format(
+        windfarm, year))
+    mpl.clf()
+
+
+    # compare correlation
+    corr_merra = pd.read_csv(
+        'Auswertungen_20180212/weekly_correlation_SH_MERRA_{}.csv'.format(
+            year),
+        header=[0], index_col=[0], parse_dates=True)
+    corr_fred = pd.read_csv(
+        'Auswertungen_20180212/weekly_correlation_SH_open_FRED_{}.csv'.format(
+            year),
+        header=[0], index_col=[0], parse_dates=True)
+
+    windfarm = 'wf_2'
+    col_1 = corr_merra['{}'.format(windfarm)]
+    col_2 = corr_fred['{}'.format(windfarm)]
+    df = col_1.to_frame().join(
+        col_2.to_frame(), how='outer',
+        lsuffix='_merra', rsuffix='_fred').dropna(how='all')
+    df.plot()
+    mpl.savefig('weekly_correlation_{}_MERRA_FRED_{}.png'.format(
+        windfarm, year))
+    mpl.clf()
+
+    # scatter plot feedin
+    feedin_merra = pd.read_csv(
+        'Auswertungen_20180212/feedin_SH_MERRA_{}.csv'.format(
+            year),
+        header=[0], index_col=[0], parse_dates=True)
+    feedin_fred = pd.read_csv(
+        'Auswertungen_20180212/feedin_SH_open_FRED_{}.csv'.format(
+            year),
+        header=[0], index_col=[0], parse_dates=True)
+
+    for windfarm in windfarms:
+        feedin_merra.plot.scatter(x='feedin_calculated_{}'.format(windfarm),
+                                  y='feedin_measured_{}'.format(windfarm))
+        max_value = feedin_merra['feedin_calculated_{}'.format(windfarm)].max()
+        mpl.plot([0, max_value], [0, max_value], 'r')
+        mpl.savefig('feedin_measured_vs_calculated_{}_MERRA_{}.png'.format(
+            windfarm, year))
+        mpl.clf()
+
+        feedin_fred.plot.scatter(x='feedin_calculated_{}'.format(windfarm),
+                                 y='feedin_measured_{}'.format(windfarm))
+        max_value = feedin_merra['feedin_calculated_{}'.format(windfarm)].max()
+        mpl.plot([0, max_value], [0, max_value], 'r')
+        mpl.savefig('feedin_measured_vs_calculated_{}_Fred_{}.png'.format(
+            windfarm, year))
+        mpl.clf()
+
+    #run_arge_validation(year)
+
+    #
+    # # read windfarm and weather data
+    # weather_data_directory = 'data/Fred/BB_2015'
+    # weather_data_file = 'fred_data_2015_{}.csv'.format(windfarm)
+    # weather_data = 'open_FRED'
+    # windfarm_df, weather_data = get_data(
+    #     year, windfarm, weather_data_directory, weather_data_file,
+    #     weather_data)
+    #
+    # # calculate and plot monthly correlation for wind speed and direction
+    # resample_rule = '1M'
+    # plot_directory = 'telko/wind'
+    # parameter = 'wind_speed'
+    # wind_speed_df = compare_weather_parameters(
+    #     windfarm_df, weather_data, parameter, resample_rule, plot_directory)
+    # parameter = 'wind_dir'
+    # wind_dir_df = compare_weather_parameters(
+    #     windfarm_df, weather_data, parameter, resample_rule, plot_directory)
+
+    # measured = validation_farms[1].power_output
+    # from datetime import timedelta
+    # d = timedelta(days=0.5)
+    ## verschiebt den Zeitstempel der Ausgabe um einen halben Tag
+    # measured.resample('1D', loffset=d).sum()
+    ## starte bei Stunde 7 bzw. 19
+    # measured.resample('12H', base=7).sum()
