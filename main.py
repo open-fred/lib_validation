@@ -31,6 +31,7 @@ logging.getLogger().setLevel(logging.INFO)
 cases = [
     # 'wind_speed_1',
     # 'wind_speed_2',
+    'wind_speed_3',
     # 'single_turbine_1',
     # 'single_turbine_2',
     # 'smoothing_1',
@@ -227,13 +228,13 @@ def run_main(case, year):
         if 'single' in validation_data_list:
             if case == 'highest_wind_speed':
                 filename_green_wind = os.path.join(
-                    os.path.dirname(__file__), 'dumps/validation_data',
+                    os.path.dirname(__file__), validation_pickle_folder,
                     'greenwind_data_{0}.p'.format(year))
                 # Get highest wind speed (measured at wind turbines) and rename
                 single_data = get_highest_wind_speeds(
                     year, filename_green_wind, pickle_load=True,
                     filename=os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
+                        os.path.dirname(__file__), validation_pickle_folder,
                         'green_wind_highest_wind_speed_{}.p'.format(year)))
                 single_data.rename(
                         columns={column: column.replace(
@@ -241,12 +242,22 @@ def run_main(case, year):
                                 'wf', 'single') for
                             column in list(single_data)}, inplace=True)
             else:
+                if case == 'wind_speed_3':
+                    filename = os.path.join(
+                        os.path.dirname(__file__), validation_pickle_folder,
+                        'greenwind_data_first_row_{0}_wind_speed_3.p'.format(year))
+                else:
+                    filename = os.path.join(
+                        os.path.dirname(__file__), validation_pickle_folder,
+                        'greenwind_data_first_row_{0}.p'.format(year))
                 single_data = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
-                    pickle_filename=os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}.p'.format(year)),
-                    pickle_load=pickle_load_greenwind)
+                    pickle_filename=filename, pickle_load_raw_data=True,
+                    pickle_load=pickle_load_greenwind,
+                    filename_raw_data=os.path.join(
+                        validation_pickle_folder,
+                        'greenwind_data_{0}.p'.format(year)),
+                    case=case)
                 if 'wind_speed' in case:
                     # Get first row single turbine wind speed and rename columns
                     single_data = single_data[[col for col in list(single_data) if
@@ -352,6 +363,9 @@ def run_main(case, year):
         # Get wind farm data
         if 'single' in validation_data_list:
             wind_farm_data_list = return_wind_farm_data(single=True)
+            if case == 'wind_speed_3':
+                wind_farm_data_list = [item for item in wind_farm_data_list if
+                                       item['object_name'] == 'single_7']
         else:
             wind_farm_data_list = return_wind_farm_data()
         # Initialise calculation_df_list and calculate power output
@@ -372,7 +386,7 @@ def run_main(case, year):
                     pickle_filename=os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}.p'.format(year)),
-                    pickle_load=pickle_load_greenwind)
+                    pickle_load=pickle_load_greenwind, case=case)
                 wind_speed_data = single_data_raw[['wf_{}_wind_speed'.format(
                     wind_farm.object_name.split('_')[1])]]
             # Calculate power output and store in list
@@ -696,6 +710,9 @@ def run_main(case, year):
     if 'single' in validation_data_list:
         wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
             single=True)]
+        if case == 'wind_speed_3':
+            wind_farm_names = [item for item in wind_farm_names if
+                               item == 'single_7']
     else:
         wind_farm_names = [data['object_name'] for
                            data in return_wind_farm_data()]
@@ -812,8 +829,7 @@ def run_main(case, year):
         else:
             folder = ''
         # Define y label add on
-        if (case == 'wind_speed_1' or case == 'wind_speed_2' or
-            case == 'highest_wind_speed'):
+        if 'wind_speed' in case:
             examined_value = 'wind speed'
             y_label_add_on = '{0} in m/s'.format(examined_value)
         else:
