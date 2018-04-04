@@ -206,7 +206,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       print_error_amount=False,
                                       pickle_filename='greenwind_first_row.p',
                                       pickle_load=False, frequency='30T',
-                                      resample=True, threshold=None):
+                                      resample=True, threshold=None,
+                                      case='all'):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -256,20 +257,23 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        turbine_dict = {
-            'wf_6': {
-                'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-                'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
-                'wf_6_7': (225, 270)
-                },
-            'wf_7': {
-                'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
-                'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
-                'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
-                },
-            'wf_8': {
-                'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
-                }}
+        if case == 'wind_speed_3':
+            turbine_dict = {'wf_7': {'wf_7_7': (250, 360)}}
+        else:
+            turbine_dict = {
+                'wf_6': {
+                    'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
+                    'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
+                    'wf_6_7': (225, 270)
+                    },
+                'wf_7': {
+                    'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
+                    'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
+                    'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
+                    },
+                'wf_8': {
+                    'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
+                    }}
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()

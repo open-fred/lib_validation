@@ -111,8 +111,16 @@ def get_configuration(case=None):
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
+    if case == 'wind_speed_3':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'logarithmic', 'lin._interp.', 'log._interp.']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = []
     if case == 'single_turbine_1':
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
