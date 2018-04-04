@@ -201,10 +201,7 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
 
     Parameters
     ----------
-    validation_object : Object
-        A :class:`~.analysis_tools.ValidationObject` object representing the
-        comparison of simulated feedin time series with validation feedin time
-        series.
+
     filename : String
         Filename including path relatively to the active folder for saving
         the figure. Default: 'Tests/correlation_test.pdf'.

@@ -129,4 +129,11 @@ def get_configuration(case=None):
     if case == 'density_correction_1':
         config_dict['restriction_list'] = []
         config_dict['approach_list'] = ['turbine', 'farm']
+    if case == 'highest_wind_speed':
+        config_dict['restriction_list'] = []
+        config_dict['approach_list'] = [
+            'logarithmic', 'lin._interp.', 'log._interp.']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['latex_output'] = ['key_figures_weather',
+                                       'key_figures_approaches']
     return config_dict
