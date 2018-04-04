@@ -449,6 +449,35 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
         pickle.dump(green_wind_df, open(filename, 'wb'))
     return green_wind_df
 
+
+def plot_green_wind_wind_roses():
+    for year in [2015, 2016]:
+        filename = os.path.join(os.path.dirname(__file__),
+                                'dumps/validation_data',
+                                'greenwind_data_{0}.p'.format(year))
+        green_wind_df = get_greenwind_data(
+            year=year, resample=False, pickle_load=True, filename=filename,
+            filter_errors=True, print_error_amount=False)
+        # Drop wind farm data
+        green_wind_df.drop([
+            'wf_6_power_output', 'wf_7_power_output', 'wf_8_power_output'],
+            axis=1, inplace=True)
+        # Get turbine names
+        turbines = set(['_'.join(column.split('_')[0:3]) for column in
+                        list(green_wind_df)])
+        # Construct pairs of wind direction and wind speed of each turbine and
+        # plot wind roses
+        for turbine_name in turbines:
+            visualization_tools.plot_wind_rose(
+                wind_speed=green_wind_df['{}_wind_speed'.format(
+                    turbine_name)].values,
+                wind_direction=green_wind_df['{}_wind_dir'.format(
+                    turbine_name)].values,
+                filename=os.path.join(
+                    os.path.dirname(__file__), 'Plots/wind_roses',
+                    'wind_rose_{0}_{1}'.format(turbine_name, year)),
+                title='Wind rose of {0} in {1}'.format(turbine_name, year))
+
 if __name__ == "__main__":
     # ----- Load data -----#
     load_data = True
@@ -606,6 +635,10 @@ if __name__ == "__main__":
                 year, filename_green_wind)
             print(highest_wind_speed)
 
+    # ---- Plot wind roses ----#
+    plot_wind_roses = False
+    if plot_wind_roses:
+        plot_green_wind_wind_roses()
     # Evaluation of nans
     nans_evaluation = False
     if nans_evaluation:
