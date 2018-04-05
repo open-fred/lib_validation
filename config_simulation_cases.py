@@ -32,7 +32,8 @@ def get_standard_case_of_configuration():
         #     'lin._interp.',
         #     'test_cluster'
         #     ],
-        'weather_data_list': ['MERRA', 'open_FRED'],
+        # 'weather_data_list': ['MERRA', 'open_FRED'],
+        'weather_data_list': ['open_FRED'], # TODO: change
         'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
         'output_methods': ['half_hourly',  # Only if possible
                            'hourly', 'monthly'],
@@ -119,8 +120,11 @@ def get_configuration(case=None):
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
-        config_dict['weather_data_list'] = ['open_FRED']
-        config_dict['latex_output'] = []
+        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
+        config_dict['latex_output'] = ['key_figures_weather',
+                                       'key_figures_approaches']
+        config_dict['output_methods'] = ['half_hourly',  # Only if possible
+                           'hourly']
     if case == 'single_turbine_1':
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
