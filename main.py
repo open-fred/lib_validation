@@ -161,8 +161,7 @@ def run_main(case, year):
         -------
         validation_df : pd.DataFrame
             Measured power output in MW. Column names are as follows:
-            'wf_1_measured', 'wf_2_measured', etc. OR 'single_6_measured',
-            'single_7_measured', 'single_6_measured_wind' etc.
+            'wf_SH_measured', 'wf_BS_measured', etc. OR 'single_BS_measured'
 
         """
         validation_df_list = []
@@ -177,12 +176,10 @@ def run_main(case, year):
                 filename=os.path.join(validation_pickle_folder,
                                       'arge_netz_data_{0}.p'.format(year)),
                 csv_dump=False, plot=plot_arge_feedin)
-            # Select only columns containing the power output and rename them
+            # Select only column containing the power output of wf_2 and rename # TODO: here select only wf2 and rename
             arge_data = arge_data[[
-                '{0}_power_output'.format(data['object_name']) for
-                data in wind_farm_data_arge]].rename(
-                columns={col: col.replace('power_output', 'measured') for
-                         col in arge_data.columns})
+                'wf_2_power_output']].rename(
+                columns={'wf_2_power_output': 'wf_SH_power_output'})
             # Set negative values to nan (for Enertrag and GreenWind this
             # happens in the separate modules)
             arge_data = tools.negative_values_to_nan(arge_data)
@@ -365,7 +362,7 @@ def run_main(case, year):
             wind_farm_data_list = return_wind_farm_data(single=True)
             if case == 'wind_speed_3':
                 wind_farm_data_list = [item for item in wind_farm_data_list if
-                                       item['object_name'] == 'single_7']
+                                       item['object_name'] == 'single_BS']
         else:
             wind_farm_data_list = return_wind_farm_data()
         # Initialise calculation_df_list and calculate power output

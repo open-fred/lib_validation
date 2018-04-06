@@ -258,21 +258,21 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
         if case == 'wind_speed_3':
-            turbine_dict = {'wf_7': {'wf_7_7': (250, 360)}}
+            turbine_dict = {'wf_BS': {'wf_BS_7': (250, 360)}}
         else:
             turbine_dict = {
-                'wf_6': {
-                    'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-                    'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
-                    'wf_6_7': (225, 270)
+                'wf_BE': {
+                    'wf_BE_1': (0, 90), 'wf_BE_2': (270, 315),
+                    'wf_BE_5': (90, 180), 'wf_BE_6': (315, 360),
+                    'wf_BE_7': (225, 270)
                     },
-                'wf_7': {
-                    'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
-                    'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
-                    'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
+                'wf_BS': {
+                    'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
+                    'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
+                    'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
                     },
-                'wf_8': {
-                    'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
+                'wf_BNW': {
+                    'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
                     }}
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
@@ -281,7 +281,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             for turbine_name in turbine_dict[wind_farm_name]:
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
-                # Example for 'wf_6_1': 0 <= x < 90.
+                # Example for 'wf_BE_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
                     (green_wind_df['{}_wind_dir'.format(
                         turbine_name)] >=
@@ -434,7 +434,7 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
         wind_cols = [col for col in list(green_wind_df) if
                      (col.split('_')[3] == 'wind' and col.split('_')[
                          4]) == 'speed']
-        wfs = ['wf_6', 'wf_7', 'wf_8']
+        wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
         for wf in wfs:
             green_wind_df['{}_highest_wind_speed'.format(wf)] = np.nan
             wind_cols_wf = [col for col in wind_cols if wf in col]
@@ -460,7 +460,7 @@ def plot_green_wind_wind_roses():
             filter_errors=True, print_error_amount=False)
         # Drop wind farm data
         green_wind_df.drop([
-            'wf_6_power_output', 'wf_7_power_output', 'wf_8_power_output'],
+            'wf_BE_power_output', 'wf_BS_power_output', 'wf_BNW_power_output'],
             axis=1, inplace=True)
         # Get turbine names
         turbines = set(['_'.join(column.split('_')[0:3]) for column in
@@ -510,7 +510,8 @@ if __name__ == "__main__":
                 year=year, resample=resample,
                 frequency=frequency, threshold=threshold,
                 filename=filename, filter_errors=filter_errors,
-                print_error_amount=print_error_amount)
+                print_error_amount=print_error_amount,
+                error_amount_filename=error_amount_filename)
 
         if print_erroer_amount_total and print_error_amount:
             filenames = [os.path.join(
@@ -521,7 +522,7 @@ if __name__ == "__main__":
                 columns={'amount': year}) for
                    filename, year in zip(filenames, years)]
             df = pd.concat(dfs, axis=1)
-            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df = df.loc[['wf_BE', 'wf_BS', 'wf_BNW']]
             error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
                                          ind in error_amout_df.index},
                                   inplace=True)
@@ -574,7 +575,7 @@ if __name__ == "__main__":
                 pickle_filename=pickle_filename, frequency=first_row_frequency,
                 resample=first_row_resample, threshold=first_row_threshold)
 
-            # wfs = ['wf_6', 'wf_7', 'wf_8']
+            # wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
             # temp_cols = [col for col in list(green_wind_df) if
             #              'wind_speed_temp' in col]
             # temp_cols.extend(
@@ -615,7 +616,7 @@ if __name__ == "__main__":
                 columns={'amount': year}) for
                    filename, year in zip(filenames, years)]
             df = pd.concat(dfs, axis=1)
-            error_amout_df = df.loc[['wf_6', 'wf_7', 'wf_8']]
+            error_amout_df = df.loc[['wf_BE', 'wf_BS', 'wf_BNW']]
             error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
                                          ind in error_amout_df.index})
             error_amout_df.to_csv(os.path.join(

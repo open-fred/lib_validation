@@ -32,7 +32,7 @@ def setup_windfarm_dataframe(year, windfarm):
             wind_turbine_list.append(file.split(' ')[0].split('_')[-1])
 
     # get data for each wind_turbine
-    windfarm_alias = {'WF1': 'wf_6', 'WF2': 'wf_7', 'WF3': 'wf_8'}
+    windfarm_alias = {'WF1': 'wf_BE', 'WF2': 'wf_BS', 'WF3': 'wf_BNW'}
     counter = 0
     windfarm_df = pd.DataFrame()
     for wt in list(set(wind_turbine_list)):

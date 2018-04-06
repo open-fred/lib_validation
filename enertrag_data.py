@@ -10,7 +10,7 @@ The following data is available (year 2016) for the 17 turbines:
 ATTENTION: gondel position of some wind turbines is not correct!!
 
 Additionally the sum of the power output of all wind turbines is available in
-column 'wf_9_power_output'.
+column 'wf_BNE_power_output'.
 
 DateTimeIndex in 'Europe/Berlin' time zone.
 """
@@ -95,12 +95,12 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
                 turbine_name = name.split('_')[1].split('.')[0]
                 # Rename columns
                 df_part.rename(columns={
-                    'Zählerstand[kWh]': 'wf_9_{0}_meter'.format(turbine_name),
-                    'Windgeschwindigkeit[m/s]': 'wf_9_{0}_wind_speed'.format(
+                    'Zählerstand[kWh]': 'wf_BNE_{0}_meter'.format(turbine_name),
+                    'Windgeschwindigkeit[m/s]': 'wf_BNE_{0}_wind_speed'.format(
                         turbine_name),
-                    'Leistung[kW]': 'wf_9_{0}_power_output'.format(
+                    'Leistung[kW]': 'wf_BNE_{0}_power_output'.format(
                         turbine_name),
-                    'Gondelposition': 'wf_9_{0}_wind_dir'.format(
+                    'Gondelposition': 'wf_BNE_{0}_wind_dir'.format(
                         turbine_name)}, inplace=True)
                 # Add to DataFrame
                 enertrag_df = pd.concat([enertrag_df, df_part], axis=1)
@@ -118,7 +118,7 @@ def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
             freq = pd.infer_freq(enertrag_df.index)
             enertrag_df.index.freq = pd.tseries.frequencies.to_offset(freq)
             # Get wind farm power output
-            enertrag_df['wf_9_power_output'] = enertrag_df.loc[
+            enertrag_df['wf_BNE_power_output'] = enertrag_df.loc[
                 :, [column for column in list(enertrag_df) if
                     'power_output' in column]].sum(skipna=True, axis=1)
             pickle.dump(enertrag_df, open(filename, 'wb'))
