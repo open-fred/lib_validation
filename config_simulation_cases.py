@@ -32,8 +32,7 @@ def get_standard_case_of_configuration():
         #     'lin._interp.',
         #     'test_cluster'
         #     ],
-        # 'weather_data_list': ['MERRA', 'open_FRED'],
-        'weather_data_list': ['open_FRED'], # TODO: change
+        'weather_data_list': ['MERRA', 'open_FRED'],
         'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
         'output_methods': ['half_hourly',  # Only if possible
                            'hourly', 'monthly'],
