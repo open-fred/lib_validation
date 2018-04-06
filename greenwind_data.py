@@ -206,7 +206,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       print_error_amount=False,
                                       pickle_filename='greenwind_first_row.p',
                                       pickle_load=False, frequency='30T',
-                                      resample=True, threshold=None):
+                                      resample=True, threshold=None,
+                                      case='all'):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -256,20 +257,23 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        turbine_dict = {
-            'wf_6': {
-                'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
-                'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
-                'wf_6_7': (225, 270)
-                },
-            'wf_7': {
-                'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
-                'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
-                'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
-                },
-            'wf_8': {
-                'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
-                }}
+        if case == 'wind_speed_3':
+            turbine_dict = {'wf_7': {'wf_7_7': (250, 360)}}
+        else:
+            turbine_dict = {
+                'wf_6': {
+                    'wf_6_1': (0, 90), 'wf_6_2': (270, 315), 'wf_6_4': (180, 225),
+                    'wf_6_5': (90, 180), 'wf_6_6': (315, 360),
+                    'wf_6_7': (225, 270)
+                    },
+                'wf_7': {
+                    'wf_7_2': (225, 270), 'wf_7_5': (135, 180),
+                    'wf_7_7': (270, 360), 'wf_7_10': (180, 225),
+                    'wf_7_12': (90, 135), 'wf_7_14': (0, 90)
+                    },
+                'wf_8': {
+                    'wf_8_1': (0, 180), 'wf_8_2': (180, 360)
+                    }}
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
@@ -295,7 +299,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 # Add temporary power output column with only nans
                 green_wind_df['power_output_temp_{}'.format(
                     turbine_name)] = np.nan
-                # Add wind speed of wind speed column for `indices`
+                # Add wind speed of power output column for `indices`
                 green_wind_df['power_output_temp_{}'.format(turbine_name)].loc[
                     indices] = green_wind_df['{}_power_output'.format(
                     turbine_name)].loc[indices]
@@ -412,6 +416,68 @@ def get_error_numbers(year):
     return sorted_error_numbers
 
 
+def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
+                            filename='green_wind_highest_wind_speed.p'):
+    if pickle_load:
+        green_wind_df = pickle.load(open(filename, 'rb'))
+    else:
+        # Load greenwind data without resampling and do not dump.
+        green_wind_df = get_greenwind_data(
+            year=year, pickle_load=True,
+            filename=filename_green_wind, resample=False,
+            pickle_dump=False, filter_errors=True,
+            print_error_amount=False)
+        # temp_cols = [col for col in list(green_wind_df) if
+        #              'wind_speed_temp' in col]
+        # temp_cols.extend(
+        #     ['highest_wind_speed_{}'.format(wf) for wf in wfs])
+        wind_cols = [col for col in list(green_wind_df) if
+                     (col.split('_')[3] == 'wind' and col.split('_')[
+                         4]) == 'speed']
+        wfs = ['wf_6', 'wf_7', 'wf_8']
+        for wf in wfs:
+            green_wind_df['{}_highest_wind_speed'.format(wf)] = np.nan
+            wind_cols_wf = [col for col in wind_cols if wf in col]
+            for index in green_wind_df.index:
+                green_wind_df.loc[index]['{}_highest_wind_speed'.format(
+                    wf)] = (np.nan if green_wind_df.loc[index][
+                    wind_cols_wf].dropna().empty
+                            else max(
+                    green_wind_df.loc[index][wind_cols_wf].dropna()))
+        columns = ['{}_highest_wind_speed'.format(wf) for wf in wfs]
+        green_wind_df = green_wind_df[columns]
+        pickle.dump(green_wind_df, open(filename, 'wb'))
+    return green_wind_df
+
+
+def plot_green_wind_wind_roses():
+    for year in [2015, 2016]:
+        filename = os.path.join(os.path.dirname(__file__),
+                                'dumps/validation_data',
+                                'greenwind_data_{0}.p'.format(year))
+        green_wind_df = get_greenwind_data(
+            year=year, resample=False, pickle_load=True, filename=filename,
+            filter_errors=True, print_error_amount=False)
+        # Drop wind farm data
+        green_wind_df.drop([
+            'wf_6_power_output', 'wf_7_power_output', 'wf_8_power_output'],
+            axis=1, inplace=True)
+        # Get turbine names
+        turbines = set(['_'.join(column.split('_')[0:3]) for column in
+                        list(green_wind_df)])
+        # Construct pairs of wind direction and wind speed of each turbine and
+        # plot wind roses
+        for turbine_name in turbines:
+            visualization_tools.plot_wind_rose(
+                wind_speed=green_wind_df['{}_wind_speed'.format(
+                    turbine_name)].values,
+                wind_direction=green_wind_df['{}_wind_dir'.format(
+                    turbine_name)].values,
+                filename=os.path.join(
+                    os.path.dirname(__file__), 'Plots/wind_roses',
+                    'wind_rose_{0}_{1}'.format(turbine_name, year)),
+                title='Wind rose of {0} in {1}'.format(turbine_name, year))
+
 if __name__ == "__main__":
     # ----- Load data -----#
     load_data = True
@@ -508,6 +574,36 @@ if __name__ == "__main__":
                 pickle_filename=pickle_filename, frequency=first_row_frequency,
                 resample=first_row_resample, threshold=first_row_threshold)
 
+            # wfs = ['wf_6', 'wf_7', 'wf_8']
+            # temp_cols = [col for col in list(green_wind_df) if
+            #              'wind_speed_temp' in col]
+            # temp_cols.extend(
+            #     ['highest_wind_speed_{}'.format(wf) for wf in wfs])
+            # wind_cols = [col for col in list(green_wind_df) if
+            #              (col.split('_')[3] == 'wind' and col.split('_')[
+            #                  4]) == 'speed']
+            # print(wind_cols)
+            # for wf in wfs:
+            #     green_wind_df['highest_wind_speed_{}'.format(wf)] = np.nan
+            #     wind_cols_wf = [col for col in wind_cols if wf in col]
+            #     temp_cols_wf = [col for col in temp_cols if wf in col]
+            #     for index in green_wind_df.index:
+            #         green_wind_df.loc[index]['highest_wind_speed_{}'.format(
+            #             wf)] = (np.nan if green_wind_df.loc[index][
+            #             wind_cols_wf].dropna().empty
+            #                     else max(
+            #             green_wind_df.loc[index][wind_cols_wf].dropna()))
+            #     wf_cols = list(wind_cols_wf)
+            #     wf_cols.extend(temp_cols_wf)
+            #     wf_cols.extend(
+            #         [col.replace('speed', 'dir') for col in wind_cols_wf])
+            #     green_wind_df[wf_cols].to_csv(
+            #         'first_row_check_{}_{}.csv'.format(wf, year),
+            #         sep=',', encoding='utf-8')
+            # green_wind_df[temp_cols].to_csv(
+            #     'first_row_check_{}.csv'.format(year), sep=',',
+            #     encoding='utf-8')
+
         if (first_row_print_erroer_amount_total and
                 first_row_print_error_amount):
             filenames = [os.path.join(
@@ -527,7 +623,22 @@ if __name__ == "__main__":
                 '../../../User-Shares/Masterarbeit/Daten/Twele/',
                 'filtered_error_amount_years_first_row.csv'))
 
+    # ---- highest wind speed ----#
+    highest_wind_speed = True
+    years = [2015, 2016]
+    for year in years:
+        filename_green_wind = os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'greenwind_data_{0}.p'.format(year))
+        if highest_wind_speed:
+            highest_wind_speed = get_highest_wind_speeds(
+                year, filename_green_wind)
+            print(highest_wind_speed)
 
+    # ---- Plot wind roses ----#
+    plot_wind_roses = False
+    if plot_wind_roses:
+        plot_green_wind_wind_roses()
     # Evaluation of nans
     nans_evaluation = False
     if nans_evaluation:
