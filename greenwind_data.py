@@ -625,21 +625,26 @@ if __name__ == "__main__":
                 'filtered_error_amount_years_first_row.csv'))
 
     # ---- highest wind speed ----#
-    highest_wind_speed = True
+    evaluate_highest_wind_speed = True
     years = [2015, 2016]
     for year in years:
         filename_green_wind = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
             'greenwind_data_{0}.p'.format(year))
-        if highest_wind_speed:
+        filename = os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'green_wind_highest_wind_speed_{}.p'.format(year))
+        if evaluate_highest_wind_speed:
             highest_wind_speed = get_highest_wind_speeds(
-                year, filename_green_wind)
+                year, filename_green_wind, pickle_load=False,
+                filename=filename)
             print(highest_wind_speed)
 
     # ---- Plot wind roses ----#
     plot_wind_roses = False
     if plot_wind_roses:
         plot_green_wind_wind_roses()
+
     # Evaluation of nans
     nans_evaluation = False
     if nans_evaluation:

@@ -229,7 +229,8 @@ def run_main(case, year):
                     'greenwind_data_{0}.p'.format(year))
                 # Get highest wind speed (measured at wind turbines) and rename
                 single_data = get_highest_wind_speeds(
-                    year, filename_green_wind, pickle_load=True,
+                    year, filename_green_wind,
+                    pickle_load=pickle_load_greenwind,
                     filename=os.path.join(
                         os.path.dirname(__file__), validation_pickle_folder,
                         'green_wind_highest_wind_speed_{}.p'.format(year)))
