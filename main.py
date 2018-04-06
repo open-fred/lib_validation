@@ -363,7 +363,8 @@ def run_main(case, year):
             wind_farm_data_list = return_wind_farm_data(single=True)
             if case == 'wind_speed_3':
                 wind_farm_data_list = [item for item in wind_farm_data_list if
-                                       item['object_name'] == 'single_BS']
+                                       (item['object_name'] == 'single_BS' or
+                                        item['object_name'] == 'single_BE')]
         else:
             wind_farm_data_list = return_wind_farm_data()
         # Initialise calculation_df_list and calculate power output
@@ -710,7 +711,7 @@ def run_main(case, year):
             single=True)]
         if case == 'wind_speed_3':
             wind_farm_names = [item for item in wind_farm_names if
-                               item == 'single_7']
+                               (item == 'single_BS' or item == 'single_BE')]
     else:
         wind_farm_names = [data['object_name'] for
                            data in return_wind_farm_data()]
