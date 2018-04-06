@@ -45,6 +45,12 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
             'fetch_curve': 'power_curve'
         },
         'enerconE66_2000': {
+            'object_name': 'ENERCON E 82 2000',
+            'hub_height': 114,  # in m
+            'rotor_diameter': 70,  # in m
+            'fetch_curve': 'power_curve'
+        },
+        'enerconE82_2000': {
             'object_name': 'ENERCON E 66 2000',
             'hub_height': 138.3,  # in m
             'rotor_diameter': 82,  # in m
@@ -161,8 +167,9 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
             }
             wind_farm_data = [wf_BE, wf_BS, wf_BNW]
         if filename == 'farm_specification_enertrag_2016.p':
-            e66_1800, ge_1500, e66_2000 = initialize_turbines([
-                'enerconE66_1800_98', 'ge_1500', 'enerconE66_2000'])
+            e66_1800, ge_1500, e66_2000, e82_2000 = initialize_turbines([
+                'enerconE66_1800_98', 'ge_1500', 'enerconE66_2000',
+                'enerconE82_2000'])
             wf_BNE = {
                 'object_name': 'wf_BNE',
                 'wind_turbine_fleet': [{'wind_turbine': e66_1800,
@@ -170,7 +177,9 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
                                        {'wind_turbine': ge_1500,
                                         'number_of_turbines': 7},
                                        {'wind_turbine': e66_2000,
-                                        'number_of_turbines': 2},
+                                        'number_of_turbines': 1},
+                                       {'wind_turbine': e82_2000,
+                                        'number_of_turbines': 2}
                                        ],
                                # 'coordinates': []
             }
