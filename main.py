@@ -175,10 +175,6 @@ def run_main(case, year):
         """
         validation_df_list = []
         if 'ArgeNetz' in validation_data_list:
-            # Get wind farm data
-            wind_farm_data_arge = get_wind_farm_data(
-                'farm_specification_argenetz_{0}.p'.format(year),
-                wind_farm_pickle_folder, pickle_load_wind_farm_data)
             # Get ArgeNetz Data
             arge_data = get_argenetz_data(
                 year, pickle_load=pickle_load_arge,
