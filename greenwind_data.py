@@ -257,7 +257,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if case == 'wind_speed_3':
+        if case == 'weather_wind_speed_3':
             turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
@@ -281,6 +281,16 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
         first_row_df = pd.DataFrame()
         for wind_farm_name in wind_farm_names:
             for turbine_name in turbine_dict[wind_farm_name]:
+                # Set negative values of wind direction to 360 + wind direction
+                green_wind_df['temp_360'] = 360.0
+                negativ_indices = green_wind_df.loc[
+                    green_wind_df['{}_wind_dir'.format(
+                        turbine_name)] < 0].index
+                green_wind_df['{}_wind_dir'.format(
+                    turbine_name)].loc[negativ_indices] = (
+                        green_wind_df['temp_360'] +
+                        green_wind_df['{}_wind_dir'.format(turbine_name)])
+                green_wind_df.drop('temp_360', axis=1, inplace=True)
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
                 # Example for 'wf_BE_1': 0 <= x < 90.

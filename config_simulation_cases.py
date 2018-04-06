@@ -7,6 +7,7 @@ def get_standard_case_of_configuration():
 
     """
     config_dict = {
+        'restriction_list' : [],
         # 'restriction_list': [
         #     'simple',
         #     'density_correction',
@@ -38,8 +39,8 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           # 'feedin_comparison',
-           # 'plot_correlation'  # Attention: this takes a long time for high resolution
+           'feedin_comparison',
+           'plot_correlation'  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -48,7 +49,9 @@ def get_standard_case_of_configuration():
             'key_figures_weather',     # Key figures of all weather sets
             'key_figures_approaches'  # Key figures of all approaches
             ],
-        'key_figures_print': ['rmse', 'rmse_normalized', 'pearson',
+        'key_figures_print': ['rmse',
+                              'rmse_normalized',
+                              'pearson',
                               'mean_bias',
                               # 'standard_deviation'
                               ],
@@ -97,51 +100,81 @@ def get_configuration(case=None):
     """
     # Get standard case that will remain if the entries are not overwritten
     config_dict = get_standard_case_of_configuration()
+
+    # ---- Single functions - wind speed ---- # (only open_FRED)
     if case == 'wind_speed_1':
-        config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
-            'logarithmic',
-            # 'logarithmic_obstacle', # TODO: obstacle height
-            'hellman', 'hellman_2']
+            'log_100', 'log_80', 'log_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_2':
+        config_dict['approach_list'] = [
+            'hellman_100', 'hellman_80', 'hellman_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_3':
+        config_dict['approach_list'] = [
+            'hellman_100', 'hellman_80', 'hellman2_100', 'hellman2_80']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_4':
+        config_dict['approach_list'] = [
+            'log._interp.', 'log_100', 'hellman_100']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+
+    # ---- Single functions - power output ---- #
+    if case == 'power_output_1':
+        config_dict['approach_list'] = [
+            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches']
+
+    # ---- Single functions - smoothing, density... ---- #
+    if case == 'smoothing_1':
+        config_dict['approach_list'] = ['turbine', 'farm']
+    if case == 'density_correction_1':
+        config_dict['approach_list'] = ['turbine', 'farm']
+
+    # ---- weather data ---- #
+    if case == 'weather_wind_speed_1':
+        config_dict['approach_list'] = [
+            'logarithmic', 'hellman', 'hellman_2']
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
-    if case == 'wind_speed_2':
-        config_dict['restriction_list'] = []
+    if case == 'weather_wind_speed_2':
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
-    if case == 'wind_speed_3':
-        config_dict['restriction_list'] = []
+    if case == 'weather_wind_speed_3':
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
-        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
         config_dict['output_methods'] = ['half_hourly',  # Only if possible
                            'hourly']
-    if case == 'single_turbine_1':
+    if case == 'weather_single_turbine_1':
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
         config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    if case == 'single_turbine_2':
+    if case == 'weather_single_turbine_2':
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
         config_dict['validation_data_list'] = ['single']
         config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    if case == 'smoothing_1':
-        config_dict['restriction_list'] = []
-        config_dict['approach_list'] = ['turbine', 'farm']
-    if case == 'density_correction_1':
-        config_dict['restriction_list'] = []
-        config_dict['approach_list'] = ['turbine', 'farm']
     if case == 'highest_wind_speed':
-        config_dict['restriction_list'] = []
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']

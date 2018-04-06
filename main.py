@@ -29,14 +29,23 @@ logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
-    # 'wind_speed_1',
-    # 'wind_speed_2',
-    'wind_speed_3',
-    # 'single_turbine_1',
-    # 'single_turbine_2',
+# ---- Single functions - wind speed ---- # (only open_FRED)
+#     'wind_speed_1',
+#     'wind_speed_2',
+#     'wind_speed_3',
+#     'wind_speed_4',
+# ---- Single functions - wind speed ---- # (only open_FRED)
+    'power_output_1',
+# ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
-    # 'highest_wind_speed'  # NOTE: pickle load of highest wind speed is True
+# ---- weather data ---- #
+    # 'weather_wind_speed_1',
+    # 'weather_wind_speed_2',
+    # 'weather_wind_speed_3',
+    # 'weather_single_turbine_1',
+    # 'weather_single_turbine_2',
+    # 'highest_wind_speed'
 ]
 years = [
     2015,
@@ -240,10 +249,10 @@ def run_main(case, year):
                                 'wf', 'single') for
                             column in list(single_data)}, inplace=True)
             else:
-                if case == 'wind_speed_3':
+                if case == 'weather_wind_speed_3':
                     filename = os.path.join(
                         os.path.dirname(__file__), validation_pickle_folder,
-                        'greenwind_data_first_row_{0}_wind_speed_3.p'.format(year))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
                 else:
                     filename = os.path.join(
                         os.path.dirname(__file__), validation_pickle_folder,
@@ -361,7 +370,7 @@ def run_main(case, year):
         # Get wind farm data
         if 'single' in validation_data_list:
             wind_farm_data_list = return_wind_farm_data(single=True)
-            if case == 'wind_speed_3':
+            if case == 'weather_wind_speed_3':
                 wind_farm_data_list = [item for item in wind_farm_data_list if
                                        (item['object_name'] == 'single_BS' or
                                         item['object_name'] == 'single_BE')]
@@ -378,19 +387,8 @@ def run_main(case, year):
                 weather_data_name, wind_farm.coordinates, pickle_load=True,
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
-            if case == 'single_turbine_2':
-                # Use wind speed from first row GreenWind data as weather data
-                single_data_raw = get_first_row_turbine_time_series(
-                    year=year, filter_errors=True, print_error_amount=False,
-                    pickle_filename=os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}.p'.format(year)),
-                    pickle_load=pickle_load_greenwind, case=case)
-                wind_speed_data = single_data_raw[['wf_{}_wind_speed'.format(
-                    wind_farm.object_name.split('_')[1])]]
             # Calculate power output and store in list
             if 'logarithmic' in approach_list:
-            # if (case == 'wind_speed_1' and 'logarithmic' in approach_list):  # TODO: if logarithmic in other case
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
@@ -398,8 +396,38 @@ def run_main(case, year):
                         obstacle_height=0).to_frame(
                         name='{0}_calculated_logarithmic'.format(
                             wind_farm.object_name)))
-            # if 'logarithmic_obstacle' in approach_list:
-            #     # TODO: add obstacle height per wind farm (if wf == ... oh = )
+            if 'log_100' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather, wind_speed_model='logarithmic',
+                        obstacle_height=0).to_frame(
+                        name='{0}_calculated_log_100'.format(
+                            wind_farm.object_name)))
+            if 'log_80' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 10], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='logarithmic',
+                        obstacle_height=0).to_frame(
+                        name='{0}_calculated_log_80'.format(
+                            wind_farm.object_name)))
+            if 'log_10' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 80], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='logarithmic',
+                        obstacle_height=0).to_frame(
+                        name='{0}_calculated_log_10'.format(
+                            wind_farm.object_name)))
             if 'hellman' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
@@ -408,13 +436,65 @@ def run_main(case, year):
                         hellman_exp=None).to_frame(
                         name='{0}_calculated_hellman'.format(
                             wind_farm.object_name)))
-            if 'hellman_2' in approach_list:
+            if 'hellman_100' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather, wind_speed_model='hellman',
+                        hellman_exp=None).to_frame(
+                        name='{0}_calculated_hellman_100'.format(
+                            wind_farm.object_name)))
+            if 'hellman_80' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 10], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='hellman',
+                        hellman_exp=None).to_frame(
+                        name='{0}_calculated_hellman_80'.format(
+                            wind_farm.object_name)))
+            if 'hellman_10' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 80], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='hellman',
+                        hellman_exp=None).to_frame(
+                        name='{0}_calculated_hellman_10'.format(
+                            wind_farm.object_name)))
+            # if 'hellman_2' in approach_list:
+            #     calculation_df_list.append(
+            #         modelchain_usage.wind_speed_to_hub_height(
+            #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+            #             weather_df=weather, wind_speed_model='hellman',
+            #             hellman_exp=1 / 7).to_frame(
+            #             name='{0}_calculated_hellman_2'.format(
+            #                 wind_farm.object_name)))
+            if 'hellman2_100' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=weather, wind_speed_model='hellman',
                         hellman_exp=1 / 7).to_frame(
-                        name='{0}_calculated_hellman_2'.format(
+                        name='{0}_calculated_hellman2_100'.format(
+                            wind_farm.object_name)))
+            if 'hellman2_80' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 10], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='hellman',
+                        hellman_exp=1 / 7).to_frame(
+                        name='{0}_calculated_hellman2_80'.format(
                             wind_farm.object_name)))
             if 'lin._interp.' in approach_list:
                 if len(list(weather['wind_speed'])) > 1:
@@ -434,15 +514,26 @@ def run_main(case, year):
                             wind_speed_model='log_interpolation_extrapolation').to_frame(
                             name='{0}_calculated_log._interp.'.format(
                                 wind_farm.object_name)))
-            if case == 'single_turbine_2':
-                wind_speed = (wind_speed_data if
-                              weather_data_name == 'open_FRED' else
-                              tools.resample_with_nan_theshold(
-                                  df=wind_speed_data,
-                                  frequency=weather.index.freq,
-                                  threshold=get_threshold(
-                                      out_frequency=weather.index.freq,
-                                      original_resolution=wind_speed_data.index.freq.n)))
+            if (case == 'weather_single_turbine_2' or
+                    case == 'power_output_1'):
+                # Use wind speed from first row GreenWind data as weather data
+                single_data_raw = get_first_row_turbine_time_series(
+                    year=year, filter_errors=True, print_error_amount=False,
+                    pickle_filename=os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}.p'.format(year)),
+                    pickle_load=pickle_load_greenwind, case=case)
+                wind_speed_data = single_data_raw[['wf_{}_wind_speed'.format(
+                    wind_farm.object_name.split('_')[1])]]
+                # Resample if weather data is not open_FRED
+                wind_speed = (
+                    wind_speed_data if weather_data_name == 'open_FRED' else
+                        tools.resample_with_nan_theshold(
+                            df=wind_speed_data,
+                            frequency=weather.index.freq,
+                            threshold=get_threshold(
+                            out_frequency=weather.index.freq,
+                            original_resolution=wind_speed_data.index.freq.n)))
             else:
                 wind_speed = None
             if 'p-curve' in approach_list:
@@ -604,7 +695,7 @@ def run_main(case, year):
                 calculation_df_list, axis=1) / (1 * 10 ** 6)
         # Add curtailment for Enertrag wind farm
         for column_name in list(calculation_df):
-            if column_name.split('_')[1] == '9':
+            if column_name.split('_')[1] == 'BNE':
                 curtailment = get_enertrag_curtailment_data(weather.index.freq)
                 # Replace values of 0 with nan as they should not be considered
                 # in the validation
@@ -709,7 +800,7 @@ def run_main(case, year):
     if 'single' in validation_data_list:
         wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
             single=True)]
-        if case == 'wind_speed_3':
+        if case == 'weather_wind_speed_3':
             wind_farm_names = [item for item in wind_farm_names if
                                (item == 'single_BS' or item == 'single_BE')]
     else:
@@ -821,10 +912,15 @@ def run_main(case, year):
 
         ###### Visualization ######
         # Define folder
-        if 'wind_speed' in case:
+        if ('wind_speed' in case and 'weather' not in case):
             folder = 'wind_speed'
-        elif (case == 'single_turbine_1' or case == 'single_turbine_2'):
-            folder = 'single_turbine'
+        if ('power_output' in case and 'weather' not in case):
+            folder = 'power_output'
+        elif 'weather_wind_speed' in case:
+            folder = 'weather_wind_speed'
+        elif (case == 'weather_single_turbine_1' or
+              case == 'weather_single_turbine_2'):
+            folder = 'weather_single_turbine'
         else:
             folder = ''
         # Define y label add on
