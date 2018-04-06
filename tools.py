@@ -62,6 +62,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
         pickle.dump(data_frame, open(filename, 'rb'))
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = get_closest_coordinates(data_frame, coordinates)
+    # print(closest_coordinates)
     data_frame = data_frame
     data_frame.sortlevel(inplace=True)
     # Select coordinates from data frame
