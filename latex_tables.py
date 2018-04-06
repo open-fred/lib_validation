@@ -124,7 +124,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             buf=filename_table, column_format=create_column_format(
                 len(latex_df.columns), 'c'), multicolumn_format='c')
 
-    if 'key_figures_approaches' in latex_output:  # TODO add units everywhere
+    if 'key_figures_approaches' in latex_output:
         if 'wind_speed' in case:
             unit = '[m/s]'
         else:

@@ -5,11 +5,11 @@ from windpowerlib import wind_turbine as wt
 from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 import os
 from copy import deepcopy
-
-# TODO's:
-# write small tool for display of all turbines of a wind farm
+from windrose import WindroseAxes
+import matplotlib.cm as cm
 
 
 def print_whole_dataframe(df):
@@ -201,10 +201,7 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
 
     Parameters
     ----------
-    validation_object : Object
-        A :class:`~.analysis_tools.ValidationObject` object representing the
-        comparison of simulated feedin time series with validation feedin time
-        series.
+
     filename : String
         Filename including path relatively to the active folder for saving
         the figure. Default: 'Tests/correlation_test.pdf'.
@@ -251,6 +248,15 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
+    plt.close()
+
+
+def plot_wind_rose(wind_speed, wind_direction, filename, title):
+    ax = WindroseAxes.from_ax()
+    ax.contourf(wind_direction, wind_speed, bins=np.arange(0.01, 26, 2), cmap=cm.Blues)
+    ax.set_legend()
+    plt.title(title)
+    plt.savefig(filename)
     plt.close()
 
 if __name__ == "__main__":
