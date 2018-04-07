@@ -1,55 +1,55 @@
+# Imports from Windpowerlib
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
 from windpowerlib.power_output import summarized_power_curve
 from windpowerlib import wind_farm_modelchain
 from windpowerlib import power_output, tools
-import pandas as pd
-import numpy as np
+
+# Imports from lib_validation
 import wind_farm_specifications
 from tools import get_weather_data
+
+# Other imports
 from matplotlib import pyplot as plt
 import os
+import pandas as pd
+import numpy as np
 import pickle
 
 
-def smooth_pc(plot=True, print_out=False):
-    # initialise WindTurbine object
+def plot_smoothed_pcs(standard_deviation_method, block_width,
+                      wind_speeds_block_range, mean_roughness_length=None):
+    # Initialise WindTurbine objects
     turbines = wind_farm_specifications.initialize_turbines(
-        ['enerconE70', 'enerconE66'])
-    z0 = pd.Series([0.04, 0.04, 0.04])
-    block_width = 0.5
-    standard_deviation_method = 'turbulence_intensity'
-    # standard_deviation_method='Staffell'
-    # turbulence_intensity = (2.4 * 0.41) / np.log(135/z0.mean()) *
-    # np.exp(-135/500) # constant boundary layer
+        ['enerconE70', 'enerconE66']) # TODO: add turbines
     for turbine in turbines:
-        turbulence_intensity = tools.estimate_turbulence_intensity(
-            turbine.hub_height, z0.mean())
+        if standard_deviation_method == 'turbulence_intensity':
+            turbulence_intensity = tools.estimate_turbulence_intensity(
+                turbine.hub_height, mean_roughness_length)
+        else:
+            turbulence_intensity = None
+        # Get smoothed power curve
         smoothed_power_curve = power_output.smooth_power_curve(
             turbine.power_curve.wind_speed, turbine.power_curve['power'],
             block_width=block_width,
             standard_deviation_method=standard_deviation_method,
             turbulence_intensity=turbulence_intensity)
-        if print_out:
-            print(turbine.power_curve)
-            print(smoothed_power_curve)
-        if plot:
-            fig = plt.figure()
-            a, = plt.plot(turbine.power_curve['wind_speed'],
-                         turbine.power_curve['power']/1000, label='original')
-            b, = plt.plot(smoothed_power_curve['wind_speed'],
-                         smoothed_power_curve['power']/1000, label='smoothed')
-            plt.ylabel('Power in kW')
-            plt.xlabel('Wind speed in m/s')
-            plt.title(turbine.object_name)
-            plt.legend(handles=[a, b])
-            fig.savefig(os.path.abspath(os.path.join(
-                os.path.dirname(__file__), '../Plots/power_curves',
-                '{0}_{1}_{2}.pdf'.format(turbine.object_name,
-                                         standard_deviation_method,
-                                         block_width))))
-            plt.close()
-        return smoothed_power_curve
+        fig = plt.figure()
+        a, = plt.plot(turbine.power_curve['wind_speed'],
+                     turbine.power_curve['power']/1000, label='original')
+        b, = plt.plot(smoothed_power_curve['wind_speed'],
+                     smoothed_power_curve['power']/1000, label='smoothed')
+        plt.ylabel('Power in kW')
+        plt.xlabel('Wind speed in m/s')
+        plt.title(turbine.object_name)
+        plt.legend(handles=[a, b])
+        fig.savefig(os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '../Plots/power_curves',
+            '{0}_{1}_blockwidth{2}_range{3}.pdf'.format(
+                turbine.object_name, standard_deviation_method,
+                block_width, wind_speeds_block_range))))
+        plt.close()
+
 
 # variables = pd.Series(data=np.arange(-15.0, 15.0, 0.5), index=np.arange(-15.0, 15.0, 0.5))
 # wind_speed = 12
@@ -64,4 +64,8 @@ def smooth_pc(plot=True, print_out=False):
 
 
 if __name__ == "__main__":
-
+    standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
+    for std_dev_method in standard_deviaton_methods:
+        plot_smoothed_pcs(
+            standard_deviation_method=std_dev_method, block_width,
+                          wind_speeds_block_range, mean_roughness_length=None)
