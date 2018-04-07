@@ -910,7 +910,7 @@ def run_main(case, year):
         # Define folder
         if ('wind_speed' in case and 'weather' not in case):
             folder = 'wind_speed'
-        if ('power_output' in case and 'weather' not in case):
+        elif ('power_output' in case and 'weather' not in case):
             folder = 'power_output'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
