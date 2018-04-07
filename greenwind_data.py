@@ -490,9 +490,49 @@ def plot_green_wind_wind_roses():
                     'wind_rose_{0}_{1}'.format(turbine_name, year)),
                 title='Wind rose of {0} in {1}'.format(turbine_name, year))
 
+
+def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
+                             pickle_load=False):
+    pickle_path = os.path.join(os.path.dirname(__file__),
+                               'dumps/validation_data',
+                               'green_wind_wind_dir_{}'.format(year))
+    if pickle_load:
+        wind_directions_df = pickle.load(open(pickle_path, 'rb'))
+    else:
+        # Get Greenwind wind direction data
+        green_wind_data = get_greenwind_data(
+            year=year, resample=False, pickle_load=False, filter_errors=True,
+            print_error_amount=False)
+        # Select wind directions
+        wind_directions_df = green_wind_data[[
+            column_name for column_name in list(green_wind_data) if
+                '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
+        pickle.dump(wind_directions_df, open(pickle_path, 'wb'))
+    wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
+    for wf in wfs:
+        wf_wind_dir_df = wind_directions_df[[
+            column_name for column_name in list(wind_directions_df) if
+            wf in column_name]]
+        correlation = wf_wind_dir_df.corr()
+        amount_df = pd.DataFrame(correlation[correlation >= corr_min].count() - 1,
+                                 columns=['corr >='.format(corr_min)]).transpose()
+        pd.concat([correlation, amount_df], axis=0).to_csv(
+            os.path.join(
+                save_folder, 'gw_wind_dir_corr_{0}_{1}_{2}.csv'.format(
+                wf, year, corr_min)))
+
 if __name__ == "__main__":
+    # Select cases: (parameters below in section)
+    load_data = False
+    evaluate_first_row_turbine = False
+    evaluate_highest_wind_speed = False
+    plot_wind_roses = False
+    evaluate_wind_direction_corr = True
+    nans_evaluation = False
+    duplicates_evaluation = False
+    error_numbers = False
+
     # ----- Load data -----#
-    load_data = True
     if load_data:
         years = [
             2015,
@@ -534,7 +574,7 @@ if __name__ == "__main__":
                 columns={'amount': year}) for
                    filename, year in zip(filenames, years)]
             df = pd.concat(dfs, axis=1)
-            error_amout_df = df.loc[['wf_BE', 'wf_BS', 'wf_BNW']]
+            error_amout_df = df.loc[['wf_BE', 'wf_BS', 'min_periods']]
             error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
                                          ind in error_amout_df.index},
                                   inplace=True)
@@ -554,7 +594,6 @@ if __name__ == "__main__":
 
 
     # ----- First row turbine -----#
-    evaluate_first_row_turbine = True
     if evaluate_first_row_turbine:
         # Parameters
         years = [
@@ -637,7 +676,6 @@ if __name__ == "__main__":
                 'filtered_error_amount_years_first_row.csv'))
 
     # ---- highest wind speed ----#
-    evaluate_highest_wind_speed = True
     years = [2015, 2016]
     for year in years:
         filename_green_wind = os.path.join(
@@ -653,12 +691,22 @@ if __name__ == "__main__":
             print(highest_wind_speed)
 
     # ---- Plot wind roses ----#
-    plot_wind_roses = False
     if plot_wind_roses:
         plot_green_wind_wind_roses()
 
+    # ---- Wind direction correlation ----#
+    if evaluate_wind_direction_corr:
+        corr_min = 0.8
+        frequency = None
+        years=[2015, 2016]
+        folder = os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
+            'green_wind_wind_direction')
+        for year in years:
+            evaluate_wind_directions(year=year, save_folder=folder,
+                                     corr_min=corr_min)
     # Evaluation of nans
-    nans_evaluation = False
     if nans_evaluation:
         years = [
             2015,
@@ -671,7 +719,6 @@ if __name__ == "__main__":
             'nans_evaluation.csv'))
 
     # Evaluation of duplicates
-    duplicates_evaluation = False
     if duplicates_evaluation:
         years = [
             2015,
@@ -680,7 +727,6 @@ if __name__ == "__main__":
         duplicates_dict = evaluate_duplicates(years)
 
     # Evaluation of error numbers - decide whether to execute:
-    error_numbers = False
     if error_numbers:
         years = [
             2015,
