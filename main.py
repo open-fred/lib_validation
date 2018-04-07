@@ -69,7 +69,7 @@ csv_load_time_series_df = False  # Load time series data frame from csv dump
 csv_dump_time_series_df = True  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
-                                      # wind farm in one plot
+                                      # wind farm in one plot (multiple)
 
 # Select time of day you want to observe or None for all day
 time_period = (
