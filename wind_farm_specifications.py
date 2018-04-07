@@ -122,9 +122,6 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
                                         'number_of_turbines': 6}],
                 'coordinates': []
             }
-                'coordinates': []
-                'coordinates': []
-                'coordinates': []
             # wf_3 = {
             #     'object_name': 'wf_3',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,
