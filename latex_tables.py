@@ -204,7 +204,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                       'efficiency', 'eff.').replace(
                                       '_%', '').replace(
                                       'constant', 'const.').replace(
-                                      '_', ' ').replace('hellman', 'H').replace( # TODO: replacement function - and then dependend on case even possible
+                                      '_', ' ').replace('hellman', 'H').replace( # TODO: replacement function - and then dependend on case even possible, TODO: fucntion for order of columns?, TODO: function for deleting hourly ... column
                                       '-curve', '')):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for

@@ -512,6 +512,18 @@ def run_main(case, year):
                         hellman_exp=1 / 7).to_frame(
                         name='{0}_calculated_hellman2_80'.format(
                             wind_farm.object_name)))
+            if 'hellman2_10' in approach_list:
+                modified_weather = weather[['roughness_length', 'wind_speed']]
+                modified_weather.drop([100, 120, 80], axis=1, level=1,
+                                      inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=modified_weather,
+                        wind_speed_model='hellman',
+                        hellman_exp=1 / 7).to_frame(
+                        name='{0}_calculated_hellman2_10'.format(
+                            wind_farm.object_name)))
             if 'lin._interp.' in approach_list:
                 if len(list(weather['wind_speed'])) > 1:
                     calculation_df_list.append(

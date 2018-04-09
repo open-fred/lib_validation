@@ -39,8 +39,8 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           # 'feedin_comparison',
-           # 'plot_correlation'  # Attention: this takes a long time for high resolution
+           'feedin_comparison',
+           'plot_correlation'  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -116,13 +116,13 @@ def get_configuration(case=None):
         config_dict['latex_output'] = ['key_figures_approaches']
     if case == 'wind_speed_3':
         config_dict['approach_list'] = [
-            'hellman_100', 'hellman_80', 'hellman2_100', 'hellman2_80']
+            'hellman2_100', 'hellman2_80', 'hellman2_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
     if case == 'wind_speed_4':
         config_dict['approach_list'] = [
-            'log._interp.', 'log_100', 'hellman_100']
+            'log._interp.', 'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
@@ -163,7 +163,7 @@ def get_configuration(case=None):
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
-    if case == 'weather_wind_speed_3':
+    if case == 'weather_wind_speed_3': # less values (North ...)
         config_dict['approach_list'] = [
             'logarithmic', 'lin._interp.', 'log._interp.']
         config_dict['validation_data_list'] = ['single']

@@ -90,8 +90,8 @@ if __name__ == "__main__":
     # join_of_data(
     #     os.path.join(os.path.dirname(__file__), 'data/open_FRED',
     #                  'fred_data_2016_sh.csv'),
-    #     os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-    #                  'fred_data_2016_Enertrag_Windfarm.csv'), 2016)
+    #     [os.path.join(os.path.dirname(__file__), 'data/open_FRED',
+    #                  'fred_data_2016_Enertrag_Windfarm.csv')], 2016)
 
     # # GreenWind
     # locations = ['Altlandsberg', 'Cottbus', 'Prignitz']

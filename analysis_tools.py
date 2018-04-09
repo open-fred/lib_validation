@@ -84,8 +84,8 @@ class ValidationObject(object):
         self.approach = approach
         self.min_periods_pearson = min_periods_pearson
 
-        self.validation_series = data.iloc[:, 0].dropna()
-        self.simulation_series = data.iloc[:, 1].dropna()
+        self.validation_series = data.dropna().iloc[:, 0]
+        self.simulation_series = data.dropna().iloc[:, 1]
         self.bias = self.get_bias()
         self.mean_bias = self.bias.mean()
         self.rmse = self.get_rmse()
