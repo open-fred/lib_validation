@@ -10,7 +10,6 @@ import pickle
 
 
 def initialize_turbines(turbine_types, plot_wind_turbines=False):
-    # TODO: fetch curve as parameter
     """
     Initializes specified turbine types and returns them as objects in a list.
 
@@ -18,7 +17,7 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     ----------
     turbine_types : List
         Contains strings of turbine types to be initialized.
-        Options: 'enerconE70', 'enerconE66_1800_65' feel free to add.
+        Options: 'enerconE70', ... feel free to add.
     plot_wind_turbines : Boolean
         Decision of plotting (or printing) turbine data (True) or not (False).
         Default: False.
@@ -32,12 +31,12 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
             'rotor_diameter': 71,  # in m    source: www.wind-turbine-models.com
             'fetch_curve': 'power_curve'
         },
-        'enerconE66_1800_65': {
-            'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
-            'hub_height': 65,  # in m
-            'rotor_diameter': 70,  # in m    source: www.wind-turbine-models.com
-            'fetch_curve': 'power_curve'
-        },
+        # 'enerconE66_1800_65': {
+        #     'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
+        #     'hub_height': 65,  # in m
+        #     'rotor_diameter': 70,  # in m    source: www.wind-turbine-models.com
+        #     'fetch_curve': 'power_curve'
+        # },
         'enerconE66_1800_98': {
             'object_name': 'ENERCON E 66 1800',
             'hub_height': 98,  # in m
@@ -45,13 +44,13 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
             'fetch_curve': 'power_curve'
         },
         'enerconE66_2000': {
-            'object_name': 'ENERCON E 82 2000',
+            'object_name': 'ENERCON E 66 2000',
             'hub_height': 114,  # in m
             'rotor_diameter': 70,  # in m
             'fetch_curve': 'power_curve'
         },
         'enerconE82_2000': {
-            'object_name': 'ENERCON E 66 2000',
+            'object_name': 'ENERCON E 82 2000',
             'hub_height': 138.3,  # in m
             'rotor_diameter': 82,  # in m
             'fetch_curve': 'power_curve'
@@ -80,8 +79,10 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     # Initialize WindTurbine objects
     for turbine_type in turbine_types:
         turbine = wt.WindTurbine(**turbine_dict[turbine_type])
-        if (turbine_type == 'vestasV90' or turbine_type == 'vestasV80'):
-            # Add power coefficient curve
+        # if (turbine_type == 'vestasV90' or turbine_type == 'vestasV80'):
+        # Add power coefficient curve
+        if (turbine_type is not 'enerconE66_1800_98' and
+            turbine_type is not 'enerconE66_2000'):
             turbine.fetch_curve = 'power_coefficient_curve'
             turbine.fetch_turbine_data()
         turbine_list.append(turbine)
@@ -106,13 +107,14 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
         if (filename == 'farm_specification_argenetz_2015.p' or
                 filename == 'farm_specification_argenetz_2016.p'):
             # Initialize turbines
-            e70, e66 = initialize_turbines(['enerconE70', 'enerconE66_1800_65'])
-                'coordinates': []
+            # e70, e66 = initialize_turbines(
+            #     ['enerconE70', 'enerconE66_1800_65'])
+            e70 = initialize_turbines(['enerconE70'])
             # wf_1 = {
             #     'object_name': 'wf_1',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,
             #                             'number_of_turbines': 16}],
-            #     'coordinates': [54.578219, 8.978092]
+            #     'coordinates': []
             # }
             wf_SH = {
                 'object_name': 'wf_SH',
@@ -120,9 +122,6 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
                                         'number_of_turbines': 6}],
                 'coordinates': []
             }
-                'coordinates': []
-                'coordinates': []
-                'coordinates': []
             # wf_3 = {
             #     'object_name': 'wf_3',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,

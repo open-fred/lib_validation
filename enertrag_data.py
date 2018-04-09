@@ -158,14 +158,14 @@ def evaluate_wind_directions(frequency=None, corr_min=0.8):
     wind_directions_df = enertrag_data[[
         column_name for column_name in list(enertrag_data) if
             '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
-    if resample:
-        wind_directions_df = wind_directions_df.resample(frequency).mean()
+    # if resample:  # Not needed - resampled above
+    #     wind_directions_df = wind_directions_df.resample(frequency).mean()
     wind_directions_df.to_csv(
         'Evaluation/enertrag_wind_direction/' +
         'wind_direction_enertrag_resample_{0}.csv'.format(frequency))
     correlation = wind_directions_df.corr()
-    amount_df = pd.DataFrame(correlation[correlation >= 0.8].count() - 1,
-                             columns=['corr >='.format(corr_min)]).transpose()
+    amount_df = pd.DataFrame(correlation[correlation >= corr_min].count() - 1,
+                             columns=['corr >= {}'.format(corr_min)]).transpose()
     pd.concat([correlation, amount_df], axis=0).to_csv(
         'Evaluation/enertrag_wind_direction/correlation_wind_direction_' +
         'enertrag_resample_{0}_corrmin_{1}.csv'.format(frequency, corr_min))
