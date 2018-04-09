@@ -39,8 +39,8 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           'feedin_comparison',
-           'plot_correlation'  # Attention: this takes a long time for high resolution
+           # 'feedin_comparison',
+           # 'plot_correlation'  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -126,7 +126,7 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-    if case == 'wind_speed_5': # first row like weather_wind_speed_3
+    if case == 'wind_speed_5':  # first row like weather_wind_speed_3
         config_dict['approach_list'] = [
             'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
@@ -134,13 +134,14 @@ def get_configuration(case=None):
         config_dict['latex_output'] = ['key_figures_approaches']
 
     # ---- Single functions - power output ---- #
-    if case == 'power_output_1':
+    if case == 'power_output_1':  # gw wind speeds as validation data
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
-        config_dict['validation_data_list'] = ['single']
+        config_dict['validation_data_list'] = ['gw_wind_speeds']
         config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
+
 
     # ---- Single functions - smoothing, density... ---- #
     if case == 'smoothing_1':

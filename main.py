@@ -36,7 +36,7 @@ cases = [
     'wind_speed_4',
     'wind_speed_5',
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'power_output_1',
+#     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
@@ -57,7 +57,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -280,6 +280,29 @@ def run_main(case, year):
             threshold = get_threshold(frequency, single_data.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
                 df=single_data, frequency=frequency, threshold=threshold))
+        if 'gw_wind_speeds' in validation_data_list:
+            # Get Greenwind data
+            greenwind_data = get_greenwind_data(
+                year, pickle_load=pickle_load_greenwind, resample=False,
+                filename=os.path.join(
+                    os.path.dirname(__file__),
+                    'dumps/validation_data',
+                    'greenwind_data_{0}_raw_resolution.p'.format(year)),
+                filter_errors=True)
+            # Select only power output columns and drop wind farm power output
+            turbine_power_output = greenwind_data[[
+                column_name for column_name in list(greenwind_data) if
+                    'power_output' in column_name]].drop(
+                ['wf_{}_power_output'.format(wf) for
+                 wf in ['BE', 'BS', 'BNW']], axis=1)
+            turbine_power_output.rename(columns = {
+                old_col: old_col.replace('wf_', '').replace(
+                    'power_output', 'measured') for
+                old_col in list(turbine_power_output)}, inplace=True)
+            # Resample the DataFrame columns with `frequency` and add to list
+            threshold = get_threshold(frequency, turbine_power_output.index.freq.n)
+            validation_df_list.append(tools.resample_with_nan_theshold(
+                df=turbine_power_output, frequency=frequency, threshold=threshold))
         # Join DataFrames - power output in MW - wind speed in m/s
         if 'wind_speed' in case:
             validation_df = pd.concat(validation_df_list, axis=1)
@@ -289,44 +312,48 @@ def run_main(case, year):
 
 
     # ---------------------------- Wind farm data --------------------------- #
-    def return_wind_farm_data(single=False):
-            r"""
-            Get wind farm data of all validation data.
+    def return_wind_farm_data(single=False, gw_wind_speeds=False):
+        r"""
+        Get wind farm data of all validation data.
 
-            single : Boolean
-                If True the single turbine data is fetched.
+        single : Boolean
+            If True the single turbine data is fetched.
 
-            Returns
-            -------
-            List of Dictionaries
-                Dictionaries contain information about the wind farm.
+        Returns
+        -------
+        List of Dictionaries
+            Dictionaries contain information about the wind farm.
 
-            """
-            if single:
-                filenames = ['farm_specification_greenwind_{0}.p'.format(year)]
-                wind_farm_data = get_joined_wind_farm_data(
-                    filenames, wind_farm_pickle_folder,
-                    pickle_load_wind_farm_data)
-                for item in wind_farm_data:
-                    item['wind_turbine_fleet'][0]['number_of_turbines'] = 1
-                    item['object_name'] = 'single_{}'.format(
-                        item['object_name'].split('_')[1])
-            else:
-                filenames = ['farm_specification_{0}_{1}.p'.format(
-                    validation_data_name.replace('ArgeNetz',
-                                                 'argenetz').replace(
-                        'GreenWind', 'greenwind'), year)
-                    for validation_data_name in validation_data_list if
-                    validation_data_name is not 'Enertrag']
-                if (year == 2016 and 'Enertrag' in validation_data_list):
-                    filenames += ['farm_specification_enertrag_2016.p']
-                wind_farm_data = get_joined_wind_farm_data(
-                    filenames, wind_farm_pickle_folder,
-                    pickle_load_wind_farm_data)
-            return wind_farm_data
+        """
+        if single:
+            filenames = ['farm_specification_greenwind_{0}.p'.format(year)]
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder,
+                pickle_load_wind_farm_data)
+            for item in wind_farm_data:
+                item['wind_turbine_fleet'][0]['number_of_turbines'] = 1
+                item['object_name'] = 'single_{}'.format(
+                    item['object_name'].split('_')[1])
+        elif gw_wind_speeds:
+            filenames = ['turbine_specification_greenwind_{0}.p'.format(year)]
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+        else:
+            filenames = ['farm_specification_{0}_{1}.p'.format(
+                validation_data_name.replace('ArgeNetz',
+                                             'argenetz').replace(
+                    'GreenWind', 'greenwind'), year)
+                for validation_data_name in validation_data_list if
+                validation_data_name is not 'Enertrag']
+            if (year == 2016 and 'Enertrag' in validation_data_list):
+                filenames += ['farm_specification_enertrag_2016.p']
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder,
+                pickle_load_wind_farm_data)
+        return wind_farm_data
 
     # ----------------------- Power output simulation ----------------------- #
-    def get_calculated_data(weather_data_name):
+    def get_calculated_data(weather_data_name, wind_farm_data_list):
         r"""
         Calculates time series with different approaches.
 
@@ -337,6 +364,7 @@ def run_main(case, year):
         ----------
         weather_data_name : String
             Weather data for which the feed-in is calculated.
+        wind_farm_data_list : List
 
         Returns
         -------
@@ -364,17 +392,6 @@ def run_main(case, year):
                 get_open_fred_data(
                     filename=fred_path, pickle_filename=filename_weather,
                     pickle_load=False)
-
-        # Get wind farm data
-        if 'single' in validation_data_list:
-            wind_farm_data_list = return_wind_farm_data(single=True)
-            if (case == 'weather_wind_speed_3' or
-                    case == 'wind_speed_5'):
-                wind_farm_data_list = [item for item in wind_farm_data_list if
-                                       (item['object_name'] == 'single_BS' or
-                                        item['object_name'] == 'single_BE')]
-        else:
-            wind_farm_data_list = return_wind_farm_data()
         # Initialise calculation_df_list and calculate power output
         calculation_df_list = []
         # Initialise wind farms
@@ -513,8 +530,9 @@ def run_main(case, year):
                             wind_speed_model='log_interpolation_extrapolation').to_frame(
                             name='{0}_calculated_log._interp.'.format(
                                 wind_farm.object_name)))
-            if (case == 'weather_single_turbine_2' or
-                    case == 'power_output_1'):
+
+            # Wind speed definition for next cases
+            if case == 'weather_single_turbine_2':
                 # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
@@ -522,19 +540,33 @@ def run_main(case, year):
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}.p'.format(year)),
                     pickle_load=pickle_load_greenwind, case=case)
-                wind_speed_data = single_data_raw[['wf_{}_wind_speed'.format(
+                wind_speed = single_data_raw[['wf_{}_wind_speed'.format(
                     wind_farm.object_name.split('_')[1])]]
-                # Resample if weather data is not open_FRED
-                wind_speed = (
-                    wind_speed_data if weather_data_name == 'open_FRED' else
-                        tools.resample_with_nan_theshold(
-                            df=wind_speed_data,
-                            frequency=weather.index.freq,
-                            threshold=get_threshold(
-                            out_frequency=weather.index.freq,
-                            original_resolution=wind_speed_data.index.freq.n)))
+            elif case == 'power_output_1':
+                # Get Greenwind data and get wind speed from each turbine
+                greenwind_data = get_greenwind_data(
+                    year, pickle_load=pickle_load_greenwind, resample=False,
+                    filename=os.path.join(
+                        os.path.dirname(__file__),
+                        'dumps/validation_data',
+                        'greenwind_data_{0}_raw_resolution.p'.format(year)),
+                    filter_errors=True)
+                # Select wind speed column of specific turbine
+                wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
+                    wind_farm.object_name)]]
             else:
                 wind_speed = None
+            if wind_speed is not None:
+                # Resample wind speed time series if it does not have the same
+                # temporal resolution as the weather data time series
+                wind_speed = (
+                    wind_speed if
+                    wind_speed.index.freq == weather.index.freq else
+                    tools.resample_with_nan_theshold(
+                        df=wind_speed, frequency=weather.index.freq,
+                        threshold=get_threshold(
+                            out_frequency=weather.index.freq,
+                            original_resolution=wind_speed.index.freq.n)))
             if 'p-curve' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_simple(
@@ -706,7 +738,7 @@ def run_main(case, year):
                     'curtail_rel']
         return calculation_df
 
-    def get_time_series_df(weather_data_name):
+    def get_time_series_df(weather_data_name, wind_farm_data_list):
         r"""
         If there are any values in restriction_list, the columns containing
         these strings are dropped. This takes place after dumping.
@@ -723,7 +755,8 @@ def run_main(case, year):
             pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         else:
             # Get validation and calculated data
-            calculation_df = get_calculated_data(weather_data_name)
+            calculation_df = get_calculated_data(weather_data_name,
+                                                 wind_farm_data_list)
             validation_df = get_validation_data(
                 frequency=calculation_df.index.freq)
             # Join data frames
@@ -795,24 +828,29 @@ def run_main(case, year):
 
 
     # ---------------------------- Data Evaluation -------------------------- #
-    # Create list of wind farm names
+    # Get wind farm data
     if 'single' in validation_data_list:
-        wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
-            single=True)]
+        wind_farm_data_list = return_wind_farm_data(single=True)
         if (case == 'weather_wind_speed_3' or
-                case == 'wind_speed_5'):
-            wind_farm_names = [item for item in wind_farm_names if
-                               (item == 'single_BS' or item == 'single_BE')]
+                    case == 'wind_speed_5'):
+            wind_farm_data_list = [item for item in wind_farm_data_list if
+                                   (item['object_name'] == 'single_BS' or
+                                    item['object_name'] == 'single_BE')]
+    elif 'gw_wind_speeds' in validation_data_list:
+        wind_farm_data_list = return_wind_farm_data(single=True,
+                                                    gw_wind_speeds=True)
     else:
-        wind_farm_names = [data['object_name'] for
-                           data in return_wind_farm_data()]
+        wind_farm_data_list = return_wind_farm_data()
+    # Get wind farm names
+    wind_farm_names = [data['object_name'] for data in wind_farm_data_list]
     # Initialize dictionary for validation objects
     val_obj_dict = initialize_dictionary(dict_type='validation_objects')
     # Initialize dict for annual energy output of each weather data set
     annual_energy_dicts = {weather_data_name: None
                            for weather_data_name in weather_data_list}
     for weather_data_name in weather_data_list:
-        time_series_df = get_time_series_df(weather_data_name)
+        time_series_df = get_time_series_df(weather_data_name,
+                                            wind_farm_data_list)
         if time_period is not None:
             # TODO: is now for all wind farms. if decided to use time period for argenetz -
             # TODO: only apply on arge (put values to nan, that are outside the period)- leave this for times of day evaluation
@@ -822,9 +860,10 @@ def run_main(case, year):
         # approach) - measured and calculated data
         time_series_df_parts = [
             time_series_df.loc[:, [
-                column_name for column_name in list(time_series_df)
-                if wf_name in column_name]] for wf_name in wind_farm_names
-            if wf_name not in restriction_list]
+                column_name for column_name in list(time_series_df) if
+                '{}_'.format(wf_name) in column_name]] for
+                wf_name in wind_farm_names if
+            wf_name not in restriction_list]
         time_series_pairs = [time_series_df.loc[:, [
             '{0}_measured'.format(wf_name), '{0}_calculated_{1}'.format(
                 wf_name, approach)]] for
@@ -851,7 +890,7 @@ def run_main(case, year):
                 # Calculated annual energy output and deviation from measured
                 # in %
                 for column_name in list(time_series_df_part):
-                    if column_name != '{0}_measured'.format(wf_string):
+                    if 'measured' not in column_name:
                         approach_string = '_'.join(column_name.split('_')[3:])
                         calculated_output = tools.annual_energy_output(
                             time_series_df_part.loc[:,'{0}_calculated_{1}'.format(

@@ -10,7 +10,8 @@ import os
 turbines = initialize_turbines([
     'enerconE70', 'vestasV90', 'vestasV80', 'ge_1500',
     # 'enerconE66_1800_65', # Note: war nur für wf_3
-    'enerconE82_2000']) # TODO: add curves for widespread turbines (dena: enercon, nordex...)
+    'enerconE82_2000'])
+    # These implies also most often installe turbines from dena study
 
 for turbine in turbines:
     # Load power and power coefficient curve

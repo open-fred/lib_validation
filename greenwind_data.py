@@ -525,21 +525,22 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
-    evaluate_first_row_turbine = True
+    load_data = True
+    evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
-    evaluate_wind_direction_corr = True
+    evaluate_wind_direction_corr = False
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
 
+    years = [
+        2015,
+        2016
+    ]
+
     # ----- Load data -----#
     if load_data:
-        years = [
-            2015,
-            2016
-        ]
         # Decide whether to resample to a certain frequency with a certain
         # threshold
         resample = True
@@ -553,9 +554,15 @@ if __name__ == "__main__":
         print_error_amount = True
         print_erroer_amount_total = True
         for year in years:
-            filename = os.path.join(os.path.dirname(__file__),
-                                    'dumps/validation_data',
-                                    'greenwind_data_{0}.p'.format(year))
+            if resample:
+                filename = os.path.join(os.path.dirname(__file__),
+                                        'dumps/validation_data',
+                                        'greenwind_data_{0}.p'.format(year))
+            else:
+                filename = os.path.join(
+                    os.path.dirname(__file__),
+                    'dumps/validation_data',
+                    'greenwind_data_{0}_raw_resolution.p'.format(year))
             error_amount_filename = os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Daten/Twele/',
@@ -598,10 +605,6 @@ if __name__ == "__main__":
     # ----- First row turbine -----#
     if evaluate_first_row_turbine:
         # Parameters
-        years = [
-            2015,
-            2016
-        ]
         cases = ['weather_wind_speed_3', 'wind_speed_1']
         first_row_resample = True
         first_row_frequency = '30T'
@@ -685,7 +688,6 @@ if __name__ == "__main__":
                 'filtered_error_amount_years_first_row.csv'))
 
     # ---- highest wind speed ----#
-    years = [2015, 2016]
     for year in years:
         filename_green_wind = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
@@ -707,7 +709,6 @@ if __name__ == "__main__":
     if evaluate_wind_direction_corr:
         corr_min = 0.6
         frequency = None
-        years=[2015, 2016]
         folder = os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
@@ -717,10 +718,6 @@ if __name__ == "__main__":
                                      corr_min=corr_min)
     # Evaluation of nans
     if nans_evaluation:
-        years = [
-            2015,
-            2016
-        ]
         nans_df = evaluate_nans(years)
         nans_df.to_csv(os.path.join(
             os.path.dirname(__file__),
@@ -729,18 +726,10 @@ if __name__ == "__main__":
 
     # Evaluation of duplicates
     if duplicates_evaluation:
-        years = [
-            2015,
-            2016
-        ]
         duplicates_dict = evaluate_duplicates(years)
 
     # Evaluation of error numbers - decide whether to execute:
     if error_numbers:
-        years = [
-            2015,
-            2016
-        ]
         error_numbers_total = []
         for year in years:
             error_numbers = get_error_numbers(year)

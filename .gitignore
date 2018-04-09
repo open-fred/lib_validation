@@ -8,6 +8,7 @@
 *.orig
 *.sublime-project
 *.sublime-workspace
+*.p
 
 *.egg-info/
 /htw_2015/

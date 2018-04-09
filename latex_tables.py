@@ -143,14 +143,17 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     '_wf', '').replace(
                                     'efficiency', 'eff.').replace(
                                     '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')): # TODO: some of replace not needed
+                                    'constant', 'const.').replace(
+                                    '_', ' ').replace('hellman', 'H').replace(
+                                    '-curve', '')):
                                  val_obj.rmse for
                                  innerKey, innerstList in innerDict.items() if
                                  innerKey not in restriction_list for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
-                                index=[[wf_name.replace('wf_', 'WF ')],
-                                       [outerKey]])
+                                index=[[wf_name.replace('wf_', 'WF ').replace(
+                                    'single_', '')],
+                                       [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'rmse_normalized' in key_figures_print:
@@ -160,14 +163,17 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     '_wf', '').replace(
                                     'efficiency', 'eff.').replace(
                                     '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')):
+                                    'constant', 'const.').replace(
+                                    '_', ' ').replace('hellman', 'H').replace(
+                                    '-curve', '')):
                                  val_obj.rmse_normalized for
                                  innerKey, innerstList in
                                  innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
-                                index=[[wf_name.replace('wf_', 'WF ')],
-                                       [outerKey]])
+                                index=[[wf_name.replace('wf_', 'WF ').replace(
+                                    'single_', '')],
+                                       [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'pearson' in key_figures_print:
@@ -177,13 +183,16 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                     '_wf', '').replace(
                                     'efficiency', 'eff.').replace(
                                     '_%', '').replace(
-                                    'constant', 'const.').replace('_', ' ')):
+                                    'constant', 'const.').replace(
+                                    '_', ' ').replace('hellman', 'H').replace(
+                                    '-curve', '')):
                                  val_obj.pearson_s_r for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
-                                index=[[wf_name.replace('wf_', 'WF ')],
-                                       [outerKey]])
+                                index=[[wf_name.replace('wf_', 'WF ').replace(
+                                    'single_', '')],
+                                       [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'mean_bias' in key_figures_print:
@@ -194,13 +203,16 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                       '_wf', '').replace(
                                       'efficiency', 'eff.').replace(
                                       '_%', '').replace(
-                                      'constant', 'const.').replace('_', ' ')):
+                                      'constant', 'const.').replace(
+                                      '_', ' ').replace('hellman', 'H').replace( # TODO: replacement function - and then dependend on case even possible
+                                      '-curve', '')):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
-                                index=[[wf_name.replace('wf_', 'WF ')],
-                                       [outerKey]])
+                                index=[[wf_name.replace('wf_', 'WF ').replace(
+                                    'single_', '')],
+                                       [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'standard_deviation' in key_figures_print:
@@ -211,13 +223,16 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                       '_wf', '').replace(
                                       'efficiency', 'eff.').replace(
                                       '_%', '').replace(
-                                      'constant', 'const.').replace('_', ' ')):
+                                      'constant', 'const.').replace(
+                                      '_', ' ').replace(
+                                      'hellman', 'H').replace('-curve', '')):
                                  val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
-                                index=[[wf_name.replace('wf_', 'WF ')],
-                                       [outerKey]])
+                                index=[[wf_name.replace('wf_', 'WF ').replace(
+                                    'single_', '')],
+                                       [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         latex_df = pd.concat([latex_df, df_wf_part]).round(2)
@@ -261,8 +276,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
                                             index=[[
-                                                wf_name.replace('wf_', 'WF ')],
-                                                [outerKey]])
+                                                wf_name.replace(
+                                                    'wf_', 'WF ').replace(
+                                                    'single_', '')],
+                                                [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
                                     if 'rmse_normalized' in key_figures_print:
@@ -275,8 +292,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
                                             index=[[
-                                                wf_name.replace('wf_', 'WF ')],
-                                                [outerKey]])
+                                                wf_name.replace(
+                                                    'wf_', 'WF ').replace(
+                                                    'single_', '')],
+                                                [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
                                     if 'pearson' in key_figures_print:
@@ -289,8 +308,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
                                             index=[[
-                                                wf_name.replace('wf_', 'WF ')],
-                                                [outerKey]])
+                                                wf_name.replace(
+                                                    'wf_', 'WF ').replace(
+                                                    'single_', '')],
+                                                [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
                                     if 'mean_bias' in key_figures_print:
@@ -303,8 +324,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
                                             index=[[
-                                                wf_name.replace('wf_', 'WF ')],
-                                                [outerKey]])
+                                                wf_name.replace(
+                                                    'wf_', 'WF ').replace(
+                                                    'single_', '')],
+                                                [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
                                     if ('standard_deviation' in
@@ -318,8 +341,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
                                             index=[[
-                                                wf_name.replace('wf_', 'WF ')],
-                                                [outerKey]])
+                                                wf_name.replace(
+                                                    'wf_', 'WF ').replace(
+                                                        'single_', '')],
+                                                [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
                                     df_part_weather = pd.concat(
