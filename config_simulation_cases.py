@@ -126,6 +126,12 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_5': # first row like weather_wind_speed_3
+        config_dict['approach_list'] = [
+            'log_100', 'log_80', 'log_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
 
     # ---- Single functions - power output ---- #
     if case == 'power_output_1':

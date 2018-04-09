@@ -165,7 +165,7 @@ def evaluate_wind_directions(frequency=None, corr_min=0.8):
         'wind_direction_enertrag_resample_{0}.csv'.format(frequency))
     correlation = wind_directions_df.corr()
     amount_df = pd.DataFrame(correlation[correlation >= corr_min].count() - 1,
-                             columns=['corr >='.format(corr_min)]).transpose()
+                             columns=['corr >= {}'.format(corr_min)]).transpose()
     pd.concat([correlation, amount_df], axis=0).to_csv(
         'Evaluation/enertrag_wind_direction/correlation_wind_direction_' +
         'enertrag_resample_{0}_corrmin_{1}.csv'.format(frequency, corr_min))

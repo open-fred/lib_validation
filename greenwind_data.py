@@ -25,6 +25,7 @@ import pandas as pd
 import numpy as np
 import os
 import pickle
+import logging
 
 
 def read_data(filename):
@@ -257,16 +258,16 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if case == 'weather_wind_speed_3':
+        if (case == 'weather_wind_speed_3' or
+                case == 'wind_speed_5'):
             turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
         else:
             turbine_dict = {
                 'wf_BE': {
-                    'wf_BE_1': (0, 90), 'wf_BE_2': (270, 315),
-                    'wf_BE_5': (90, 180), 'wf_BE_6': (315, 360),
-                    'wf_BE_7': (225, 270)
+                    'wf_BE_2': (270, 315), 'wf_BE_5': (90, 180),
+                    'wf_BE_6': (315, 360), 'wf_BE_7': (225, 270)
                     },
                 'wf_BS': {
                     'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
@@ -513,18 +514,19 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
         wf_wind_dir_df = wind_directions_df[[
             column_name for column_name in list(wind_directions_df) if
             wf in column_name]]
-        correlation = wf_wind_dir_df.corr()
+        correlation = wf_wind_dir_df.corr().sort_index().sort_index(axis=1)
         amount_df = pd.DataFrame(correlation[correlation >= corr_min].count() - 1,
-                                 columns=['corr >='.format(corr_min)]).transpose()
+                                 columns=['corr >= {}'.format(corr_min)]).transpose()
         pd.concat([correlation, amount_df], axis=0).to_csv(
             os.path.join(
                 save_folder, 'gw_wind_dir_corr_{0}_{1}_{2}.csv'.format(
                 wf, year, corr_min)))
+        logging.info("Wind direction evaulation was written to csv.")
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = False
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = True
@@ -600,6 +602,7 @@ if __name__ == "__main__":
             2015,
             2016
         ]
+        cases = ['weather_wind_speed_3', 'wind_speed_1']
         first_row_resample = True
         first_row_frequency = '30T'
         first_row_threshold = 2
@@ -607,24 +610,30 @@ if __name__ == "__main__":
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
         pickle_load_raw_data = True
-        for year in years:
-            filename_raw_data = os.path.join(
-                os.path.dirname(__file__), 'dumps/validation_data',
-                'greenwind_data_{0}.p'.format(year))
-            pickle_filename = os.path.join(
-                os.path.dirname(__file__), 'dumps/validation_data',
-                'greenwind_data_first_row_{0}.p'.format(year))
-            error_amount_filename = os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                'filtered_error_amount__first_row{}.csv'.format(year))
-            df = get_first_row_turbine_time_series(
-                year=year, filename_raw_data=filename_raw_data,
-                pickle_load_raw_data=pickle_load_raw_data,
-                filter_errors=first_row_filter_errors,
-                print_error_amount=first_row_print_error_amount,
-                pickle_filename=pickle_filename, frequency=first_row_frequency,
-                resample=first_row_resample, threshold=first_row_threshold)
+        for case in cases:
+            for year in years:
+                filename_raw_data = os.path.join(
+                    os.path.dirname(__file__), 'dumps/validation_data',
+                    'greenwind_data_{0}.p'.format(year))
+                if case == 'wind_speed_1':
+                    pickle_filename = os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}.p'.format(year))
+                if case == 'weather_wind_speed_3':
+                    pickle_filename = os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
+                error_amount_filename = os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                    'filtered_error_amount__first_row{}.csv'.format(year))
+                df = get_first_row_turbine_time_series(
+                    year=year, filename_raw_data=filename_raw_data,
+                    pickle_load_raw_data=pickle_load_raw_data,
+                    filter_errors=first_row_filter_errors,
+                    print_error_amount=first_row_print_error_amount,
+                    pickle_filename=pickle_filename, frequency=first_row_frequency,
+                    resample=first_row_resample, threshold=first_row_threshold)
 
             # wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
             # temp_cols = [col for col in list(green_wind_df) if
@@ -696,7 +705,7 @@ if __name__ == "__main__":
 
     # ---- Wind direction correlation ----#
     if evaluate_wind_direction_corr:
-        corr_min = 0.8
+        corr_min = 0.6
         frequency = None
         years=[2015, 2016]
         folder = os.path.join(

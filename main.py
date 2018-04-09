@@ -30,19 +30,20 @@ logging.getLogger().setLevel(logging.INFO)
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
-#     'wind_speed_1',
-#     'wind_speed_2',
-#     'wind_speed_3',
-#     'wind_speed_4',
+    'wind_speed_1',
+    'wind_speed_2',
+    'wind_speed_3',
+    'wind_speed_4',
+    'wind_speed_5',
 # ---- Single functions - wind speed ---- # (only open_FRED)
     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
 # ---- weather data ---- #
-    # 'weather_wind_speed_1',
-    # 'weather_wind_speed_2',
-    # 'weather_wind_speed_3',
+#     'weather_wind_speed_1',
+#     'weather_wind_speed_2',
+#     'weather_wind_speed_3',
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
     # 'highest_wind_speed'
@@ -245,7 +246,8 @@ def run_main(case, year):
                                 'wf', 'single') for
                             column in list(single_data)}, inplace=True)
             else:
-                if case == 'weather_wind_speed_3':
+                if (case == 'weather_wind_speed_3' or
+                            case == 'wind_speed_5'):
                     filename = os.path.join(
                         os.path.dirname(__file__), validation_pickle_folder,
                         'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
@@ -366,7 +368,8 @@ def run_main(case, year):
         # Get wind farm data
         if 'single' in validation_data_list:
             wind_farm_data_list = return_wind_farm_data(single=True)
-            if case == 'weather_wind_speed_3':
+            if (case == 'weather_wind_speed_3' or
+                    case == 'wind_speed_5'):
                 wind_farm_data_list = [item for item in wind_farm_data_list if
                                        (item['object_name'] == 'single_BS' or
                                         item['object_name'] == 'single_BE')]
@@ -796,7 +799,8 @@ def run_main(case, year):
     if 'single' in validation_data_list:
         wind_farm_names = [data['object_name'] for data in return_wind_farm_data(
             single=True)]
-        if case == 'weather_wind_speed_3':
+        if (case == 'weather_wind_speed_3' or
+                case == 'wind_speed_5'):
             wind_farm_names = [item for item in wind_farm_names if
                                (item == 'single_BS' or item == 'single_BE')]
     else:
