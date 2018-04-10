@@ -493,7 +493,7 @@ def plot_green_wind_wind_roses():
 
 
 def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
-                             pickle_load=False):
+                             pickle_load=False, WT_14=False):
     pickle_path = os.path.join(os.path.dirname(__file__),
                                'dumps/validation_data',
                                'green_wind_wind_dir_{}'.format(year))
@@ -514,6 +514,15 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
         wf_wind_dir_df = wind_directions_df[[
             column_name for column_name in list(wind_directions_df) if
             wf in column_name]]
+        if (WT_14 and wf == 'wf_BS'):
+            # Set negative values of wind direction to 360 + wind direction
+            wf_wind_dir_df['temp_360'] = 360.0
+            negativ_indices = wf_wind_dir_df.loc[
+                wf_wind_dir_df['wf_BS_14_wind_dir'] < 0].index
+            wf_wind_dir_df['wf_BS_14_wind_dir'].loc[negativ_indices] = (
+                wf_wind_dir_df['temp_360'] +
+                wf_wind_dir_df['wf_BS_14_wind_dir'])
+            wf_wind_dir_df.drop('temp_360', axis=1, inplace=True)
         correlation = wf_wind_dir_df.corr().sort_index().sort_index(axis=1)
         amount_df = pd.DataFrame(correlation[correlation >= corr_min].count() - 1,
                                  columns=['corr >= {}'.format(corr_min)]).transpose()
@@ -521,12 +530,12 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
             os.path.join(
                 save_folder, 'gw_wind_dir_corr_{0}_{1}_{2}.csv'.format(
                 wf, year, corr_min)))
-        logging.info("Wind direction evaulation was written to csv.")
+        logging.info("Wind direction evaluation was written to csv.")
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
-    evaluate_first_row_turbine = True
+    load_data = False
+    evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
@@ -545,7 +554,7 @@ if __name__ == "__main__":
         # threshold
         resample = True
         frequency = '30T'
-        threshold = 2  # Original are 10 min
+        threshold = 2  # Original are 10
         # Decide whether to filter out time steps with error codes (not
         # filtered is: error code 0 and error codes that are not an error but
         # information) and whether to print the amount of time steps being
@@ -608,7 +617,7 @@ if __name__ == "__main__":
         cases = ['weather_wind_speed_3', 'wind_speed_1']
         first_row_resample = True
         first_row_frequency = '30T'
-        first_row_threshold = 2  # Original are 10 min
+        first_row_threshold = 1
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
@@ -709,13 +718,14 @@ if __name__ == "__main__":
     if evaluate_wind_direction_corr:
         corr_min = 0.6
         frequency = None
+        WT_14 = True
         folder = os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
             'green_wind_wind_direction')
         for year in years:
             evaluate_wind_directions(year=year, save_folder=folder,
-                                     corr_min=corr_min)
+                                     corr_min=corr_min, WT_14=WT_14)
     # Evaluation of nans
     if nans_evaluation:
         nans_df = evaluate_nans(years)
