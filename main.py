@@ -41,9 +41,9 @@ cases = [
     # 'smoothing_1',
     # 'density_correction_1',
 # ---- weather data ---- #
-#     'weather_wind_speed_1',
-#     'weather_wind_speed_2',
-#     'weather_wind_speed_3',
+    # 'weather_wind_speed_1',
+    # 'weather_wind_speed_2',
+    # 'weather_wind_speed_3',
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
     # 'highest_wind_speed'
@@ -57,7 +57,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True

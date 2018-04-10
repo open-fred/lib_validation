@@ -128,6 +128,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
             #                             'number_of_turbines': 13},
             #                            {'wind_turbine': e66,
             #                             'number_of_turbines': 4}],
+            #     'coordinates': []
             # }
             # wf_4 = {
             #     'object_name': 'wf_4',
@@ -138,6 +139,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
             #     'object_name': 'wf_5',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,
             #                             'number_of_turbines': 14}],
+            #     'coordinates': []
             # }
             # if filename == 'farm_specification_argenetz_2015.p':
             wind_farm_data = [wf_SH]
@@ -202,7 +204,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
                                        {'wind_turbine': e82_2000,
                                         'number_of_turbines': 2}
                                        ],
-                'coordinates': []  # M6 turbine
+                'coordinates': []
             }
             wind_farm_data = [wf_BNE]
         pickle.dump(wind_farm_data, open(pickle_path, 'wb'))

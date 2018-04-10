@@ -258,16 +258,16 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if (case == 'weather_wind_speed_3' or
-                case == 'wind_speed_5'):
+        if case == 'weather_wind_speed_3':
             turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
         else:
             turbine_dict = {
                 'wf_BE': {
-                    'wf_BE_2': (270, 315), 'wf_BE_5': (90, 180),
-                    'wf_BE_6': (315, 360), 'wf_BE_7': (225, 270)
+                    'wf_BE_1': (0, 90), 'wf_BE_2': (270, 315),
+                    'wf_BE_5': (90, 180), 'wf_BE_6': (315, 360),
+                    'wf_BE_7': (225, 270)
                     },
                 'wf_BS': {
                     'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
@@ -525,7 +525,7 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
+    load_data = False
     evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
@@ -545,7 +545,7 @@ if __name__ == "__main__":
         # threshold
         resample = True
         frequency = '30T'
-        threshold = 2
+        threshold = 1
         # Decide whether to filter out time steps with error codes (not
         # filtered is: error code 0 and error codes that are not an error but
         # information) and whether to print the amount of time steps being
@@ -608,7 +608,7 @@ if __name__ == "__main__":
         cases = ['weather_wind_speed_3', 'wind_speed_1']
         first_row_resample = True
         first_row_frequency = '30T'
-        first_row_threshold = 2
+        first_row_threshold = 1
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
