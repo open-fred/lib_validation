@@ -11,9 +11,12 @@ from copy import deepcopy
 from windrose import WindroseAxes
 import matplotlib.cm as cm
 
-cases = ['wind_speed_1', 'wind_speed_2',
-         'wind_speed_3',
-         'wind_speed_4']  # from 4 only log.interp
+cases = [
+    'wind_speed_1', 'wind_speed_2',
+    'wind_speed_3',
+    'wind_speed_4',  # from 4 only log.interp
+    # 'wind_speed_5'  # other data
+    ]
 years = [2015, 2016]
 key_figures = [
     'RMSE [m/s]',
@@ -50,7 +53,8 @@ for year in years:
         plot_df.plot(kind='bar', ax=ax, legend=False)
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         plt.ylabel(key_figure)
-        plt.ylim(ymin=0.0, ymax=2.5)
+        if key_figure == 'RMSE [m/s]':
+            plt.ylim(ymin=0.0, ymax=2.5)
         # plt.xlabel('Wind farms')
         plt.xticks(rotation='vertical')
         # plt.title('{} of wind speed calculation with different methods in {}'.format(
