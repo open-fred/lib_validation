@@ -1070,6 +1070,10 @@ def run_main(case, year):
                             weather_data_name == 'MERRA'):
                         # Do not plot
                         pass
+                    elif method == 'monthly':
+                        plot_df = tools.resample_with_nan_theshold(
+                            df=plot_df, frequency='M',
+                            threshold=get_threshold('M', plot_df.index.freq.n))
                     else:
                         approach_string = '_'.join(
                             list(time_series_pair)[1].split('_')[3:])
