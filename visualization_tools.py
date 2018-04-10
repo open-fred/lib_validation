@@ -1,6 +1,9 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_turbine as wt
 
+# Lib validation imports
+from analysis_tools import ValidationObject
+
 # Other imports
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -115,9 +118,6 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
                            start=None, end=None, y_label_add_on='values'):
     r"""
     Plot simulation and validation feedin time series.
-
-    These time series are extracted from a
-    :class:`~.analysis_tools.ValidationObject` object.
 
     Parameters
     ----------
@@ -242,6 +242,39 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
+    plt.close()
+
+
+def correlation_subplot(df, filename):
+    measured_column = [col for col in list(df) if 'measured' in col][0]
+    calculated_columns = [col for col in list(df) if 'measured' not in col]
+    pairs = [df.loc[:, [measured_column, calculated_column]] for
+             calculated_column in calculated_columns]
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
+        2, 2, sharey='row')
+    axes = [ax1, ax2, ax3, ax4]
+    maxima = []
+    for df, ax in zip(pairs, axes):
+        val_obj = ValidationObject(
+            object_name='plot', data=df)
+        maximum = max(df.iloc[:, 0].max(), df.iloc[:, 1].max())
+        maxima.append(maximum)
+        ideal, = ax.plot([0, maximum], [0, maximum], color='black',
+                         linestyle='--', linewidth=1, label='ideal correlation')
+        # deviation_100, = ax.plot([0, maximum], [0, maximum * 2],
+        #                          color='orange',
+        #                          linestyle='--', label='100 % deviation')
+        # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
+        df.plot.scatter(x=list(df)[1], y=list(df)[0], ax=ax, c='darkblue', s=2)
+        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r)),
+            xy=(1, 0), xycoords='axes fraction',
+            xytext=(-1, -1), textcoords='offset points',
+            ha='right', va='bottom')
+    absolute_maximum = max(maxima)
+    plt.xlim(xmin=0, xmax=absolute_maximum)
+    plt.ylim(ymin=0, ymax=absolute_maximum)
+    plt.tight_layout()
+    fig.savefig(filename)
     plt.close()
 
 

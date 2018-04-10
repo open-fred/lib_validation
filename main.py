@@ -55,6 +55,8 @@ years = [
 
 min_periods_pearson = None  # Integer
 
+subplots_correlation = True
+
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
 pickle_load_time_series_df = True
@@ -1095,7 +1097,16 @@ def run_main(case, year):
                                 'approach)' + title_add_on),
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)
-
+        if subplots_correlation:
+            for time_series_df_part in time_series_df_parts:
+                wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
+                visualization_tools.correlation_subplot(
+                    time_series_df_part,
+                    filename=os.path.join(
+                        os.path.dirname(__file__),
+                        '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
+                        'Correlation_{}_{}_{}_{}'.format(
+                            case, weather_data_name, year, wf_name)))
     #         if 'box_plots' in visualization_methods:
     #             # Store all bias time series of a validation set in one
     #             # DataFrame for Boxplot

@@ -40,7 +40,7 @@ def get_standard_case_of_configuration():
         'visualization_methods': [
            # 'box_plots',
            # 'feedin_comparison',
-           # 'plot_correlation'  # Attention: this takes a long time for high resolution
+           # 'plot_correlation',  # Attention: this takes a long time for high resolution
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets

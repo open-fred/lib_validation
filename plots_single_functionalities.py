@@ -57,7 +57,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     plt.close()
 
 
-if __name__ == "__main__":
+def run_bar_plot_key_figures():
     weather_data_names = [
         'MERRA'
         # 'open_FRED'
@@ -89,3 +89,6 @@ if __name__ == "__main__":
                 for key_figure in key_figures:
                     bar_plot_key_figures(year, output_method, key_figure,
                                          cases, weather_data_name)
+
+if __name__ == "__main__":
+    run_bar_plot_key_figures()
