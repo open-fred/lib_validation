@@ -525,8 +525,8 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
-    evaluate_first_row_turbine = False
+    load_data = True
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
@@ -545,7 +545,7 @@ if __name__ == "__main__":
         # threshold
         resample = True
         frequency = '30T'
-        threshold = 1
+        threshold = 2  # Original are 10 min
         # Decide whether to filter out time steps with error codes (not
         # filtered is: error code 0 and error codes that are not an error but
         # information) and whether to print the amount of time steps being
@@ -608,7 +608,7 @@ if __name__ == "__main__":
         cases = ['weather_wind_speed_3', 'wind_speed_1']
         first_row_resample = True
         first_row_frequency = '30T'
-        first_row_threshold = 1
+        first_row_threshold = 2  # Original are 10 min
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
