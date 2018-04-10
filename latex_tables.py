@@ -238,6 +238,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                         latex_df = pd.concat([latex_df, df_wf_part]).round(2)
             # Sort index
             latex_df.sort_index(axis=0, inplace=True)
+            # Order by height depending on case
+            latex_df = sort_columns_height(latex_df, case)
             filename_table = os.path.join(
                 path_latex_tables,
                 'key_figures_approaches_{0}_{1}_{2}{3}.tex'.format(
@@ -370,3 +372,21 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 index_columns='ll')
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
+
+
+def sort_columns_height(df, case):
+    if (case == 'wind_speed_1' or case == 'wind_speed_2' or
+            case == 'wind_speed_3'):
+        sorted_df = pd.DataFrame()
+        column_names_1 = list(pd.Series([item [0] for
+                                         item in list(df)]).drop_duplicates())
+        for col_name in column_names_1:
+            df_part = df[col_name]
+            df_part = df_part[[
+                '{} {}'.format(list(df_part)[0].split(' ')[0], height) for
+                     height in ['100', '80', '10']]]
+            df_part.columns = [[col_name, col_name, col_name], df_part.columns]
+            sorted_df = pd.concat([sorted_df, df_part], axis=1)
+    else:
+        sorted_df = df
+    return sorted_df
