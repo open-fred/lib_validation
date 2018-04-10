@@ -57,7 +57,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -763,7 +763,11 @@ def run_main(case, year):
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
         elif csv_load_time_series_df:
             time_series_df = pd.read_csv(time_series_filename.replace('.p',
-                                                                      '.csv'))
+                                                                      '.csv'),
+                                         index_col=0, parse_dates=True)
+            # Add frequency attribute
+            freq = pd.infer_freq(time_series_df.index)
+            time_series_df.index.freq = pd.tseries.frequencies.to_offset(freq)
             pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         else:
             # Get validation and calculated data
@@ -983,7 +987,7 @@ def run_main(case, year):
             y_label_add_on = '{0} in MW'.format(examined_value)
 
         if 'feedin_comparison' in visualization_methods:
-            # Specify folder and title add on for saving the plots
+            # time series pair/part and approach string multiple
             if feedin_comparsion_all_in_one:
                 plot_dfs = time_series_df_parts
                 approach_string = 'multiple'
@@ -1002,6 +1006,18 @@ def run_main(case, year):
                     title_add_on = ''
                 save_folder = 'Plots/{0}/'.format(folder)
                 for method in output_methods:
+                    # Resample if necessary
+                    if method == 'hourly':
+                        if weather_data_name == 'open_FRED':
+                            plot_df = tools.resample_with_nan_theshold(
+                                df=plot_df, frequency='H',
+                                threshold=get_threshold('H',
+                                                        plot_df.index.freq.n))
+                    if method == 'monthly':
+                        plot_df = tools.resample_with_nan_theshold(
+                            df=plot_df, frequency='M',
+                            threshold=get_threshold('M', plot_df.index.freq.n))
+                    # Set approach string and wind farm name string
                     if approach_string != 'multiple':
                         approach_string = '_'.join(list(plot_df)[1].split(
                             '_')[3:])

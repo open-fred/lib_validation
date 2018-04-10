@@ -204,7 +204,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                       'efficiency', 'eff.').replace(
                                       '_%', '').replace(
                                       'constant', 'const.').replace(
-                                      '_', ' ').replace('hellman', 'H').replace( # TODO: replacement function - and then dependend on case even possible, TODO: fucntion for order of columns?, TODO: function for deleting hourly ... column
+                                      '_', ' ').replace('hellman', 'H').replace( # TODO: replacement function
                                       '-curve', '')):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
@@ -249,6 +249,11 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 index_columns='ll')
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
+            filename_csv = os.path.join(
+                os.path.dirname(__file__), 'csv_for_plots',
+                'key_figures_approaches_{0}_{1}_{2}{3}.tex'.format(
+                    case, year, weather_data_name, filename_add_on))
+            latex_df.to_csv(filename_csv)
 
     if 'key_figures_weather' in latex_output:
         if 'wind_speed' in case:
