@@ -13,7 +13,7 @@ import os
 from copy import deepcopy
 from windrose import WindroseAxes
 import matplotlib.cm as cm
-
+import math
 
 def print_whole_dataframe(df):
     r"""
@@ -250,8 +250,9 @@ def correlation_subplot(df, filename):
     calculated_columns = [col for col in list(df) if 'measured' not in col]
     pairs = [df.loc[:, [measured_column, calculated_column]] for
              calculated_column in calculated_columns]
+    col_row_subplots = math.ceil(np.sqrt(len(list(pairs))))
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
-        2, 2, sharey='row')
+        col_row_subplots, col_row_subplots, sharey='row')
     axes = [ax1, ax2, ax3, ax4]
     maxima = []
     for df, ax in zip(pairs, axes):
@@ -266,7 +267,7 @@ def correlation_subplot(df, filename):
         #                          linestyle='--', label='100 % deviation')
         # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
         df.plot.scatter(x=list(df)[1], y=list(df)[0], ax=ax, c='darkblue', s=2)
-        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r)),
+        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 4)),
             xy=(1, 0), xycoords='axes fraction',
             xytext=(-1, -1), textcoords='offset points',
             ha='right', va='bottom')

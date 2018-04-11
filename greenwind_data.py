@@ -534,8 +534,8 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
-    evaluate_first_row_turbine = False
+    load_data = True
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False

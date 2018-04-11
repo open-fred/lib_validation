@@ -30,13 +30,13 @@ logging.getLogger().setLevel(logging.INFO)
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'wind_speed_1',
-    'wind_speed_2',
-    'wind_speed_3',
-    'wind_speed_4',
-    'wind_speed_5',
+#     'wind_speed_1',
+#     'wind_speed_2',
+#     'wind_speed_3',
+#     'wind_speed_4',
+#     'wind_speed_5',
 # ---- Single functions - wind speed ---- # (only open_FRED)
-#     'power_output_1',
+    'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
@@ -55,11 +55,9 @@ years = [
 
 min_periods_pearson = None  # Integer
 
-subplots_correlation = True
-
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -567,7 +565,7 @@ def run_main(case, year):
                     filter_errors=True)
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
-                    wind_farm.object_name)]]
+                    wind_farm.object_name.split('_')[1])]]
             else:
                 wind_speed = None
             if wind_speed is not None:
@@ -1097,7 +1095,7 @@ def run_main(case, year):
                                 'approach)' + title_add_on),
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)
-        if subplots_correlation:
+        if 'subplots_correlation' in visualization_methods:
             for time_series_df_part in time_series_df_parts:
                 wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
                 visualization_tools.correlation_subplot(
