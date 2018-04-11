@@ -212,8 +212,9 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     if method == 'monthly':
         marker_size = 10
     fig, ax = plt.subplots()
-    data.plot.scatter(x=list(data)[1], y=list(data)[0],
-                      ax=ax, c=color, s=marker_size)
+    x_value = [col for col in list(data) if 'calculated' in col][0]
+    y_value = [col for col in list(data) if 'measured' in col][0]
+    data.plot.scatter(x=x_value, y=y_value, ax=ax, c=color, s=marker_size)
     plt.xlabel('{0} {1} {2} of {3}'.format(
         list(data)[1].split('_')[2], method.replace('_','-'),
         y_label_add_on, ' '.join(list(data)[1].split('_')[:2])))

@@ -25,12 +25,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
         figure_case_df = case_df.loc[output_method][key_figure]
         if case == 'wind_speed_4':
             figure_case_df = figure_case_df.loc[:, ['log. interp.']]
-        if (case == 'wind_speed_1' and year == 2015): # TODO delete after right values
-            dict = {'log 10': [2.22, 2.15, 2.14],
-                    'log 100': [1.87, 2.10, 2.24],
-                    'log 80': [1.84, 2.10, 2.08]}
-            figure_case_df = pd.DataFrame(dict, index=['BE', 'BNW', 'BS'])
-        if case is not 'wind_speed_4':
+        if (case is not 'wind_speed_4' and case is not 'weather_wind_speed_1'):
             # Order columns
             figure_case_df = figure_case_df[[
                 '{} {}'.format(list(figure_case_df)[0].split(' ')[0],
@@ -70,7 +65,7 @@ def run_bar_plot_key_figures():
         'weather_wind_speed_1'  # For best function for MERRA
     ]
     years = [
-        # 2015,
+        2015,
         2016
     ]
     key_figures = [

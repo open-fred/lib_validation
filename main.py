@@ -30,18 +30,18 @@ logging.getLogger().setLevel(logging.INFO)
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
-#     'wind_speed_1',
-#     'wind_speed_2',
-#     'wind_speed_3',
-#     'wind_speed_4',
-#     'wind_speed_5',
+    'wind_speed_1',
+    'wind_speed_2',
+    'wind_speed_3',
+    'wind_speed_4',
+    'wind_speed_5',
 # ---- Single functions - wind speed ---- # (only open_FRED)
     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
 # ---- weather data ---- #
-    # 'weather_wind_speed_1',
+#     'weather_wind_speed_1',
     # 'weather_wind_speed_2',
     # 'weather_wind_speed_3',
     # 'weather_single_turbine_1',
@@ -57,7 +57,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -565,7 +565,7 @@ def run_main(case, year):
                     filter_errors=True)
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
-                    wind_farm.object_name.split('_')[1])]]
+                    wind_farm.object_name)]]
             else:
                 wind_speed = None
             if wind_speed is not None:
@@ -853,7 +853,7 @@ def run_main(case, year):
                                    (item['object_name'] == 'single_BS' or
                                     item['object_name'] == 'single_BE')]
     elif 'gw_wind_speeds' in validation_data_list:
-        wind_farm_data_list = return_wind_farm_data(single=True,
+        wind_farm_data_list = return_wind_farm_data(single=False,
                                                     gw_wind_speeds=True)
     else:
         wind_farm_data_list = return_wind_farm_data()
