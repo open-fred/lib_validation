@@ -267,7 +267,13 @@ def correlation_subplot(df, filename):
         #                          color='orange',
         #                          linestyle='--', label='100 % deviation')
         # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
-        df.plot.scatter(x=list(df)[1], y=list(df)[0], ax=ax, c='darkblue', s=2)
+        # Rename columns for x and y labels
+        df.rename(columns={old_col: old_col.replace('_', ' ') for old_col in
+                           df.columns}, inplace=True)
+        # Choose x and y values column name
+        x_value = [col for col in list(df) if 'calculated' in col][0]
+        y_value = [col for col in list(df) if 'measured' in col][0]
+        df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue', s=2)
         ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 4)),
             xy=(1, 0), xycoords='axes fraction',
             xytext=(-1, -1), textcoords='offset points',

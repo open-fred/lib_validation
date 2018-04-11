@@ -39,7 +39,7 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-            'feedin_comparison',
+           #  'feedin_comparison',
             'plot_correlation',  # Attention: this takes a long time for high resolution
             'subplots_correlation'
            ],
@@ -133,6 +133,25 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_6':  # first row like weather_wind_speed_3
+        config_dict['approach_list'] = [
+            'hellman_100', 'hellman_80', 'hellman_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_7':  # first row like weather_wind_speed_3
+        config_dict['approach_list'] = [
+            'hellman2_100', 'hellman2_80', 'hellman2_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+    if case == 'wind_speed_8':  # first row like weather_wind_speed_3
+        config_dict['approach_list'] = [
+            'log._interp.', 'log_100', 'log_80', 'log_10']
+        config_dict['validation_data_list'] = ['single']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches']
+
 
     # ---- Single functions - power output ---- #
     if case == 'power_output_1':  # gw wind speeds as validation data

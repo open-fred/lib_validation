@@ -258,7 +258,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if case == 'weather_wind_speed_3':
+        if case == 'weather_wind_speed_3':  # 2015-06-10 10:00:00
             turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
@@ -283,15 +283,17 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
         for wind_farm_name in wind_farm_names:
             for turbine_name in turbine_dict[wind_farm_name]:
                 # Set negative values of wind direction to 360 + wind direction
-                green_wind_df['temp_360'] = 360.0
                 negativ_indices = green_wind_df.loc[
                     green_wind_df['{}_wind_dir'.format(
                         turbine_name)] < 0].index
-                green_wind_df['{}_wind_dir'.format(
-                    turbine_name)].loc[negativ_indices] = (
-                        green_wind_df['temp_360'] +
-                        green_wind_df['{}_wind_dir'.format(turbine_name)])
-                green_wind_df.drop('temp_360', axis=1, inplace=True)
+                if not negativ_indices.empty:
+                    green_wind_df['temp_360'] = 360.0
+                    green_wind_df['{}_wind_dir'.format(
+                        turbine_name)].loc[negativ_indices] = (
+                            green_wind_df.loc[negativ_indices]['temp_360'] +
+                            green_wind_df.loc[negativ_indices][
+                                '{}_wind_dir'.format(turbine_name)])
+                    green_wind_df.drop('temp_360', axis=1, inplace=True)
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
                 # Example for 'wf_BE_1': 0 <= x < 90.
@@ -534,7 +536,7 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
+    load_data = False
     evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     plot_wind_roses = False
@@ -645,7 +647,8 @@ if __name__ == "__main__":
                     filter_errors=first_row_filter_errors,
                     print_error_amount=first_row_print_error_amount,
                     pickle_filename=pickle_filename, frequency=first_row_frequency,
-                    resample=first_row_resample, threshold=first_row_threshold)
+                    resample=first_row_resample, threshold=first_row_threshold,
+                    case=case)
 
             # wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
             # temp_cols = [col for col in list(green_wind_df) if

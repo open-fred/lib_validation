@@ -23,9 +23,10 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
         case_df = pd.read_csv(filename_csv, index_col=[1, 0],
                               header=[0, 1])
         figure_case_df = case_df.loc[output_method][key_figure]
-        if case == 'wind_speed_4':
+        if (case == 'wind_speed_4' or case == 'wind_speed_8'):
             figure_case_df = figure_case_df.loc[:, ['log. interp.']]
-        if (case is not 'wind_speed_4' and case is not 'weather_wind_speed_1'):
+        if (case is not 'wind_speed_4' and case is not 'weather_wind_speed_1'
+            and case is not 'wind_speed_8'):
             # Order columns
             figure_case_df = figure_case_df[[
                 '{} {}'.format(list(figure_case_df)[0].split(' ')[0],
@@ -34,7 +35,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     fig, ax = plt.subplots()
     plot_df.plot(kind='bar', ax=ax, legend=False)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.ylabel(key_figure)
+    plt.ylabel(key_figure.replace('coeff.', 'coefficient'))
     if key_figure == 'RMSE [m/s]':
         plt.ylim(ymin=0.0, ymax=2.5)
     # plt.xlabel('Wind farms')
@@ -42,27 +43,35 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     # plt.title('{} of wind speed calculation with different methods in {}'.format(
     #     key_figure, year))
     plt.tight_layout()
+    if 'wind_speed_5' in cases:
+        filename_add_on = '_less_data_points'
+    else:
+        filename_add_on = ''
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/wind_speeds',
-        'Barplot_wind_speed_methods_{}_{}_{}_{}.pdf'.format(
+        'Barplot_wind_speed_methods_{}_{}_{}_{}{}.pdf'.format(
             key_figure.replace(' ', '_').replace('/', '_').replace(
-                '.', ''), year, weather_data_name, output_method)),
+                '.', ''), year, weather_data_name, output_method,
+            filename_add_on)),
         bbox_inches = "tight")
     plt.close()
 
 
 def run_bar_plot_key_figures():
     weather_data_names = [
-        'MERRA'
-        # 'open_FRED'
+        # 'MERRA'
+        'open_FRED'
     ]
     cases = [
-        # 'wind_speed_1', 'wind_speed_2',
-        # 'wind_speed_3',
-        # 'wind_speed_4',  # from 4 only log.interp
-        # 'wind_speed_5',  # other data
-        'weather_wind_speed_1'  # For best function for MERRA
+        'wind_speed_1', 'wind_speed_2',
+        'wind_speed_3',
+        'wind_speed_4',  # from 4 only log.interp
+        # 'wind_speed_5',  # first row like weather_wind_speed_3
+        # 'wind_speed_6',  # first row like weather_wind_speed_3
+        # 'wind_speed_7',  # first row like weather_wind_speed_3
+        # 'wind_speed_8',  # first row like weather_wind_speed_3
+        # 'weather_wind_speed_1'  # For best function for MERRA
     ]
     years = [
         2015,

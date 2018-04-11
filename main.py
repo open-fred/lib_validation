@@ -30,20 +30,23 @@ logging.getLogger().setLevel(logging.INFO)
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'wind_speed_1',
-    'wind_speed_2',
-    'wind_speed_3',
-    'wind_speed_4',
-    'wind_speed_5',
+#     'wind_speed_1',
+#     'wind_speed_2',
+#     'wind_speed_3',
+#     'wind_speed_4',
+#     'wind_speed_5',  # first row like weather_wind_speed_3
+#     'wind_speed_6',  # first row like weather_wind_speed_3
+#     'wind_speed_7',  # first row like weather_wind_speed_3
+#     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'power_output_1',
+#     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
 # ---- weather data ---- #
-#     'weather_wind_speed_1',
+    'weather_wind_speed_1',
     # 'weather_wind_speed_2',
-    # 'weather_wind_speed_3',
+    # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
     # 'highest_wind_speed'
@@ -246,8 +249,8 @@ def run_main(case, year):
                                 'wf', 'single') for
                             column in list(single_data)}, inplace=True)
             else:
-                if (case == 'weather_wind_speed_3' or
-                            case == 'wind_speed_5'):
+                if case in ['weather_wind_speed_3', 'wind_speed_5',
+                            'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
                     filename = os.path.join(
                         os.path.dirname(__file__), validation_pickle_folder,
                         'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
@@ -847,8 +850,8 @@ def run_main(case, year):
     # Get wind farm data
     if 'single' in validation_data_list:
         wind_farm_data_list = return_wind_farm_data(single=True)
-        if (case == 'weather_wind_speed_3' or
-                    case == 'wind_speed_5'):
+        if case in ['weather_wind_speed_3', 'wind_speed_5',
+                    'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
             wind_farm_data_list = [item for item in wind_farm_data_list if
                                    (item['object_name'] == 'single_BS' or
                                     item['object_name'] == 'single_BE')]
@@ -949,17 +952,20 @@ def run_main(case, year):
                         approach=approach_string,
                         min_periods_pearson=min_periods_pearson))
             if 'monthly' in output_methods:
-                monthly_series = tools.resample_with_nan_theshold(
-                    df=time_series_pair, frequency='M',
-                    threshold=get_threshold('M',
+                if case not in [
+                        'weather_wind_speed_3', 'wind_speed_5',
+                        'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
+                    monthly_series = tools.resample_with_nan_theshold(
+                        df=time_series_pair, frequency='M',
+                        threshold=get_threshold('M',
                                             time_series_pair.index.freq.n))
-                val_obj_dict[weather_data_name]['monthly'][
-                    approach_string].append(ValidationObject(
-                        object_name=wf_string, data=monthly_series,
-                        output_method='monthly',
-                        weather_data_name=weather_data_name,
-                        approach=approach_string,
-                        min_periods_pearson=min_periods_pearson))
+                    val_obj_dict[weather_data_name]['monthly'][
+                        approach_string].append(ValidationObject(
+                            object_name=wf_string, data=monthly_series,
+                            output_method='monthly',
+                            weather_data_name=weather_data_name,
+                            approach=approach_string,
+                            min_periods_pearson=min_periods_pearson))
         # Delete entry in dict if half_hourly resolution not possible
         if (time_series_pairs[0].index.freq == 'H' and
                 'half_hourly' in val_obj_dict[weather_data_name]):
@@ -1071,9 +1077,10 @@ def run_main(case, year):
                         # Do not plot
                         pass
                     elif method == 'monthly':
-                        plot_df = tools.resample_with_nan_theshold(
-                            df=plot_df, frequency='M',
-                            threshold=get_threshold('M', plot_df.index.freq.n))
+                        time_series_pair = tools.resample_with_nan_theshold(
+                            df=time_series_pair, frequency='M',
+                            threshold=get_threshold(
+                                'M', time_series_pair.index.freq.n))
                     else:
                         approach_string = '_'.join(
                             list(time_series_pair)[1].split('_')[3:])
@@ -1097,6 +1104,12 @@ def run_main(case, year):
                             y_label_add_on=y_label_add_on)
         if 'subplots_correlation' in visualization_methods:
             for time_series_df_part in time_series_df_parts:
+                if weather_data_name == 'open_FRED':
+                    # Resample the DataFrame columns
+                    time_series_df_part = tools.resample_with_nan_theshold(
+                        df=time_series_df_part, frequency='H',
+                        threshold=get_threshold(
+                            'H', time_series_df_part.index.freq.n))
                 wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
                 visualization_tools.correlation_subplot(
                     time_series_df_part,
