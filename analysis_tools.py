@@ -84,8 +84,8 @@ class ValidationObject(object):
         self.approach = approach
         self.min_periods_pearson = min_periods_pearson
 
-        self.validation_series = data.dropna().iloc[:, 0]
-        self.simulation_series = data.dropna().iloc[:, 1]
+        self.validation_series = self.get_series('measured')
+        self.simulation_series = self.get_series('calculated')
         self.bias = self.get_bias()
         self.mean_bias = self.bias.mean()
         self.rmse = self.get_rmse()
@@ -94,7 +94,10 @@ class ValidationObject(object):
         self.standard_deviation = self.get_standard_deviation(self.bias)
         self.pearson_s_r = self.get_pearson_s_r()
 
-    # TODO: check if correct values
+
+    def get_series(self, type):
+        column = [col for col in list(self.data) if type in col][0]
+        return self.data.dropna()[column]
 
     def get_standard_deviation(self, data_series):
         r"""
