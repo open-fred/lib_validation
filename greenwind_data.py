@@ -623,7 +623,7 @@ if __name__ == "__main__":
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
-        pickle_load_raw_data = True
+        pickle_load_raw_data = False
         for case in cases:
             for year in years:
                 filename_raw_data = os.path.join(
