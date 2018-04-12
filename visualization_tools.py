@@ -1,6 +1,9 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_turbine as wt
 
+# Lib validation imports
+from analysis_tools import ValidationObject
+
 # Other imports
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -10,7 +13,7 @@ import os
 from copy import deepcopy
 from windrose import WindroseAxes
 import matplotlib.cm as cm
-
+import math
 
 def print_whole_dataframe(df):
     r"""
@@ -116,9 +119,6 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
     r"""
     Plot simulation and validation feedin time series.
 
-    These time series are extracted from a
-    :class:`~.analysis_tools.ValidationObject` object.
-
     Parameters
     ----------
     data : pd.DataFrame
@@ -166,10 +166,7 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
         old_name: new_name.replace('_', ' ') for old_name, new_name in
         zip(list(data), list(data))})
     fig, ax = plt.subplots()
-    if method == 'hourly':
-        data.resample('H').mean()
     if method == 'monthly':
-        data = data.resample('M').mean().dropna() # TODO: remove months that only contain some values..
         # Create DataFrame for bar plot
         data.index = pd.Series(
             data.index).dt.strftime('%b')
@@ -212,14 +209,12 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     # TODO: think of bins.. maybe like in Shap's phd
     # Maximum value for xlim and ylim and line
     maximum = max(data.iloc[:, 0].max(), data.iloc[:, 1].max())
-    if method == 'hourly':
-        data.resample('H').mean()
     if method == 'monthly':
-        data = data.resample('M').mean().dropna()
         marker_size = 10
     fig, ax = plt.subplots()
-    data.plot.scatter(x=list(data)[1], y=list(data)[0],
-                      ax=ax, c=color, s=marker_size)
+    x_value = [col for col in list(data) if 'calculated' in col][0]
+    y_value = [col for col in list(data) if 'measured' in col][0]
+    data.plot.scatter(x=x_value, y=y_value, ax=ax, c=color, s=marker_size)
     plt.xlabel('{0} {1} {2} of {3}'.format(
         list(data)[1].split('_')[2], method.replace('_','-'),
         y_label_add_on, ' '.join(list(data)[1].split('_')[:2])))
@@ -251,6 +246,46 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     plt.close()
 
 
+def correlation_subplot(df, filename):
+    measured_column = [col for col in list(df) if 'measured' in col][0]
+    calculated_columns = [col for col in list(df) if 'measured' not in col]
+    pairs = [df.loc[:, [measured_column, calculated_column]] for
+             calculated_column in calculated_columns]
+    col_row_subplots = math.ceil(np.sqrt(len(list(pairs))))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
+        col_row_subplots, col_row_subplots, sharey='row')
+    axes = [ax1, ax2, ax3, ax4]
+    maxima = []
+    for df, ax in zip(pairs, axes):
+        val_obj = ValidationObject(
+            object_name='plot', data=df)
+        maximum = max(df.iloc[:, 0].max(), df.iloc[:, 1].max())
+        maxima.append(maximum)
+        ideal, = ax.plot([0, maximum], [0, maximum], color='black',
+                         linestyle='--', linewidth=1, label='ideal correlation')
+        # deviation_100, = ax.plot([0, maximum], [0, maximum * 2],
+        #                          color='orange',
+        #                          linestyle='--', label='100 % deviation')
+        # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
+        # Rename columns for x and y labels
+        df.rename(columns={old_col: old_col.replace('_', ' ') for old_col in
+                           df.columns}, inplace=True)
+        # Choose x and y values column name
+        x_value = [col for col in list(df) if 'calculated' in col][0]
+        y_value = [col for col in list(df) if 'measured' in col][0]
+        df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue', s=2)
+        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 4)),
+            xy=(1, 0), xycoords='axes fraction',
+            xytext=(-1, -1), textcoords='offset points',
+            ha='right', va='bottom')
+    absolute_maximum = max(maxima)
+    plt.xlim(xmin=0, xmax=absolute_maximum)
+    plt.ylim(ymin=0, ymax=absolute_maximum)
+    plt.tight_layout()
+    fig.savefig(filename)
+    plt.close()
+
+
 def plot_wind_rose(wind_speed, wind_direction, filename, title):
     ax = WindroseAxes.from_ax()
     ax.contourf(wind_direction, wind_speed, bins=np.arange(0.01, 26, 2), cmap=cm.Blues)
@@ -258,6 +293,7 @@ def plot_wind_rose(wind_speed, wind_direction, filename, title):
     plt.title(title)
     plt.savefig(filename)
     plt.close()
+
 
 if __name__ == "__main__":
     # Get all turbine types of windpowerlib

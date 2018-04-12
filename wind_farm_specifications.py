@@ -128,6 +128,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
             #                             'number_of_turbines': 13},
             #                            {'wind_turbine': e66,
             #                             'number_of_turbines': 4}],
+            #     'coordinates': []
             # }
             # wf_4 = {
             #     'object_name': 'wf_4',
@@ -138,33 +139,56 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
             #     'object_name': 'wf_5',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,
             #                             'number_of_turbines': 14}],
+            #     'coordinates': []
             # }
             # if filename == 'farm_specification_argenetz_2015.p':
             wind_farm_data = [wf_SH]
             # if filename == 'farm_specification_argenetz_2016.p':
             #     wind_farm_data = [wf_2]
-        if (filename == 'farm_specification_greenwind_2015.p' or
-                filename == 'farm_specification_greenwind_2016.p'):
+        if 'greenwind' in filename:
             v90, v80 = initialize_turbines(['vestasV90', 'vestasV80'])
-            wf_BE = {
-                'object_name': 'wf_BE',
-                'wind_turbine_fleet': [{'wind_turbine': v90,
-                                        'number_of_turbines': 9}],
-                #                'coordinates': []
-            }
-            wf_BS = {
-                'object_name': 'wf_BS',
-                'wind_turbine_fleet': [{'wind_turbine': v90,
-                                        'number_of_turbines': 14}],
-                #                'coordinates': []
-            }
-            wf_BNW = {
-                'object_name': 'wf_BNW',
-                'wind_turbine_fleet': [{'wind_turbine': v80,
-                                        'number_of_turbines': 2}],
-                #                'coordinates': []
-            }
-            wind_farm_data = [wf_BE, wf_BS, wf_BNW]
+            if (filename == 'farm_specification_greenwind_2015.p' or
+                    filename == 'farm_specification_greenwind_2016.p'):
+                wf_BE = {
+                    'object_name': 'wf_BE',
+                    'wind_turbine_fleet': [{'wind_turbine': v90,
+                                            'number_of_turbines': 9}],
+                    'coordinates': []
+                }
+                wf_BS = {
+                    'object_name': 'wf_BS',
+                    'wind_turbine_fleet': [{'wind_turbine': v90,
+                                            'number_of_turbines': 14}],
+                    'coordinates': []
+                }
+                wf_BNW = {
+                    'object_name': 'wf_BNW',
+                    'wind_turbine_fleet': [{'wind_turbine': v80,
+                                            'number_of_turbines': 2}],
+                    'coordinates': []
+                }
+                wind_farm_data = [wf_BE, wf_BS, wf_BNW]
+            if (filename == 'turbine_specification_greenwind_2015.p' or
+                    filename == 'turbine_specification_greenwind_2016.p'):
+                wind_farm_data = []
+                for i in range(9):
+                    wind_farm_data.append({
+                        'object_name': 'BE_{}'.format(i+1),
+                        'wind_turbine_fleet': [{'wind_turbine': v90,
+                                            'number_of_turbines': 1}],
+                        'coordinates': []})
+                for i in range(14):
+                    wind_farm_data.append({
+                        'object_name': 'BS_{}'.format(i+1),
+                        'wind_turbine_fleet': [{'wind_turbine': v90,
+                                                'number_of_turbines': 1}],
+                        'coordinates': []})
+                for i in range(2):
+                    wind_farm_data.append({
+                        'object_name': 'BNW_{}'.format(i+1),
+                        'wind_turbine_fleet': [{'wind_turbine': v80,
+                                                'number_of_turbines': 1}],
+                        'coordinates': []})
         if filename == 'farm_specification_enertrag_2016.p':
             e66_1800, ge_1500, e66_2000, e82_2000 = initialize_turbines([
                 'enerconE66_1800_98', 'ge_1500', 'enerconE66_2000',
@@ -180,7 +204,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False,
                                        {'wind_turbine': e82_2000,
                                         'number_of_turbines': 2}
                                        ],
-                               # 'coordinates': []
+                'coordinates': []
             }
             wind_farm_data = [wf_BNE]
         pickle.dump(wind_farm_data, open(pickle_path, 'wb'))
@@ -208,7 +232,9 @@ if __name__ == "__main__":
         'farm_specification_argenetz_2016.p',
         'farm_specification_enertrag_2016.p',
         'farm_specification_greenwind_2015.p',
-        'farm_specification_greenwind_2016.p'
+        'farm_specification_greenwind_2016.p',
+        'turbine_specification_greenwind_2015.p',
+        'turbine_specification_greenwind_2016.p'
         ]
     for filename in filenames:
         get_wind_farm_data(filename, save_folder)
