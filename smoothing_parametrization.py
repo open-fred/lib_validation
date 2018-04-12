@@ -1,8 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
-from windpowerlib.power_output import summarized_power_curve
-from windpowerlib import wind_farm_modelchain
 from windpowerlib import power_output, tools
 
 # Imports from lib_validation
@@ -64,8 +62,12 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
 
 
 if __name__ == "__main__":
-    standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
-    for std_dev_method in standard_deviaton_methods:
-        plot_smoothed_pcs(
-            standard_deviation_method=std_dev_method, block_width,
-                          wind_speeds_block_range, mean_roughness_length=None)
+    # standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
+    # for std_dev_method in standard_deviaton_methods:
+    #     plot_smoothed_pcs(
+    #         standard_deviation_method=std_dev_method, block_width,
+    #                       wind_speeds_block_range, mean_roughness_length=None)
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'helper_files',
+                                  'Norgaard_standard_deviation.csv'),
+                     index_col=0)
+    print('l')
