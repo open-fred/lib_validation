@@ -18,7 +18,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     for case in cases:
         filename_csv = os.path.join(
             os.path.dirname(__file__), 'csv_for_plots',
-            'key_figures_approaches_{0}_{1}_{2}.tex'.format(
+            'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                 case, year, weather_data_name))
         case_df = pd.read_csv(filename_csv, index_col=[1, 0],
                               header=[0, 1])

@@ -39,12 +39,12 @@ cases = [
 #     'wind_speed_7',  # first row like weather_wind_speed_3
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
-#     'power_output_1',
+    'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'density_correction_1',
 # ---- weather data ---- #
-    'weather_wind_speed_1',
+#     'weather_wind_speed_1',
     # 'weather_wind_speed_2',
     # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',
@@ -70,7 +70,7 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = True  # Dump df as csv
+csv_dump_time_series_df = False  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot (multiple)
@@ -137,6 +137,7 @@ def run_main(case, year):
     visualization_methods = parameters['visualization_methods']
     latex_output = parameters['latex_output']
     key_figures_print = parameters['key_figures_print']
+    replacement = parameters['replacement']
 
     # -------------------------------- Warning ------------------------------ #
     if (year == 2015 and validation_data_list[0] == 'Enertrag' and
@@ -1161,7 +1162,8 @@ def run_main(case, year):
         val_obj_dict=val_obj_dict, annual_energy_dicts=annual_energy_dicts,
         wind_farm_names=wind_farm_names, key_figures_print=key_figures_print,
         output_methods=output_methods, path_latex_tables=path_latex_tables,
-        filename_add_on=filename_add_on, year=year, case=case)
+        filename_add_on=filename_add_on, year=year, case=case,
+        replacement=replacement)
 
     # ------------------------------- Extra plots ------------------------------- #
     # if 'annual_bars_weather' in extra_plots:
@@ -1196,3 +1198,11 @@ if __name__ == "__main__":
     for year in years:
         for case in cases:
             run_main(case, year)
+
+    # ---- Further latex tables ----#
+    logging.info(
+        "--- Depending on the cases further latex tables are created. ---")
+    if 'power_output_1' in cases:
+        latex_tables.mean_rmse_power_output_1_table(latex_tables_folder)
+        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+    logging.info("--- Done ---")
