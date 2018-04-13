@@ -573,6 +573,7 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
                 wf, year, corr_min)))
         logging.info("Wind direction evaluation was written to csv.")
 
+
 def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
     # TODO laufen lassen auf RLI PC!!
     # Load greenwind data without resampling and do not dump.
@@ -602,10 +603,6 @@ if __name__ == "__main__":
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
-
-    # df = pd.read_csv('data/GreenWind/highest_power_output.csv', index_col=0,
-    #                  parse_dates=True)
-
 
     years = [
         2015,
