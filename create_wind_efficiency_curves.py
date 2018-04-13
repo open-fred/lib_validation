@@ -32,15 +32,17 @@ def get_wind_efficiency_curves(years):
             data in wind_farm_data_gw]]
         pickle_filename = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
-            'greenwind_data_first_row_{0}.p'.format(year))
+            'greenwind_data_{0}_highest_power.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
         gw_first_row = get_first_row_turbine_time_series(
             year=year, pickle_load=True,
             pickle_filename=pickle_filename, resample=False)
         for wf, number_of_turbines in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
             cols_first_row = [col for col in gw_first_row.columns if wf in col]
             first_row_data = gw_first_row[cols_first_row].rename(columns={
-                'wf_{}_wind_speed'.format(wf): 'wind_speed',
-                'wf_{}_power_output'.format(wf): 'single_power_output'})
+                [col for col in gw_first_row if 'wind_speed' in col][0]:
+                    'wind_speed',
+                [col for col in gw_first_row if 'power_output' in col][0]:
+                    'single_power_output'})
             cols_wf = [col for col in greenwind_data.columns if wf in col]
             wf_power_output = greenwind_data[cols_wf].rename(columns={
                 'wf_{}_power_output'.format(wf): 'wind_farm_power_output'})
@@ -82,7 +84,8 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
         maximum_v_int - 0.5)
     # Add v_std (standard wind speed) column to data frame
     df['v_std'] = np.nan
-    for v_std in np.arange(0.0, maximum_v_std + 0.5, 0.5):
+    standard_wind_speeds = np.arange(0.0, maximum_v_std + 0.5, 0.5)
+    for v_std in standard_wind_speeds:
         # Set standard wind speeds depending on wind_speed column value
         indices = df.loc[(df.loc[:, 'wind_speed'] <= v_std) &
                          (df.loc[:, 'wind_speed'] > (v_std - 0.5))].index
@@ -92,8 +95,9 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
     df.set_index('v_std', inplace=True)
     df2 = df[['efficiency']]
     df2 = df2.groupby(df.index).mean()
+    # efficiency_curve = pd.DataFrame(np.random.rand, index=standard_wind_speeds)
     print('l')
-
+# pd.DataFrame(data=np.arange(0.0, len(standard_wind_speeds), ), index=standard_wind_speeds)
 def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
     path = os.path.join(os.path.dirname(__file__), 'helper_files',
                         'wind_efficiency_curves_raw.csv')
