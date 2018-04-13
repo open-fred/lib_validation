@@ -792,7 +792,7 @@ def run_main(case, year):
                     time_series_df.loc[:, column_name[1]].loc[
                         time_series_df.loc[
                             :, column_name[1]].isnull() == True].index] = np.nan
-                # Nans of calculated data to measured data
+                # Nans of measured data to calculated data
                 for i in range(len(column_name) - 1):
                     time_series_df.loc[:, column_name[i+1]].loc[
                         time_series_df.loc[:, column_name[0]].loc[

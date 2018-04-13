@@ -616,7 +616,7 @@ if __name__ == "__main__":
     # ----- First row turbine -----#
     if evaluate_first_row_turbine:
         # Parameters
-        cases = ['weather_wind_speed_3', 'wind_speed_1']
+        cases = ['wind_speed_1', 'weather_wind_speed_3']
         first_row_resample = True
         first_row_frequency = '30T'
         first_row_threshold = 1
