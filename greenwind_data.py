@@ -465,6 +465,35 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
     return green_wind_df
 
 
+def get_highest_power_output(year, filename_green_wind, pickle_load=False,
+                             filename='green_wind_highest_power_output.p'):
+    if pickle_load:
+        green_wind_df = pickle.load(open(filename, 'rb'))
+    else:
+        # Load greenwind data without resampling and do not dump.
+        green_wind_df = get_greenwind_data(
+            year=year, pickle_load=True,
+            filename=filename_green_wind, resample=False,
+            pickle_dump=False, filter_errors=True,
+            print_error_amount=False)
+        power_cols = [col for col in list(green_wind_df) if
+                     (col.split('_')[3] == 'power' and col.split('_')[
+                         4]) == 'output']
+        wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
+        for wf in wfs:
+            green_wind_df['{}_highest_power_output'.format(wf)] = np.nan
+            power_cols_wf = [col for col in power_cols if wf in col]
+            for index in green_wind_df.index:
+                green_wind_df.loc[index]['{}_highest_power_output'.format(
+                    wf)] = (np.nan if green_wind_df.loc[index][
+                    power_cols_wf].dropna().empty
+                            else max(
+                    green_wind_df.loc[index][power_cols_wf].dropna()))
+        columns = ['{}_highest_power_output'.format(wf) for wf in wfs]
+        green_wind_df = green_wind_df[columns]
+        pickle.dump(green_wind_df, open(filename, 'wb'))
+    return green_wind_df
+
 def plot_green_wind_wind_roses():
     for year in [2015, 2016]:
         filename = os.path.join(os.path.dirname(__file__),
@@ -537,8 +566,9 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = True
+    evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
+    evaluate_highest_power_output = True
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     nans_evaluation = False
@@ -712,6 +742,19 @@ if __name__ == "__main__":
                 year, filename_green_wind, pickle_load=False,
                 filename=filename)
             print(highest_wind_speed)
+
+    # ---- highest power output ----#
+    if evaluate_highest_power_output:
+        for year in years:
+            filename_green_wind = os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'greenwind_data_{0}.p'.format(year))
+            filename = os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'greenwind_data_{0}_highest_power.p'.format(year))
+            highest_power_output = get_highest_power_output(
+                year, filename_green_wind, pickle_load=False,
+                filename=filename)
 
     # ---- Plot wind roses ----#
     if plot_wind_roses:
