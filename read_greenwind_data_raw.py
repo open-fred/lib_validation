@@ -55,7 +55,7 @@ def setup_windfarm_dataframe(year, windfarm):
                 wt_data.set_index('timeindex', inplace=True)
                 # delete unnecessary columns
                 keep_cols = ['Windgeschwindigkeit', 'Leistung',
-                             'Gondelposition', 'Fehlernummer']
+                             'Gondelposition', 'Fehlernummer', 'Windrichtung']
                 wt_data = wt_data[keep_cols]
                 # rename other columns
                 wt_data.columns = [
@@ -66,7 +66,9 @@ def setup_windfarm_dataframe(year, windfarm):
                     '{}_{}_wind_dir'.format(windfarm_alias[windfarm],
                                             wt_number),
                     '{}_{}_error_number'.format(windfarm_alias[windfarm],
-                                                wt_number)]
+                                                wt_number),
+                    '{}_{}_wind_dir_real'.format(windfarm_alias[windfarm],
+                                                 wt_number)]
                 wt_df = wt_df.append(wt_data)
         if counter != 0:
             windfarm_df = windfarm_df.join(wt_df, how='outer')
