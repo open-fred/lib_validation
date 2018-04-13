@@ -469,7 +469,7 @@ def get_highest_power_output_and_wind_speed(
         year, filename_green_wind, pickle_load=False,
         filename='green_wind_highest_power_output.p'):
     if pickle_load:
-        green_wind_df = pickle.load(open(filename, 'rb'))
+        highest_df = pickle.load(open(filename, 'rb'))
     else:
         # Load greenwind data without resampling and do not dump.
         green_wind_df = get_greenwind_data(
@@ -497,9 +497,12 @@ def get_highest_power_output_and_wind_speed(
             filename=os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'green_wind_highest_wind_speed_{}.p'.format(year)))
-        green_wind_df = pd.concat([power_df, wind_df], axis=1)
-        pickle.dump(green_wind_df, open(filename, 'wb'))
-    return green_wind_df
+        csv_df = pd.concat([power_df, green_wind_df[power_cols]], axis=1)
+        csv_df.sort_index(axis=1, inplace=True)
+        csv_df.to_csv('data/GreenWind/highest_power_output_{}.csv'.format(year))
+        highest_df = pd.concat([power_df, wind_df], axis=1)
+        pickle.dump(highest_df, open(filename, 'wb'))
+    return highest_df
 
 def plot_green_wind_wind_roses():
     for year in [2015, 2016]:
@@ -582,6 +585,10 @@ if __name__ == "__main__":
     duplicates_evaluation = False
     error_numbers = False
 
+    # df = pd.read_csv('data/GreenWind/highest_power_output.csv', index_col=0,
+    #                  parse_dates=True)
+
+
     years = [
         2015,
         2016
@@ -591,7 +598,7 @@ if __name__ == "__main__":
     if load_data:
         # Decide whether to resample to a certain frequency with a certain
         # threshold
-        resample = True
+        resample_info = [True, False]
         frequency = '30T'
         threshold = 2  # Original are 10
         # Decide whether to filter out time steps with error codes (not
@@ -601,53 +608,54 @@ if __name__ == "__main__":
         filter_errors = True
         print_error_amount = True
         print_erroer_amount_total = True
-        for year in years:
-            if resample:
-                filename = os.path.join(os.path.dirname(__file__),
-                                        'dumps/validation_data',
-                                        'greenwind_data_{0}.p'.format(year))
-            else:
-                filename = os.path.join(
+        for resample in resample_info:
+            for year in years:
+                if resample:
+                    filename = os.path.join(os.path.dirname(__file__),
+                                            'dumps/validation_data',
+                                            'greenwind_data_{0}.p'.format(year))
+                else:
+                    filename = os.path.join(
+                        os.path.dirname(__file__),
+                        'dumps/validation_data',
+                        'greenwind_data_{0}_raw_resolution.p'.format(year))
+                error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
-                    'dumps/validation_data',
-                    'greenwind_data_{0}_raw_resolution.p'.format(year))
-            error_amount_filename = os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                'filtered_error_amount_{}.csv'.format(year))
-            df = get_greenwind_data(
-                year=year, resample=resample,
-                frequency=frequency, threshold=threshold,
-                filename=filename, filter_errors=filter_errors,
-                print_error_amount=print_error_amount,
-                error_amount_filename=error_amount_filename)
+                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                    'filtered_error_amount_{}.csv'.format(year))
+                df = get_greenwind_data(
+                    year=year, resample=resample,
+                    frequency=frequency, threshold=threshold,
+                    filename=filename, filter_errors=filter_errors,
+                    print_error_amount=print_error_amount,
+                    error_amount_filename=error_amount_filename)
 
-        if print_erroer_amount_total and print_error_amount:
-            filenames = [os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                'filtered_error_amount_{}.csv'.format(year)) for year in years]
-            dfs = [pd.read_csv(filename, index_col=0).rename(
-                columns={'amount': year}) for
-                   filename, year in zip(filenames, years)]
-            df = pd.concat(dfs, axis=1)
-            error_amout_df = df.loc[['wf_BE', 'wf_BS', 'min_periods']]
-            error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
-                                         ind in error_amout_df.index},
-                                  inplace=True)
-            error_amout_df.to_csv(os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                'filtered_error_amount_years.csv'))
-            latex_filename = os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Latex/Tables/',
-                'filtered_error_amount_years.tex')
-            error_amout_df.to_latex(
-                buf=latex_filename,
-                column_format=latex_tables.create_column_format(
-                    len(error_amout_df.columns), 'c'),
-                multicolumn_format='c')
+            if print_erroer_amount_total and print_error_amount: # TODO not for both resampling cases
+                filenames = [os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                    'filtered_error_amount_{}.csv'.format(year)) for year in years]
+                dfs = [pd.read_csv(filename, index_col=0).rename(
+                    columns={'amount': year}) for
+                       filename, year in zip(filenames, years)]
+                df = pd.concat(dfs, axis=1)
+                error_amout_df = df.loc[['wf_BE', 'wf_BS', 'min_periods']]
+                error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
+                                             ind in error_amout_df.index},
+                                      inplace=True)
+                error_amout_df.to_csv(os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                    'filtered_error_amount_years.csv'))
+                latex_filename = os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/Tables/',
+                    'filtered_error_amount_years.tex')
+                error_amout_df.to_latex(
+                    buf=latex_filename,
+                    column_format=latex_tables.create_column_format(
+                        len(error_amout_df.columns), 'c'),
+                    multicolumn_format='c')
 
 
     # ----- First row turbine -----#
