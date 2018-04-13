@@ -25,7 +25,7 @@ def get_wind_efficiency_curves(years):
             year, pickle_load=True, resample=False,
             filename=os.path.join(
                 validation_pickle_folder,
-                'greenwind_data_{0}_raw_resolution.p'.format(year)))
+                'greenwind_data_{0}.p'.format(year)))   #
         # Select aggregated power output of wind farm (rename)
         greenwind_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
@@ -35,13 +35,16 @@ def get_wind_efficiency_curves(years):
             'greenwind_data_{0}_highest_power.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
         gw_first_row = get_first_row_turbine_time_series(
             year=year, pickle_load=True,
-            pickle_filename=pickle_filename, resample=False)
+            pickle_filename=pickle_filename, resample=False, frequency='30T',
+            threshold=2)
+        if greenwind_data.index.freq != gw_first_row.index.freq:
+            print('Attention - different frequencies')
         for wf, number_of_turbines in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
             cols_first_row = [col for col in gw_first_row.columns if wf in col]
             first_row_data = gw_first_row[cols_first_row].rename(columns={
-                [col for col in gw_first_row if 'wind_speed' in col][0]:
+                [col for col in cols_first_row if 'wind_speed' in col][0]:
                     'wind_speed',
-                [col for col in gw_first_row if 'power_output' in col][0]:
+                [col for col in cols_first_row if 'power_output' in col][0]:
                     'single_power_output'})
             cols_wf = [col for col in greenwind_data.columns if wf in col]
             wf_power_output = greenwind_data[cols_wf].rename(columns={
@@ -93,11 +96,16 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
     df['efficiency'] = df['wind_farm_power_output'] / (
         number_of_turbines * df['single_power_output'])
     df.set_index('v_std', inplace=True)
+    # indices = df[df.loc[:, 'efficiency'] > 1.0].index
     df2 = df[['efficiency']]
     df2 = df2.groupby(df.index).mean()
-    # efficiency_curve = pd.DataFrame(np.random.rand, index=standard_wind_speeds)
+    empty_curve = pd.DataFrame([
+        np.nan for i in range(len(standard_wind_speeds))],
+        index=standard_wind_speeds)
+    efficiency_curve = pd.concat([empty_curve, df2], axis=1)
     print('l')
-# pd.DataFrame(data=np.arange(0.0, len(standard_wind_speeds), ), index=standard_wind_speeds)
+
+
 def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
     path = os.path.join(os.path.dirname(__file__), 'helper_files',
                         'wind_efficiency_curves_raw.csv')
@@ -134,7 +142,7 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
 if __name__ == "__main__":
     standardize_curves = False
     years = [
-        2015,
+        # 2015,
         2016
     ]
     get_wind_efficiency_curves(years=years)
