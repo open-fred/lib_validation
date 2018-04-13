@@ -1,6 +1,8 @@
 from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
 from open_fred_weather_data import get_open_fred_data
+
+from matplotlib import pyplot as plt
 import tools
 import os
 
@@ -10,13 +12,23 @@ def evaluate_z0_data(weather_data_name, wind_farm_data, year,
         os.path.dirname(__file__), 'dumps/weather',
         'weather_df_{0}_{1}.p'.format(weather_data_name, year))
     for wf_data in wind_farm_data:
-        wf_name = wf_data['object_name']
         # Get weather data
         weather = tools.get_weather_data(
             weather_data_name, wf_data['coordinates'], pickle_load=True,
             filename=filename_weather, year=year,
             temperature_heights=temperature_heights)
         z0 = weather['roughness_length']
+        fig, ax = plt.subplots()
+        z0.plot.hist(stacked=True, bins=20, ax=ax, legend=False)
+        plt.xlabel('Roughness length in m')
+        fig.savefig(
+            os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/inc/images/z0',
+                'z0_{}_{}_{}'.format(weather_data_name,
+                                     wf_data['object_name'], year)))
+        plt.close()
+
 
 if __name__ == "__main__":
     years = [
