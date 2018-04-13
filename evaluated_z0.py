@@ -1,10 +1,10 @@
 from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
-from open_fred_weather_data import get_open_fred_data
+import tools
 
 from matplotlib import pyplot as plt
-import tools
 import os
+
 
 def evaluate_z0_data(weather_data_name, wind_farm_data, year,
                      temperature_heights=None):
