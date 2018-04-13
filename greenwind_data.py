@@ -262,6 +262,18 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
+            wind_dir_string = 'wind_dir'
+        elif case == 'wind_dir_real':
+            turbine_dict = {
+                'wf_BS': {
+                    'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
+                    'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
+                    'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
+                },
+                'wf_BNW': {
+                    'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
+                }}
+            wind_dir_string = 'wind_dir_real'
         else:
             turbine_dict = {
                 'wf_BE': {
@@ -277,6 +289,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 'wf_BNW': {
                     'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
                     }}
+            wind_dir_string = 'wind_dir'
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
@@ -284,24 +297,26 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             for turbine_name in turbine_dict[wind_farm_name]:
                 # Set negative values of wind direction to 360 + wind direction
                 negativ_indices = green_wind_df.loc[
-                    green_wind_df['{}_wind_dir'.format(
-                        turbine_name)] < 0].index
+                    green_wind_df['{}_{}'.format(
+                        turbine_name, wind_dir_string)] < 0].index
                 if not negativ_indices.empty:
                     green_wind_df['temp_360'] = 360.0
-                    green_wind_df['{}_wind_dir'.format(
-                        turbine_name)].loc[negativ_indices] = (
+                    green_wind_df['{}_{}'.format(
+                        turbine_name, wind_dir_string)].loc[negativ_indices] = (
                             green_wind_df.loc[negativ_indices]['temp_360'] +
                             green_wind_df.loc[negativ_indices][
-                                '{}_wind_dir'.format(turbine_name)])
+                                '{}_{}'.format(
+                        turbine_name, wind_dir_string)])
                     green_wind_df.drop('temp_360', axis=1, inplace=True)
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`.
                 # Example for 'wf_BE_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
-                    (green_wind_df['{}_wind_dir'.format(
-                        turbine_name)] >=
+                    (green_wind_df['{}_{}'.format(
+                        turbine_name, wind_dir_string)] >=
                         float(turbine_dict[wind_farm_name][turbine_name][0])) &
-                    (green_wind_df['{}_wind_dir'.format(turbine_name)] <
+                    (green_wind_df['{}_{}'.format(
+                        turbine_name, wind_dir_string)] <
                      float(
                          turbine_dict[wind_farm_name][turbine_name][1]))].index
                 # Add temporary wind speed column with only nans
@@ -584,22 +599,33 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
             'greenwind_data_{0}_raw_resolution.p'.format(year)),
         resample=False, pickle_dump=False, filter_errors=True)
     for wf, turbine_nb in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
-        for i in range(len(turbine_nb)):
-            df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, turbine_nb + 1),
-                                'wf_{}_{}_wind_dir_real'.format(
-                                    wf, turbine_nb + 1)]]
-            df.corr()
+        dict = {}
+        for i in range(turbine_nb):
+            df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, i + 1),
+                                'wf_{}_{}_wind_dir_real'.format(wf, i + 1)]]
+            corr = df.corr().iloc[:, 0][1]
+            dict['{}_{}'.format(wf, i + 1)] = corr
+        dict_df = pd.DataFrame(dict, index=['corr']).transpose()
+        dict_df['mean_bias'] = np.nan
+        for i in range(turbine_nb):
+            df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, i + 1),
+                                'wf_{}_{}_wind_dir_real'.format(wf, i + 1)]]
+            bias = df.iloc[:, 0] - df.iloc[:, 1]
+            dict_df['mean_bias'].loc['{}_{}'.format(wf, i + 1)] = bias.mean()
+        dict_df.to_csv(os.path.join(
+            os.path.dirname(__file__), save_folder,
+            'correlation_{}_{}.csv'.format(wf, year)))
 
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = False
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
-    wind_dir_vs_gondel_position = True
+    wind_dir_vs_gondel_position = False
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
@@ -676,7 +702,10 @@ if __name__ == "__main__":
     # ----- First row turbine -----#
     if evaluate_first_row_turbine:
         # Parameters
-        cases = ['wind_speed_1', 'weather_wind_speed_3']
+        cases = [
+            'wind_dir_real',
+                 # 'wind_speed_1', 'weather_wind_speed_3'
+        ]
         first_row_resample = True
         first_row_frequency = '30T'
         first_row_threshold = 1
@@ -697,6 +726,10 @@ if __name__ == "__main__":
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
+                if case == 'wind_dir_real':
+                    pickle_filename = os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}_wind_dir_real.p'.format(year))
                 error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
                     '../../../User-Shares/Masterarbeit/Daten/Twele/',
@@ -797,7 +830,7 @@ if __name__ == "__main__":
         WT_14 = True
         folder = os.path.join(
             os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
+            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation',
             'green_wind_wind_direction')
         for year in years:
             evaluate_wind_directions(year=year, save_folder=folder,
