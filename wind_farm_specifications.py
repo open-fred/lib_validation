@@ -91,8 +91,7 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     return turbine_list
 
 
-def get_wind_farm_data(filename, save_folder='', pickle_load=False,
-                       first_row_greenwind=False):
+def get_wind_farm_data(filename, save_folder='', pickle_load=False):
     """
     Get wind farm specifications for specified validation data.
 
