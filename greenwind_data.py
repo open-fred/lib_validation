@@ -573,14 +573,32 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
                 wf, year, corr_min)))
         logging.info("Wind direction evaluation was written to csv.")
 
+def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
+    # TODO laufen lassen auf RLI PC!!
+    # Load greenwind data without resampling and do not dump.
+    green_wind_df = get_greenwind_data(
+        year=year, pickle_load=True,
+        filename=os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'greenwind_data_{0}_raw_resolution.p'.format(year)),
+        resample=False, pickle_dump=False, filter_errors=True)
+    for wf, turbine_nb in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
+        for i in range(len(turbine_nb)):
+            df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, turbine_nb + 1),
+                                'wf_{}_{}_wind_dir_real'.format(
+                                    wf, turbine_nb + 1)]]
+            df.corr()
+
+
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
     evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
-    evaluate_highest_power_output = True
+    evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
+    wind_dir_vs_gondel_position = True
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
@@ -787,6 +805,17 @@ if __name__ == "__main__":
         for year in years:
             evaluate_wind_directions(year=year, save_folder=folder,
                                      corr_min=corr_min, WT_14=WT_14)
+
+    # ---- Wind direction vs. golden position ----#
+    if wind_dir_vs_gondel_position:
+        corr_min = 0.6
+        folder = os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
+            'gw_wind_dir_vs_gondel_pos')
+        for year in years:
+            evaluate_wind_dir_vs_gondel_position(year=year, save_folder=folder,
+                                                 corr_min=corr_min)
     # Evaluation of nans
     if nans_evaluation:
         nans_df = evaluate_nans(years)
