@@ -89,7 +89,7 @@ def setup_windfarm_dataframe(year, windfarm):
     windfarm_df[column_name] = windfarm_df[power_output_columns].sum(
         axis=1, skipna=False)
 
-    file_directory = 'data/Daten_Twele/processed_data/'
+    file_directory = 'data/GreenWind/'
     windfarm_df.to_csv(file_directory + '{}_{}.csv'.format(windfarm, year))
 
 
