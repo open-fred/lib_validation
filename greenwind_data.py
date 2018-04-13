@@ -465,8 +465,9 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
     return green_wind_df
 
 
-def get_highest_power_output(year, filename_green_wind, pickle_load=False,
-                             filename='green_wind_highest_power_output.p'):
+def get_highest_power_output_and_wind_speed(
+        year, filename_green_wind, pickle_load=False,
+        filename='green_wind_highest_power_output.p'):
     if pickle_load:
         green_wind_df = pickle.load(open(filename, 'rb'))
     else:
@@ -490,7 +491,13 @@ def get_highest_power_output(year, filename_green_wind, pickle_load=False,
                             else max(
                     green_wind_df.loc[index][power_cols_wf].dropna()))
         columns = ['{}_highest_power_output'.format(wf) for wf in wfs]
-        green_wind_df = green_wind_df[columns]
+        power_df = green_wind_df[columns]
+        wind_df = get_highest_wind_speeds(
+            year, filename_green_wind, pickle_load=True,
+            filename=os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'green_wind_highest_wind_speed_{}.p'.format(year)))
+        green_wind_df = pd.concat([power_df, wind_df], axis=1)
         pickle.dump(green_wind_df, open(filename, 'wb'))
     return green_wind_df
 
@@ -752,7 +759,7 @@ if __name__ == "__main__":
             filename = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'greenwind_data_{0}_highest_power.p'.format(year))
-            highest_power_output = get_highest_power_output(
+            highest_power_output = get_highest_power_output_and_wind_speed(
                 year, filename_green_wind, pickle_load=False,
                 filename=filename)
 
