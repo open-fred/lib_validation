@@ -18,42 +18,87 @@ import pickle
 
 
 def plot_smoothed_pcs(standard_deviation_method, block_width,
-                      wind_speeds_block_range, turbines,
+                      wind_speeds_block_range, turbines, grouped=False,
                       mean_roughness_length=None):
     for turbine in turbines:
-        if (standard_deviation_method == 'turbulence_intensity' or
-            standard_deviation_method == 'Norgaard'):
+        if standard_deviation_method == 'turbulence_intensity':
             turbulence_intensity = tools.estimate_turbulence_intensity(
                 turbine.hub_height, mean_roughness_length)
-            if standard_deviation_method == 'Norgaard':
-                area_dimension = 1.0
-            else:
-                area_dimension = None
         else:
             turbulence_intensity = None
-            area_dimension = None
-        # Get smoothed power curve
-        smoothed_power_curve = smooth_power_curve(
-            turbine.power_curve.wind_speed, turbine.power_curve['power'],
-            block_width=block_width,
-            standard_deviation_method=standard_deviation_method,
-            turbulence_intensity=turbulence_intensity,
-            wind_speeds_block_range=wind_speeds_block_range)
+        # Start figure with original power curve
         fig = plt.figure()
         a, = plt.plot(turbine.power_curve['wind_speed'],
-                     turbine.power_curve['power']/1000, label='original')
-        b, = plt.plot(smoothed_power_curve['wind_speed'],
-                     smoothed_power_curve['power']/1000, label='smoothed')
+                      turbine.power_curve['power'] / 1000, label='original')
+        # Get smoothed power curve
+        if grouped == False:
+            smoothed_power_curve = smooth_power_curve(
+                turbine.power_curve.wind_speed, turbine.power_curve['power'],
+                block_width=block_width,
+                standard_deviation_method=standard_deviation_method,
+                turbulence_intensity=turbulence_intensity,
+                wind_speeds_block_range=wind_speeds_block_range)
+            b, = plt.plot(smoothed_power_curve['wind_speed'],
+                          smoothed_power_curve['power'] / 1000,
+                          label='smoothed')
+            handles = [a, b]
+        if grouped == 'wind_speed_range':
+            handles = [a]
+            for range in wind_speeds_block_range:
+                smoothed_power_curve = smooth_power_curve(
+                    turbine.power_curve.wind_speed, turbine.power_curve['power'],
+                    block_width=block_width,
+                    standard_deviation_method=standard_deviation_method,
+                    turbulence_intensity=turbulence_intensity,
+                    wind_speeds_block_range=range)
+                handle, = plt.plot(smoothed_power_curve['wind_speed'],
+                              smoothed_power_curve['power'] / 1000,
+                              label='range {}'.format(range))
+                handles.append(handle)
+        if grouped == 'block_width':
+            handles = [a]
+            for width in block_width:
+                smoothed_power_curve = smooth_power_curve(
+                    turbine.power_curve.wind_speed,
+                    turbine.power_curve['power'],
+                    block_width=width,
+                    standard_deviation_method=standard_deviation_method,
+                    turbulence_intensity=turbulence_intensity,
+                    wind_speeds_block_range=wind_speeds_block_range)
+                handle, = plt.plot(smoothed_power_curve['wind_speed'],
+                                   smoothed_power_curve['power'] / 1000,
+                                   label='block width {}'.format(width))
+                handles.append(handle)
+        if grouped == 'std_dev':
+            handles = [a]
+            for std_dev_method in standard_deviation_method:
+                if std_dev_method == 'turbulence_intensity':
+                    turbulence_intensity = tools.estimate_turbulence_intensity(
+                        turbine.hub_height, mean_roughness_length)
+                else:
+                    turbulence_intensity = None
+                smoothed_power_curve = smooth_power_curve(
+                    turbine.power_curve.wind_speed,
+                    turbine.power_curve['power'],
+                    block_width=block_width,
+                    standard_deviation_method=std_dev_method,
+                    turbulence_intensity=turbulence_intensity,
+                    wind_speeds_block_range=wind_speeds_block_range)
+                handle, = plt.plot(smoothed_power_curve['wind_speed'],
+                                   smoothed_power_curve['power'] / 1000,
+                                   label=std_dev_method.replace(
+                                       'turbulence_intensity', 'TI'))
+                handles.append(handle)
         plt.ylabel('Power in kW')
         plt.xlabel('Wind speed in m/s')
         plt.title(turbine.object_name)
-        plt.legend(handles=[a, b])
+        plt.legend(handles=handles)
         fig.savefig(os.path.abspath(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
-            '{}_{}_{}_blockwidth{}_range{}.png'.format(
-                turbine.object_name, weather_data_name,
-                standard_deviation_method,
+            '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
+                'single' if grouped == False else grouped, turbine.object_name,
+                weather_data_name, standard_deviation_method,
                 block_width, wind_speeds_block_range))))
         plt.close()
 
@@ -75,9 +120,11 @@ def get_roughness_length(weather_data_name, coordinates):
 
 
 if __name__ == "__main__":
+    single_plots = False
+    grouped_plots = True
     standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
-    block_widths = [0.5, 0.1, 1.0]
-    wind_speeds_block_ranges = [2.0, 5.0, 15.0, 20.0]
+    block_widths = [0.1, 0.5, 1.0]
+    wind_speeds_block_ranges = [5.0, 10.0, 15.0, 20.0]
     weather_data_names = ['MERRA', 'open_FRED']
     # Initialise WindTurbine objects
     e70, v90, v80, ge, e82 = initialize_turbines(
@@ -107,11 +154,38 @@ if __name__ == "__main__":
                 turbines = [ge, e82]
             elif wf_data['object_name'] == 'wf_SH':
                 turbines = [e70]
-            for std_dev_method in standard_deviaton_methods:
-                for block_width in block_widths:
-                    for wind_speeds_block_range in wind_speeds_block_ranges:
-                        plot_smoothed_pcs(
-                            standard_deviation_method=std_dev_method,
-                            block_width=block_width,
-                            wind_speeds_block_range=wind_speeds_block_range,
-                            turbines=turbines, mean_roughness_length=z0)
+            if single_plots:
+                for std_dev_method in standard_deviaton_methods:
+                    for block_width in block_widths:
+                        for wind_speeds_block_range in wind_speeds_block_ranges:
+                            plot_smoothed_pcs(
+                                standard_deviation_method=std_dev_method,
+                                block_width=block_width,
+                                wind_speeds_block_range=wind_speeds_block_range,
+                                turbines=turbines, mean_roughness_length=z0)
+            if grouped_plots:
+                # # different block widths:
+                # for std_dev_method in standard_deviaton_methods:
+                #     for range in [10.0, 15.0, 20.0]:
+                #         plot_smoothed_pcs(
+                #             standard_deviation_method=std_dev_method,
+                #             block_width=block_widths,
+                #             wind_speeds_block_range=range,
+                #             turbines=turbines, mean_roughness_length=z0,
+                #             grouped='block_width')
+                # different standard deviation methods
+                for range in [10.0, 15.0, 20.0]:
+                    plot_smoothed_pcs(
+                        standard_deviation_method=standard_deviaton_methods,
+                        block_width=0.5,
+                        wind_speeds_block_range=range,
+                        turbines=turbines, mean_roughness_length=z0,
+                        grouped='std_dev')
+                # # different block ranges
+                # for std_dev_method in standard_deviaton_methods:
+                #     plot_smoothed_pcs(
+                #         standard_deviation_method=std_dev_method,
+                #         block_width=0.5,
+                #         wind_speeds_block_range=wind_speeds_block_ranges,
+                #         turbines=turbines, mean_roughness_length=z0,
+                #         grouped='wind_speed_range')
