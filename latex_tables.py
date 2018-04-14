@@ -365,6 +365,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
 
+    if 'std_dev_time_series' in latex_output:
+        pass # TODO add latex table
 
 def sort_columns_height(df, case):
     if (case == 'wind_speed_1' or case == 'wind_speed_2' or
