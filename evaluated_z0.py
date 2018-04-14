@@ -4,6 +4,8 @@ import tools
 
 from matplotlib import pyplot as plt
 import os
+import numpy as np
+import pandas as pd
 
 
 def evaluate_z0_data(weather_data_name, wind_farm_data, year,
@@ -18,8 +20,16 @@ def evaluate_z0_data(weather_data_name, wind_farm_data, year,
             filename=filename_weather, year=year,
             temperature_heights=temperature_heights)
         z0 = weather['roughness_length']
+        # Define bins
+        if weather_data_name == 'MERRA':
+            bins = 20
+        else:
+            bins = np.arange(min(z0.values)[0], max(z0.values)[0] + 0.01, 0.01)
+            if len(bins) == 1:
+                bins = 20
         fig, ax = plt.subplots()
-        z0.plot.hist(stacked=True, bins=20, ax=ax, legend=False)
+        z0.plot.hist(ax=ax, legend=False, alpha=0.5, color='darkblue',
+                     bins=bins)
         plt.xlabel('Roughness length in m')
         fig.savefig(
             os.path.join(
