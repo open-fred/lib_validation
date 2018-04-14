@@ -180,16 +180,16 @@ def get_configuration(case=None):
     # ---- Single functions - Smoothing ---- #
     if case == 'smoothing_1':
         config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
-        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: delete!!!!!!!!!!!!!!!
+        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: only Enertrag!!!!
         config_dict['latex_output'] = ['key_figures_approaches',
-                                       'annual_energy_approaches',
-                                       'std_dev_time_series']
+                                       'annual_energy_approaches']
     if case == 'smoothing_2':
-        config_dict['approach_list'] = ['TI', 'Staffell', 'aggregation']
-        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: delete!!!!!!!!!!!!!!!
+        config_dict['approach_list'] = ['TI', 'St._Pf.', 'aggregation']
+        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: delete!!!!!!!!!!!!!!! (use all)
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
+
     # if case == 'density_correction_1':
     #     config_dict['approach_list'] = ['turbine', 'farm']
 

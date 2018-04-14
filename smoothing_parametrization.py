@@ -91,15 +91,16 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                 handles.append(handle)
         plt.ylabel('Power in kW')
         plt.xlabel('Wind speed in m/s')
-        plt.title(turbine.object_name)
+        # plt.title(turbine.object_name)
         plt.legend(handles=handles)
-        fig.savefig(os.path.abspath(os.path.join(
+        fig.savefig(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
             '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
                 'single' if grouped == False else grouped, turbine.object_name,
                 weather_data_name, standard_deviation_method,
-                block_width, wind_speeds_block_range))))
+                block_width, wind_speeds_block_range).replace(
+                    '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
         plt.close()
 
 
@@ -122,7 +123,7 @@ def get_roughness_length(weather_data_name, coordinates):
 if __name__ == "__main__":
     single_plots = False
     grouped_plots = True
-    standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
+    standard_deviaton_methods = ['turbulence_intensity', 'Staffell_Pfenninger']
     block_widths = [0.1, 0.5, 1.0]
     wind_speeds_block_ranges = [5.0, 10.0, 15.0, 20.0]
     weather_data_names = ['MERRA', 'open_FRED']
