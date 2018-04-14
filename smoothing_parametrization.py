@@ -165,27 +165,27 @@ if __name__ == "__main__":
                                 turbines=turbines, mean_roughness_length=z0)
             if grouped_plots:
                 # # different block widths:
-                # for std_dev_method in standard_deviaton_methods:
-                #     for range in [10.0, 15.0, 20.0]:
-                #         plot_smoothed_pcs(
-                #             standard_deviation_method=std_dev_method,
-                #             block_width=block_widths,
-                #             wind_speeds_block_range=range,
-                #             turbines=turbines, mean_roughness_length=z0,
-                #             grouped='block_width')
+                for std_dev_method in standard_deviaton_methods:
+                    for range in [10.0, 15.0, 20.0]:
+                        plot_smoothed_pcs(
+                            standard_deviation_method=std_dev_method,
+                            block_width=block_widths,
+                            wind_speeds_block_range=range,
+                            turbines=turbines, mean_roughness_length=z0,
+                            grouped='block_width')
                 # different standard deviation methods
-                for range in [10.0, 15.0, 20.0]:
-                    plot_smoothed_pcs(
-                        standard_deviation_method=standard_deviaton_methods,
-                        block_width=0.5,
-                        wind_speeds_block_range=range,
-                        turbines=turbines, mean_roughness_length=z0,
-                        grouped='std_dev')
-                # # different block ranges
-                # for std_dev_method in standard_deviaton_methods:
+                # for range in [10.0, 15.0, 20.0]:
                 #     plot_smoothed_pcs(
-                #         standard_deviation_method=std_dev_method,
+                #         standard_deviation_method=standard_deviaton_methods,
                 #         block_width=0.5,
-                #         wind_speeds_block_range=wind_speeds_block_ranges,
+                #         wind_speeds_block_range=range,
                 #         turbines=turbines, mean_roughness_length=z0,
-                #         grouped='wind_speed_range')
+                #         grouped='std_dev')
+                # # different block ranges
+                for std_dev_method in standard_deviaton_methods:
+                    plot_smoothed_pcs(
+                        standard_deviation_method=std_dev_method,
+                        block_width=0.5,
+                        wind_speeds_block_range=wind_speeds_block_ranges,
+                        turbines=turbines, mean_roughness_length=z0,
+                        grouped='wind_speed_range')
