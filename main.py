@@ -39,9 +39,10 @@ cases = [
 #     'wind_speed_7',  # first row like weather_wind_speed_3
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'power_output_1',
+#     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-    # 'smoothing_1',
+    'smoothing_1',
+    # 'smoothing_2',
     # 'density_correction_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -60,7 +61,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -407,7 +408,10 @@ def run_main(case, year):
                 weather_data_name, wind_farm.coordinates, pickle_load=True,
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
-            # Calculate power output and store in list
+            # Calculate power output and store in list for approaches in
+            # approach_list
+
+            # --- wind speed calculations --- #
             if 'logarithmic' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
@@ -547,7 +551,7 @@ def run_main(case, year):
                             name='{0}_calculated_log._interp.'.format(
                                 wind_farm.object_name)))
 
-            # Wind speed definition for next cases
+            # --- wind speed definition for next cases --- #
             if case == 'weather_single_turbine_2':
                 # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
@@ -558,6 +562,8 @@ def run_main(case, year):
                     pickle_load=pickle_load_greenwind, case=case)
                 wind_speed = single_data_raw[['wf_{}_wind_speed'.format(
                     wind_farm.object_name.split('_')[1])]]
+
+            # --- power output calculations single turbine --- #
             elif case == 'power_output_1':
                 # Get Greenwind data and get wind speed from each turbine
                 greenwind_data = get_greenwind_data(
@@ -635,25 +641,36 @@ def run_main(case, year):
                         obstacle_height=0, hellman_exp=None).to_frame(
                         name='{0}_calculated_cp-curve_(d._c.)'.format(
                             wind_farm.object_name)))
-            if ('turbine' in approach_list and case == 'smoothing_1'):
+
+            # --- power output calculations wind farms --- #
+            if 'turbine' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
-                        block_width=0.5,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='turbine_power_curves',
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_turbine'.format(
                                 wind_farm.object_name)))
-
-
-        #     if 'simple' in approach_list:
-        #         calculation_df_list.append(modelchain_usage.power_output_simple(
-        #             wind_farm.wind_turbine_fleet, weather).to_frame(
-        #                 name='{0}_calculated_simple'.format(
-        #                     wind_farm.object_name)))
+            if 'farm' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method=None, smoothing=True,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                            name='{0}_calculated_farm'.format(
+                                wind_farm.object_name)))
+            if 'aggregation' in approach_list:
+                calculation_df_list.append(modelchain_usage.power_output_simple(
+                    wind_farm.wind_turbine_fleet, weather).to_frame(
+                        name='{0}_calculated_aggregation'.format(
+                            wind_farm.object_name)))
+            # if
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
         #             wind_farm.wind_turbine_fleet, weather,

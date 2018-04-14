@@ -177,11 +177,21 @@ def get_configuration(case=None):
             ('cp-curve', 'cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
-    # ---- Single functions - smoothing, density... ---- #
+    # ---- Single functions - Smoothing ---- #
     if case == 'smoothing_1':
-        config_dict['approach_list'] = ['turbine', 'farm']
-    if case == 'density_correction_1':
-        config_dict['approach_list'] = ['turbine', 'farm']
+        config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
+        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: delete!!!!!!!!!!!!!!!
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches',
+                                       'std_dev_time_series']
+    if case == 'smoothing_2':
+        config_dict['approach_list'] = ['TI', 'Staffell', 'aggregation']
+        config_dict['validation_data_list'] = ['ArgeNetz', 'GreenWind'] # TODO: delete!!!!!!!!!!!!!!!
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches',
+                                       'std_dev_time_series']
+    # if case == 'density_correction_1':
+    #     config_dict['approach_list'] = ['turbine', 'farm']
 
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
