@@ -37,7 +37,8 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
             turbine.power_curve.wind_speed, turbine.power_curve['power'],
             block_width=block_width,
             standard_deviation_method=standard_deviation_method,
-            turbulence_intensity=turbulence_intensity)
+            turbulence_intensity=turbulence_intensity,
+            wind_speeds_block_range=wind_speeds_block_range)
         fig = plt.figure()
         a, = plt.plot(turbine.power_curve['wind_speed'],
                      turbine.power_curve['power']/1000, label='original')
@@ -58,8 +59,8 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
 
 
 def get_roughness_length(weather_data_name, coordinates):
+    z0 = pd.DataFrame()
     for year in [2015, 2016]:
-        z0 = pd.DataFrame()
         filename_weather = os.path.join(
             os.path.dirname(__file__), 'dumps/weather',
             'weather_df_{0}_{1}.p'.format(weather_data_name, year))
@@ -72,22 +73,11 @@ def get_roughness_length(weather_data_name, coordinates):
         z0 = pd.concat([z0, weather['roughness_length']], axis=0)
     return z0.mean()
 
-# variables = pd.Series(data=np.arange(-15.0, 15.0, 0.5), index=np.arange(-15.0, 15.0, 0.5))
-# wind_speed = 12
-# # variables = np.arange(-15.0, 15.0, 0.5)
-# gauss =  tools.gaussian_distribution(variables, standard_deviation=0.15*wind_speed, mean=0)
-# gauss.index = gauss.index + wind_speed
-# gauss.plot()
-# plt.show()
-# print(gauss)
-
-
-
 
 if __name__ == "__main__":
     standard_deviaton_methods = ['turbulence_intensity', 'Staffell']
-    block_width = 0.5
-    wind_speeds_block_range = 15.0
+    block_widths = [0.5, 0.1, 1.0]
+    wind_speeds_block_ranges = [2.0, 5.0, 15.0, 20.0]
     weather_data_names = ['MERRA', 'open_FRED']
     # Initialise WindTurbine objects
     e70, v90, v80, ge, e82 = initialize_turbines(
@@ -118,8 +108,10 @@ if __name__ == "__main__":
             elif wf_data['object_name'] == 'wf_SH':
                 turbines = [e70]
             for std_dev_method in standard_deviaton_methods:
-                plot_smoothed_pcs(
-                    standard_deviation_method=std_dev_method,
-                    block_width=block_width,
-                    wind_speeds_block_range=wind_speeds_block_range,
-                    turbines=turbines, mean_roughness_length=z0)
+                for block_width in block_widths:
+                    for wind_speeds_block_range in wind_speeds_block_ranges:
+                        plot_smoothed_pcs(
+                            standard_deviation_method=std_dev_method,
+                            block_width=block_width,
+                            wind_speeds_block_range=wind_speeds_block_range,
+                            turbines=turbines, mean_roughness_length=z0)
