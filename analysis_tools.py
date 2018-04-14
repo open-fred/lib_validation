@@ -59,9 +59,6 @@ class ValidationObject(object):
         Bias of `simulation_series` from `validation_series`.
     mean_bias : Float
         Mean bias of `simulation_series` from `validation_series`.
-    pearson_s_r : Float
-         Pearson's correlation coeffiecient (Pearson's R) of
-         `simulation_series` and `validation_series`.
     rmse : Float
         Root mean square error of `simulation_series` concerning
         `validation_series`.
@@ -71,6 +68,13 @@ class ValidationObject(object):
         With the average annual power output normalized RMSE.
     standard_deviation : Float
         Standard deviation of the bias time series (`bias`).
+    pearson_s_r : Float
+         Pearson's correlation coeffiecient (Pearson's R) of
+         `simulation_series` and `validation_series`.
+    std_dev_val : Float
+        Standard deviation of the validation time series (`validation_series`).
+    std_dev_sim : Float
+        Standard deviation of the simulation time series (`simulation_series`).
 
     """
     def __init__(self, object_name, data, output_method=None,
@@ -93,6 +97,8 @@ class ValidationObject(object):
         self.rmse_normalized = self.get_rmse(normalized=True)
         self.standard_deviation = self.get_standard_deviation(self.bias)
         self.pearson_s_r = self.get_pearson_s_r()
+        self.std_dev_val = self.get_standard_deviation(self.validation_series)
+        self.std_dev_sim = self.get_standard_deviation(self.simulation_series)
 
 
     def get_series(self, type):
