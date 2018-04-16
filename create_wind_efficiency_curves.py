@@ -1,6 +1,7 @@
-from greenwind_data import get_first_row_turbine_time_series, get_greenwind_data
+from greenwind_data import (get_first_row_turbine_time_series,
+                            get_greenwind_data)
 from wind_farm_specifications import get_wind_farm_data
-from windpowerlib import wind_farm
+
 # Other imports
 from matplotlib import pyplot as plt
 import os
@@ -13,6 +14,7 @@ wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
                                        'dumps/wind_farm_data')
 validation_pickle_folder = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data'))
+
 
 def get_wind_efficiency_curves(years):
     for year in years:
@@ -43,9 +45,9 @@ def get_wind_efficiency_curves(years):
             cols_first_row = [col for col in gw_first_row.columns if wf in col]
             first_row_data = gw_first_row[cols_first_row].rename(columns={
                 [col for col in cols_first_row if 'wind_speed' in col][0]:
-                    'wind_speed',
+                'wind_speed',
                 [col for col in cols_first_row if 'power_output' in col][0]:
-                    'single_power_output'})
+                'single_power_output'})
             cols_wf = [col for col in greenwind_data.columns if wf in col]
             wf_power_output = greenwind_data[cols_wf].rename(columns={
                 'wf_{}_power_output'.format(wf): 'wind_farm_power_output'})
@@ -80,11 +82,11 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
                 df.loc[:, column_name].isnull() == True].index] = np.nan
     df.dropna(inplace=True)
     # Get maximum wind speed rounded to the next integer
-    maximum_v_int= math.ceil(df['wind_speed'].max())
+    maximum_v_int = math.ceil(df['wind_speed'].max())
     # Get maximum standard wind speed rounded to next 0.5 m/s
     maximum_v_std = (maximum_v_int if
-        maximum_v_int - df['wind_speed'].max() < 0.5 else
-        maximum_v_int - 0.5)
+                     maximum_v_int - df['wind_speed'].max() < 0.5 else
+                     maximum_v_int - 0.5)
     # Add v_std (standard wind speed) column to data frame
     df['v_std'] = np.nan
     standard_wind_speeds = np.arange(0.0, maximum_v_std + 0.5, 0.5)
