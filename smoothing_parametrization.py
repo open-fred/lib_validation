@@ -18,7 +18,8 @@ import pickle
 
 
 def plot_smoothed_pcs(standard_deviation_method, block_width,
-                      wind_speeds_block_range, turbines, grouped=False,
+                      wind_speeds_block_range, turbines, weather_data_name,
+                      grouped=False,
                       mean_roughness_length=None):
     for turbine in turbines:
         if standard_deviation_method == 'turbulence_intensity':
@@ -104,6 +105,51 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
         plt.close()
 
 
+def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
+                              wind_speeds_block_range, turbines,
+                              weather_data_name,
+                              mean_roughness_lengths=None):
+    fig = plt.figure()
+    handles = []
+    for turbine, mean_roughness_length in zip(turbines, mean_roughness_lengths):
+        if turbine.object_name == 'GE 1.5 SLE':
+            name = 'GE 1.5'
+        else:
+            name = ''.join(turbine.object_name.split(' ')[0:2])
+        if standard_deviation_method == 'turbulence_intensity':
+            turbulence_intensity = tools.estimate_turbulence_intensity(
+                turbine.hub_height, mean_roughness_length)
+        else:
+            turbulence_intensity = None
+        # Plot original curve
+        a, = plt.plot(turbine.power_curve['wind_speed'],
+                      turbine.power_curve['power'] / 1000,
+                      label='{} original'.format(name))
+        handles.append(a)
+        # Plot smoothed curve
+        smoothed_power_curve = smooth_power_curve(
+            turbine.power_curve.wind_speed, turbine.power_curve['power'],
+            block_width=block_width,
+            standard_deviation_method=standard_deviation_method,
+            turbulence_intensity=turbulence_intensity,
+            wind_speeds_block_range=wind_speeds_block_range)
+        b, = plt.plot(smoothed_power_curve['wind_speed'],
+                           smoothed_power_curve['power'] / 1000,
+                           label='{} smoothed'.format(name))
+        handles.append(b)
+    plt.ylabel('Power in kW')
+    plt.xlabel('Wind speed in m/s')
+    # plt.title(turbine.object_name)
+    plt.legend(handles=handles)
+    fig.savefig(os.path.join(
+        os.path.dirname(__file__),
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc/by_turbine',
+        'turbines_{}_{}_blockwidth{}_range{}.pdf'.format(
+            weather_data_name, standard_deviation_method,
+            block_width, wind_speeds_block_range).replace(
+            '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
+    plt.close()
+
 def get_roughness_length(weather_data_name, coordinates):
     z0 = pd.DataFrame()
     for year in [2015, 2016]:
@@ -122,39 +168,44 @@ def get_roughness_length(weather_data_name, coordinates):
 
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = True
+    grouped_plots = False
+    turbine_plots = True
+
     standard_deviaton_methods = ['turbulence_intensity', 'Staffell_Pfenninger']
     block_widths = [0.1, 0.5, 1.0]
     wind_speeds_block_ranges = [5.0, 10.0, 15.0, 20.0]
     weather_data_names = ['MERRA', 'open_FRED']
+
     # Initialise WindTurbine objects
     e70, v90, v80, ge, e82 = initialize_turbines(
         ['enerconE70', 'vestasV90', 'vestasV80', 'ge_1500',
          # 'enerconE66_1800_65', # Note: war nur für wf_3
          'enerconE82_2000'])
-    # Get wind farm data
-    filenames = ['farm_specification_argenetz_2015.p',
-                 'farm_specification_argenetz_2016.p',
-                 'farm_specification_enertrag_2016.p',
-                 'farm_specification_greenwind_2015.p',
-                 'farm_specification_greenwind_2016.p']
-    wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
-                                           'dumps/wind_farm_data')
-    wind_farm_data = get_joined_wind_farm_data(
-        filenames, wind_farm_pickle_folder, pickle_load=True)
+    # Wind farm data
+    wind_farm_data = {
+        'wf_BE': [52.564506, 13.724137],
+        'wf_BS': [51.785053, 14.456623],
+        'wf_BNW': [53.128206, 12.114433],
+        'wf_BNE': [53.4582543833, 13.8976882575],
+        'wf_SH': [54.509708, 8.9007]}
     for weather_data_name in weather_data_names:
+        turbines_list = []
+        z0_list = []
         for wf_data in wind_farm_data:
             z0 = get_roughness_length(weather_data_name,
-                                      wf_data['coordinates'])[0]
-            if (wf_data['object_name'] == 'wf_BE' or
-                    wf_data['object_name'] == 'wf_BS'):
+                                      wind_farm_data[wf_data])[0]
+            z0_list.append(z0)
+            if (wf_data == 'wf_BE' or wf_data == 'wf_BS'):
                 turbines = [v90]
-            elif wf_data['object_name'] == 'wf_BE':
+            elif wf_data == 'wf_BNW':
                 turbines = [v80]
-            elif wf_data['object_name'] == 'wf_BNE':
+            elif wf_data == 'wf_BNE':
                 turbines = [ge, e82]
-            elif wf_data['object_name'] == 'wf_SH':
+                # append z0 a second time
+                z0_list.append(z0)
+            elif wf_data == 'wf_SH':
                 turbines = [e70]
+            turbines_list.extend(turbines)
             if single_plots:
                 for std_dev_method in standard_deviaton_methods:
                     for block_width in block_widths:
@@ -163,9 +214,10 @@ if __name__ == "__main__":
                                 standard_deviation_method=std_dev_method,
                                 block_width=block_width,
                                 wind_speeds_block_range=wind_speeds_block_range,
-                                turbines=turbines, mean_roughness_length=z0)
+                                turbines=turbines, mean_roughness_length=z0,
+                                weather_data_name=weather_data_name)
             if grouped_plots:
-                # # different block widths:
+                # different block widths:
                 for std_dev_method in standard_deviaton_methods:
                     for range in [10.0, 15.0, 20.0]:
                         plot_smoothed_pcs(
@@ -173,20 +225,30 @@ if __name__ == "__main__":
                             block_width=block_widths,
                             wind_speeds_block_range=range,
                             turbines=turbines, mean_roughness_length=z0,
-                            grouped='block_width')
+                            grouped='block_width',
+                            weather_data_name=weather_data_name)
                 # different standard deviation methods
-                # for range in [10.0, 15.0, 20.0]:
-                #     plot_smoothed_pcs(
-                #         standard_deviation_method=standard_deviaton_methods,
-                #         block_width=0.5,
-                #         wind_speeds_block_range=range,
-                #         turbines=turbines, mean_roughness_length=z0,
-                #         grouped='std_dev')
-                # # different block ranges
+                for range in [10.0, 15.0, 20.0]:
+                    plot_smoothed_pcs(
+                        standard_deviation_method=standard_deviaton_methods,
+                        block_width=0.5,
+                        wind_speeds_block_range=range,
+                        turbines=turbines, mean_roughness_length=z0,
+                        grouped='std_dev',
+                        weather_data_name=weather_data_name)
+                # different block ranges
                 for std_dev_method in standard_deviaton_methods:
                     plot_smoothed_pcs(
                         standard_deviation_method=std_dev_method,
                         block_width=0.5,
                         wind_speeds_block_range=wind_speeds_block_ranges,
                         turbines=turbines, mean_roughness_length=z0,
-                        grouped='wind_speed_range')
+                        grouped='wind_speed_range',
+                        weather_data_name=weather_data_name)
+        if turbine_plots:
+            for std_dev in standard_deviaton_methods:
+                plot_smoothed_pc_turbines(
+                    standard_deviation_method=std_dev, block_width=0.5,
+                    wind_speeds_block_range=15.0, turbines=turbines_list,
+                    weather_data_name=weather_data_name,
+                    mean_roughness_lengths=z0_list)
