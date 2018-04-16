@@ -106,7 +106,7 @@ if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_greenwind or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
-def run_main(case, year):
+def run_main(case, parameters, year):
     logging.info("--- Simulation with case {0} in year {1} starts ---".format(
         case, year))
     # Get parameters from config file (they are set below)
