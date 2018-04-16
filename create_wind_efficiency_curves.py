@@ -29,9 +29,10 @@ def get_wind_efficiency_curves(years):
                 validation_pickle_folder,
                 'greenwind_data_{0}.p'.format(year)))   #
         # Select aggregated power output of wind farm (rename)
-        greenwind_data = greenwind_data[[
+        greenwind_power_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
             data in wind_farm_data_gw]]
+        greenwind_power_data.index = greenwind_power_data.index.tz_convert('UTC')
         pickle_filename = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
             'greenwind_data_first_row_{0}.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
@@ -39,7 +40,8 @@ def get_wind_efficiency_curves(years):
             year=year, pickle_load=True,
             pickle_filename=pickle_filename, resample=False, frequency='30T',
             threshold=2)
-        if greenwind_data.index.freq != gw_first_row.index.freq:
+        gw_first_row.index = gw_first_row.index.tz_convert('UTC')
+        if greenwind_power_data.index.freq != gw_first_row.index.freq:
             print('Attention - different frequencies')
         for wf, number_of_turbines in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
             cols_first_row = [col for col in gw_first_row.columns if wf in col]
@@ -48,12 +50,57 @@ def get_wind_efficiency_curves(years):
                 'wind_speed',
                 [col for col in cols_first_row if 'power_output' in col][0]:
                 'single_power_output'})
-            cols_wf = [col for col in greenwind_data.columns if wf in col]
-            wf_power_output = greenwind_data[cols_wf].rename(columns={
+            cols_wf = [col for col in greenwind_power_data.columns if wf in col]
+            wind_farm_power_output = greenwind_power_data[cols_wf].rename(columns={
                 'wf_{}_power_output'.format(wf): 'wind_farm_power_output'})
+            # TODO from here in other function
+            df = pd.concat([first_row_data, wind_farm_power_output], axis=1)
+            # df.index = df.index.tz_convert('Europe/Berlin')
+            # Rename columns to standard names
+            # df.rename
+            # Set values of columns to nan if one of the other columns' value is nan
+            column_names = df.columns
+            for column_name in column_names:
+                alter_cols = [col for col in column_names if
+                              col != column_name]
+                for col in alter_cols:
+                    # Values in alter_cols[i] to nan where values in column_name nan
+                    df.loc[:, col].loc[df.loc[:, column_name].loc[
+                        df.loc[:,
+                        column_name].isnull() == True].index] = np.nan
+            df.dropna(inplace=True)
+            # Get maximum wind speed rounded to the next integer
+            maximum_v_int = math.ceil(df['wind_speed'].max())
+            # Get maximum standard wind speed rounded to next 0.5 m/s
+            maximum_v_std = (maximum_v_int if
+                             maximum_v_int - df['wind_speed'].max() < 0.5 else
+                             maximum_v_int - 0.5)
+            # Add v_std (standard wind speed) column to data frame
+            df['v_std'] = np.nan
+            standard_wind_speeds = np.arange(0.0, maximum_v_std + 0.5, 0.5)
+            for v_std in standard_wind_speeds:
+                # Set standard wind speeds depending on wind_speed column value
+                indices = df.loc[(df.loc[:, 'wind_speed'] <= v_std) &
+                                 (df.loc[:, 'wind_speed'] > (
+                                 v_std - 0.5))].index
+                df['v_std'].loc[indices] = v_std
+            df['efficiency'] = df['wind_farm_power_output'] / (
+                number_of_turbines * df['single_power_output'])
+            indices = df[df.loc[:, 'efficiency'] > 1.0].index
+            df.set_index('v_std', inplace=True)
+            df2 = df[['efficiency']]
+            df2 = df2.groupby(df.index).mean()
+            empty_curve = pd.DataFrame([
+                                           np.nan for i in
+                                           range(len(standard_wind_speeds))],
+                                       index=standard_wind_speeds)
+            efficiency_curve = pd.concat([empty_curve, df2], axis=1)
+            print('l')
+
+
             wind_efficiency_curve = create_wind_efficiency_curve(
                 first_row_data=first_row_data,
-                wind_farm_power_output=wf_power_output,
+                wind_farm_power_output=wind_farm_power_output,
                 number_of_turbines=number_of_turbines)
 
 
