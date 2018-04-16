@@ -210,7 +210,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                     indices] = np.nan
                 print(turbine_name)
                 print(len(indices))
-            print('---- _Zero-rows filtering of {0} - Done. ----'.format(year))
+            print('---- Zero-rows filtering of {0} - Done. ----'.format(year))
         # Set negative values to nan
         columns = [column for column in list(greenwind_df) if
                    'power_output' in column]
@@ -653,7 +653,7 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
+    load_data = False
     evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
@@ -740,7 +740,7 @@ if __name__ == "__main__":
         # Parameters
         cases = [
             'wind_dir_real',
-                 # 'wind_speed_1', 'weather_wind_speed_3'
+            'wind_speed_1', 'weather_wind_speed_3'
         ]
         first_row_resample = True
         first_row_frequency = '30T'
