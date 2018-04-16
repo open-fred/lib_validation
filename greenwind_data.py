@@ -52,8 +52,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                        resample=True, threshold=None, plot=False, x_limit=None,
                        frequency='30T', pickle_dump=True, filter_errors=True,
                        print_error_amount=False,
-                       error_amount_filename='error_amount.csv'):
-    # TODO: add plots to check data
+                       error_amount_filename='error_amount.csv',
+                       zero_row_to_nan=True):
     r"""
     Fetches GreenWind data.
 
@@ -89,6 +89,9 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
         each turbine and wind farm (and printed to csv file). Default: False.
     error_amount_filename : String
         Filname including path of error amount data frame.
+    zero_row_to_nan : Boolean
+        If True if turbine data only contains zeros at one time step these
+        values are set to nan.
 
     Returns
     -------
@@ -179,7 +182,35 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 df = pd.DataFrame(error_dict, index=['amount']).transpose()
                 visualization_tools.print_whole_dataframe(df)
                 df.to_csv(error_amount_filename)
-        print('---- Error filtering of {0} Done. ----'.format(year))
+        print('---- Error filtering of {0} - Done. ----'.format(year))
+        if  zero_row_to_nan:
+            print("---- Zero-rows of data in " +
+                  "{} are being filtered. ----".format(year))
+            turbine_names =set(['_'.join(item.split('_')[:3]) for
+                                item in greenwind_df.columns if
+                                item.split('_')[2] != 'power'])
+            for turbine_name in turbine_names:
+                cols = ['{}_wind_speed'.format(turbine_name),
+                        '{}_power_output'.format(turbine_name),
+                        '{}_wind_dir'.format(turbine_name),
+                        '{}_error_number'.format(turbine_name)]
+                # Df with booleans: True for zeros else False
+                # Column 'zeros': True if all values in row are zero
+                boolean_df = greenwind_df[cols].isin([0.0])
+                boolean_df['zeros'] = (
+                    boolean_df[cols[0]] * boolean_df[cols[1]] *
+                    boolean_df[cols[2]] * boolean_df[cols[3]])
+                # Get indices of rows where all values are zero
+                indices = boolean_df.loc[boolean_df['zeros'] == True].index
+                # Set values of greenwind_df[cols] to nan for indices
+                greenwind_df[cols].loc[indices] = np.nan
+                # Set values of wind farm power output to nan for indices
+                greenwind_df['{}_power_output'.format(
+                    '_'.join(turbine_name.split('_')[0:2]))].loc[
+                        indices] = np.nan
+                print(turbine_name)
+                print(len(indices))
+            print('---- _Zero-rows filtering of {0} - Done. ----'.format(year))
         # Set negative values to nan
         columns = [column for column in list(greenwind_df) if
                    'power_output' in column]
@@ -619,7 +650,7 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
+    load_data = True
     evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
@@ -649,6 +680,7 @@ if __name__ == "__main__":
         filter_errors = True
         print_error_amount = True
         print_erroer_amount_total = True
+        zero_row_to_nan = True
         for resample in resample_info:
             for year in years:
                 if resample:
@@ -669,7 +701,8 @@ if __name__ == "__main__":
                     frequency=frequency, threshold=threshold,
                     filename=filename, filter_errors=filter_errors,
                     print_error_amount=print_error_amount,
-                    error_amount_filename=error_amount_filename)
+                    error_amount_filename=error_amount_filename,
+                    zero_row_to_nan=zero_row_to_nan)
 
             if print_erroer_amount_total and print_error_amount: # TODO not for both resampling cases
                 filenames = [os.path.join(
