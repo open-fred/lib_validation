@@ -52,10 +52,6 @@ cases = [
     # 'weather_single_turbine_2',
     # 'highest_wind_speed'
 ]
-years = [
-    2015,
-    2016
-]
 
 min_periods_pearson = None  # Integer
 
@@ -1233,9 +1229,12 @@ def run_main(case, year):
         case, year))
 
 if __name__ == "__main__":
-    for year in years:
-        for case in cases:
-            run_main(case, year)
+    for case in cases:
+        # Get parameters from config file (they are set below)
+        parameters = get_configuration(case)
+        years = parameters['years']
+        for year in years:
+            run_main(case=case, year=year, parameters=parameters)
 
     # ---- Further latex tables ----#
     logging.info(
