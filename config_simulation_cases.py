@@ -56,7 +56,11 @@ def get_standard_case_of_configuration():
                               'mean_bias',
                               # 'standard_deviation'
                               ],
-        'replacement': [('_', ' ')]   # ('_wf', '')
+        'replacement': [('_', ' ')],   # ('_wf', '')
+        'years': [
+            2015,
+            2016
+            ]
         }
     return config_dict
 
@@ -177,11 +181,21 @@ def get_configuration(case=None):
             ('cp-curve', 'cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
-    # ---- Single functions - smoothing, density... ---- #
+    # ---- Single functions - Smoothing ---- #
     if case == 'smoothing_1':
-        config_dict['approach_list'] = ['turbine', 'farm']
-    if case == 'density_correction_1':
-        config_dict['approach_list'] = ['turbine', 'farm']
+        config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
+        config_dict['validation_data_list'] = ['Enertrag']
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches']
+        config_dict['years'] = [2016]  # Enertrag data only for 2016
+    if case == 'smoothing_2':
+        config_dict['approach_list'] = ['TI', 'St._Pf.', 'aggregation']
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches',
+                                       'std_dev_time_series']
+
+    # if case == 'density_correction_1':
+    #     config_dict['approach_list'] = ['turbine', 'farm']
 
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
