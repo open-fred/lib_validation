@@ -365,6 +365,61 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
             latex_df.to_latex(buf=filename_table, column_format=column_format,
                               multicolumn_format='c')
 
+    if 'std_dev_time_series' in latex_output:
+        if 'wind_speed' in case:
+            unit = '[m/s]'
+        else:
+            unit= '[MW]'
+        for weather_data_name in weather_data_list:
+            latex_df = pd.DataFrame()
+            for outerKey, innerDict in val_obj_dict[
+                    weather_data_name].items():
+                for wf_name in wind_farm_names:
+                    if wf_name not in restriction_list:
+                        df_wf_part = pd.DataFrame(
+                            {replacement_of_characters(innerKey, replacement):
+                             val_obj.std_dev_sim for
+                             innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name},
+                            index=[[wf_name.replace('wf_', 'WF ').replace(
+                                'single_', '').replace('_', ' ')],
+                                   [outerKey.replace('_', '-')]])
+                        # Check weather measured value consistent
+                        measured = set([val_obj.std_dev_val for
+                                    innerKey, innerstList in innerDict.items()
+                                    for
+                                    val_obj in innerstList if
+                                    val_obj.object_name == wf_name
+                                    ])
+                        if len(measured) > 1:
+                            raise ValueError(
+                                "Standard deviation values of measured time " +
+                                "series not consistent.")
+                        # Add value to data frame
+                        df_wf_part['measured'] = measured
+                        latex_df = pd.concat([latex_df, df_wf_part])
+            # Sort index
+            latex_df.sort_index(axis=0, inplace=True)
+            # Order by height depending on case
+            latex_df = sort_columns_height(latex_df, case)
+            filename_table = os.path.join(
+                path_latex_tables,
+                'std_dev_time_series_{0}_{1}_{2}{3}.tex'.format(
+                    case, year, weather_data_name, filename_add_on))
+            column_format = create_column_format(
+                number_of_columns=(
+                    len(val_obj_dict[weather_data_name][
+                        output_methods[1]]) * len(key_figures_print)),
+                index_columns='ll')
+            latex_df.round(2).to_latex(buf=filename_table,
+                                       column_format=column_format,
+                                       multicolumn_format='c')
+            filename_csv = os.path.join(
+                os.path.dirname(__file__), 'csv_for_plots',
+                'std_dev_time_series_{0}_{1}_{2}{3}.csv'.format(
+                    case, year, weather_data_name, filename_add_on))
+            latex_df.to_csv(filename_csv)
 
 def sort_columns_height(df, case):
     if (case == 'wind_speed_1' or case == 'wind_speed_2' or
