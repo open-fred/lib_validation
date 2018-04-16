@@ -108,7 +108,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             # Initialize turbines
             # e70, e66 = initialize_turbines(
             #     ['enerconE70', 'enerconE66_1800_65'])
-            e70 = initialize_turbines(['enerconE70'])
+            e70 = initialize_turbines(['enerconE70'])[0]
             # wf_1 = {
             #     'object_name': 'wf_1',
             #     'wind_turbine_fleet': [{'wind_turbine': e70,
