@@ -109,8 +109,6 @@ if (not pickle_load_merra or not pickle_load_open_fred or not
 def run_main(case, parameters, year):
     logging.info("--- Simulation with case {0} in year {1} starts ---".format(
         case, year))
-    # Get parameters from config file (they are set below)
-    parameters = get_configuration(case)
 
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
