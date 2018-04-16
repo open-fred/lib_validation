@@ -200,10 +200,10 @@ def run_main(case, parameters, year):
             enertrag_data = get_enertrag_data(
                 pickle_load=pickle_load_enertrag,
                 filename=os.path.join(validation_pickle_folder,
-                                      'enertrag_data.p'))
+                                      'enertrag_data_2016.p'))
             # Select aggregated power output of wind farm (rename)
-            enertrag_data = enertrag_data[['wf_9_power_output']].rename(
-                columns={'wf_9_power_output': 'wf_9_measured'})
+            enertrag_data = enertrag_data[['wf_BNE_power_output']].rename(
+                columns={'wf_BNE_power_output': 'wf_BNE_measured'})
             # Resample the DataFrame columns with `frequency` and add to list
             threshold = get_threshold(frequency, enertrag_data.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
