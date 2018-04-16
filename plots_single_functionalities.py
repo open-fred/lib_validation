@@ -1,15 +1,7 @@
-# Imports from Windpowerlib
-from windpowerlib import wind_turbine as wt
 
-# Other imports
 from matplotlib import pyplot as plt
-import seaborn as sns
 import pandas as pd
-import numpy as np
 import os
-from copy import deepcopy
-from windrose import WindroseAxes
-import matplotlib.cm as cm
 
 
 def bar_plot_key_figures(year, output_method, key_figure, cases,
@@ -25,8 +17,9 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
         figure_case_df = case_df.loc[output_method][key_figure]
         if (case == 'wind_speed_4' or case == 'wind_speed_8'):
             figure_case_df = figure_case_df.loc[:, ['log. interp.']]
-        if (case is not 'wind_speed_4' and case is not 'weather_wind_speed_1'
-            and case is not 'wind_speed_8'):
+        if (case is not 'wind_speed_4' and
+                case is not 'weather_wind_speed_1' and
+                case is not 'wind_speed_8'):
             # Order columns
             figure_case_df = figure_case_df[[
                 '{} {}'.format(list(figure_case_df)[0].split(' ')[0],
@@ -54,7 +47,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
             key_figure.replace(' ', '_').replace('/', '_').replace(
                 '.', ''), year, weather_data_name, output_method,
             filename_add_on)),
-        bbox_inches = "tight")
+        bbox_inches="tight")
     plt.close()
 
 

@@ -68,8 +68,9 @@ def join_of_data(path1, paths2, year):
         df2 = get_open_fred_data(filename=path)
         df1 = pd.concat([df1, df2], axis=0)
     df1.to_csv(os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-                'fred_data_{0}_sh_.csv'.format(year)))
- 
+                            'fred_data_{0}_sh_.csv'.format(year)))
+
+
 if __name__ == "__main__":
     years = [
         2015,

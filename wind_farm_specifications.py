@@ -174,8 +174,8 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                     wind_farm_data.append({
                         'object_name': 'BE_{}'.format(i+1),
                         'wind_turbine_fleet': [{'wind_turbine': v90,
-                                            'number_of_turbines': 1}],
                         'coordinates': []})
+                                                'number_of_turbines': 1}],
                 for i in range(14):
                     wind_farm_data.append({
                         'object_name': 'BS_{}'.format(i+1),

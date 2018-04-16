@@ -1,20 +1,15 @@
 # Imports from Windpowerlib
-from windpowerlib.wind_turbine import WindTurbine
-from windpowerlib.wind_farm import WindFarm
 from windpowerlib import tools
 from windpowerlib.power_curves import smooth_power_curve
 
 # Imports from lib_validation
-from wind_farm_specifications import (get_joined_wind_farm_data,
-                                      initialize_turbines)
+from wind_farm_specifications import initialize_turbines
 import tools as lib_tools
 
 # Other imports
 from matplotlib import pyplot as plt
 import os
 import pandas as pd
-import numpy as np
-import pickle
 
 
 def plot_smoothed_pcs(standard_deviation_method, block_width,
@@ -32,7 +27,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
         a, = plt.plot(turbine.power_curve['wind_speed'],
                       turbine.power_curve['power'] / 1000, label='original')
         # Get smoothed power curve
-        if grouped == False:
+        if grouped is False:
             smoothed_power_curve = smooth_power_curve(
                 turbine.power_curve.wind_speed, turbine.power_curve['power'],
                 block_width=block_width,
@@ -47,14 +42,15 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
             handles = [a]
             for range in wind_speed_range:
                 smoothed_power_curve = smooth_power_curve(
-                    turbine.power_curve.wind_speed, turbine.power_curve['power'],
-                    block_width=block_width,
+                    turbine.power_curve.wind_speed,
+                    turbine.power_curve['power'], block_width=block_width,
                     standard_deviation_method=standard_deviation_method,
                     turbulence_intensity=turbulence_intensity,
                     wind_speed_range=range)
-                handle, = plt.plot(smoothed_power_curve['wind_speed'],
-                              smoothed_power_curve['power'] / 1000,
-                              label='range {}'.format(range))
+                handle, = plt.plot(
+                    smoothed_power_curve['wind_speed'],
+                    smoothed_power_curve['power'] / 1000,
+                    label='range {}'.format(range))
                 handles.append(handle)
         if grouped == 'block_width':
             handles = [a]
@@ -98,10 +94,10 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
             '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
-                'single' if grouped == False else grouped, turbine.object_name,
+                'single' if grouped is False else grouped, turbine.object_name,
                 weather_data_name, standard_deviation_method,
                 block_width, wind_speed_range).replace(
-                    '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
+                '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
         plt.close()
 
 
@@ -111,7 +107,8 @@ def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
                               mean_roughness_lengths=None):
     fig = plt.figure()
     handles = []
-    for turbine, mean_roughness_length in zip(turbines, mean_roughness_lengths):
+    for turbine, mean_roughness_length in zip(
+            turbines, mean_roughness_lengths):
         if turbine.object_name == 'GE 1,5 SLE':
             name = 'GE 1.5'
         else:
@@ -134,8 +131,8 @@ def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
             turbulence_intensity=turbulence_intensity,
             wind_speed_range=wind_speed_range)
         b, = plt.plot(smoothed_power_curve['wind_speed'],
-                           smoothed_power_curve['power'] / 1000,
-                           label='{} smoothed'.format(name))
+                      smoothed_power_curve['power'] / 1000,
+                      label='{} smoothed'.format(name))
         handles.append(b)
     plt.ylabel('Power in kW')
     plt.xlabel('Wind speed in m/s')

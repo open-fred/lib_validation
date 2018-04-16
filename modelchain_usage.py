@@ -12,6 +12,7 @@ import logging
 import pandas as pd
 import numpy as np
 
+
 def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
                         wind_speed_model='logarithmic',
                         density_model='barometric',

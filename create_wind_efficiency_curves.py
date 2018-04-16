@@ -34,7 +34,7 @@ def get_wind_efficiency_curves(years):
             data in wind_farm_data_gw]]
         pickle_filename = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
-            'greenwind_data_{0}_highest_power.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
+            'greenwind_data_first_row_{0}.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
         gw_first_row = get_first_row_turbine_time_series(
             year=year, pickle_load=True,
             pickle_filename=pickle_filename, resample=False, frequency='30T',

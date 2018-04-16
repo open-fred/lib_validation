@@ -61,11 +61,10 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 path_latex_tables,
                 'annual_energy_approach_{0}_{1}_{2}{3}.tex'.format(
                     case, year, weather_data_name, filename_add_on))
-            latex_df.round(2).to_latex(buf=filename_table,
-                              column_format=create_column_format(
-                                  len(
-                                      latex_df.columns), 'c'),
-                              multicolumn_format='c')
+            latex_df.round(2).to_latex(
+                buf=filename_table,
+                column_format=create_column_format(len(latex_df.columns), 'c'),
+                multicolumn_format='c')
             filename_csv = os.path.join(
                 os.path.dirname(__file__), 'csv_for_plots',
                 'annual_energy_approach_{0}_{1}_{2}{3}.csv'.format(
@@ -145,7 +144,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         if 'wind_speed' in case:
             unit = '[m/s]'
         else:
-            unit= '[MW]'
+            unit = '[MW]'
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
@@ -165,7 +164,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                  val_obj.object_name == wf_name},
                                 index=[[wf_name.replace('wf_', 'WF ').replace(
                                     'single_', '').replace('_', ' ')],
-                                       [outerKey.replace('_', '-')]])
+                                    [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'rmse_normalized' in key_figures_print:
@@ -179,49 +178,49 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                  val_obj.object_name == wf_name},
                                 index=[[wf_name.replace('wf_', 'WF ').replace(
                                     'single_', '').replace('_', ' ')],
-                                       [outerKey.replace('_', '-')]])
+                                    [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'pearson' in key_figures_print:
                             df_part = pd.DataFrame(
                                 {('Pearson coefficient',
                                   replacement_of_characters(
-                                    innerKey, replacement)):
+                                      innerKey, replacement)):
                                  val_obj.pearson_s_r for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
                                 index=[[wf_name.replace('wf_', 'WF ').replace(
                                     'single_', '').replace('_', ' ')],
-                                       [outerKey.replace('_', '-')]])
+                                    [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'mean_bias' in key_figures_print:
                             df_part = pd.DataFrame(
                                 {('mean bias {}'.format(unit),
                                   replacement_of_characters(
-                                    innerKey, replacement)):
+                                      innerKey, replacement)):
                                  val_obj.mean_bias for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
                                 index=[[wf_name.replace('wf_', 'WF ').replace(
                                     'single_', '').replace('_', ' ')],
-                                       [outerKey.replace('_', '-')]])
+                                    [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         if 'standard_deviation' in key_figures_print:
                             df_part = pd.DataFrame(
                                 {('std deviation {}'.format(unit),
                                   replacement_of_characters(
-                                    innerKey, replacement)):
+                                      innerKey, replacement)):
                                  val_obj.standard_deviation for
                                  innerKey, innerstList in innerDict.items() for
                                  val_obj in innerstList if
                                  val_obj.object_name == wf_name},
                                 index=[[wf_name.replace('wf_', 'WF ').replace(
                                     'single_', '').replace('_', ' ')],
-                                       [outerKey.replace('_', '-')]])
+                                    [outerKey.replace('_', '-')]])
                             df_wf_part = pd.concat([df_wf_part, df_part],
                                                    axis=1)
                         latex_df = pd.concat([latex_df, df_wf_part])
@@ -253,7 +252,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         if 'wind_speed' in case:
             unit = '[m/s]'
         else:
-            unit= '[MW]'
+            unit = '[MW]'
         for approach in approach_list:
             if approach not in restriction_list:
                 latex_df = pd.DataFrame()
@@ -274,10 +273,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerDict.items() for
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
-                                            index=[[
-                                                wf_name.replace(
-                                                    'wf_', 'WF ').replace(
-                                                    'single_', '')],
+                                            index=[[wf_name.replace(
+                                                'wf_', 'WF ').replace(
+                                                'single_', '')],
                                                 [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
@@ -290,10 +288,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerDict.items() for
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
-                                            index=[[
-                                                wf_name.replace(
-                                                    'wf_', 'WF ').replace(
-                                                    'single_', '')],
+                                            index=[[wf_name.replace(
+                                                'wf_', 'WF ').replace(
+                                                'single_', '')],
                                                 [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
@@ -306,10 +303,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerDict.items() for
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
-                                            index=[[
-                                                wf_name.replace(
-                                                    'wf_', 'WF ').replace(
-                                                    'single_', '')],
+                                            index=[[wf_name.replace(
+                                                'wf_', 'WF ').replace(
+                                                'single_', '')],
                                                 [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
@@ -322,10 +318,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerDict.items() for
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
-                                            index=[[
-                                                wf_name.replace(
-                                                    'wf_', 'WF ').replace(
-                                                    'single_', '')],
+                                            index=[[wf_name.replace(
+                                                'wf_', 'WF ').replace(
+                                                'single_', '')],
                                                 [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
@@ -339,10 +334,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerDict.items() for
                                              val_obj in innerstList if
                                              val_obj.object_name == wf_name},
-                                            index=[[
-                                                wf_name.replace(
-                                                    'wf_', 'WF ').replace(
-                                                        'single_', '')],
+                                            index=[[wf_name.replace(
+                                                'wf_', 'WF ').replace(
+                                                'single_', '')],
                                                 [outerKey.replace('_', '-')]])
                                         df_wf_part = pd.concat(
                                             [df_wf_part, df_part], axis=1)
@@ -369,7 +363,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         if 'wind_speed' in case:
             unit = '[m/s]'
         else:
-            unit= '[MW]'
+            unit = '[MW]'
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
@@ -384,14 +378,13 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                              val_obj.object_name == wf_name},
                             index=[[wf_name.replace('wf_', 'WF ').replace(
                                 'single_', '').replace('_', ' ')],
-                                   [outerKey.replace('_', '-')]])
+                                [outerKey.replace('_', '-')]])
                         # Check weather measured value consistent
-                        measured = set([val_obj.std_dev_val for
-                                    innerKey, innerstList in innerDict.items()
-                                    for
-                                    val_obj in innerstList if
-                                    val_obj.object_name == wf_name
-                                    ])
+                        measured = set(
+                            [val_obj.std_dev_val for
+                             innerKey, innerstList in innerDict.items() for
+                             val_obj in innerstList if
+                             val_obj.object_name == wf_name])
                         if len(measured) > 1:
                             raise ValueError(
                                 "Standard deviation values of measured time " +
@@ -421,17 +414,18 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
 
+
 def sort_columns_height(df, case):
     if (case == 'wind_speed_1' or case == 'wind_speed_2' or
             case == 'wind_speed_3'):
         sorted_df = pd.DataFrame()
-        column_names_1 = list(pd.Series([item [0] for
+        column_names_1 = list(pd.Series([item[0] for
                                          item in list(df)]).drop_duplicates())
         for col_name in column_names_1:
             df_part = df[col_name]
             df_part = df_part[[
                 '{} {}'.format(list(df_part)[0].split(' ')[0], height) for
-                     height in ['100', '80', '10']]]
+                height in ['100', '80', '10']]]
             df_part.columns = [[col_name, col_name, col_name], df_part.columns]
             sorted_df = pd.concat([sorted_df, df_part], axis=1)
     else:
@@ -457,7 +451,8 @@ def mean_rmse_power_output_1_table(latex_tables_folder):
                 os.path.dirname(__file__), 'csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                     'power_output_1', year, weather_data_name))
-            latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0,1])
+            latex_df = pd.read_csv(filename_csv, index_col=[0, 1],
+                                   header=[0, 1])
             mean_rmse_df = pd.DataFrame()
             rmse_df = latex_df['RMSE [MW]']
             for resolution in resolutions:
@@ -522,11 +517,11 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
                                                   mean_deviation_df], axis=1)
             if weather_data_name != weather_data_list[-1]:
                 mean_deviaton_df_weather.drop(['P', 'cp'], axis=1,
-                                          inplace=True)
+                                              inplace=True)
             else:
                 mean_deviaton_df_weather.sort_index(axis=1, inplace=True)
         mean_deviaton_df_years = pd.concat([mean_deviaton_df_years,
-                                        mean_deviaton_df_weather], axis=0)
+                                            mean_deviaton_df_weather], axis=0)
     filename_table = os.path.join(
         path_latex_tables,
         'mean_deviation_weather_power_output_1.tex')
@@ -539,6 +534,6 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
 
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
-                       'automatic/')
+                           'automatic/')
     mean_rmse_power_output_1_table(latex_tables_folder)
     mean_annual_energy_deviation_tables(latex_tables_folder)

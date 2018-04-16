@@ -15,6 +15,7 @@ from windrose import WindroseAxes
 import matplotlib.cm as cm
 import math
 
+
 def print_whole_dataframe(df):
     r"""
     Prints all entries of a pandas.DataFrame or pandas.Series.
@@ -216,10 +217,10 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     y_value = [col for col in list(data) if 'measured' in col][0]
     data.plot.scatter(x=x_value, y=y_value, ax=ax, c=color, s=marker_size)
     plt.xlabel('{0} {1} {2} of {3}'.format(
-        list(data)[1].split('_')[2], method.replace('_','-'),
+        list(data)[1].split('_')[2], method.replace('_', '-'),
         y_label_add_on, ' '.join(list(data)[1].split('_')[:2])))
     plt.ylabel('{0} {1} {2} of {3}'.format(
-        list(data)[0].split('_')[2], method.replace('_','-'),
+        list(data)[0].split('_')[2], method.replace('_', '-'),
         y_label_add_on, ' '.join(list(data)[0].split('_')[:2])))
     plt.xlim(xmin=0, xmax=maximum)
     plt.ylim(ymin=0, ymax=maximum)
@@ -262,7 +263,8 @@ def correlation_subplot(df, filename):
         maximum = max(df.iloc[:, 0].max(), df.iloc[:, 1].max())
         maxima.append(maximum)
         ideal, = ax.plot([0, maximum], [0, maximum], color='black',
-                         linestyle='--', linewidth=1, label='ideal correlation')
+                         linestyle='--', linewidth=1,
+                         label='ideal correlation')
         # deviation_100, = ax.plot([0, maximum], [0, maximum * 2],
         #                          color='orange',
         #                          linestyle='--', label='100 % deviation')
@@ -275,9 +277,9 @@ def correlation_subplot(df, filename):
         y_value = [col for col in list(df) if 'measured' in col][0]
         df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue', s=2)
         ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 4)),
-            xy=(1, 0), xycoords='axes fraction',
-            xytext=(-1, -1), textcoords='offset points',
-            ha='right', va='bottom')
+                    xy=(1, 0), xycoords='axes fraction',
+                    xytext=(-1, -1), textcoords='offset points',
+                    ha='right', va='bottom')
     absolute_maximum = max(maxima)
     plt.xlim(xmin=0, xmax=absolute_maximum)
     plt.ylim(ymin=0, ymax=absolute_maximum)
@@ -288,7 +290,8 @@ def correlation_subplot(df, filename):
 
 def plot_wind_rose(wind_speed, wind_direction, filename, title):
     ax = WindroseAxes.from_ax()
-    ax.contourf(wind_direction, wind_speed, bins=np.arange(0.01, 26, 2), cmap=cm.Blues)
+    ax.contourf(wind_direction, wind_speed, bins=np.arange(0.01, 26, 2),
+                cmap=cm.Blues)
     ax.set_legend()
     plt.title(title)
     plt.savefig(filename)
