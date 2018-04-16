@@ -167,7 +167,7 @@ def get_roughness_length(weather_data_name, coordinates):
 
 
 if __name__ == "__main__":
-    # single_plots = True
+    single_plots = False
     grouped_plots = True
     turbine_plots = True
 
