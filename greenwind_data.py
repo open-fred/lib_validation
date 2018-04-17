@@ -382,18 +382,18 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             green_wind_df['{}_power_output'.format(
                 wind_farm_name)] = green_wind_df[power_output_columns].mean(
                 axis=1, skipna=True)
-            # Set wind speed and power output column to nan if all temporary
-            # columns are nan
-            wind_indices = green_wind_df.loc[green_wind_df[
-                wind_speed_columns].isnull().sum(axis=1) == len(
-                wind_speed_columns)].index
-            power_indices = green_wind_df.loc[green_wind_df[
-                power_output_columns].isnull().sum(axis=1) == len(
-                wind_speed_columns)].index
-            green_wind_df['{}_wind_speed'.format(
-                wind_farm_name)].loc[wind_indices] = np.nan
-            green_wind_df['{}_power_output'.format(
-                wind_farm_name)].loc[power_indices] = np.nan
+            # # Set wind speed and power output column to nan if all temporary
+            # # columns are nan # TODO: not needed skipna, but nan if all nan
+            # wind_indices = green_wind_df.loc[green_wind_df[
+            #     wind_speed_columns].isnull().sum(axis=1) == len(
+            #     wind_speed_columns)].index
+            # power_indices = green_wind_df.loc[green_wind_df[
+            #     power_output_columns].isnull().sum(axis=1) == len(
+            #     wind_speed_columns)].index
+            # green_wind_df['{}_wind_speed'.format(
+            #     wind_farm_name)].loc[wind_indices] = np.nan
+            # green_wind_df['{}_power_output'.format(
+            #     wind_farm_name)].loc[power_indices] = np.nan
             first_row_df = pd.concat([first_row_df, green_wind_df[[
                 '{}_wind_speed'.format(wind_farm_name),
                 '{}_power_output'.format(wind_farm_name)]]], axis=1)
