@@ -289,8 +289,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if case == 'weather_wind_speed_3':  # 2015-06-10 10:00:00
-            turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},  # TODO: zu überlegen: mehr als eine Zeitreihe (versch. turbinen)
+        if case == 'weather_wind_speed_3':
+            turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},
                             'wf_BS': {'wf_BS_7': (250, 360)}
                             }
             wind_dir_string = 'wind_dir'
