@@ -660,6 +660,56 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
         logging.info("Wind direction evaluation was written to csv.")
 
 
+def plot_wind_directions_of_farms(year, pickle_load_wind_dir_df,
+                                  adapt_negative=True):
+    if pickle_load_wind_dir_df:
+        pickle_path = os.path.join(os.path.dirname(__file__),
+                                   'dumps/validation_data',
+                                   'green_wind_wind_dir_{}'.format(year))
+        wind_directions_df = pickle.load(open(pickle_path, 'rb'))
+    else:
+        # Get Greenwind wind direction data
+        green_wind_data = get_greenwind_data(
+            year=year, resample=False, pickle_load=False, filter_errors=True,
+            print_error_amount=False)
+        # Select wind directions
+        wind_directions_df = green_wind_data[[
+            column_name for column_name in list(green_wind_data) if
+            '_'.join(column_name.split('_')[3:]) == 'wind_dir']]
+    for wf in ['BE', 'BS', 'BNW']:
+        wind_dir_df_wf = wind_directions_df[[
+            col for col in wind_directions_df.columns if wf in col]]
+        if adapt_negative:
+            # Set negative values of wind direction to 360 + wind direction
+            for column in wind_dir_df_wf.columns:
+                negativ_indices = wind_dir_df_wf.loc[
+                    wind_dir_df_wf[column] < 0].index
+                if not negativ_indices.empty:
+                    wind_dir_df_wf['temp_360'] = 360.0
+                    wind_dir_df_wf[column].loc[negativ_indices] = (
+                        wind_dir_df_wf.loc[negativ_indices]['temp_360'] +
+                        wind_dir_df_wf.loc[negativ_indices][column])
+                    wind_dir_df_wf.drop('temp_360', axis=1, inplace=True)
+            filename_add_on = 'adapt_negative'
+        else:
+            filename_add_on = ''
+        fig, ax = plt.subplots()
+        wind_dir_df_wf.plot(ax=ax, legend=True)
+        plt.xlim(xmin=wind_dir_df_wf.index[0],
+                 xmax=wind_dir_df_wf.index[50])
+        # maximum = wind_dir_df_wf.values.min()
+        # print(maximum)
+        plt.ylim(ymin=-100,  ymax=360)
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.tight_layout()
+        fig.savefig(os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/inc/images/evaluation_wind_dir',
+            'Wind_directions_{}_{}{}'.format(wf, year, filename_add_on)),
+            bbox_inches="tight")
+        plt.close()
+
+
 def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
     # TODO laufen lassen auf RLI PC!!
     # Load greenwind data without resampling and do not dump.
@@ -696,6 +746,7 @@ if __name__ == "__main__":
     evaluate_highest_power_output = True
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
+    plot_wind_direcions = False
     wind_dir_vs_gondel_position = False
     nans_evaluation = False
     duplicates_evaluation = False
@@ -922,6 +973,18 @@ if __name__ == "__main__":
         for year in years:
             evaluate_wind_directions(year=year, save_folder=folder,
                                      corr_min=corr_min, WT_14=WT_14)
+
+    # ---- Plot wind directions ---- #
+    if plot_wind_direcions:
+        adapt_negatives = [
+            True,
+            False
+        ]
+        for adapt_negative in adapt_negatives:
+            for year in years:
+                plot_wind_directions_of_farms(
+                    year, pickle_load_wind_dir_df=True,
+                    adapt_negative=adapt_negative)
 
     # ---- Wind direction vs. golden position ----#
     if wind_dir_vs_gondel_position:
