@@ -753,11 +753,11 @@ if __name__ == "__main__":
             for year in years:
                 filename_raw_data = os.path.join(
                     os.path.dirname(__file__), 'dumps/validation_data',
-                    'greenwind_data_{0}.p'.format(year))
+                    'greenwind_data_{0}_raw_resolution.p'.format(year))
                 if case == 'wind_speed_1':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_{0}_raw_resolution.p'.format(year))
+                        'greenwind_data_first_row_{0}.p'.format(year))
                 if case == 'weather_wind_speed_3':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
