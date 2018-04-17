@@ -539,13 +539,9 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
                          4]) == 'speed']
         wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
         for wf in wfs:
-            green_wind_df['{}_highest_wind_speed'.format(wf)] = np.nan
             wind_cols_wf = [col for col in wind_cols if wf in col]
-            for index in green_wind_df.index:
-                green_wind_df.loc[index]['{}_highest_wind_speed'.format(
-                    wf)] = (np.nan if green_wind_df.loc[index][
-                    wind_cols_wf].dropna().empty else
-                    max(green_wind_df.loc[index][wind_cols_wf].dropna()))
+            green_wind_df['{}_highest_wind_speed'.format(wf)] = (
+                green_wind_df[wind_cols_wf].apply(max, axis=1))
         columns = ['{}_highest_wind_speed'.format(wf) for wf in wfs]
         green_wind_df = green_wind_df[columns]
         pickle.dump(green_wind_df, open(filename, 'wb'))
@@ -569,13 +565,9 @@ def get_highest_power_output_and_wind_speed(
                        col.split('_')[4]) == 'output']
         wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
         for wf in wfs:
-            green_wind_df['{}_highest_power_output'.format(wf)] = np.nan
             power_cols_wf = [col for col in power_cols if wf in col]
-            for index in green_wind_df.index:
-                green_wind_df.loc[index]['{}_highest_power_output'.format(
-                    wf)] = (np.nan if green_wind_df.loc[index][
-                    power_cols_wf].dropna().empty else
-                    max(green_wind_df.loc[index][power_cols_wf].dropna()))
+            green_wind_df['{}_highest_power_output'.format(wf)] = (
+                green_wind_df[power_cols_wf].apply(max, axis=1))
         columns = ['{}_highest_power_output'.format(wf) for wf in wfs]
         power_df = green_wind_df[columns]
         wind_df = get_highest_wind_speeds(
