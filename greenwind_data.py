@@ -886,14 +886,14 @@ if __name__ == "__main__":
             print(highest_wind_speed)
 
     # ---- highest power output ----#
-    if evaluate_highest_power_output:
+    if evaluate_highest_power_output:  # TODO: ATTENTION: dump was renamed!!!!
         for year in years:
             filename_green_wind = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'greenwind_data_{0}_raw_resolution.p'.format(year))
             filename = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
-                'greenwind_data_{0}_highest_power.p'.format(year))
+                'greenwind_data_first_row_{0}_highest_power.p'.format(year))
             highest_power_output = get_highest_power_output_and_wind_speed(
                 year, filename_green_wind, filename=filename)
 
