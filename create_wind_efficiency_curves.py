@@ -27,23 +27,38 @@ def get_wind_efficiency_curves(years):
             year, pickle_load=True, resample=False,
             filename=os.path.join(
                 validation_pickle_folder,
-                'greenwind_data_{0}.p'.format(year)))   #
+                'greenwind_data_{0}_raw_resolution.p'.format(year)))   #
         # Select aggregated power output of wind farm (rename)
         greenwind_power_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
             data in wind_farm_data_gw]]
         greenwind_power_data.index = greenwind_power_data.index.tz_convert('UTC')
         pickle_filename = os.path.join(
-            os.path.dirname(__file__), 'dumps/validation_data',
-            'greenwind_data_first_row_{0}.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
+            os.path.dirname(__file__), 'dumps/validation_data', #  'greenwind_data_first_row_{0}_wind_dir_real.p'   'greenwind_data_first_row_{0}_weather_wind_speed_3.p'
+            'greenwind_data_first_row_{0}_weather_wind_speed_3_real.p'.format(year))  # 'greenwind_data_first_row_{0}.p'    'greenwind_data_{0}_highest_power.p'
         gw_first_row = get_first_row_turbine_time_series(
             year=year, pickle_load=True,
             pickle_filename=pickle_filename, resample=False, frequency='30T',
             threshold=2)
         gw_first_row.index = gw_first_row.index.tz_convert('UTC')
         if greenwind_power_data.index.freq != gw_first_row.index.freq:
-            print('Attention - different frequencies')
-        for wf, number_of_turbines in zip(['BE', 'BS', 'BNW'], [9, 14, 2]):
+            raise ValueError('Attention - different frequencies: ' +
+                             'wf data: {}, first row data: {}'.format(
+                                 greenwind_power_data.index.freq,
+                                 gw_first_row.index.freq))
+        if 'dir_real' in pickle_filename:
+            wfs = ['BS', 'BNW']
+            numbers = [14, 2]
+        elif ('_3' in pickle_filename and 'real' not in pickle_filename):
+            wfs = ['BE', 'BS']
+            numbers = [9, 14]
+        elif '_3_real' in pickle_filename:
+            wfs = ['BS']
+            numbers = [14]
+        else:
+            wfs = ['BE', 'BS', 'BNW']
+            numbers = [9, 14, 2]
+        for wf, number_of_turbines in zip(wfs, numbers):
             cols_first_row = [col for col in gw_first_row.columns if wf in col]
             first_row_data = gw_first_row[cols_first_row].rename(columns={
                 [col for col in cols_first_row if 'wind_speed' in col][0]:
@@ -86,7 +101,9 @@ def get_wind_efficiency_curves(years):
                 df['v_std'].loc[indices] = v_std
             df['efficiency'] = df['wind_farm_power_output'] / (
                 number_of_turbines * df['single_power_output'])
+            # Set efficiency to nan where it is greater than 1.0
             indices = df[df.loc[:, 'efficiency'] > 1.0].index
+            # df['efficiency'].loc[indices] = np.nan
             df.set_index('v_std', inplace=True)
             df2 = df[['efficiency']]
             df2 = df2.groupby(df.index).mean()

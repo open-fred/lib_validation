@@ -305,6 +305,9 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                     'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
                 }}
             wind_dir_string = 'wind_dir_real'
+        elif case == 'weather_wind_speed_3_real':
+            turbine_dict = {'wf_BS': {'wf_BS_7': (250, 360)}}
+            wind_dir_string = 'wind_dir'
         else:
             turbine_dict = {
                 'wf_BE': {
@@ -739,8 +742,10 @@ if __name__ == "__main__":
     if evaluate_first_row_turbine:
         # Parameters
         cases = [
-            'wind_dir_real',
-            'wind_speed_1', 'weather_wind_speed_3'
+            # 'wind_dir_real',
+            # 'wind_speed_1',
+            # 'weather_wind_speed_3',
+            'weather_wind_speed_3_real'
         ]
         first_row_resample = True
         first_row_frequency = '30T'
@@ -766,6 +771,11 @@ if __name__ == "__main__":
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}_wind_dir_real.p'.format(
+                            year))
+                if case == 'weather_wind_speed_3_real':
+                    pickle_filename = os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real.p'.format(
                             year))
                 error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
