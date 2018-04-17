@@ -530,10 +530,6 @@ def get_highest_wind_speeds(year, filename_green_wind, pickle_load=False,
             filename=filename_green_wind, resample=False,
             pickle_dump=False, filter_errors=True,
             print_error_amount=False)
-        # temp_cols = [col for col in list(green_wind_df) if
-        #              'wind_speed_temp' in col]
-        # temp_cols.extend(
-        #     ['highest_wind_speed_{}'.format(wf) for wf in wfs])
         wind_cols = [col for col in list(green_wind_df) if
                      (col.split('_')[3] == 'wind' and col.split('_')[
                          4]) == 'speed']
@@ -686,9 +682,9 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = True
-    evaluate_highest_wind_speed = False
-    evaluate_highest_power_output = False
+    evaluate_first_row_turbine = False
+    evaluate_highest_wind_speed = True
+    evaluate_highest_power_output = True
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     wind_dir_vs_gondel_position = False
@@ -894,13 +890,12 @@ if __name__ == "__main__":
         for year in years:
             filename_green_wind = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
-                'greenwind_data_{0}.p'.format(year))
+                'greenwind_data_{0}_raw_resolution.p'.format(year))
             filename = os.path.join(
                 os.path.dirname(__file__), 'dumps/validation_data',
                 'greenwind_data_{0}_highest_power.p'.format(year))
             highest_power_output = get_highest_power_output_and_wind_speed(
-                year, filename_green_wind, pickle_load=False,
-                filename=filename)
+                year, filename_green_wind, filename=filename)
 
     # ---- Plot wind roses ----#
     if plot_wind_roses:
