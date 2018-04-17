@@ -748,7 +748,7 @@ if __name__ == "__main__":
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
-        pickle_load_raw_data = False
+        pickle_load_raw_data = True
         for case in cases:
             for year in years:
                 filename_raw_data = os.path.join(
@@ -757,7 +757,7 @@ if __name__ == "__main__":
                 if case == 'wind_speed_1':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}.p'.format(year))
+                        'greenwind_data_{0}_raw_resolution.p'.format(year))
                 if case == 'weather_wind_speed_3':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
