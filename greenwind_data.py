@@ -216,6 +216,15 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                    'power_output' in column]
         greenwind_df = tools.negative_values_to_nan(greenwind_df,
                                                     columns=columns)
+        # Set wind farm power output to nan, where power output of a wind
+        # turbine is nan (take sum again)
+        for wf_name in wind_farm_names:
+            greenwind_df.drop('{}_power_output'.format(wf_name), axis=1,
+                              inplace=True)
+            turbine_cols = [i for i in list(greenwind_df.columns) if
+                            ('power_output' in i and wf_name in i)]
+            greenwind_df['{}_power_output'.format(wf_name)] = greenwind_df[
+                turbine_cols].sum(axis=1, skipna=False)
         if resample:
             # Delete error number columns as it is senseless to resample them
             greenwind_df.drop([column for column in list(greenwind_df) if
