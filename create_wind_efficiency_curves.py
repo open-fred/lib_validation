@@ -293,7 +293,7 @@ if __name__ == "__main__":
     standardize_curves = False
     years = [
         2015,
-        # 2016
+        2016
     ]
     drop_higher_one_list = [True, False]
     exact_degrees_list = [True, False]

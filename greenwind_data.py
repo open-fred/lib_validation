@@ -19,6 +19,7 @@ DateTimeIndex in 'Europe/Berlin' time zone.
 import visualization_tools
 import tools
 import latex_tables
+from matplotlib import pyplot as plt
 
 # Other imports
 import pandas as pd
@@ -298,7 +299,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if exact_degrees: # TODO here weiter!!
+        if exact_degrees:
             if case == 'weather_wind_speed_3':
                 turbine_dict = {'wf_BE': {'wf_BE_2': (272, 346),
                                           'wf_BE_6': (364, 357)},
@@ -374,6 +375,9 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
         for wind_farm_name in wind_farm_names:
+            mean_wind_dir = green_wind_df[[
+                col for col in green_wind_df.columns if
+                (wind_dir_string in col and wind_farm_name in col)]].mean(axis=1)
             for turbine_name in turbine_dict[wind_farm_name]:
                 # Set negative values of wind direction to 360 + wind direction
                 negativ_indices = green_wind_df.loc[
@@ -389,7 +393,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                             turbine_name, wind_dir_string)])
                     green_wind_df.drop('temp_360', axis=1, inplace=True)
                 # Get indices of rows where wind direction lies between
-                # specified values in `turbine_dict`.
+                # specified values in `turbine_dict`. If wind direction is not
+                # deviating more than 5° from mean wind direction.
                 # Example for 'wf_BE_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
                     (green_wind_df['{}_{}'.format(
@@ -397,9 +402,12 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                         float(turbine_dict[wind_farm_name][turbine_name][0])) &
                     (green_wind_df['{}_{}'.format(
                         turbine_name, wind_dir_string)] <
-                     float(
-                         turbine_dict[wind_farm_name][turbine_name][1]))].index
-                # Add temporary wind speed column with only nans
+                     float(turbine_dict[wind_farm_name][
+                               turbine_name][1])) &
+                    (abs(green_wind_df['{}_{}'.format(turbine_name,
+                                                      wind_dir_string)] -
+                         mean_wind_dir) <= 15.0)].index
+                # Add temporary wind speed column with only nans # TODO not necessary
                 green_wind_df['wind_speed_temp_{}'.format(
                     turbine_name)] = np.nan
                 # Add wind speed of wind speed column for `indices`
@@ -628,7 +636,7 @@ def evaluate_wind_directions(year, save_folder='', corr_min=0.8,
     else:
         # Get Greenwind wind direction data
         green_wind_data = get_greenwind_data(
-            year=year, resample=False, pickle_load=False, filter_errors=True,
+            year=year, resample=False, pickle_load=True, filter_errors=True,
             print_error_amount=False)
         # Select wind directions
         wind_directions_df = green_wind_data[[
@@ -741,9 +749,9 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = False
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = True
-    evaluate_highest_power_output = True
+    evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
