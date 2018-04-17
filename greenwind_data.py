@@ -239,7 +239,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       pickle_filename='greenwind_first_row.p',
                                       pickle_load=False, frequency='30T',
                                       resample=True, threshold=None,
-                                      case='all'):
+                                      case='all', exact_degrees=False):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -289,41 +289,78 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             filename=filename_raw_data, resample=False, threshold=threshold,
             pickle_dump=False, filter_errors=filter_errors,
             print_error_amount=print_error_amount)
-        if case == 'weather_wind_speed_3':
-            turbine_dict = {'wf_BE': {'wf_BE_6': (320, 360)},
-                            'wf_BS': {'wf_BS_7': (250, 360)}
-                            }
-            wind_dir_string = 'wind_dir'
-        elif case == 'wind_dir_real':
-            turbine_dict = {
-                'wf_BS': {
-                    'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
-                    'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
-                    'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
-                },
-                'wf_BNW': {
-                    'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
-                }}
-            wind_dir_string = 'wind_dir_real'
-        elif case == 'weather_wind_speed_3_real':
-            turbine_dict = {'wf_BS': {'wf_BS_7': (250, 360)}}
-            wind_dir_string = 'wind_dir'
-        else:
-            turbine_dict = {
-                'wf_BE': {
-                    'wf_BE_1': (0, 90), 'wf_BE_2': (270, 315),
-                    'wf_BE_5': (90, 180), 'wf_BE_6': (315, 360),
-                    'wf_BE_7': (225, 270)
-                    },
-                'wf_BS': {
-                    'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
-                    'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
-                    'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
-                    },
-                'wf_BNW': {
-                    'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
+        if exact_degrees: # TODO here weiter!!
+            if case == 'weather_wind_speed_3':
+                turbine_dict = {'wf_BE': {'wf_BE_2': (272, 346),
+                                          'wf_BE_6': (364, 357)},
+                                'wf_BS': {'wf_BS_7': (276, 353)}
+                                }
+                wind_dir_string = 'wind_dir'
+            elif case == 'wind_dir_real':
+                turbine_dict = {
+                    'wf_BS': {
+                        'wf_BS_2': (266, 276), 'wf_BS_7': (276, 353),
+                        'wf_BS_12': (119, 119), 'wf_BS_13': (355.5, 360), # actually 1.5
+                        'wf_BS_9': (353, 355.5)},
+                    'wf_BNW': {
+                        'wf_BNW_1': (0, 174), 'wf_BNW_2': (174, 354)
                     }}
-            wind_dir_string = 'wind_dir'
+                wind_dir_string = 'wind_dir_real'
+            elif case == 'weather_wind_speed_3_real':
+                turbine_dict = {'wf_BS': {'wf_BS_7': (276, 353)}}
+                wind_dir_string = 'wind_dir'
+            else:
+                turbine_dict = {
+                    'wf_BE': {
+                        # 'wf_BE_1': (0, 115),  # bad correlation
+                        'wf_BE_2': (272, 346), 'wf_BE_5': (100, 155),
+                        'wf_BE_6': (364, 357), 'wf_BE_7': (229, 143)
+                        },
+                    'wf_BS': {
+                        'wf_BS_2': (266, 276), 'wf_BS_7': (276, 353),
+                        'wf_BS_12': (119, 119), 'wf_BS_13': (355.5, 360), # actually 1.5
+                        'wf_BS_9': (353, 355.5)},
+                    'wf_BNW': {
+                        'wf_BNW_1': (0, 174), 'wf_BNW_2': (174, 354)
+                        }}
+                wind_dir_string = 'wind_dir'
+        else:
+            if case == 'weather_wind_speed_3':
+                turbine_dict = {'wf_BE': {'wf_BE_2': (270, 315),
+                                          'wf_BE_6': (315, 360)},
+                                'wf_BS': {'wf_BS_7': (270, 315)}
+                                }
+                wind_dir_string = 'wind_dir'
+            elif case == 'wind_dir_real':
+                turbine_dict = {
+                    'wf_BS': {
+                        'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
+                        'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
+                        'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
+                    },
+                    'wf_BNW': {
+                        'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
+                    }}
+                wind_dir_string = 'wind_dir_real'
+            elif case == 'weather_wind_speed_3_real':
+                turbine_dict = {'wf_BS': {'wf_BS_7': (270, 315)}}
+                wind_dir_string = 'wind_dir'
+            else:
+                turbine_dict = {
+                    'wf_BE': {
+                        # 'wf_BE_1': (0, 90),
+                        'wf_BE_2': (270, 315), 'wf_BE_5': (90, 180),
+                        'wf_BE_6': (315, 360), 'wf_BE_7': (225, 270)
+                        },
+                    'wf_BS': {
+                        'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
+                        'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
+                        'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90)
+                        },
+                    'wf_BNW': {
+                        'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)
+                        }}
+                wind_dir_string = 'wind_dir'
         wind_farm_names = list(set(['_'.join(item.split('_')[0:2]) for
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
@@ -742,9 +779,9 @@ if __name__ == "__main__":
     if evaluate_first_row_turbine:
         # Parameters
         cases = [
-            # 'wind_dir_real',
-            # 'wind_speed_1',
-            # 'weather_wind_speed_3',
+            'wind_dir_real',
+            'wind_speed_1',
+            'weather_wind_speed_3',
             'weather_wind_speed_3_real'
         ]
         first_row_resample = True
@@ -754,29 +791,35 @@ if __name__ == "__main__":
         first_row_print_error_amount = False
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
         pickle_load_raw_data = True
+        exact_degrees = False
         for case in cases:
             for year in years:
                 filename_raw_data = os.path.join(
                     os.path.dirname(__file__), 'dumps/validation_data',
                     'greenwind_data_{0}_raw_resolution.p'.format(year))
+                if exact_degrees:
+                    add_on = '_exact_degrees'
+                else:
+                    add_on = ''
                 if case == 'wind_speed_1':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}.p'.format(year))
+                        'greenwind_data_first_row_{0}{1}.p'.format(year,
+                                                                   add_on))
                 if case == 'weather_wind_speed_3':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3.p'.format(year))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}.p'.format(year, add_on))
                 if case == 'wind_dir_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_wind_dir_real.p'.format(
-                            year))
+                        'greenwind_data_first_row_{0}_wind_dir_real{1}.p'.format(
+                            year, add_on))
                 if case == 'weather_wind_speed_3_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real.p'.format(
-                            year))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}.p'.format(
+                            year, add_on))
                 error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
                     '../../../User-Shares/Masterarbeit/Daten/Twele/',
@@ -788,7 +831,8 @@ if __name__ == "__main__":
                     print_error_amount=first_row_print_error_amount,
                     pickle_filename=pickle_filename,
                     frequency=first_row_frequency, resample=first_row_resample,
-                    threshold=first_row_threshold, case=case)
+                    threshold=first_row_threshold, case=case,
+                    exact_degrees=exact_degrees)
 
             # wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
             # temp_cols = [col for col in list(green_wind_df) if
