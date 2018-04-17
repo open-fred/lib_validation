@@ -76,6 +76,11 @@ def get_wind_efficiency_curves(years, pickle_filename_add_on,
             numbers = [14]
             title_add_on = 'real wind dir. north west'
             folder += 'real_wind_dir_north_west'
+        elif '_highest_power' in pickle_filename:
+            wfs = ['BE', 'BS', 'BNW']
+            numbers = [9, 14, 2]
+            title_add_on = 'highest power'
+            folder += 'highest_power'
         else:
             wfs = ['BE', 'BS', 'BNW']
             numbers = [9, 14, 2]
@@ -272,8 +277,8 @@ if __name__ == "__main__":
     exact_degrees_list = [True, False]
     pickle_filename_add_ons = [
         '', '_wind_dir_real',
-        '_weather_wind_speed_3', '_weather_wind_speed_3_real'
-    ] #     '_highest_power'
+        '_weather_wind_speed_3', '_weather_wind_speed_3_real',
+        '_highest_power']
     for drop_higher_one in drop_higher_one_list:
         for add_on in pickle_filename_add_ons:
             for exact_degrees in exact_degrees_list:
