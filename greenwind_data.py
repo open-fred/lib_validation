@@ -746,16 +746,79 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
             'correlation_{}_{}.csv'.format(wf, year)))
 
 
+def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
+                                  title=''):
+    if resolution == 10:
+        green_wind_data_pickle = os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'greenwind_data_{0}_raw_resolution.p'.format(year))
+    elif resolution == 30:
+        green_wind_data_pickle = os.path.join(
+            os.path.dirname(__file__), 'dumps/validation_data',
+            'greenwind_data_{0}_raw_resolution.p'.format(year))
+    else:
+        raise ValueError("resolution must  be 10 or 30")
+    green_wind_df = pickle.load(open(green_wind_data_pickle, 'rb'))
+    keep_cols = [col for col in green_wind_df.columns if
+                 ('power_output' in col or 'wind_dir' in col and
+                  'real' not in col)]
+    green_wind_df = green_wind_df[keep_cols]
+    green_wind_df.drop(['wf_{}_power_output'.format(name) for
+                        name in ['BE', 'BS', 'BNW']], axis=1, inplace=True)
+    if adapt_negative:
+        # Set negative values of wind direction to 360 + wind direction
+        wind_dir_cols = [col for col in green_wind_df.columns if
+                         'wind_dir' in col]
+        for column in wind_dir_cols:
+            negativ_indices = green_wind_df.loc[
+                green_wind_df[column] < 0].index
+            green_wind_df['temp_360'] = 360.0
+            if not negativ_indices.empty:
+                green_wind_df[column].loc[negativ_indices] = (
+                    green_wind_df.loc[negativ_indices]['temp_360'] +
+                    green_wind_df.loc[negativ_indices][column])
+            green_wind_df.drop('temp_360', axis=1, inplace=True)
+        filename_add_on = 'adapt_negative'
+    else:
+        filename_add_on = ''
+    # build pairs
+    turbine_names = set(
+        ['_'.join(col.split('_')[0:3]) for col in green_wind_df.columns])
+    pairs_df_list = [green_wind_df.loc[:, [
+        '{0}_wind_dir'.format(turbine_name),
+        '{0}_power_output'.format(turbine_name)]] for
+                     turbine_name in turbine_names]
+    for pair_df in pairs_df_list:
+        # nan to other columns
+        pair_df.loc[:, pair_df.columns[0]].loc[pair_df.loc[
+            pair_df.loc[:, pair_df.columns[1]].isnull() == True].index] = np.nan
+        pair_df.loc[:, pair_df.columns[1]].loc[pair_df.loc[
+            pair_df.loc[:,
+            pair_df.columns[0]].isnull() == True].index] = np.nan
+        turbine_name = '_'.join(pair_df.columns[0].split('_')[0:3])
+        fig, ax = plt.subplots()
+        x_value = [col for col in list(pair_df) if 'wind_dir' in col][0]
+        y_value = [col for col in list(pair_df) if 'power_output' in col][0]
+        pair_df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue',
+                             s=3)
+        plt.title(title)
+        fig.savefig(os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/images/gw_wind_dir_vs_power_output',
+            'correlation_{}_{}_{}{}'.format(turbine_name, year, resolution, filename_add_on)))
+        plt.close()
+
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = True
-    evaluate_highest_wind_speed = True
+    evaluate_first_row_turbine = False
+    evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
     wind_dir_vs_gondel_position = False
+    plot_wind_dir_vs_power = True
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
@@ -1004,6 +1067,13 @@ if __name__ == "__main__":
         for year in years:
             evaluate_wind_dir_vs_gondel_position(year=year, save_folder=folder,
                                                  corr_min=corr_min)
+    # ---- Wind direction vs. power output plots ---- #
+    if plot_wind_dir_vs_power:
+        resolutions = [10, 30]
+        for year in years:
+            for resolution in resolutions:
+                plot_wind_dir_vs_power_output(year=year, resolution=resolution)
+
     # Evaluation of nans
     if nans_evaluation:
         nans_df = evaluate_nans(years)
