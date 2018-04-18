@@ -186,7 +186,8 @@ def get_configuration(case=None):
         config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
         config_dict['validation_data_list'] = ['Enertrag']
         config_dict['latex_output'] = ['key_figures_approaches',
-                                       'annual_energy_approaches']
+                                       'annual_energy_approaches',
+                                       'std_dev_time_series']
         config_dict['years'] = [2016]  # Enertrag data only for 2016
     if case == 'smoothing_2':
         config_dict['approach_list'] = ['TI', 'St._Pf.', 'aggregation']

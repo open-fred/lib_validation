@@ -15,11 +15,12 @@ import pandas as pd
 def plot_smoothed_pcs(standard_deviation_method, block_width,
                       wind_speed_range, turbines, weather_data_name,
                       grouped=False,
-                      mean_roughness_length=None):
+                      mean_roughness_length=None, turbulence_intensity=None):
     for turbine in turbines:
         if standard_deviation_method == 'turbulence_intensity':
-            turbulence_intensity = tools.estimate_turbulence_intensity(
-                turbine.hub_height, mean_roughness_length)
+            if not turbulence_intensity:
+                turbulence_intensity = tools.estimate_turbulence_intensity(
+                    turbine.hub_height, mean_roughness_length)
         else:
             turbulence_intensity = None
         # Start figure with original power curve
@@ -164,13 +165,23 @@ def get_roughness_length(weather_data_name, coordinates):
 
 
 if __name__ == "__main__":
-    single_plots = False
-    grouped_plots = True
-    turbine_plots = True
+    single_plots = True
+    grouped_plots = False
+    turbine_plots = False
+    # turbulence_intensity = 0.15  # Only for single plot
+    turbulence_intensity = None
 
-    standard_deviaton_methods = ['turbulence_intensity', 'Staffell_Pfenninger']
-    block_widths = [0.1, 0.5, 1.0]
-    wind_speed_ranges = [5.0, 10.0, 15.0, 20.0]
+    standard_deviaton_methods = [
+        'turbulence_intensity',
+        'Staffell_Pfenninger'
+    ]
+    block_widths = [
+        0.1, 1.0,
+        0.5]
+    wind_speed_ranges = [
+        5.0, 10.0, 20.0,
+        15.0
+    ]
     weather_data_names = ['MERRA', 'open_FRED']
 
     # Initialise WindTurbine objects
@@ -212,7 +223,8 @@ if __name__ == "__main__":
                                 block_width=block_width,
                                 wind_speed_range=wind_speed_range,
                                 turbines=turbines, mean_roughness_length=z0,
-                                weather_data_name=weather_data_name)
+                                weather_data_name=weather_data_name,
+                                turbulence_intensity=turbulence_intensity)
             if grouped_plots:
                 # different block widths:
                 for std_dev_method in standard_deviaton_methods:
