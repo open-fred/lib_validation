@@ -747,7 +747,7 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 
 
 def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
-                                  title=''):
+                                  xlim=True):
     if resolution == 10:
         green_wind_data_pickle = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
@@ -755,7 +755,7 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
     elif resolution == 30:
         green_wind_data_pickle = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
-            'greenwind_data_{0}_raw_resolution.p'.format(year))
+            'greenwind_data_{0}.p'.format(year))
     else:
         raise ValueError("resolution must  be 10 or 30")
     green_wind_df = pickle.load(open(green_wind_data_pickle, 'rb'))
@@ -778,9 +778,26 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
                     green_wind_df.loc[negativ_indices]['temp_360'] +
                     green_wind_df.loc[negativ_indices][column])
             green_wind_df.drop('temp_360', axis=1, inplace=True)
-        filename_add_on = 'adapt_negative'
+        filename_add_on = '_adapt_negative'
     else:
         filename_add_on = ''
+    # Dict for title
+    turbine_dict_exact = {
+            # 'wf_BE_1': (0, 115),  # bad correlation
+            'wf_BE_2': (272, 346), 'wf_BE_5': (100, 155),
+            'wf_BE_6': (364, 357), 'wf_BE_7': (229, 143),
+            'wf_BS_2': (266, 276), 'wf_BS_7': (276, 353),
+            'wf_BS_12': (119, 119), 'wf_BS_13': (355.5, 360),  # actually 1.5
+            'wf_BS_9': (353, 355.5),
+            'wf_BNW_1': (0, 174), 'wf_BNW_2': (174, 354)}
+    turbine_dict = {
+            # 'wf_BE_1': (0, 90),  # bad correlation
+            'wf_BE_2': (270, 315), 'wf_BE_5': (90, 180),
+            'wf_BE_6': (315, 360), 'wf_BE_7': (225, 270),
+            'wf_BS_2': (225, 270), 'wf_BS_5': (135, 180),
+            'wf_BS_7': (270, 360), 'wf_BS_10': (180, 225),
+            'wf_BS_12': (90, 135), 'wf_BS_14': (0, 90),
+            'wf_BNW_1': (0, 180), 'wf_BNW_2': (180, 360)}
     # build pairs
     turbine_names = set(
         ['_'.join(col.split('_')[0:3]) for col in green_wind_df.columns])
@@ -801,11 +818,34 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
         y_value = [col for col in list(pair_df) if 'power_output' in col][0]
         pair_df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue',
                              s=3)
+        if (turbine_name in turbine_dict_exact and
+                turbine_name in turbine_dict):
+            title = "{} degrees {} degrees 'exact' {}".format(
+                turbine_name, turbine_dict[turbine_name],
+                turbine_dict_exact[turbine_name])
+        elif (turbine_name in turbine_dict and
+                    turbine_name not in turbine_dict_exact):
+            title = "{} degrees {}".format(
+                turbine_name, turbine_dict[turbine_name])
+        elif (turbine_name not in turbine_dict and
+                    turbine_name in turbine_dict_exact):
+            title = "{} degrees 'exact' {}".format(
+                turbine_name, turbine_dict_exact[turbine_name])
+        else:
+            title = turbine_name
         plt.title(title)
+        if xlim:
+            plt.xlim(xmin=-5, xmax=365)
+            filename_add_on_2 = '_xlim'
+            folder = 'xlim'
+        else:
+            filename_add_on_2 = ''
+            folder = ''
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/images/gw_wind_dir_vs_power_output',
-            'correlation_{}_{}_{}{}'.format(turbine_name, year, resolution, filename_add_on)))
+            '../../../User-Shares/Masterarbeit/Latex/inc/images/gw_wind_dir_vs_power_output',
+            folder, 'correlation_{}_{}_{}{}{}'.format(
+                turbine_name, year, resolution, filename_add_on, filename_add_on_2)))
         plt.close()
 
 if __name__ == "__main__":
@@ -1070,9 +1110,12 @@ if __name__ == "__main__":
     # ---- Wind direction vs. power output plots ---- #
     if plot_wind_dir_vs_power:
         resolutions = [10, 30]
+        xlims = [True, False]
         for year in years:
             for resolution in resolutions:
-                plot_wind_dir_vs_power_output(year=year, resolution=resolution)
+                for xlim in xlims:
+                    plot_wind_dir_vs_power_output(
+                        year=year, resolution=resolution, xlim=xlim)
 
     # Evaluation of nans
     if nans_evaluation:
