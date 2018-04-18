@@ -14,8 +14,8 @@ import pandas as pd
 
 def plot_smoothed_pcs(standard_deviation_method, block_width,
                       wind_speed_range, turbines, weather_data_name,
-                      grouped=False,
-                      mean_roughness_length=None, turbulence_intensity=None):
+                      grouped=False, mean_roughness_length=None,
+                      turbulence_intensity=None, mean=0):
     for turbine in turbines:
         if standard_deviation_method == 'turbulence_intensity':
             if not turbulence_intensity:
@@ -34,7 +34,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                 block_width=block_width,
                 standard_deviation_method=standard_deviation_method,
                 turbulence_intensity=turbulence_intensity,
-                wind_speed_range=wind_speed_range)
+                wind_speed_range=wind_speed_range, mean_gauss=mean)
             b, = plt.plot(smoothed_power_curve['wind_speed'],
                           smoothed_power_curve['power'] / 1000,
                           label='smoothed')
@@ -170,6 +170,7 @@ if __name__ == "__main__":
     turbine_plots = False
     # turbulence_intensity = 0.15  # Only for single plot
     turbulence_intensity = None
+    mean = 0  # Only for single plot
 
     standard_deviaton_methods = [
         'turbulence_intensity',
@@ -224,7 +225,8 @@ if __name__ == "__main__":
                                 wind_speed_range=wind_speed_range,
                                 turbines=turbines, mean_roughness_length=z0,
                                 weather_data_name=weather_data_name,
-                                turbulence_intensity=turbulence_intensity)
+                                turbulence_intensity=turbulence_intensity,
+                                mean=mean)
             if grouped_plots:
                 # different block widths:
                 for std_dev_method in standard_deviaton_methods:
