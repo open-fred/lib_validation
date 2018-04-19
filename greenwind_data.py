@@ -253,7 +253,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       pickle_filename='greenwind_first_row.p',
                                       pickle_load=False, frequency='30T',
                                       resample=True, threshold=None,
-                                      case='all', exact_degrees=False):
+                                      case='all', exact_degrees=False,
+                                      mean_wind_dir=True):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -379,9 +380,6 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                    item in turbine_dict]))
         first_row_df = pd.DataFrame()
         for wind_farm_name in wind_farm_names:
-            mean_wind_dir = green_wind_df[[
-                col for col in green_wind_df.columns if
-                (wind_dir_string in col and wind_farm_name in col)]].mean(axis=1)
             for turbine_name in turbine_dict[wind_farm_name]:
                 # Set negative values of wind direction to 360 + wind direction
                 negativ_indices = green_wind_df.loc[
@@ -400,12 +398,20 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 # specified values in `turbine_dict`. If wind direction is not
                 # deviating more than 5° from mean wind direction. # TODO delete if not added
                 # Example for 'wf_BE_1': 0 <= x < 90.
+                if mean_wind_dir:
+                    # Set wind_dir to mean wind direction
+                    wind_dir = green_wind_df[[
+                        col for col in green_wind_df.columns if
+                        (wind_dir_string in col and
+                         wind_farm_name in col)]].mean(axis=1)
+                else:
+                    # Set wind_dir to turbine wind direction
+                    wind_dir = green_wind_df['{}_{}'.format(
+                        turbine_name, wind_dir_string)]
                 indices = green_wind_df.loc[
-                    (green_wind_df['{}_{}'.format(
-                        turbine_name, wind_dir_string)] >=
+                    (wind_dir >=
                      float(turbine_dict[wind_farm_name][turbine_name][0])) &
-                    (green_wind_df['{}_{}'.format(
-                        turbine_name, wind_dir_string)] <
+                    (wind_dir <
                      float(turbine_dict[wind_farm_name][
                                turbine_name][1]))].index
                 #     (abs(green_wind_df['{}_{}'.format(turbine_name,
@@ -874,7 +880,7 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
         x_value = [col for col in list(pair_df) if 'wind_dir' in col][0]
         y_value = [col for col in list(pair_df) if 'power_output' in col][0]
         wind_speed = [col for col in list(pair_df) if 'wind_speed' in col][0]
-        pair_df[wind_speed].loc[pair_df.loc[pair_df[wind_speed] == np.nan].index] = -5.0
+        # pair_df[wind_speed].loc[pair_df.loc[pair_df[wind_speed] == np.nan].index] = -5.0
         pair_df.plot.scatter(x=x_value, y=y_value, ax=ax,
                              c=wind_speed, cmap='winter',
                              s=marker_size,
@@ -921,8 +927,8 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
             folder = ''
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/inc/images/gw_wind_dir_vs_power_output',
-            folder, folder_add_on, 'correlation_{}_{}_{}{}{}{}'.format(
+            '../../../User-Shares/Masterarbeit/Latex/inc/images/gw_wind_dir_vs_power_output/pdf',
+            folder, folder_add_on, 'correlation_{}_{}_{}{}{}{}.pdf'.format(
                 turbine_name, year, resolution, filename_add_on, filename_add_on_2,
                 filename_add_on_3)))
         plt.close()
@@ -930,14 +936,14 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
     load_data = False
-    evaluate_first_row_turbine = False
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
     wind_dir_vs_gondel_position = False
-    plot_wind_dir_vs_power = True
+    plot_wind_dir_vs_power = False
     nans_evaluation = False
     duplicates_evaluation = False
     error_numbers = False
@@ -1030,6 +1036,7 @@ if __name__ == "__main__":
         first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
         pickle_load_raw_data = True
         exact_degrees = False
+        mean_wind_dir = True  # Use mean wind direction (of correlating wind directions) instead of single turbine wind directions
         for case in cases:
             for year in years:
                 filename_raw_data = os.path.join(
@@ -1039,25 +1046,30 @@ if __name__ == "__main__":
                     add_on = '_exact_degrees'
                 else:
                     add_on = ''
+                if mean_wind_dir:
+                    add_on_2 = 'mean_wind_dir'
+                else:
+                    add_on_2 = ''
                 if case == 'wind_speed_1':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}{1}.p'.format(year,
-                                                                   add_on))
+                        'greenwind_data_first_row_{0}{1}{2}.p'.format(
+                            year, add_on, add_on_2))
                 if case == 'weather_wind_speed_3':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}.p'.format(year, add_on))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}{2}.p'.format(
+                            year, add_on, add_on_2))
                 if case == 'wind_dir_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_wind_dir_real{1}.p'.format(
-                            year, add_on))
+                        'greenwind_data_first_row_{0}_wind_dir_real{1}{2}.p'.format(
+                            year, add_on, add_on_2))
                 if case == 'weather_wind_speed_3_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}.p'.format(
-                            year, add_on))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}{2}.p'.format(
+                            year, add_on, add_on_2))
                 error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
                     '../../../User-Shares/Masterarbeit/Daten/Twele/',
@@ -1070,7 +1082,7 @@ if __name__ == "__main__":
                     pickle_filename=pickle_filename,
                     frequency=first_row_frequency, resample=first_row_resample,
                     threshold=first_row_threshold, case=case,
-                    exact_degrees=exact_degrees)
+                    exact_degrees=exact_degrees, mean_wind_dir=mean_wind_dir)
 
             # wfs = ['wf_BE', 'wf_BS', 'wf_BNW']
             # temp_cols = [col for col in list(green_wind_df) if
@@ -1188,16 +1200,23 @@ if __name__ == "__main__":
                                                  corr_min=corr_min)
     # ---- Wind direction vs. power output plots ---- #
     if plot_wind_dir_vs_power:
-        resolutions = [10, 30]
-        xlims = [True, False]
-        means = [
+        resolutions = [
+            10,
+            # 30
+        ]
+        xlims = [
             True,
             False
         ]
+        means = [
+            True,
+            # False
+        ]
         v_std_steps = [
-            0.5,
-            1.0,
-            4.0
+            # 0.5,
+            # 1.0,
+            3.0
+            # 4.0
         ]
 
         for year in years:
