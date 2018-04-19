@@ -27,6 +27,7 @@ import numpy as np
 import os
 import pickle
 import logging
+import math
 
 
 def read_data(filename):
@@ -213,10 +214,13 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 print(len(indices))
             print('---- Zero-rows filtering of {0} - Done. ----'.format(year))
         # Set negative values to nan
-        columns = [column for column in list(greenwind_df) if
+        power_columns = [column for column in list(greenwind_df) if
                    'power_output' in column]
         greenwind_df = tools.negative_values_to_nan(greenwind_df,
-                                                    columns=columns)
+                                                    columns=power_columns )
+        # Set power output of turbines above nominal power (all 2 MW) to nan
+        greenwind_df = tools.higher_values_to_nan(
+            df=greenwind_df, limit=2100, columns=power_columns)
         # Set wind farm power output to nan, where power output of a wind
         # turbine is nan (take sum again)
         for wf_name in wind_farm_names:
@@ -394,19 +398,19 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                     green_wind_df.drop('temp_360', axis=1, inplace=True)
                 # Get indices of rows where wind direction lies between
                 # specified values in `turbine_dict`. If wind direction is not
-                # deviating more than 5° from mean wind direction.
+                # deviating more than 5° from mean wind direction. # TODO delete if not added
                 # Example for 'wf_BE_1': 0 <= x < 90.
                 indices = green_wind_df.loc[
                     (green_wind_df['{}_{}'.format(
                         turbine_name, wind_dir_string)] >=
-                        float(turbine_dict[wind_farm_name][turbine_name][0])) &
+                     float(turbine_dict[wind_farm_name][turbine_name][0])) &
                     (green_wind_df['{}_{}'.format(
                         turbine_name, wind_dir_string)] <
                      float(turbine_dict[wind_farm_name][
-                               turbine_name][1])) &
-                    (abs(green_wind_df['{}_{}'.format(turbine_name,
-                                                      wind_dir_string)] -
-                         mean_wind_dir) <= 15.0)].index
+                               turbine_name][1]))].index
+                #     (abs(green_wind_df['{}_{}'.format(turbine_name,
+                #                                       wind_dir_string)] -
+                #          mean_wind_dir) <= 15.0)
                 # Add temporary wind speed column with only nans # TODO not necessary
                 green_wind_df['wind_speed_temp_{}'.format(
                     turbine_name)] = np.nan
@@ -747,7 +751,7 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
 
 
 def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
-                                  xlim=True):
+                                  xlim=True, mean=None, v_std_step=0.5):
     if resolution == 10:
         green_wind_data_pickle = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
@@ -760,8 +764,8 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
         raise ValueError("resolution must  be 10 or 30")
     green_wind_df = pickle.load(open(green_wind_data_pickle, 'rb'))
     keep_cols = [col for col in green_wind_df.columns if
-                 ('power_output' in col or 'wind_dir' in col and
-                  'real' not in col)]
+                 ('power_output' in col or 'wind_dir' in col or
+                  'wind_speed' in col and 'real' not in col)]
     green_wind_df = green_wind_df[keep_cols]
     green_wind_df.drop(['wf_{}_power_output'.format(name) for
                         name in ['BE', 'BS', 'BNW']], axis=1, inplace=True)
@@ -803,7 +807,8 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
         ['_'.join(col.split('_')[0:3]) for col in green_wind_df.columns])
     pairs_df_list = [green_wind_df.loc[:, [
         '{0}_wind_dir'.format(turbine_name),
-        '{0}_power_output'.format(turbine_name)]] for
+        '{0}_power_output'.format(turbine_name),
+        '{0}_wind_speed'.format(turbine_name)]] for
                      turbine_name in turbine_names]
     for pair_df in pairs_df_list:
         # nan to other columns
@@ -813,11 +818,84 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
             pair_df.loc[:,
             pair_df.columns[0]].isnull() == True].index] = np.nan
         turbine_name = '_'.join(pair_df.columns[0].split('_')[0:3])
+        if mean:
+            # Get maximum wind speed rounded to the next integer
+            maximum_v_int = math.ceil(
+                pair_df['{}_wind_speed'.format(turbine_name)].max())
+            # Get maximum standard wind speed rounded to next v_std_step
+            maximum_v_std = (maximum_v_int if
+                             maximum_v_int - pair_df['{}_wind_speed'.format(
+                                 turbine_name)].max() < v_std_step else
+                             maximum_v_int - v_std_step)
+            # Add v_std (standard wind speed) column to data frame
+            pair_df['v_std'] = np.nan
+            standard_wind_speeds = np.arange(0.0, maximum_v_std + v_std_step,
+                                             v_std_step)
+            for v_std in standard_wind_speeds:
+                # Set standard wind speeds depending on wind_speed column value
+                indices = pair_df.loc[(pair_df.loc[:, '{}_wind_speed'.format(
+                    turbine_name)] <= v_std) &
+                                 (pair_df.loc[:, '{}_wind_speed'.format(
+                                     turbine_name)] > (
+                                     v_std - v_std_step))].index
+                pair_df['v_std'].loc[indices] = v_std
+            # Drop rows where v_std is nan
+            keep_indices = pair_df[['v_std']].stack().index.get_level_values(0)
+            pair_df = pair_df.loc[keep_indices]
+            # For each standard wind direction get mean for every standard wind
+            # speed
+            standard_wind_dirs = np.arange(0.0, 360 + 10.0, 10.0)
+            plot_df = pd.DataFrame()
+            for dir_std in standard_wind_dirs:
+                # Set standard wind speeds depending on wind_speed column value
+                indices = pair_df.loc[(pair_df.loc[:, '{}_wind_dir'.format(
+                    turbine_name)] <= dir_std) &
+                                 (pair_df.loc[:, '{}_wind_dir'.format(
+                                     turbine_name)] > (
+                                     dir_std - 10.0))].index
+                df_v_std = pd.DataFrame(pair_df.loc[indices])
+                df_v_std.set_index('v_std', inplace=True)
+                df_v_std = df_v_std.groupby(df_v_std.index).mean()
+                df_v_std.drop([col for col in df_v_std.columns if
+                               ('wind_speed' in col or
+                                'wind_dir' in col)], axis=1, inplace=True)
+                df_v_std['wind_speed'] = df_v_std.index
+                df_v_std['wind_dir'] = dir_std
+                plot_df = pd.concat([plot_df, df_v_std], axis=0)
+            pair_df = pd.DataFrame(plot_df)
+            filename_add_on_3 = '_mean'
+            folder_add_on = 'mean/{}'.format(str(v_std_step).replace('.', '_'))
+            marker_size = 1
+        else:
+            filename_add_on_3 = ''
+            folder_add_on = ''
+            marker_size = 0.1
         fig, ax = plt.subplots()
         x_value = [col for col in list(pair_df) if 'wind_dir' in col][0]
         y_value = [col for col in list(pair_df) if 'power_output' in col][0]
-        pair_df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue',
-                             s=3)
+        wind_speed = [col for col in list(pair_df) if 'wind_speed' in col][0]
+        pair_df[wind_speed].loc[pair_df.loc[pair_df[wind_speed] == np.nan].index] = -5.0
+        pair_df.plot.scatter(x=x_value, y=y_value, ax=ax,
+                             c=wind_speed, cmap='winter',
+                             s=marker_size,
+                             # alpha=0.5
+                             )
+        if turbine_name in turbine_dict:
+            ax.plot((turbine_dict[turbine_name][0], turbine_dict[turbine_name][0]),
+                    (-5, 2100), c='black', alpha=0.5, linestyle='--',
+                    linewidth=1)
+            ax.plot(
+                (turbine_dict[turbine_name][1], turbine_dict[turbine_name][1]),
+                (-5, 2100), c='black', alpha=0.5, linestyle='--',
+                linewidth=1)
+        if (turbine_name in turbine_dict_exact and
+                turbine_name not in turbine_dict):
+            ax.plot((turbine_dict_exact[turbine_name][0],
+                     turbine_dict_exact[turbine_name][0]), (-5, 2100),
+                    c='black', alpha=0.5, linestyle='--', linewidth=1)
+            ax.plot((turbine_dict_exact[turbine_name][1],
+                     turbine_dict_exact[turbine_name][1]), (-5, 2100),
+                    c='black', alpha=0.5, linestyle='--', linewidth=1)
         if (turbine_name in turbine_dict_exact and
                 turbine_name in turbine_dict):
             title = "{} degrees {} degrees 'exact' {}".format(
@@ -844,8 +922,9 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/gw_wind_dir_vs_power_output',
-            folder, 'correlation_{}_{}_{}{}{}'.format(
-                turbine_name, year, resolution, filename_add_on, filename_add_on_2)))
+            folder, folder_add_on, 'correlation_{}_{}_{}{}{}{}'.format(
+                turbine_name, year, resolution, filename_add_on, filename_add_on_2,
+                filename_add_on_3)))
         plt.close()
 
 if __name__ == "__main__":
@@ -1111,11 +1190,30 @@ if __name__ == "__main__":
     if plot_wind_dir_vs_power:
         resolutions = [10, 30]
         xlims = [True, False]
+        means = [
+            True,
+            False
+        ]
+        v_std_steps = [
+            0.5,
+            1.0,
+            4.0
+        ]
+
         for year in years:
             for resolution in resolutions:
                 for xlim in xlims:
-                    plot_wind_dir_vs_power_output(
-                        year=year, resolution=resolution, xlim=xlim)
+                    for mean in means:
+                        for v_std_step in v_std_steps:
+                            if (mean and xlim):
+                                pass
+                            elif (not mean and v_std_step != v_std_steps[0]):
+                                pass
+                            else:
+                                plot_wind_dir_vs_power_output(
+                                    year=year, resolution=resolution,
+                                    xlim=xlim, mean=mean,
+                                    v_std_step=v_std_step)
 
     # Evaluation of nans
     if nans_evaluation:
