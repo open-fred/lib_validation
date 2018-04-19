@@ -36,12 +36,13 @@ def get_wind_efficiency_curves(years, pickle_filename_add_on,
         greenwind_power_data = greenwind_data[[
             '{0}_power_output'.format(data['object_name']) for
             data in wind_farm_data_gw]]
-        greenwind_power_data.index = greenwind_power_data.index.tz_convert('UTC')
+        greenwind_power_data.index = greenwind_power_data.index.tz_convert(
+            'UTC')
         if exact_degrees:
             pickle_filename_add_on_2 = '_exact_degrees'
         else:
             pickle_filename_add_on_2 = ''
-        pickle_filename =  os.path.join(
+        pickle_filename = os.path.join(
             os.path.dirname(__file__), 'dumps/validation_data',
             'greenwind_data_first_row_{0}{1}{2}.p'.format(
                 year, pickle_filename_add_on, pickle_filename_add_on_2))
@@ -61,7 +62,8 @@ def get_wind_efficiency_curves(years, pickle_filename_add_on,
         else:
             folder = ''
             title_add_on_3 = ''
-
+        if 'mean_wind_dir' in pickle_filename:
+            folder += 'mean_wind_dir/'
         if 'dir_real' in pickle_filename:
             wfs = ['BS', 'BNW']
             numbers = [14, 2]
@@ -121,7 +123,7 @@ def get_wind_efficiency_curves(years, pickle_filename_add_on,
                              maximum_v_int - 0.5)
             # Add v_std (standard wind speed) column to data frame
             df['v_std'] = np.nan
-            standard_wind_speeds = np.arange(0.0, maximum_v_std, 0.5)
+            standard_wind_speeds = np.arange(0.0, maximum_v_std + 0.5, 0.5)
             for v_std in standard_wind_speeds:
                 # Set standard wind speeds depending on wind_speed column value
                 indices = df.loc[(df.loc[:, 'wind_speed'] <= v_std) &
@@ -295,20 +297,28 @@ if __name__ == "__main__":
         2015,
         2016
     ]
+    mean_wind_dir = True
     drop_higher_one_list = [True, False]
     exact_degrees_list = [True, False]
     pickle_filename_add_ons = [
         '', '_wind_dir_real',
         '_weather_wind_speed_3', '_weather_wind_speed_3_real',
         '_highest_power']
+    if mean_wind_dir:
+        pickle_filename_add_ons = [item + 'mean_wind_dir' for
+                                   item in pickle_filename_add_ons if
+                                   'highest' not in item]
     for drop_higher_one in drop_higher_one_list:
         for add_on in pickle_filename_add_ons:
             for exact_degrees in exact_degrees_list:
-                if not (exact_degrees and add_on == '_highest_power'):
-                    get_wind_efficiency_curves(
-                        years=years, drop_higher_one=drop_higher_one,
-                        pickle_filename_add_on=add_on,
-                        exact_degrees=exact_degrees)
+                if (mean_wind_dir and exact_degrees):
+                    pass
+                else:
+                    if not (exact_degrees and '_highest_power' in add_on):
+                        get_wind_efficiency_curves(
+                            years=years, drop_higher_one=drop_higher_one,
+                            pickle_filename_add_on=add_on,
+                            exact_degrees=exact_degrees)
 
     # --- standardize curves --- #
     if standardize_curves:
