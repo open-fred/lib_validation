@@ -576,3 +576,12 @@ def negative_values_to_nan(df, columns=None):
         indices = df.loc[df[column] < 0.0].index
         df[column].loc[indices] = np.nan
     return df
+
+
+def higher_values_to_nan(df, limit, columns=None):
+    if columns is None:
+        columns = [column for column in list(df)]
+    for column in columns:
+        indices = df.loc[df[column] > limit].index
+        df[column].loc[indices] = np.nan
+    return df
