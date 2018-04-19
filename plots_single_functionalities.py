@@ -73,7 +73,7 @@ def run_bar_plot_key_figures():
     key_figures = [
         'RMSE [m/s]',
         'RMSE [%]',
-        'Pearson coeff.',
+        'Pearson coefficient',
         'mean bias [m/s]'
     ]
     output_methods = [
