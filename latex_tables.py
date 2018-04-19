@@ -532,8 +532,21 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
 
+
+def concat_std_dev_tables_smoothing_1(latex_tables_folder):
+    weather_data_names = ['MERRA', 'opfen_FRED']
+    std_dev_df = pd.DataFrame()
+    for weather_data_name in weather_data_names:
+        filename_csv = os.path.join(
+                        os.path.dirname(__file__), 'csv_for_plots',
+                        'std_dev_time_series_smoothing_1_2016_{}.csv'.format(
+                            weather_data_name))
+        latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
+        latex_df.
+
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                            'automatic/')
-    mean_rmse_power_output_1_table(latex_tables_folder)
-    mean_annual_energy_deviation_tables(latex_tables_folder)
+    # mean_rmse_power_output_1_table(latex_tables_folder)
+    # mean_annual_energy_deviation_tables(latex_tables_folder)
+    concat_std_dev_tables_smoothing_1(latex_tables_folder)

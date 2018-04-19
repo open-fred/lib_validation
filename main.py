@@ -40,10 +40,10 @@ cases = [
 #     'wind_speed_7',  # first row like weather_wind_speed_3
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
-    'power_output_1',
+#     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-#     'smoothing_1',
-#     'smoothing_2',
+    'smoothing_1',
+    # 'smoothing_2',
     # 'density_correction_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -58,7 +58,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -1242,6 +1242,7 @@ if __name__ == "__main__":
     if 'power_output_1' in cases:
         latex_tables.mean_rmse_power_output_1_table(latex_tables_folder)
         latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+        latex_tables.concat_std_dev_tables_smoothing_1(latex_tables_folder)
     if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
         plots_single_functionalities.run_bar_plot_key_figures()
     logging.info("--- Done ---")
