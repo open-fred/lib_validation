@@ -17,6 +17,7 @@ from analysis_tools import ValidationObject
 from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
                             get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
+import plots_single_functionalities
 
 # Other imports
 import os
@@ -39,10 +40,10 @@ cases = [
 #     'wind_speed_7',  # first row like weather_wind_speed_3
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
-#     'power_output_1',
+    'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-    'smoothing_1',
-    # 'smoothing_2',
+#     'smoothing_1',
+#     'smoothing_2',
     # 'density_correction_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -67,7 +68,7 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = False  # Dump df as csv
+csv_dump_time_series_df = True  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot (multiple)
@@ -1151,6 +1152,7 @@ def run_main(case, parameters, year):
                         '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
                         'Correlation_{}_{}_{}_{}'.format(
                             case, weather_data_name, year, wf_name)))
+
     #         if 'box_plots' in visualization_methods:
     #             # Store all bias time series of a validation set in one
     #             # DataFrame for Boxplot
@@ -1240,4 +1242,6 @@ if __name__ == "__main__":
     if 'power_output_1' in cases:
         latex_tables.mean_rmse_power_output_1_table(latex_tables_folder)
         latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+    if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
+        plots_single_functionalities.run_bar_plot_key_figures()
     logging.info("--- Done ---")
