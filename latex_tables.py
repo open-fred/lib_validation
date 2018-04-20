@@ -457,7 +457,7 @@ def mean_rmse_power_output_1_table(latex_tables_folder):
             rmse_df = latex_df['RMSE [MW]']
             for resolution in resolutions:
                 mean_rmse_df['{} {}'.format(resolution, year)] = rmse_df.iloc[
-                    rmse_df.index.get_level_values(1) == 'hourly'].mean()
+                    rmse_df.index.get_level_values(1) == resolution].mean()
             mean_rmse_df = mean_rmse_df.transpose()
             mean_rmse_df.columns = [
                 mean_rmse_df.columns,
@@ -482,6 +482,55 @@ def mean_rmse_power_output_1_table(latex_tables_folder):
     mean_rmse_df_years.round(2).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
+
+
+def mean_std_dev_smoothing_2(latex_tables_folder):
+    weather_data_list = ['MERRA', 'open_FRED']
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    years = [2015, 2016]
+    counter = 0
+
+    for year in years:
+        for weather_data_name in weather_data_list:
+            filename_csv = os.path.join(
+                os.path.dirname(__file__), 'csv_for_plots',
+                'std_dev_time_series_smoothing_2_{0}_{1}.csv'.format(
+                    year, weather_data_name))
+            latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
+            raw_columns = list(latex_df)
+            latex_df.rename(columns={col: col + ' {} {}'.format(
+                year, weather_data_name) for col in latex_df.columns},
+                            inplace=True)
+            if counter == 0:
+                dfs_by_column_list = [latex_df[[col]] for
+                                      col in list(latex_df)]
+            else:
+                dfs_by_column_list = [pd.concat([dfs_by_column_list[i],
+                                                 latex_df[[col]]], axis=1) for
+                                      i, col in zip(
+                        range(len(list(latex_df))), list(latex_df))]
+            counter += 1
+    # Average each row of each data frame and concat again
+    joined_dfs = [pd.DataFrame(df.mean(axis=1)) for df in dfs_by_column_list]
+    joined_dfs = [df.rename(columns={list(df)[0]: new_col}) for
+                  df, new_col in zip(joined_dfs, raw_columns)]
+    mean_std_dev_df = pd.concat(joined_dfs, axis=1)
+    mean_std_dev_df.index.set_names(['name', 'resolution'], inplace=True)
+    mean_std_dev_df.reset_index(inplace=True)
+    first_columns = ['Weather data', 'Temporal']
+    first_columns.extend(['Standard deviation in MW' for i in range(4)])
+    mean_std_dev_df.columns = [col.replace(
+        'aggregation', 'Aggregation').replace('mea', 'Mea') for col in mean_std_dev_df.columns]
+    mean_std_dev_df.columns = [first_columns, mean_std_dev_df.columns]
+    filename_table = os.path.join(
+        path_latex_tables,
+        'mean_std_dev_smoothing_2.tex')
+    column_format = create_column_format(
+        number_of_columns=len(list(mean_std_dev_df)), index_columns='ll')
+    mean_std_dev_df.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c', index=False)
 
 
 def mean_annual_energy_deviation_tables(latex_tables_folder):
@@ -534,19 +583,82 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
 
 
 def concat_std_dev_tables_smoothing_1(latex_tables_folder):
-    weather_data_names = ['MERRA', 'opfen_FRED']
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    weather_data_names = ['MERRA', 'open_FRED']
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
                         os.path.dirname(__file__), 'csv_for_plots',
                         'std_dev_time_series_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
-        latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
-        latex_df.
+        latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
+            'measured', axis=1)
+        if weather_data_name == 'MERRA':
+            latex_df.index.set_levels([weather_data_name, weather_data_name],
+                                      level=0, inplace=True)
+        if weather_data_name == 'open_FRED':
+            latex_df.index.set_levels([
+                weather_data_name, weather_data_name, weather_data_name],
+                level=0, inplace=True)
+        latex_df.index.set_names(['name', 'resolution'], inplace=True)
+        latex_df.reset_index(inplace=True)
+        first_columns = ['Weather data', 'Temporal']
+        first_columns.extend(['Standard deviation in MW' for i in range(2)])
+        latex_df.columns = [col.replace('turb', 'Turb').replace(
+            'farm', 'Farm') for col in latex_df.columns]
+        latex_df.columns = [first_columns, latex_df.columns]
+        std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'std_dev_smoothing_1.tex')
+    column_format = create_column_format(
+        number_of_columns=len(list(std_dev_df)), index_columns='ll')
+    std_dev_df.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c', index=False)
+
+
+def concat_key_figures_tables_smoothing_1(latex_tables_folder):
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    weather_data_names = ['MERRA', 'open_FRED']
+    std_dev_df = pd.DataFrame()
+    for weather_data_name in weather_data_names:
+        filename_csv = os.path.join(
+                        os.path.dirname(__file__), 'csv_for_plots',
+                        'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
+                            weather_data_name))
+        latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0, 1])
+        if weather_data_name == 'MERRA':
+            latex_df.index.set_levels([weather_data_name, weather_data_name],
+                                      level=0, inplace=True)
+        if weather_data_name == 'open_FRED':
+            latex_df.index.set_levels([
+                weather_data_name, weather_data_name, weather_data_name],
+                level=0, inplace=True)
+        latex_df.index.set_names(['Weather data', 'Temporal'], inplace=True)
+        latex_df.reset_index(inplace=True)
+        second_columns = ['name', 'resolution']
+        second_columns.extend(latex_df.columns.get_level_values(1)[2:])
+        second_columns = [col.replace('turb', 'Turb').replace(
+            'farm', 'Farm') for col in second_columns]
+        latex_df.columns = [latex_df.columns.get_level_values(0), second_columns]
+        std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'key_figures_smoothing_1.tex')
+    column_format = create_column_format(
+        number_of_columns=len(list(std_dev_df)), index_columns='ll')
+    std_dev_df.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c', index=False)
 
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                            'automatic/')
-    # mean_rmse_power_output_1_table(latex_tables_folder)
-    # mean_annual_energy_deviation_tables(latex_tables_folder)
+    mean_rmse_power_output_1_table(latex_tables_folder)
+    mean_annual_energy_deviation_tables(latex_tables_folder)
     concat_std_dev_tables_smoothing_1(latex_tables_folder)
+    concat_key_figures_tables_smoothing_1(latex_tables_folder)
+    mean_std_dev_smoothing_2(latex_tables_folder)
