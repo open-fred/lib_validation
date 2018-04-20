@@ -4,6 +4,48 @@ import pandas as pd
 import os
 
 
+
+def bar_plot_from_file(source_filename, output_filename, index=None,
+                       index_cols=0, header_cols=0, ylabel=''):
+    df = pd.read_csv(source_filename, index_col=index_cols, header=header_cols,
+                     sep=',', decimal='.')
+    df.index.set_names(['' for i in df.index[0]], inplace=True)
+    if index:
+        # Select only part of data frame
+        plot_df = df.loc[index]
+    else:
+        # Select whole data frame
+        plot_df = df
+    fig, ax = plt.subplots()
+    plot_df.plot(kind='bar', ax=ax, legend=False)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.ylabel(ylabel)
+    # plt.xlabel('Wind farms')
+    # plt.xticks(rotation='vertical')
+    # plt.title('{} of wind speed calculation with different methods in {}'.format(
+    #     key_figure, year))
+    plt.tight_layout()
+    fig.savefig(output_filename, bbox_inches="tight")
+    plt.close()
+
+def run_bar_plots_from_files():
+    filenames = ['mean_std_dev_smoothing_2.csv']
+    index_header_cols = [([1, 0], 1)]
+    ylabels = ['Mean standard deviation in MW']
+    output_methods = ['hourly']
+    for output_method in output_methods:
+        for filename, index_header_col, ylabel in zip(filenames, index_header_cols, ylabels):
+            input_filename = os.path.join(
+                os.path.dirname(__file__), 'csv_for_plots', filename)
+            output_filename = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/inc/images/bar_plots_others',
+                'bar_plot_{}_{}'.format(filename.split('.')[0], output_method))
+            bar_plot_from_file(
+                input_filename, output_filename=output_filename,
+                index_cols=index_header_col[0],
+                header_cols=index_header_col[1], index=output_method, ylabel=ylabel)
+
 def bar_plot_key_figures(year, output_method, key_figure, cases,
                          weather_data_name):
     plot_df = pd.DataFrame()
@@ -107,5 +149,10 @@ def run_bar_plot_key_figures():
                                 year, output_method, key_figure,
                                 cases, weather_data_name)
 
-if __name__ == "__main__":
+def run_all_plots():
     run_bar_plot_key_figures()
+    run_bar_plots_from_files()
+
+if __name__ == "__main__":
+    # run_bar_plot_key_figures()
+    run_bar_plots_from_files()
