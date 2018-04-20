@@ -42,8 +42,8 @@ cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-    'smoothing_1',
-    # 'smoothing_2',
+#     'smoothing_1',
+    'smoothing_2',
     # 'density_correction_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',

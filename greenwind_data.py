@@ -1184,16 +1184,17 @@ if __name__ == "__main__":
 
     # ---- Wind direction correlation ----#
     if evaluate_wind_direction_corr:
-        corr_min = 0.6
+        corr_mins = [0.6, 0.7, 0.8]
         frequency = None
         WT_14 = True
         folder = os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation',
             'green_wind_wind_direction')
-        for year in years:
-            evaluate_wind_directions(year=year, save_folder=folder,
-                                     corr_min=corr_min, WT_14=WT_14)
+        for corr_min in corr_mins:
+            for year in years:
+                evaluate_wind_directions(year=year, save_folder=folder,
+                                         corr_min=corr_min, WT_14=WT_14)
 
     # ---- Plot wind directions ---- #
     if plot_wind_direcions:

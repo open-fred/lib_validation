@@ -40,8 +40,8 @@ def get_standard_case_of_configuration():
         'visualization_methods': [
            # 'box_plots',
            #  'feedin_comparison',
-           #  'plot_correlation',  # Attention: this takes a long time for high resolution
-           #  'subplots_correlation'
+            'plot_correlation',  # Attention: this takes a long time for high resolution
+            'subplots_correlation'
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -194,6 +194,8 @@ def get_configuration(case=None):
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
+        config_dict['replacement'] = [
+            (('_', ' '), ('aggregation', 'Agg.'))]
 
     # if case == 'density_correction_1':
     #     config_dict['approach_list'] = ['turbine', 'farm']
