@@ -531,6 +531,10 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
     mean_std_dev_df.round(2).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c', index=False)
+    filename_csv = os.path.join(
+        os.path.dirname(__file__), 'csv_for_plots',
+        'mean_std_dev_smoothing_2.csv')
+    mean_std_dev_df.to_csv(filename_csv, index=False)
 
 
 def mean_annual_energy_deviation_tables(latex_tables_folder):

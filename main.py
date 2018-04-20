@@ -1246,5 +1246,5 @@ if __name__ == "__main__":
         latex_tables.concat_key_figures_tables_smoothing_1(latex_tables_folder)
         latex_tables.mean_std_dev_smoothing_2(latex_tables_folder)
     if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
-        plots_single_functionalities.run_bar_plot_key_figures()
+        plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")
