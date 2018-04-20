@@ -1243,12 +1243,11 @@ if __name__ == "__main__":
     # ---- Further latex tables ----#
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
-    if 'power_output_1' in cases:
-        latex_tables.mean_rmse_power_output_1_table(latex_tables_folder)
-        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
-        latex_tables.concat_std_dev_tables_smoothing_1(latex_tables_folder)
-        latex_tables.concat_key_figures_tables_smoothing_1(latex_tables_folder)
-        latex_tables.mean_std_dev_smoothing_2(latex_tables_folder)
+    latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+    latex_tables.concat_std_dev_tables_smoothing_1(latex_tables_folder)
+    latex_tables.concat_key_figures_tables_smoothing_1(latex_tables_folder)
+    latex_tables.mean_std_dev_smoothing_2(latex_tables_folder)
+    latex_tables.carry_out_mean_figure_tables(latex_tables_folder)
     if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
         plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")

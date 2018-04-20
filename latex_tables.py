@@ -433,9 +433,8 @@ def sort_columns_height(df, case):
     return sorted_df
 
 
-def mean_rmse_power_output_1_table(latex_tables_folder):
+def mean_figure_table(latex_tables_folder, case, figure):
     """
-    For case == power_output_1
 
     """
     weather_data_list = ['MERRA', 'open_FRED']
@@ -450,18 +449,23 @@ def mean_rmse_power_output_1_table(latex_tables_folder):
             filename_csv = os.path.join(
                 os.path.dirname(__file__), 'csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}.csv'.format(
-                    'power_output_1', year, weather_data_name))
+                    case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1],
                                    header=[0, 1])
             mean_rmse_df = pd.DataFrame()
-            rmse_df = latex_df['RMSE [MW]']
+            rmse_df = latex_df[figure]
             for resolution in resolutions:
                 mean_rmse_df['{} {}'.format(resolution, year)] = rmse_df.iloc[
                     rmse_df.index.get_level_values(1) == resolution].mean()
             mean_rmse_df = mean_rmse_df.transpose()
-            mean_rmse_df.columns = [
-                mean_rmse_df.columns,
-                ['-curve', weather_data_name, '-curve', weather_data_name]]
+            if case == 'power_output_1':
+                mean_rmse_df.columns = [
+                    mean_rmse_df.columns,
+                    ['-curve', weather_data_name, '-curve', weather_data_name]]
+            else:
+                mean_rmse_df.columns = [
+                    mean_rmse_df.columns,
+                    ['-curve', weather_data_name, '-curve']]
             mean_rmse_df_weather = pd.concat([mean_rmse_df_weather,
                                               mean_rmse_df], axis=1)
             if weather_data_name != weather_data_list[-1]:
@@ -473,7 +477,7 @@ def mean_rmse_power_output_1_table(latex_tables_folder):
                                         mean_rmse_df_weather], axis=0)
     filename_table = os.path.join(
         path_latex_tables,
-        'mean_rmse_weather_power_output_1.tex')
+        'mean_rmse_weather_{}_{}.tex'.format(case, figure))
     column_format = create_column_format(
         number_of_columns=len(list(mean_rmse_df_years)),
         index_columns='l')
@@ -658,11 +662,19 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
         buf=filename_table, column_format=column_format,
         multicolumn_format='c', index=False)
 
+
+def carry_out_mean_figure_tables(latex_tables_folder):
+    figures = ['RMSE [MW]', 'RMSE [%]']
+    for figure in figures:
+        for case in ['power_output_1', 'single_turbine_1']:
+            mean_figure_table(latex_tables_folder, case, figure=figure)
+
+
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                            'automatic/')
-    mean_rmse_power_output_1_table(latex_tables_folder)
     mean_annual_energy_deviation_tables(latex_tables_folder)
     concat_std_dev_tables_smoothing_1(latex_tables_folder)
     concat_key_figures_tables_smoothing_1(latex_tables_folder)
     mean_std_dev_smoothing_2(latex_tables_folder)
+    carry_out_mean_figure_tables(latex_tables_folder)
