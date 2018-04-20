@@ -64,6 +64,8 @@ def get_wind_efficiency_curves(years, pickle_filename_add_on,
             title_add_on_3 = ''
         if 'mean_wind_dir' in pickle_filename:
             folder += 'mean_wind_dir/'
+        if 'bias' in pickle_filename:
+            folder += 'bias/'
         if 'dir_real' in pickle_filename:
             wfs = ['BS', 'BNW']
             numbers = [14, 2]
@@ -298,6 +300,7 @@ if __name__ == "__main__":
         2016
     ]
     mean_wind_dir = True
+    bias = True
     drop_higher_one_list = [True, False]
     exact_degrees_list = [True, False]
     pickle_filename_add_ons = [
@@ -306,6 +309,10 @@ if __name__ == "__main__":
         '_highest_power']
     if mean_wind_dir:
         pickle_filename_add_ons = [item + 'mean_wind_dir' for
+                                   item in pickle_filename_add_ons if
+                                   'highest' not in item]
+    if bias:
+        pickle_filename_add_ons = [item + '_bias' for
                                    item in pickle_filename_add_ons if
                                    'highest' not in item]
     for drop_higher_one in drop_higher_one_list:
