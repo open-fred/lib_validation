@@ -254,7 +254,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       pickle_load=False, frequency='30T',
                                       resample=True, threshold=None,
                                       case='all', exact_degrees=False,
-                                      mean_wind_dir=True):
+                                      mean_wind_dir=False, bias=False):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -398,25 +398,39 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                 # specified values in `turbine_dict`. If wind direction is not
                 # deviating more than 5° from mean wind direction. # TODO delete if not added
                 # Example for 'wf_BE_1': 0 <= x < 90.
-                if mean_wind_dir:
+                if (mean_wind_dir or bias):
                     # Set wind_dir to mean wind direction
-                    wind_dir = green_wind_df[[
+                    restrictions = ['wf_{}_{}'.format(wf, wind_dir_string) for
+                                    wf in ['BE_1', 'BE_4', 'BS_11', 'BS_4']]
+                    mean_dir = green_wind_df[[
                         col for col in green_wind_df.columns if
                         (wind_dir_string in col and
-                         wind_farm_name in col)]].mean(axis=1)
+                         wind_farm_name in col and
+                         col not in restrictions)]].mean(axis=1)
+                if mean_wind_dir:
+                    wind_dir = mean_dir
                 else:
                     # Set wind_dir to turbine wind direction
                     wind_dir = green_wind_df['{}_{}'.format(
                         turbine_name, wind_dir_string)]
-                indices = green_wind_df.loc[
-                    (wind_dir >=
-                     float(turbine_dict[wind_farm_name][turbine_name][0])) &
-                    (wind_dir <
-                     float(turbine_dict[wind_farm_name][
-                               turbine_name][1]))].index
-                #     (abs(green_wind_df['{}_{}'.format(turbine_name,
-                #                                       wind_dir_string)] -
-                #          mean_wind_dir) <= 15.0)
+                if bias:
+                    indices = green_wind_df.loc[
+                        (wind_dir >=
+                         float(
+                             turbine_dict[wind_farm_name][turbine_name][0])) &
+                        (wind_dir <
+                         float(turbine_dict[wind_farm_name][
+                                   turbine_name][1])) &
+                        (abs(green_wind_df['{}_{}'.format(turbine_name,
+                                                          wind_dir_string)] -
+                             mean_wind_dir) <= 10.0)].index
+                else:
+                    indices = green_wind_df.loc[
+                        (wind_dir >=
+                         float(turbine_dict[wind_farm_name][turbine_name][0])) &
+                        (wind_dir <
+                         float(turbine_dict[wind_farm_name][
+                                   turbine_name][1]))].index
                 # Add temporary wind speed column with only nans # TODO not necessary
                 green_wind_df['wind_speed_temp_{}'.format(
                     turbine_name)] = np.nan
@@ -1037,6 +1051,7 @@ if __name__ == "__main__":
         pickle_load_raw_data = True
         exact_degrees = False
         mean_wind_dir = True  # Use mean wind direction (of correlating wind directions) instead of single turbine wind directions
+        bias = True
         for case in cases:
             for year in years:
                 filename_raw_data = os.path.join(
@@ -1050,26 +1065,30 @@ if __name__ == "__main__":
                     add_on_2 = 'mean_wind_dir'
                 else:
                     add_on_2 = ''
+                if bias:
+                    add_on_3 = '_bias'
+                else:
+                    add_on_3 = ''
                 if case == 'wind_speed_1':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}{1}{2}.p'.format(
-                            year, add_on, add_on_2))
+                        'greenwind_data_first_row_{0}{1}{2}{3}.p'.format(
+                            year, add_on, add_on_2, add_on_3))
                 if case == 'weather_wind_speed_3':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}{2}.p'.format(
-                            year, add_on, add_on_2))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}{2}{3}.p'.format(
+                            year, add_on, add_on_2, add_on_3))
                 if case == 'wind_dir_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_wind_dir_real{1}{2}.p'.format(
-                            year, add_on, add_on_2))
+                        'greenwind_data_first_row_{0}_wind_dir_real{1}{2}{3}.p'.format(
+                            year, add_on, add_on_2, add_on_3))
                 if case == 'weather_wind_speed_3_real':
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}{2}.p'.format(
-                            year, add_on, add_on_2))
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}{2}{3}.p'.format(
+                            year, add_on, add_on_2, add_on_3))
                 error_amount_filename = os.path.join(
                     os.path.dirname(__file__),
                     '../../../User-Shares/Masterarbeit/Daten/Twele/',
