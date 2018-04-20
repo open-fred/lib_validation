@@ -39,7 +39,7 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           #  'feedin_comparison',
+            'feedin_comparison',
             'plot_correlation',  # Attention: this takes a long time for high resolution
             'subplots_correlation'
            ],
@@ -54,7 +54,7 @@ def get_standard_case_of_configuration():
                               'rmse_normalized',
                               'pearson',
                               'mean_bias',
-                              # 'standard_deviation'
+                              # 'standard_deviation' # is std dev of bias!
                               ],
         'replacement': [('_', ' ')],   # ('_wf', '')
         'years': [
@@ -195,10 +195,17 @@ def get_configuration(case=None):
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
         config_dict['replacement'] = [
-            (('_', ' '), ('aggregation', 'Agg.'))]
-
+            ('_', ' '), ('aggregation', 'Agg.')]
     # if case == 'density_correction_1':
     #     config_dict['approach_list'] = ['turbine', 'farm']
+
+    # ---- Single Turbine Model ---- #
+    if case == 'single_turbine_1':
+        config_dict['approach_list'] = [
+            'p-curve', 'cp-curve', 'p-curve_(d._c.)']
+        config_dict['validation_data_list'] = ['single']
+
+
 
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':

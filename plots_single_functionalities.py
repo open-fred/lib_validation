@@ -32,7 +32,7 @@ def run_bar_plots_from_files():
     filenames = ['mean_std_dev_smoothing_2.csv']
     index_header_cols = [([1, 0], 1)]
     ylabels = ['Mean standard deviation in MW']
-    output_methods = ['hourly']
+    output_methods = ['hourly', 'monthly', 'half-hourly']
     for output_method in output_methods:
         for filename, index_header_col, ylabel in zip(filenames, index_header_cols, ylabels):
             input_filename = os.path.join(

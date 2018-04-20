@@ -245,7 +245,12 @@ def annual_energy_output(power_output, temporal_resolution=None):
 
     """
     try:
-        energy = power_output * power_output.index.freq.n / 60
+        power_output.index.freq.n
+        if power_output.index.freq.n == 1:
+            freq = 60
+        else:
+            freq = power_output.index.freq.n
+        energy = power_output * freq / 60
     except Exception:
         if temporal_resolution is not None:
             energy = power_output * temporal_resolution / 60

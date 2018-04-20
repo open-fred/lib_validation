@@ -43,8 +43,10 @@ cases = [
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
 #     'smoothing_1',
-    'smoothing_2',
+#     'smoothing_2',
     # 'density_correction_1',
+# ---- Single Turbine Model ---- '
+    'single_turbine_1'
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
     # 'weather_wind_speed_2',
@@ -1011,6 +1013,8 @@ def run_main(case, parameters, year):
             folder = 'wind_speed'
         elif ('power_output' in case and 'weather' not in case):
             folder = 'power_output'
+        elif ('single_turbine' in case and 'weather' not in case):
+            folder = 'single_turbine'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
         elif (case == 'weather_single_turbine_1' or
