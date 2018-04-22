@@ -211,6 +211,16 @@ def get_configuration(case=None):
     # if case == 'density_correction_1':
     #     config_dict['approach_list'] = ['turbine', 'farm']
 
+    # ---- Single functions - Wake losses ---- #
+    if case == 'wake_losses_1':
+        config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant']
+        config_dict['validation_data_list'] = ['GreenWind']
+        config_dict['weather_data_list'] = ['open_FRED']
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches']
+        config_dict['replacement'] = [
+            ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
+
     # ---- Single Turbine Model ---- #
     if case == 'single_turbine_1':
         config_dict['approach_list'] = [
