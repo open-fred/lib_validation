@@ -29,7 +29,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
         p_values = turbine.power_curve['power'] / 1000
         p_values = p_values.append(pd.Series(0.0, index=[p_values.index[-1] + 1]))
         wind_speeds = wind_speeds.append(pd.Series(40.0, index=[wind_speeds.index[-1] + 1]))
-        a, = plt.plot(wind_speeds, p_values, label='original')
+        a, = plt.plot(wind_speeds, p_values, label='Original')
         # Get smoothed power curve
         if grouped is False:
             smoothed_power_curve = smooth_power_curve(
@@ -40,7 +40,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                 wind_speed_range=wind_speed_range, mean_gauss=mean)
             b, = plt.plot(smoothed_power_curve['wind_speed'],
                           smoothed_power_curve['power'] / 1000,
-                          label='smoothed')
+                          label='Smoothed')
             handles = [a, b]
         if grouped == 'wind_speed_range':
             handles = [a]
@@ -54,7 +54,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                 handle, = plt.plot(
                     smoothed_power_curve['wind_speed'],
                     smoothed_power_curve['power'] / 1000,
-                    label='range {}'.format(range))
+                    label='Range {} m/s'.format(int(range)))
                 handles.append(handle)
         if grouped == 'block_width':
             handles = [a]
@@ -68,7 +68,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                     wind_speed_range=wind_speed_range)
                 handle, = plt.plot(smoothed_power_curve['wind_speed'],
                                    smoothed_power_curve['power'] / 1000,
-                                   label='block width {}'.format(width))
+                                   label='Block width {} m/s'.format(width))
                 handles.append(handle)
         if grouped == 'std_dev':
             handles = [a]
@@ -169,9 +169,9 @@ def get_roughness_length(weather_data_name, coordinates):
 
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = False
+    grouped_plots = True
     turbine_plots = False
-    plot_gauss = True
+    plot_gauss = False
 
     if (single_plots or grouped_plots or turbine_plots):
         # turbulence_intensity = 0.15  # Only for single plot
