@@ -469,7 +469,7 @@ def mean_figure_table(latex_tables_folder, case, figure):
             mean_rmse_df_weather = pd.concat([mean_rmse_df_weather,
                                               mean_rmse_df], axis=1)
             if weather_data_name != weather_data_list[-1]:
-                mean_rmse_df_weather.drop(['P', 'cp'], axis=1,
+                mean_rmse_df_weather.drop(['P', 'Cp'], axis=1,
                                           inplace=True)
             else:
                 mean_rmse_df_weather.sort_index(axis=1, inplace=True)
@@ -573,7 +573,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
             mean_deviaton_df_weather = pd.concat([mean_deviaton_df_weather,
                                                   mean_deviation_df], axis=1)
             if weather_data_name != weather_data_list[-1]:
-                mean_deviaton_df_weather.drop(['P', 'cp'], axis=1,
+                mean_deviaton_df_weather.drop(['P', 'Cp'], axis=1,
                                               inplace=True)
             else:
                 mean_deviaton_df_weather.sort_index(axis=1, inplace=True)
