@@ -186,8 +186,16 @@ def get_configuration(case=None):
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
     # ---- Single functions - Smoothing ---- #
+    # if case == 'smoothing_1':
+    #     config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
+    #     config_dict['validation_data_list'] = ['Enertrag']
+    #     config_dict['latex_output'] = ['key_figures_approaches',
+    #                                    'annual_energy_approaches',
+    #                                    'std_dev_time_series']
+    #     config_dict['years'] = [2016]  # Enertrag data only for 2016
     if case == 'smoothing_1':
-        config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
+        config_dict['approach_list'] = ['Turbine_TI', 'Farm_TI',
+                                        'Turbine_St._Pf.', 'Farm St._Pf.']  # smoothing to farm pc or turbine pc
         config_dict['validation_data_list'] = ['Enertrag']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
@@ -251,4 +259,5 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
+
     return config_dict
