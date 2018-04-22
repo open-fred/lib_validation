@@ -1,9 +1,10 @@
 # Imports from Windpowerlib
 from windpowerlib import tools
 from windpowerlib.power_curves import smooth_power_curve
+from windpowerlib.wind_farm import WindFarm
 
 # Imports from lib_validation
-from wind_farm_specifications import initialize_turbines
+from wind_farm_specifications import initialize_turbines, get_wind_farm_data
 import tools as lib_tools
 
 # Other imports
@@ -167,11 +168,44 @@ def get_roughness_length(weather_data_name, coordinates):
     return z0.mean()
 
 
+def plot_aggregated_vs_smoothed_pc():
+    # Initialise WindTurbine objects
+    wind_farm_data = get_wind_farm_data(
+        'farm_specification_enertrag_2016.p')
+    # WF BNE
+    wf = WindFarm(**wind_farm_data[0])
+    wf.hub_height = wf.mean_hub_height()
+    df = pd.DataFrame()
+    amounts = [7, 7, 1, 2]
+    for fleet in wf.wind_turbine_fleet:
+        curve = fleet['wind_turbine'].power_curve.set_index('wind_speed') *\
+                fleet['number_of_turbines']
+        df = pd.concat([df, curve], axis=1)
+    df.interpolate(method='index', inplace=True)
+    aggregated_curve = pd.DataFrame(df.sum(axis=1), columns=['power'])
+    smoothed_curve = smooth_power_curve(
+                pd.Series(aggregated_curve.index), aggregated_curve['power'],
+                turbulence_intensity=tools.estimate_turbulence_intensity(
+                    wf.hub_height, get_roughness_length(
+                        'open_FRED', wf.coordinates)[0]))
+    smoothed_curve.set_index('wind_speed', inplace=True)
+    smoothed_curve.columns = ['Smoothed']
+    aggregated_curve.columns = ['Aggregated']
+    fig, ax = plt.subplots()
+    aggregated_curve.plot(ax=ax, legend=True)
+    smoothed_curve.plot(ax=ax, legend=True)
+    plt.legend()
+    fig.savefig(os.path.join(
+        os.path.dirname(__file__),
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_vs_agg',
+        'smoothed_vs_agg_wf_BNE.pdf'))
+
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = True
+    grouped_plots = False
     turbine_plots = False
     plot_gauss = False
+    plot_aggregated_vs_smoothed = False
 
     if (single_plots or grouped_plots or turbine_plots):
         # turbulence_intensity = 0.15  # Only for single plot
@@ -289,3 +323,6 @@ if __name__ == "__main__":
                 std_dev, mean).replace(
                 '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
         plt.close()
+
+    if plot_aggregated_vs_smoothed:
+        plot_aggregated_vs_smoothed_pc()
