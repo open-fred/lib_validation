@@ -86,25 +86,20 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
         folder = 'wind_speeds'
     elif 'smoothing_2' in cases:
         folder = 'smoothing'
+    elif 'single_turbine' in cases[0]:
+        folder = 'single_turbine'
     else:
         folder = ''
     # Save as png and as pdf
-    fig.savefig(os.path.join(
-        os.path.dirname(__file__),
-        '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures',
-        folder, 'Barplot_wind_speed_methods_{}_{}_{}_{}{}.pdf'.format(
-            key_figure.replace(' ', '_').replace('/', '_').replace(
-                '.', ''), year, weather_data_name, output_method,
-            filename_add_on)),
-        bbox_inches="tight")
-    fig.savefig(os.path.join(
+    filename_start = os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures',
         folder, 'Barplot_wind_speed_methods_{}_{}_{}_{}{}'.format(
             key_figure.replace(' ', '_').replace('/', '_').replace(
-                '.', ''), year, weather_data_name, output_method,
-            filename_add_on)),
-        bbox_inches="tight")
+                '.', '').replace('%', 'percentage'), year, weather_data_name,
+            output_method, filename_add_on))
+    fig.savefig(filename_start + '.pdf', bbox_inches="tight")
+    fig.savefig(filename_start, bbox_inches="tight")
     plt.close()
 
 
@@ -117,17 +112,18 @@ def run_bar_plot_key_figures():
         ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         # ['weather_wind_speed_1'],  # For best function for MERRA
-        ['smoothing_2']
+        ['smoothing_2'],
+        ['single_turbine_1']
     ]
     years = [
         2015,
         2016
     ]
     key_figures = [
-        'RMSE [m/s]',
+        'RMSE [MW]',
         'RMSE [%]',
         'Pearson coefficient',
-        'mean bias [m/s]'
+        'mean bias [MW]'
     ]
     output_methods = [
         'hourly',
@@ -138,7 +134,9 @@ def run_bar_plot_key_figures():
             for output_method in output_methods:
                 for key_figure in key_figures:
                     for cases in cases_list:
-                        if 'smoothing_2' in cases:
+                        if 'wind_speed' in cases[0]:
+                            key_figure = key_figure.replace('MW', 'm/s')
+                        else:
                             key_figure = key_figure.replace('m/s', 'MW')
                         if (('wind_speed_1' in cases or
                                 'wind_speed_5' in cases) and
@@ -154,5 +152,5 @@ def run_all_plots():
     run_bar_plots_from_files()
 
 if __name__ == "__main__":
-    # run_bar_plot_key_figures()
+    run_bar_plot_key_figures()
     run_bar_plots_from_files()

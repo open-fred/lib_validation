@@ -477,12 +477,14 @@ def mean_figure_table(latex_tables_folder, case, figure):
                                         mean_rmse_df_weather], axis=0)
     filename_table = os.path.join(
         path_latex_tables,
-        'mean_rmse_weather_{}_{}.tex'.format(case, figure))
+        'mean_{}_weather_{}.tex'.format(figure.replace(' ', '_').replace(
+            '%', 'percent'), case))
     column_format = create_column_format(
         number_of_columns=len(list(mean_rmse_df_years)),
         index_columns='l')
     # Mean RMSE in kW
-    mean_rmse_df_years = mean_rmse_df_years * 1000
+    if figure == 'RMSE [MW]':
+        mean_rmse_df_years = mean_rmse_df_years * 1000
     mean_rmse_df_years.round(2).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
@@ -663,10 +665,10 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
         multicolumn_format='c', index=False)
 
 
-def carry_out_mean_figure_tables(latex_tables_folder):
+def carry_out_mean_figure_tables(latex_tables_folder, cases):
     figures = ['RMSE [MW]', 'RMSE [%]']
     for figure in figures:
-        for case in ['power_output_1', 'single_turbine_1']:
+        for case in cases:
             mean_figure_table(latex_tables_folder, case, figure=figure)
 
 
@@ -677,4 +679,5 @@ if __name__ == "__main__":
     concat_std_dev_tables_smoothing_1(latex_tables_folder)
     concat_key_figures_tables_smoothing_1(latex_tables_folder)
     mean_std_dev_smoothing_2(latex_tables_folder)
-    carry_out_mean_figure_tables(latex_tables_folder)
+    cases = ['power_output_1', 'single_turbine_1']
+    carry_out_mean_figure_tables(latex_tables_folder, cases)
