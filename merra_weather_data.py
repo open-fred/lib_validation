@@ -80,8 +80,10 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
                             index=data_frame.index,
                             columns=['temperature_{0}'.format(height)])
                         data_frame = pd.concat([data_frame, df_part], axis=1)
-                index = [data_frame.index, data_frame['lat'], data_frame['lon']]
-                data_frame_2 = rename_columns(data_frame, ['T', 'h1', 'lat', 'lon'])
+                index = [data_frame.index, data_frame['lat'],
+                         data_frame['lon']]
+                data_frame_2 = rename_columns(data_frame,
+                                              ['T', 'h1', 'lat', 'lon'])
                 data_frame_2.index = index
                 weather_df = data_frame_2
                 weather_df.columns = [first_level_columns,

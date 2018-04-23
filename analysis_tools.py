@@ -100,7 +100,6 @@ class ValidationObject(object):
         self.std_dev_val = self.get_standard_deviation(self.validation_series)
         self.std_dev_sim = self.get_standard_deviation(self.simulation_series)
 
-
     def get_series(self, type):
         column = [col for col in list(self.data) if type in col][0]
         return self.data.dropna()[column]
@@ -223,6 +222,7 @@ def correlation(val_obj, sample_resolution=None):
     return corr
 
 if __name__ == "__main__":
+    # TODO delete
     # Load validation objects - choose power output or hourly/monthly energy output
 #    path = os.path.join(os.path.dirname(__file__), 'dumps/validation_objects',
 #                        'validation_sets_2015_open_FRED_ArgeNetz_simple_power_output.p')

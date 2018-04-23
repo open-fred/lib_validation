@@ -68,8 +68,8 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
                                  [closest_coordinates['lat']],
-                                 [closest_coordinates['lon']]),:].reset_index(
-                                level=[1,2], drop=True)
+                                 [closest_coordinates['lon']]), :].reset_index(
+                                    level=[1, 2], drop=True)
     if weather_data_name == 'open_FRED':
         # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')
@@ -245,7 +245,12 @@ def annual_energy_output(power_output, temporal_resolution=None):
 
     """
     try:
-        energy = power_output * power_output.index.freq.n / 60
+        power_output.index.freq.n
+        if power_output.index.freq.n == 1:
+            freq = 60
+        else:
+            freq = power_output.index.freq.n
+        energy = power_output * freq / 60
     except Exception:
         if temporal_resolution is not None:
             energy = power_output * temporal_resolution / 60
@@ -562,7 +567,8 @@ def resample_with_nan_theshold(df, frequency, threshold):
         for column in column_list:
             df_part = pd.DataFrame(df2[column])
             df_part[column] = np.nan
-            df_part.loc[df_part['count'] >= threshold, column] = df_part['mean']
+            df_part.loc[df_part['count'] >= threshold, column] = df_part[
+                'mean']
             df_part.drop(columns=['count', 'mean'], axis=1, inplace=True)
             resampled_df = pd.concat([resampled_df, df_part], axis=1)
     return resampled_df
@@ -573,5 +579,14 @@ def negative_values_to_nan(df, columns=None):
         columns = [column for column in list(df)]
     for column in columns:
         indices = df.loc[df[column] < 0.0].index
+        df[column].loc[indices] = np.nan
+    return df
+
+
+def higher_values_to_nan(df, limit, columns=None):
+    if columns is None:
+        columns = [column for column in list(df)]
+    for column in columns:
+        indices = df.loc[df[column] > limit].index
         df[column].loc[indices] = np.nan
     return df

@@ -24,12 +24,13 @@ def get_curves_for_plot(turbine):
         turbine.rotor_diameter ** 2 * np.pi *
         power_coefficient_curve['wind_speed'] ** 3)
     power_coefficient_curve.drop('power coefficient', axis=1, inplace=True)
-    power_coefficient_curve.rename(columns={col: col.replace('wind_speed',
-                                                 'wind speed [m/s]') for
-                                col in list(power_coefficient_curve)}, inplace=True)
+    power_coefficient_curve.rename(columns={
+        col: col.replace('wind_speed', 'wind speed [m/s]') for
+        col in list(power_coefficient_curve)}, inplace=True)
     power_coefficient_curve.set_index('wind speed [m/s]', inplace=True)
     power_coefficient_curve = power_coefficient_curve / (1 * 10 ** 6)
     return power_curve, power_coefficient_curve
+
 
 def cp_to_p_curve_single_plots():
     turbines = initialize_turbines([
@@ -46,9 +47,7 @@ def cp_to_p_curve_single_plots():
         power_coefficient_curve.plot(ax=ax, legend=True)
         plt.title(turbine.object_name)
         plt.ylabel('Power in MW')
-        fig.savefig(
-            os.path.join(
-            os.path.dirname(__file__),
+        fig.savefig(os.path.join(os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/cp_to_p_curves',
             'cp_to_p_{0}.pdf'.format(turbine.object_name).replace(' ', '_')))
         plt.close()
@@ -62,7 +61,7 @@ def cp_to_p_curve_subplots():
         # 'enerconE82_2000'
     ])
 
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,  sharex='col')
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,  sharex='col')
     axes = [ax1, ax2, ax3, ax4]
     for turbine, ax in zip(turbines, axes):
         power_curve, power_coefficient_curve = get_curves_for_plot(turbine)
@@ -77,9 +76,7 @@ def cp_to_p_curve_subplots():
     fig.text(0.05, 0.5, "Power in MW", ha="center",
              va="center", rotation=90)
     plt.legend(loc='upper right', bbox_to_anchor=(0.9, 2.45), ncol=2)
-    fig.savefig(
-        os.path.join(
-            os.path.dirname(__file__),
+    fig.savefig(os.path.join(os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/cp_to_p_curves',
             'cp_to_p_subplots.pdf'))
     plt.close()
