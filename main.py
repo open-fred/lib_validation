@@ -11,7 +11,7 @@ from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-from argenetz_data import get_argenetz_data
+from argenetz_data import get_argenetz_data, wf_2_single_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
 from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
@@ -42,6 +42,7 @@ cases = [
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
+    'power_output_2',
 # ---- Single functions - smoothing, density... ---- #
 #     'smoothing_1',
 #     'smoothing_2',
@@ -49,12 +50,12 @@ cases = [
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
 #     'wake_losses_2',
-      'wake_losses_3',
+#       'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1'
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
-    # 'weather_wind_speed_2',
+#     'weather_wind_speed_2',
     # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
@@ -76,7 +77,7 @@ pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = False  # Dump df as csv
+csv_dump_time_series_df = True  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot (multiple)
@@ -99,8 +100,9 @@ validation_pickle_folder = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data'))
 wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
                                        'dumps/wind_farm_data')
-time_series_df_folder = os.path.join(os.path.dirname(__file__),
-                                     'dumps/time_series_dfs')
+time_series_df_folder = os.path.join(
+    os.path.dirname(__file__),
+    '../../../User-Shares/Masterarbeit/Coden/time_series_dfs')
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
@@ -320,7 +322,8 @@ def run_main(case, parameters, year):
 
 
     # ---------------------------- Wind farm data --------------------------- #
-    def return_wind_farm_data(single=False, gw_wind_speeds=False):
+    def return_wind_farm_data(single=False, gw_wind_speeds=False,
+                              sh_wind_speeds=False):
         r"""
         Get wind farm data of all validation data.
 
@@ -344,6 +347,10 @@ def run_main(case, parameters, year):
                     item['object_name'].split('_')[1])
         elif gw_wind_speeds:
             filenames = ['turbine_specification_greenwind_{0}.p'.format(year)]
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+        elif sh_wind_speeds:
+            filenames = ['turbine_specification_argenetz_{0}.p'.format(year)]
             wind_farm_data = get_joined_wind_farm_data(
                 filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
         else:
@@ -514,14 +521,14 @@ def run_main(case, parameters, year):
                         hellman_exp=None).to_frame(
                         name='{0}_calculated_hellman_10'.format(
                             wind_farm.object_name)))
-            # if 'hellman_2' in approach_list:
-            #     calculation_df_list.append(
-            #         modelchain_usage.wind_speed_to_hub_height(
-            #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-            #             weather_df=weather, wind_speed_model='hellman',
-            #             hellman_exp=1 / 7).to_frame(
-            #             name='{0}_calculated_hellman_2'.format(
-            #                 wind_farm.object_name)))
+            if 'hellman_2' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather, wind_speed_model='hellman',
+                        hellman_exp=1 / 7).to_frame(
+                        name='{0}_calculated_hellman_2'.format(
+                            wind_farm.object_name)))
             if 'hellman2_100' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
@@ -597,6 +604,15 @@ def run_main(case, parameters, year):
                     filter_errors=True)
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
+                    wind_farm.object_name)]]
+            elif case == 'power_output_2':
+                # Get ArgeNetz data and get wind speed from turbines
+                arge_single_data = wf_2_single_data(
+                    pickle_load=pickle_load_arge,
+                    filename=os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'wf_SH_single.p'))
+                wind_speed = arge_single_data[['wf_{}_wind_speed'.format(
                     wind_farm.object_name)]]
             else:
                 wind_speed = None
@@ -968,6 +984,9 @@ def run_main(case, parameters, year):
     elif 'gw_wind_speeds' in validation_data_list:
         wind_farm_data_list = return_wind_farm_data(single=False,
                                                     gw_wind_speeds=True)
+    elif 'sh_wind_speeds' in validation_data_list:
+        wind_farm_data_list = return_wind_farm_data(single=False,
+                                                    sh_wind_speeds=True)
     elif case == 'wake_losses_3':
         wind_farm_data_list = return_wind_farm_data()
         wind_farm_data_list = [item for item in wind_farm_data_list if
