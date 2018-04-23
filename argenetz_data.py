@@ -308,6 +308,9 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
                          index in df_wf_2.index]
         # Set time zone
         df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
+        # Add frequency attribute
+        freq = pd.infer_freq(df_wf_2.index)
+        df_wf_2.index.freq = pd.tseries.frequencies.to_offset(freq)
         if filter_interpolated_data:
             print('---- The interpolated data of ArgeNetz data in {0} '.format(
                       year) + 'is being filtered. ----')
