@@ -352,7 +352,25 @@ def get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
                 else:
                     print('Adjust function!')
         pickle.dump(wind_efficiency_curves, open(filename, 'wb'))
+        wind_efficiency_curves.to_csv(
+            'helper_files/calculated_wind_efficiency_curves.csv')
     return wind_efficiency_curves
+
+
+def plot_calcualted_and_dena():
+    calculated_curves = pd.read_csv(
+        'helper_files/calculated_wind_efficiency_curves.csv', index_col=0)
+    dena_mean_curve = wind_farm.read_wind_efficiency_curve('dena_mean')
+    dena_mean_curve.set_index('wind_speed', inplace=True)
+    dena_mean_curve.rename(columns={'efficiency': 'dena mean'},
+                           inplace=True)
+    plot_df = pd.concat([calculated_curves, dena_mean_curve], axis=1)
+    fig, ax = plt.subplots()
+    plot_df.plot(ax=ax, legend=True)
+    fig.savefig(os.path.join(
+        os.path.dirname(__file__),
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/',
+        'wind_efficiency_curves_calculated_dena_knorr.pdf'))
 
 def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
     path = os.path.join(os.path.dirname(__file__), 'helper_files',
