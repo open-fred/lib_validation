@@ -360,18 +360,23 @@ def get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
 def plot_calcualted_and_dena():
     calculated_curves = pd.read_csv(
         'helper_files/calculated_wind_efficiency_curves.csv', index_col=0)
+    calculated_curves.rename(columns={col: col.replace('wf_', 'WF ') for
+                                      col in calculated_curves.columns},
+                             inplace=True)
     dena_mean_curve = wind_farm.read_wind_efficiency_curve('dena_mean')
     dena_mean_curve.set_index('wind_speed', inplace=True)
     dena_mean_curve.rename(columns={'efficiency': 'dena mean'},
                            inplace=True)
-    knorr_exreme = wind_farm.read_wind_efficiency_curve('knorr_extreme1')
+    knorr_exreme = wind_farm.read_wind_efficiency_curve('knorr_extreme2')
     knorr_exreme.set_index('wind_speed', inplace=True)
-    knorr_exreme.rename(columns={'efficiency': 'knorr extreme 1'},
+    knorr_exreme.rename(columns={'efficiency': 'knorr extreme2'},
                            inplace=True)
     plot_df = pd.concat([dena_mean_curve, knorr_exreme,
                          calculated_curves], axis=1)
     fig, ax = plt.subplots()
     plot_df.plot(ax=ax, legend=True)
+    plt.xlabel('Wind speed in m/s')
+    plt.ylabel('Efficiency')
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/',
@@ -412,7 +417,7 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    load_curves = True
+    load_curves = False
     plot_curves = True
     evaluate_curves = False
     standardize_curves = False
