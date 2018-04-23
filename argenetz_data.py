@@ -214,21 +214,26 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
             old_names = list(df_wf_2)
             new_names = []
             for old_name in old_names:
-                if 'Elektrische Wirkleistung' in old_name:
+                if ('Elektrische Wirkleistung' in old_name and
+                            'Nordstrand ::' in old_name):
                     string = 'power_output'
-                elif 'Windgeschwindigkeit' in old_name:
+                elif ('Windgeschwindigkeit' in old_name and
+                              'Nordstrand ::' in old_name):
                     string = 'wind_speed'
-                elif 'Windrichtung (' in old_name:
+                elif ('Windrichtung (' in old_name and
+                              'Nordstrand ::' in old_name):
                     # Bracket is necessary as also 'Windrichtung relativ zur
                     # Gondelposition' exists
                     string = 'wind_dir'
                 else:
                     string = 'drop_col'
-                new_names.append('wf_2_{0}'.format(string))
+                new_names.append('wf_2_{}'.format(string))
             df_wf_2.rename(columns={
                 old_name: new_name for old_name, new_name in
                 zip(old_names, new_names)},
                            inplace=True)
+            df_wf_2.drop([col for col in list(df_wf_2) if 'drop_col' in col],
+                         inplace=True)
             # Convert string index to Datetime index
             df_wf_2.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
                              index in df_wf_2.index]
