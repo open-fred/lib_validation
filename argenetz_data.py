@@ -258,6 +258,72 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
     return df
 
 
+def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
+                     filter_interpolated_data=True):
+    year = 2016
+    if pickle_load:
+        df_wf_2 = pickle.load(open(pickle_filename, 'rb'))
+    else:
+        # Get data
+        file_dir = os.path.join(os.path.dirname(__file__),
+                                'data/ArgeNetz/single_turbines/wf_2')
+        df_wf_2 = pd.DataFrame()
+        filenames = [filename for filename in os.listdir(
+            os.path.join(sys.path[0], file_dir)) if
+                     filename.startswith('2016')]
+        for filename in filenames:
+            df_part = restructure_data(
+                filename, filter_cols=True,
+                filename_column_names='helper_files/column_names_2016_wf_2.txt',
+                datapath=file_dir)
+            df_wf_2 = pd.concat([df_wf_2, df_part])
+        # Rename columns
+        old_names = [col for col in list(df_wf_2) if 'Nordstrand ::' not in col]
+        new_names = []
+        aliases = {'NordstranderWind_E21897010000000000000000000100001': '1',
+                   'Morsumkoog_E21897010000000000000000000100002': '2',
+                   'Uthlander_WP_E21897010000000000000000000100003': '3',
+                   'Uthlander_WP_2_E21897010000000000000000000100004': '4',
+                   'Uthlander_WP_3_E21897010000000000000000000100005': '5',
+                   'Botterkooger_WP_E21897010000000000000000000100006': '6'}
+        for old_name in old_names:
+            turbine_name = old_name.split(' ')[0]
+            if 'Elektrische Wirkleistung' in old_name:
+                string = 'power_output'
+            elif 'Windgeschwindigkeit' in old_name:
+                string = 'wind_speed'
+            elif 'Windrichtung (' in old_name:
+                # Bracket is necessary as also 'Windrichtung relativ zur
+                # Gondelposition' exists
+                string = 'wind_dir'
+            else:
+                string = 'drop_col'
+            new_names.append('wf_2_{}_{}'.format(aliases[turbine_name], string))
+        df_wf_2.rename(columns={
+            old_name: new_name for old_name, new_name in
+            zip(old_names, new_names)},
+                       inplace=True)
+        df_wf_2.drop([col for col in list(df_wf_2) if 'drop_col' in col],
+                     inplace=True)
+        # Convert string index to Datetime index
+        df_wf_2.index = [pd.to_datetime(index.replace('PT1M', ''), utc=True) for
+                         index in df_wf_2.index]
+        # Set time zone
+        df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
+        if filter_interpolated_data:
+            print('---- The interpolated data of ArgeNetz data in {0} '.format(
+                      year) + 'is being filtered. ----')
+            df_corrected = df_wf_2.copy()
+            for column_name in list(df_wf_2):
+                if 'power_output' in column_name:
+                    df_corrected[column_name] = tools.filter_interpolated_data(
+                        df_wf_2[column_name], window_size=10, tolerance=0.0011,
+                        replacement_character=np.nan, plot=False)
+            df_wf_2 = df_corrected
+            print('---- Filtering of {0} Done. ----'.format(year))
+        pickle.dump(df_wf_2, open(pickle_filename, 'wb'))
+    return df_wf_2
+
 def data_evaluation(filename, csv_print=True):
     """
     Evaluate the data in terms of which data series exist of which farm for
@@ -464,10 +530,17 @@ if __name__ == "__main__":
             csv_dump=True,  # Save power output data frame in csv file
             plot=False)  # Plot each column of dataframe
 
-# Other paramterts:
+# Other parameters:
 #    evaluate_data = False  # Check which variables are given for which farm
     correlation_wind_power = False
     check_theo_power = False  # theoretical power against wind speed if True
+    wf_2_single = True
+
+    if wf_2_single:
+        wf_2_single_data(
+            pickle_filename=os.path.join(
+                os.path.dirname(__file__), 'dumps/validation_data',
+                'wf_SH_single.p'), filter_interpolated_data=True)
 
     if correlation_wind_power:
         years = [2015, 2016]
@@ -476,13 +549,13 @@ if __name__ == "__main__":
 #    if evaluate_data:
 #        # Filenames: filenames_all.txt, filenames_2016.txt,.. see helper_files
 #        df_compare = data_evaluation('helper_files/filenames_2016.txt')
-    if check_theo_power:
-        year = 2016  # dont use 2015 - no wind speed!
-        start = None
-        end = None
-        # Get ArgeNetz Data
-        arge_netz_data = get_argenetz_data(
-            year, pickle_load=True, filename=pickle_path, plot=False)
-        check_theoretical_power(arge_netz_data, year, start, end)
-        print("Plots for comparing theoretical power with simulated power " +
-              "(measured wind speed) are saved in 'Plots/Test_Arge'")
+#     if check_theo_power:
+#         year = 2016  # dont use 2015 - no wind speed!
+#         start = None
+#         end = None
+#         # Get ArgeNetz Data
+#         arge_netz_data = get_argenetz_data(
+#             year, pickle_load=True, filename=pickle_path, plot=False)
+#         check_theoretical_power(arge_netz_data, year, start, end)
+#         print("Plots for comparing theoretical power with simulated power " +
+#               "(measured wind speed) are saved in 'Plots/Test_Arge'")
