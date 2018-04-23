@@ -272,10 +272,8 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
             os.path.join(sys.path[0], file_dir)) if
                      filename.startswith('2016')]
         for filename in filenames:
-            df_part = restructure_data(
-                filename, filter_cols=True,
-                filename_column_names='helper_files/column_names_2016_wf_2.txt',
-                datapath=file_dir)
+            df_part = read_data(
+                filename, datapath=file_dir)
             df_wf_2 = pd.concat([df_wf_2, df_part])
         # Rename columns
         old_names = [col for col in list(df_wf_2) if 'Nordstrand ::' not in col]
@@ -304,7 +302,7 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
             zip(old_names, new_names)},
                        inplace=True)
         df_wf_2.drop([col for col in list(df_wf_2) if 'drop_col' in col],
-                     inplace=True)
+                     inplace=True, axis=1)
         # Convert string index to Datetime index
         df_wf_2.index = [pd.to_datetime(index.replace('PT1M', ''), utc=True) for
                          index in df_wf_2.index]
