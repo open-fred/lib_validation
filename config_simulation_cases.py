@@ -165,8 +165,7 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-        config_dict['replacement'] = [('_', ' '), ('log', 'Log'),
-                                      ('inter', 'Inter  ')]
+        config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
 
     # ---- Single functions - power output ---- #
     if case == 'power_output_1':  # gw wind speeds as validation data

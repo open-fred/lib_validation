@@ -617,7 +617,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
             'measured', axis=1)
         if weather_data_name == 'MERRA':
-            latex_df.index.set_levels([weather_data_name, weather_data_name],
+            latex_df.index.set_levels([weather_data_name for i in range(2)],
                                       level=0, inplace=True)
         if weather_data_name == 'open_FRED':
             latex_df.index.set_levels([
@@ -626,7 +626,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
         latex_df.index.set_names(['name', 'resolution'], inplace=True)
         latex_df.reset_index(inplace=True)
         first_columns = ['Weather data', 'Temporal']
-        first_columns.extend(['Standard deviation in MW' for i in range(2)])
+        first_columns.extend(['Standard deviation in MW' for i in range(4)])
         latex_df.columns = [col.replace('turb', 'Turb').replace(
             'farm', 'Farm') for col in latex_df.columns]
         latex_df.columns = [first_columns, latex_df.columns]

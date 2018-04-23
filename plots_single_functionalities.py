@@ -58,7 +58,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
                               header=[0, 1])
         figure_case_df = case_df.loc[output_method][key_figure]
         if (case == 'wind_speed_4' or case == 'wind_speed_8'):
-            figure_case_df = figure_case_df.loc[:, ['log. interp.']]
+            figure_case_df = figure_case_df.loc[:, ['Log. interp.']]
         if (case == 'wind_speed_1' and
                 case is not 'wind_speed_2' and
                 case is not 'wind_speed_3'):

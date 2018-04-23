@@ -949,10 +949,10 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
+    load_data = True
     evaluate_first_row_turbine = True
-    evaluate_highest_wind_speed = False
-    evaluate_highest_power_output = False
+    evaluate_highest_wind_speed = True
+    evaluate_highest_power_output = True
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
