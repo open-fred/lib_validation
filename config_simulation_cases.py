@@ -114,7 +114,7 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-        config_dict['replacement'] = [('log', 'Log')]
+        config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
     if case == 'wind_speed_2':
         config_dict['approach_list'] = [
             'hellman_100', 'hellman_80', 'hellman_10']
@@ -137,14 +137,14 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-        config_dict['replacement'] = [('log', 'Log')]
+        config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
     if case == 'wind_speed_5':  # first row like weather_wind_speed_3
         config_dict['approach_list'] = [
             'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-        config_dict['replacement'] = [('log', 'Log')]
+        config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
     if case == 'wind_speed_6':  # first row like weather_wind_speed_3
         config_dict['approach_list'] = [
             'hellman_100', 'hellman_80', 'hellman_10']
@@ -165,7 +165,8 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
-        config_dict['replacement'] = [('log', 'Log'), ('inter', 'Inter  ')]
+        config_dict['replacement'] = [('_', ' '), ('log', 'Log'),
+                                      ('inter', 'Inter  ')]
 
     # ---- Single functions - power output ---- #
     if case == 'power_output_1':  # gw wind speeds as validation data
