@@ -406,12 +406,20 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
-                               filename=os.path.join(
-                                   os.path.dirname(__file__), 'dumps',
-                                   'wind_efficiency_curves.p'))
+    load_curves = False
+    plot_curves = True
     evaluate_curves = False
     standardize_curves = False
+
+    if load_curves:
+        get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
+                                   filename=os.path.join(
+                                       os.path.dirname(__file__), 'dumps',
+                                       'wind_efficiency_curves.p'))
+
+    if plot_curves:
+        plot_calcualted_and_dena()
+        
     years = [
         2015,
         2016
