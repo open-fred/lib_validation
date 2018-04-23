@@ -48,8 +48,6 @@ cases = [
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
-#     'wake_losses_2',
-#       'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- weather data ---- #
@@ -984,10 +982,10 @@ def run_main(case, parameters, year):
     elif 'sh_wind_speeds' in validation_data_list:
         wind_farm_data_list = return_wind_farm_data(single=False,
                                                     sh_wind_speeds=True)
-    elif case == 'wake_losses_3':
-        wind_farm_data_list = return_wind_farm_data()
-        wind_farm_data_list = [item for item in wind_farm_data_list if
-                               item['object_name'] == 'wf_BS']
+    # elif case == 'wake_losses_3':
+    #     wind_farm_data_list = return_wind_farm_data()
+    #     wind_farm_data_list = [item for item in wind_farm_data_list if
+    #                            item['object_name'] == 'wf_BS']
     else:
         wind_farm_data_list = return_wind_farm_data()
     # Get wind farm names
