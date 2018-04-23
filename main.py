@@ -103,6 +103,10 @@ time_series_df_folder = os.path.join(
     os.path.dirname(__file__),
     '../../../User-Shares/Masterarbeit/Coden/time_series_dfs')
 
+time_series_dump_folder = os.path.join(
+    os.path.dirname(__file__),
+    'dumps/time_series_dfs')
+
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
 
@@ -885,14 +889,16 @@ def run_main(case, parameters, year):
 
         """
         time_series_filename = os.path.join(
-            time_series_df_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
+            time_series_dump_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
                 case, weather_data_name, year))
+        csv_filename = os.path.join(time_series_df_folder,
+                                    'time_series_df_{0}_{1}_{2}.p'.format(
+                                        case, weather_data_name, year))
         if pickle_load_time_series_df:
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
         elif csv_load_time_series_df:
-            time_series_df = pd.read_csv(time_series_filename.replace('.p',
-                                                                      '.csv'),
-                                         index_col=0, parse_dates=True)
+            time_series_df = pd.read_csv(csv_filename, index_col=0,
+                                         parse_dates=True)
             # Add frequency attribute
             freq = pd.infer_freq(time_series_df.index)
             time_series_df.index.freq = pd.tseries.frequencies.to_offset(freq)
@@ -929,7 +935,7 @@ def run_main(case, parameters, year):
                     ['boolean'], axis=1)
             pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         if csv_dump_time_series_df:
-            time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
+            time_series_df.to_csv(csv_filename.replace('.p', '.csv'))
         # Drop columns that contain at least one item of `restriction_list` in
         # their name
         drop_list = []
