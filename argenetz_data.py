@@ -317,6 +317,7 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
             df_corrected = df_wf_2.copy()
             for column_name in list(df_wf_2):
                 if 'power_output' in column_name:
+                    print(df_wf_2[column_name].freq)
                     df_corrected[column_name] = tools.filter_interpolated_data(
                         df_wf_2[column_name], window_size=10, tolerance=0.0011,
                         replacement_character=np.nan, plot=False)
@@ -535,7 +536,7 @@ if __name__ == "__main__":
 #    evaluate_data = False  # Check which variables are given for which farm
     correlation_wind_power = False
     check_theo_power = False  # theoretical power against wind speed if True
-    wf_2_single = True
+    wf_2_single = False
 
     if wf_2_single:
         wf_2_single_data(

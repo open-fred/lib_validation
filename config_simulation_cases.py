@@ -183,16 +183,16 @@ def get_configuration(case=None):
         config_dict['replacement'] = [
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
-    if case == 'power_output_2':  # wf SH wind speeds as validation data
-        config_dict['approach_list'] = ['p-curve', 'cp-curve']
-        config_dict['validation_data_list'] = ['sh_wind_speeds']
-        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
-        config_dict['latex_output'] = ['key_figures_approaches',
-                                       'annual_energy_approaches']
-        config_dict['output_methods'] = ['hourly', 'monthly']
-        config_dict['replacement'] = [
-            ('cp-curve', 'Cp'), ('p-curve', 'P')]
-        config_dict['years'] = [2016]
+    # if case == 'power_output_2':  # wf SH wind speeds as validation data
+    #     config_dict['approach_list'] = ['p-curve', 'cp-curve']
+    #     config_dict['validation_data_list'] = ['sh_wind_speeds']
+    #     config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
+    #     config_dict['latex_output'] = ['key_figures_approaches',
+    #                                    'annual_energy_approaches']
+    #     config_dict['output_methods'] = ['hourly', 'monthly']
+    #     config_dict['replacement'] = [
+    #         ('cp-curve', 'Cp'), ('p-curve', 'P')]
+    #     config_dict['years'] = [2016]
 
     # ---- Single functions - Smoothing ---- #
     # if case == 'smoothing_1':
