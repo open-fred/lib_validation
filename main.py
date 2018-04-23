@@ -754,8 +754,9 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
             if 'Constant' in approach_list:
-                efficiency = wind_eff_curves[[wind_farm.object_name]]
-                wind_farm.efficiency = efficiency.mean()[0]
+                # efficiency = wind_eff_curves[[wind_farm.object_name]]
+                # wind_farm.efficiency = efficiency.mean()[0]
+                wind_farm.efficiency = 0.8
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
