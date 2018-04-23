@@ -42,7 +42,6 @@ cases = [
 #     'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
-    'power_output_2',
 # ---- Single functions - smoothing, density... ---- #
 #     'smoothing_1',
 #     'smoothing_2',
@@ -605,15 +604,15 @@ def run_main(case, parameters, year):
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
                     wind_farm.object_name)]]
-            elif case == 'power_output_2':
-                # Get ArgeNetz data and get wind speed from turbines
-                arge_single_data = wf_2_single_data(
-                    pickle_load=pickle_load_arge,
-                    filename=os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'wf_SH_single.p'))
-                wind_speed = arge_single_data[['wf_{}_wind_speed'.format(
-                    wind_farm.object_name)]]
+            # elif case == 'power_output_2':
+            #     # Get ArgeNetz data and get wind speed from turbines
+            #     arge_single_data = wf_2_single_data(
+            #         pickle_load=pickle_load_arge,
+            #         pickle_filename=os.path.join(
+            #             os.path.dirname(__file__), 'dumps/validation_data',
+            #             'wf_SH_single.p'))
+            #     wind_speed = arge_single_data[['{}_wind_speed'.format(
+            #         wind_farm.object_name)]]
             else:
                 wind_speed = None
             if wind_speed is not None:
