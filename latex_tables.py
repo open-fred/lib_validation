@@ -352,7 +352,12 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                     latex_df = pd.concat([latex_df, df_part_weather],
                                          axis=1).round(2)
             # Sort columns and index
-            latex_df.sort_index(axis=1, inplace=True)
+            columns_names = list(set(latex_df.columns.get_level_values(0)))
+            optional_names_order = ['RMSE [m/s]', 'RMSE [%]', 'Pearson coeff.',
+                                    'mean bias [m/s]']
+            name_order = [name for name in optional_names_order if
+                          name in columns_names]
+            latex_df = latex_df[name_order]
             latex_df.sort_index(axis=0, inplace=True)
             filename_table = os.path.join(
                 path_latex_tables,
