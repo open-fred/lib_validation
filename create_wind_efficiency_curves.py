@@ -364,7 +364,12 @@ def plot_calcualted_and_dena():
     dena_mean_curve.set_index('wind_speed', inplace=True)
     dena_mean_curve.rename(columns={'efficiency': 'dena mean'},
                            inplace=True)
-    plot_df = pd.concat([calculated_curves, dena_mean_curve], axis=1)
+    knorr_exreme = wind_farm.read_wind_efficiency_curve('knorr_extreme1')
+    knorr_exreme.set_index('wind_speed', inplace=True)
+    knorr_exreme.rename(columns={'efficiency': 'knorr extreme 1'},
+                           inplace=True)
+    plot_df = pd.concat([dena_mean_curve, knorr_exreme,
+                         calculated_curves], axis=1)
     fig, ax = plt.subplots()
     plot_df.plot(ax=ax, legend=True)
     fig.savefig(os.path.join(
@@ -406,7 +411,7 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    load_curves = False
+    load_curves = True
     plot_curves = True
     evaluate_curves = False
     standardize_curves = False
