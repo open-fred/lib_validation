@@ -47,7 +47,9 @@ cases = [
 #     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-    'wake_losses_1',
+#     'wake_losses_1',
+#     'wake_losses_2',
+      'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1'
 # ---- weather data ---- #
@@ -63,7 +65,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -410,13 +412,24 @@ def run_main(case, parameters, year):
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
             if 'wake_losses' in case:
+                if case == 'wake_losses_2':
+                    highest_power_output = True
+                    file_add_on = ''
+                elif case == 'wake_losses_3':
+                    highest_power_output = False
+                    file_add_on = '_weather_wind_speed_3_real'
+                else:
+                    highest_power_output = False
+                    file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
                 # below in calculations
                 wind_eff_curves = get_wind_efficiency_curves(
                     drop_higher_one=True,
-                    pickle_load=pickle_load_wind_efficiency_curves,
+                    pickle_load=False,
                     filename=os.path.join(os.path.dirname(__file__), 'dumps',
-                                          'wind_efficiency_curves.p'))
+                                          'wind_efficiency_curves{}.p'.format(
+                                              file_add_on)),
+                    highest_power_output=highest_power_output)
             # Calculate power output and store in list for approaches in
             # approach_list
 
@@ -955,6 +968,10 @@ def run_main(case, parameters, year):
     elif 'gw_wind_speeds' in validation_data_list:
         wind_farm_data_list = return_wind_farm_data(single=False,
                                                     gw_wind_speeds=True)
+    elif case == 'wake_losses_3':
+        wind_farm_data_list = return_wind_farm_data()
+        wind_farm_data_list = [item for item in wind_farm_data_list if
+                               item['object_name'] == 'wf_BS']
     else:
         wind_farm_data_list = return_wind_farm_data()
     # Get wind farm names

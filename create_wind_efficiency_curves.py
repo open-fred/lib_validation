@@ -256,7 +256,10 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
 
 
 def get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
-                               filename='wind_eff_curves.p'):
+                               filename='wind_eff_curves.p',
+                               highest_power_output=False):
+    if highest_power_output:
+        filename = '{}_{}'.format(filename.split('.')[0], 'highest_power.p')
     if pickle_load:
         wind_efficiency_curves = pickle.load(open(filename, 'rb'))
     else:
@@ -279,20 +282,40 @@ def get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
                 data in wind_farm_data_gw]]
             greenwind_power_data.index = greenwind_power_data.index.tz_convert(
                 'UTC')  # TODO needed?
-            gw_first_row = get_first_row_turbine_time_series(
-                year=year, pickle_load=True,
-                pickle_filename= os.path.join(
-                os.path.dirname(__file__), 'dumps/validation_data',
-                'greenwind_data_first_row_{0}.p'.format(year)),
-                resample=False, frequency='30T', threshold=2)
+            if highest_power_output:
+                gw_first_row = get_first_row_turbine_time_series(
+                    year=year, pickle_load=True,
+                    pickle_filename= os.path.join(
+                    os.path.dirname(__file__), 'dumps/validation_data',
+                    'greenwind_data_first_row_{0}_highest_power.p'.format(
+                        year)), resample=False, frequency='30T', threshold=2)
+            elif '_weather_wind_speed_3_real' in filename:
+                gw_first_row = get_first_row_turbine_time_series(
+                    year=year, pickle_load=True,
+                    pickle_filename=os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real.p'.format(
+                            year)), resample=False, frequency='30T',
+                    threshold=2)
+            else:
+                gw_first_row = get_first_row_turbine_time_series(
+                    year=year, pickle_load=True,
+                    pickle_filename=os.path.join(
+                        os.path.dirname(__file__), 'dumps/validation_data',
+                        'greenwind_data_first_row_{0}.p'.format(year)),
+                    resample=False, frequency='30T', threshold=2)
             gw_first_row.index = gw_first_row.index.tz_convert('UTC')
             if greenwind_power_data.index.freq != gw_first_row.index.freq:
                 raise ValueError('Attention - different frequencies: ' +
                                  'wf data: {}, first row data: {}'.format(
                                      greenwind_power_data.index.freq,
                                      gw_first_row.index.freq))
-            wfs = ['BE', 'BS', 'BNW']
-            numbers = [9, 14, 2]
+            if '_weather_wind_speed_3_real' in filename:
+                wfs = ['BS']
+                numbers = [14]
+            else:
+                wfs = ['BE', 'BS', 'BNW']
+                numbers = [9, 14, 2]
             for wf, number_of_turbines in zip(wfs, numbers):
                 cols_first_row = [col for col in gw_first_row.columns if
                                   wf in col]
