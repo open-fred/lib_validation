@@ -1108,6 +1108,10 @@ def run_main(case, parameters, year):
             folder = 'power_output'
         elif ('single_turbine' in case and 'weather' not in case):
             folder = 'single_turbine'
+        elif 'smoothing' in case:
+            folder = 'smoothing'
+        elif 'wake_losses' in case:
+            folder = 'wake_losses'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
         elif (case == 'weather_single_turbine_1' or
