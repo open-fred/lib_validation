@@ -49,9 +49,11 @@ cases = [
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
 #     'wake_losses_2',
-    'wake_losses_3',
+#     'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
+# ---- Wind Farm Model ---- '
+    'wind_farm_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
 #     'weather_wind_speed_2',
@@ -65,7 +67,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -725,7 +727,7 @@ def run_main(case, parameters, year):
                     wind_farm.wind_turbine_fleet, weather).to_frame(
                         name='{0}_calculated_aggregation'.format(
                             wind_farm.object_name)))
-            if 'TI' in approach_list:
+            if ('TI' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -736,7 +738,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_TI'.format(
                             wind_farm.object_name)))
-            if 'St._Pf.' in approach_list:
+            if ('St._Pf.' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -796,6 +798,32 @@ def run_main(case, parameters, year):
                         wake_losses_method=None,
                         smoothing=False).to_frame(
                         name='{0}_calculated_No_losses'.format(
+                            wind_farm.object_name)))
+            if ('TI' in approach_list and case == 'wind_farm_1'):
+                wind_farm.efficiency = read_wind_efficiency_curve(
+                    curve_name='dena_mean')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='wind_efficiency_curve',
+                        smoothing=True,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_TI'.format(
+                            wind_farm.object_name)))
+            if ('St._Pf.' in approach_list and case == 'wind_farm_1'):
+                wind_farm.efficiency = read_wind_efficiency_curve(
+                    curve_name='dena_mean')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='wind_efficiency_curve',
+                        smoothing=True,
+                        standard_deviation_method='Staffell_Pfenninger',
+                        smoothing_order='wind_farm_power_curves').to_frame(
+                        name='{0}_calculated_St._Pf.'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(

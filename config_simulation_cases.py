@@ -258,6 +258,10 @@ def get_configuration(case=None):
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
+    # ---- Wind Farm Model ---- #
+    if case == 'wind_farm_1':
+        config_dict['approach_list'] = ['TI', 'St._Pf.', 'aggregation']
+        config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
 
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
