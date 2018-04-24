@@ -74,7 +74,7 @@ pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = True  # Dump df as csv
+csv_dump_time_series_df = False  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot (multiple)
@@ -129,7 +129,8 @@ def run_main(case, parameters, year):
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
         ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
         ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
-        ('{0}-03-01'.format(year), '{0}-03-14'.format(year))
+        ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
+        ('{0}-09-01'.format(year), '{0}-09-07'.format(year))
         ]
 
     #extra_plots = np.array([ # NOTE: not working
