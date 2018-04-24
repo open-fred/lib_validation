@@ -92,6 +92,8 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
         folder = 'wake_losses_1'
     elif 'wake_losses_3' in cases[0]:
         folder = 'wake_losses_3'
+    elif 'wind_farm_1' in cases[0]:
+        folder = 'wind_farm_1'
     else:
         folder = ''
     # Save as png and as pdf
@@ -119,7 +121,8 @@ def run_bar_plot_key_figures():
         ['smoothing_2'],
         ['single_turbine_1'],
         ['wake_losses_1'],
-        ['wake_losses_3']
+        ['wake_losses_3'],
+        ['wind_farm_1']
     ]
     years = [
         2015,
