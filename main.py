@@ -48,7 +48,8 @@ cases = [
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
-    'wake_losses_2'
+#     'wake_losses_2',
+    'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- weather data ---- #
@@ -787,6 +788,14 @@ def run_main(case, parameters, year):
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Knorr_extreme2'.format(
+                            wind_farm.object_name)))
+            if 'Aggregation2' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method=None,
+                        smoothing=False).to_frame(
+                        name='{0}_calculated_Aggregation2'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
