@@ -40,8 +40,8 @@ def get_standard_case_of_configuration():
         'visualization_methods': [
            # 'box_plots',
             'feedin_comparison',
-            # 'plot_correlation',  # Attention: this takes a long time for high resolution
-            # 'subplots_correlation'
+            'plot_correlation',  # Attention: this takes a long time for high resolution
+            'subplots_correlation'
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -177,9 +177,9 @@ def get_configuration(case=None):
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['hourly', 'monthly']
         config_dict['key_figures_print'] = ['rmse',
-                          'rmse_normalized',
-                          'pearson',
-                          'mean_bias']
+                                            'rmse_normalized',
+                                            'pearson',
+                                            'mean_bias']
         config_dict['replacement'] = [
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]

@@ -125,7 +125,7 @@ def run_main(case, parameters, year):
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        # (None, None),  # for whole year
+        (None, None),  # for whole year
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
         ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
         ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
