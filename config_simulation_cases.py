@@ -39,9 +39,9 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-            'feedin_comparison',
-            'plot_correlation',  # Attention: this takes a long time for high resolution
-            'subplots_correlation'
+           #  'feedin_comparison',
+           #  'plot_correlation',  # Attention: this takes a long time for high resolution
+           #  'subplots_correlation'
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -202,11 +202,10 @@ def get_configuration(case=None):
     #                                    'annual_energy_approaches',
     #                                    'std_dev_time_series']
     #     config_dict['years'] = [2016]  # Enertrag data only for 2016
-    if case == 'smoothing_1':  # Calcualted with first row wind speeds
+    if case == 'smoothing_1':
         config_dict['approach_list'] = ['Turbine_TI', 'Farm_TI',
                                         'Turbine_SP', 'Farm SP']  # smoothing to farm pc or turbine pc
         config_dict['validation_data_list'] = ['Enertrag']
-        # GW wind speeds are used. oF and MERRA only if other weather data needed
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
@@ -214,6 +213,7 @@ def get_configuration(case=None):
     if case == 'smoothing_2':  # Calcualted with first row wind speeds
         config_dict['approach_list'] = ['TI', 'SP', 'aggregation']  # Validation
         # GW wind speeds are used. oF and MERRA only if other weather data needed
+        config_dict['validation_data_list'] = ['GreenWind']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']

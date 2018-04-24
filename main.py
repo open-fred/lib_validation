@@ -584,7 +584,7 @@ def run_main(case, parameters, year):
 
             # --- wind speed definition for next cases --- #
             if (case == 'wind_farm_2' or case == 'weather_single_turbine_2' or
-                    'wake_losses' in case or 'smoothing' in case):
+                    case == 'smoothing_2' or 'wake_losses' in case):
                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
