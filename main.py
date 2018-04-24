@@ -11,7 +11,7 @@ from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-from argenetz_data import get_argenetz_data
+from argenetz_data import get_argenetz_data, wf_2_single_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
 from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
@@ -49,12 +49,12 @@ cases = [
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
 #     'wake_losses_2',
-      'wake_losses_3',
+    'wake_losses_3',
 # ---- Single Turbine Model ---- '
-#     'single_turbine_1'
+#     'single_turbine_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
-    # 'weather_wind_speed_2',
+#     'weather_wind_speed_2',
     # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
@@ -65,7 +65,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = False
+pickle_load_time_series_df = True
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -76,7 +76,10 @@ pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
 csv_load_time_series_df = False  # Load time series data frame from csv dump
-csv_dump_time_series_df = False  # Dump df as csv
+if pickle_load_time_series_df:
+    csv_dump_time_series_df = False
+else:
+    csv_dump_time_series_df = True  # Dump df as csv
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
                                       # wind farm in one plot (multiple)
@@ -99,8 +102,13 @@ validation_pickle_folder = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data'))
 wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
                                        'dumps/wind_farm_data')
-time_series_df_folder = os.path.join(os.path.dirname(__file__),
-                                     'dumps/time_series_dfs')
+time_series_df_folder = os.path.join(
+    os.path.dirname(__file__),
+    '../../../User-Shares/Masterarbeit/Coden/time_series_dfs')
+
+time_series_dump_folder = os.path.join(
+    os.path.dirname(__file__),
+    'dumps/time_series_dfs')
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
@@ -122,10 +130,12 @@ def run_main(case, parameters, year):
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        (None, None),
+        (None, None),  # for whole year
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
         ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
-        ('{0}-06-01'.format(year), '{0}-06-07'.format(year))
+        ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
+        ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
+        ('{0}-09-01'.format(year), '{0}-09-07'.format(year))
         ]
 
     #extra_plots = np.array([ # NOTE: not working
@@ -320,7 +330,8 @@ def run_main(case, parameters, year):
 
 
     # ---------------------------- Wind farm data --------------------------- #
-    def return_wind_farm_data(single=False, gw_wind_speeds=False):
+    def return_wind_farm_data(single=False, gw_wind_speeds=False,
+                              sh_wind_speeds=False):
         r"""
         Get wind farm data of all validation data.
 
@@ -344,6 +355,10 @@ def run_main(case, parameters, year):
                     item['object_name'].split('_')[1])
         elif gw_wind_speeds:
             filenames = ['turbine_specification_greenwind_{0}.p'.format(year)]
+            wind_farm_data = get_joined_wind_farm_data(
+                filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
+        elif sh_wind_speeds:
+            filenames = ['turbine_specification_argenetz_{0}.p'.format(year)]
             wind_farm_data = get_joined_wind_farm_data(
                 filenames, wind_farm_pickle_folder, pickle_load_wind_farm_data)
         else:
@@ -412,24 +427,15 @@ def run_main(case, parameters, year):
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
             if 'wake_losses' in case:
-                if case == 'wake_losses_2':
-                    highest_power_output = True
-                    file_add_on = ''
-                elif case == 'wake_losses_3':
-                    highest_power_output = False
-                    file_add_on = '_weather_wind_speed_3_real'
-                else:
-                    highest_power_output = False
-                    file_add_on = ''
+                highest_power_output = False
+                file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
                 # below in calculations
                 wind_eff_curves = get_wind_efficiency_curves(
                     drop_higher_one=True,
                     pickle_load=False,
                     filename=os.path.join(os.path.dirname(__file__), 'dumps',
-                                          'wind_efficiency_curves{}.p'.format(
-                                              file_add_on)),
-                    highest_power_output=highest_power_output)
+                                          'wind_efficiency_curves.p'))
             # Calculate power output and store in list for approaches in
             # approach_list
 
@@ -514,14 +520,14 @@ def run_main(case, parameters, year):
                         hellman_exp=None).to_frame(
                         name='{0}_calculated_hellman_10'.format(
                             wind_farm.object_name)))
-            # if 'hellman_2' in approach_list:
-            #     calculation_df_list.append(
-            #         modelchain_usage.wind_speed_to_hub_height(
-            #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-            #             weather_df=weather, wind_speed_model='hellman',
-            #             hellman_exp=1 / 7).to_frame(
-            #             name='{0}_calculated_hellman_2'.format(
-            #                 wind_farm.object_name)))
+            if 'hellman_2' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.wind_speed_to_hub_height(
+                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                        weather_df=weather, wind_speed_model='hellman',
+                        hellman_exp=1 / 7).to_frame(
+                        name='{0}_calculated_hellman_2'.format(
+                            wind_farm.object_name)))
             if 'hellman2_100' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.wind_speed_to_hub_height(
@@ -598,6 +604,15 @@ def run_main(case, parameters, year):
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
                     wind_farm.object_name)]]
+            # elif case == 'power_output_2':
+            #     # Get ArgeNetz data and get wind speed from turbines
+            #     arge_single_data = wf_2_single_data(
+            #         pickle_load=pickle_load_arge,
+            #         pickle_filename=os.path.join(
+            #             os.path.dirname(__file__), 'dumps/validation_data',
+            #             'wf_SH_single.p'))
+            #     wind_speed = arge_single_data[['{}_wind_speed'.format(
+            #         wind_farm.object_name)]]
             else:
                 wind_speed = None
             if wind_speed is not None:
@@ -744,8 +759,9 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
             if 'Constant' in approach_list:
-                efficiency = wind_eff_curves[[wind_farm.object_name]]
-                wind_farm.efficiency = efficiency.mean()[0]
+                # efficiency = wind_eff_curves[[wind_farm.object_name]]
+                # wind_farm.efficiency = efficiency.mean()[0]
+                wind_farm.efficiency = 0.8
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -762,6 +778,24 @@ def run_main(case, parameters, year):
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Dena'.format(
+                            wind_farm.object_name)))
+            if 'Knorr_extreme2' in approach_list:
+                wind_farm.efficiency = read_wind_efficiency_curve(
+                    curve_name='knorr_extreme2')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='wind_efficiency_curve',
+                        smoothing=False).to_frame(
+                        name='{0}_calculated_Knorr_extreme2'.format(
+                            wind_farm.object_name)))
+            if 'No_losses' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method=None,
+                        smoothing=False).to_frame(
+                        name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
@@ -870,14 +904,16 @@ def run_main(case, parameters, year):
 
         """
         time_series_filename = os.path.join(
-            time_series_df_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
+            time_series_dump_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
                 case, weather_data_name, year))
+        csv_filename = os.path.join(time_series_df_folder,
+                                    'time_series_df_{0}_{1}_{2}.p'.format(
+                                        case, weather_data_name, year))
         if pickle_load_time_series_df:
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
         elif csv_load_time_series_df:
-            time_series_df = pd.read_csv(time_series_filename.replace('.p',
-                                                                      '.csv'),
-                                         index_col=0, parse_dates=True)
+            time_series_df = pd.read_csv(csv_filename, index_col=0,
+                                         parse_dates=True)
             # Add frequency attribute
             freq = pd.infer_freq(time_series_df.index)
             time_series_df.index.freq = pd.tseries.frequencies.to_offset(freq)
@@ -914,7 +950,7 @@ def run_main(case, parameters, year):
                     ['boolean'], axis=1)
             pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         if csv_dump_time_series_df:
-            time_series_df.to_csv(time_series_filename.replace('.p', '.csv'))
+            time_series_df.to_csv(csv_filename.replace('.p', '.csv'))
         # Drop columns that contain at least one item of `restriction_list` in
         # their name
         drop_list = []
@@ -968,10 +1004,13 @@ def run_main(case, parameters, year):
     elif 'gw_wind_speeds' in validation_data_list:
         wind_farm_data_list = return_wind_farm_data(single=False,
                                                     gw_wind_speeds=True)
-    elif case == 'wake_losses_3':
-        wind_farm_data_list = return_wind_farm_data()
-        wind_farm_data_list = [item for item in wind_farm_data_list if
-                               item['object_name'] == 'wf_BS']
+    elif 'sh_wind_speeds' in validation_data_list:
+        wind_farm_data_list = return_wind_farm_data(single=False,
+                                                    sh_wind_speeds=True)
+    # elif case == 'wake_losses_3':
+    #     wind_farm_data_list = return_wind_farm_data()
+    #     wind_farm_data_list = [item for item in wind_farm_data_list if
+    #                            item['object_name'] == 'wf_BS']
     else:
         wind_farm_data_list = return_wind_farm_data()
     # Get wind farm names
@@ -1093,6 +1132,10 @@ def run_main(case, parameters, year):
             folder = 'power_output'
         elif ('single_turbine' in case and 'weather' not in case):
             folder = 'single_turbine'
+        elif 'smoothing' in case:
+            folder = 'smoothing'
+        elif 'wake_losses' in case:
+            folder = 'wake_losses'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
         elif (case == 'weather_single_turbine_1' or
@@ -1113,6 +1156,12 @@ def run_main(case, parameters, year):
             if feedin_comparsion_all_in_one:
                 plot_dfs = time_series_df_parts
                 approach_string = 'multiple'
+                # Bring df into order
+                cols = [col for col in list(plot_dfs[0]) if 'measured' in col]
+                others = [col for col in list(plot_dfs[0]) if
+                          'measured' not in col]
+                cols.extend(others)
+                plot_dfs = [plot_dfs[0][cols]]
             else:
                 plot_dfs = time_series_pairs
                 approach_string = None
@@ -1126,7 +1175,7 @@ def run_main(case, parameters, year):
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = 'Plots/{0}/'.format(folder)
+                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
                 for method in output_methods:
                     # Resample if necessary
                     if method == 'hourly':
@@ -1186,7 +1235,7 @@ def run_main(case, parameters, year):
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = 'Plots/{0}/'.format(folder)
+                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
                 for method in output_methods:
                     if (method == 'half_hourly' and
                             weather_data_name == 'MERRA'):
@@ -1318,7 +1367,7 @@ if __name__ == "__main__":
         for year in years:
             run_main(case=case, year=year, parameters=parameters)
 
-    # ---- Further latex tables ----#
+    # ---- Further latex tables and plots ----#
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
     if 'power_output_1' in cases:
@@ -1333,6 +1382,5 @@ if __name__ == "__main__":
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['single_turbine_1'])
-    if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
-        plots_single_functionalities.run_all_plots()
+    plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")

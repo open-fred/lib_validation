@@ -352,7 +352,12 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                     latex_df = pd.concat([latex_df, df_part_weather],
                                          axis=1).round(2)
             # Sort columns and index
-            latex_df.sort_index(axis=1, inplace=True)
+            columns_names = list(set(latex_df.columns.get_level_values(0)))
+            optional_names_order = ['RMSE [m/s]', 'RMSE [%]', 'Pearson coeff.',
+                                    'mean bias [m/s]']
+            name_order = [name for name in optional_names_order if
+                          name in columns_names]
+            latex_df = latex_df[name_order]
             latex_df.sort_index(axis=0, inplace=True)
             filename_table = os.path.join(
                 path_latex_tables,
@@ -612,7 +617,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
             'measured', axis=1)
         if weather_data_name == 'MERRA':
-            latex_df.index.set_levels([weather_data_name, weather_data_name],
+            latex_df.index.set_levels([weather_data_name for i in range(2)],
                                       level=0, inplace=True)
         if weather_data_name == 'open_FRED':
             latex_df.index.set_levels([
@@ -621,7 +626,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
         latex_df.index.set_names(['name', 'resolution'], inplace=True)
         latex_df.reset_index(inplace=True)
         first_columns = ['Weather data', 'Temporal']
-        first_columns.extend(['Standard deviation in MW' for i in range(2)])
+        first_columns.extend(['Standard deviation in MW' for i in range(4)])
         latex_df.columns = [col.replace('turb', 'Turb').replace(
             'farm', 'Farm') for col in latex_df.columns]
         latex_df.columns = [first_columns, latex_df.columns]

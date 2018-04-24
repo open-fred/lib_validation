@@ -352,7 +352,36 @@ def get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
                 else:
                     print('Adjust function!')
         pickle.dump(wind_efficiency_curves, open(filename, 'wb'))
+        wind_efficiency_curves.to_csv(
+            'helper_files/calculated_wind_efficiency_curves.csv')
     return wind_efficiency_curves
+
+
+def plot_calcualted_and_dena():
+    calculated_curves = pd.read_csv(
+        'helper_files/calculated_wind_efficiency_curves.csv', index_col=0)
+    calculated_curves.rename(columns={col: col.replace('wf_', 'WF ') for
+                                      col in calculated_curves.columns},
+                             inplace=True)
+    dena_mean_curve = wind_farm.read_wind_efficiency_curve('dena_mean')
+    dena_mean_curve.set_index('wind_speed', inplace=True)
+    dena_mean_curve.rename(columns={'efficiency': 'dena mean'},
+                           inplace=True)
+    knorr_exreme = wind_farm.read_wind_efficiency_curve('knorr_extreme2')
+    knorr_exreme.set_index('wind_speed', inplace=True)
+    knorr_exreme.rename(columns={'efficiency': 'knorr extreme2'},
+                           inplace=True)
+    plot_df = pd.concat([dena_mean_curve, knorr_exreme,
+                         calculated_curves], axis=1)
+    fig, ax = plt.subplots()
+    plot_df.plot(ax=ax, legend=True)
+    plt.xlabel('Wind speed in m/s')
+    plt.ylabel('Efficiency')
+    fig.savefig(os.path.join(
+        os.path.dirname(__file__),
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/',
+        'wind_efficiency_curves_calculated_dena_knorr.pdf'))
+    plt.close()
 
 def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
     path = os.path.join(os.path.dirname(__file__), 'helper_files',
@@ -388,12 +417,20 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
-                               filename=os.path.join(
-                                   os.path.dirname(__file__), 'dumps',
-                                   'wind_efficiency_curves.p'))
+    load_curves = True
+    plot_curves = True
     evaluate_curves = False
     standardize_curves = False
+
+    if load_curves:
+        get_wind_efficiency_curves(drop_higher_one=True, pickle_load=False,
+                                   filename=os.path.join(
+                                       os.path.dirname(__file__), 'dumps',
+                                       'wind_efficiency_curves.p'))
+
+    if plot_curves:
+        plot_calcualted_and_dena()
+
     years = [
         2015,
         2016

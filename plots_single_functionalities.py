@@ -58,7 +58,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
                               header=[0, 1])
         figure_case_df = case_df.loc[output_method][key_figure]
         if (case == 'wind_speed_4' or case == 'wind_speed_8'):
-            figure_case_df = figure_case_df.loc[:, ['log. interp.']]
+            figure_case_df = figure_case_df.loc[:, ['Log. interp.']]
         if (case == 'wind_speed_1' and
                 case is not 'wind_speed_2' and
                 case is not 'wind_speed_3'):
@@ -85,9 +85,13 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     if 'wind_speed' in cases[0]:
         folder = 'wind_speeds'
     elif 'smoothing_2' in cases:
-        folder = 'smoothing'
+        folder = 'smoothing_2'
     elif 'single_turbine' in cases[0]:
         folder = 'single_turbine'
+    elif 'wake_losses_1' in cases[0]:
+        folder = 'wake_losses_1'
+    elif 'wake_losses_3' in cases[0]:
+        folder = 'wake_losses_3'
     else:
         folder = ''
     # Save as png and as pdf
@@ -113,7 +117,9 @@ def run_bar_plot_key_figures():
         ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         # ['weather_wind_speed_1'],  # For best function for MERRA
         ['smoothing_2'],
-        ['single_turbine_1']
+        ['single_turbine_1'],
+        ['wake_losses_1'],
+        ['wake_losses_3']
     ]
     years = [
         2015,
@@ -139,7 +145,9 @@ def run_bar_plot_key_figures():
                         else:
                             key_figure = key_figure.replace('m/s', 'MW')
                         if (('wind_speed_1' in cases or
-                                'wind_speed_5' in cases) and
+                                    'wind_speed_5' in cases or
+                                    'wake_losses_1' in cases or
+                                    'wake_losses_3' in cases) and
                                 weather_data_name == 'MERRA'):
                             pass
                         else:
