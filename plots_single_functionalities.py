@@ -123,10 +123,11 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
             for column_name in set(list(weather_df)):
                 weather_plot_df[column_name] = weather_df[column_name].mean(axis=1)
             weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False)
-            plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.xticks(rotation='vertical')
-    plt.tight_layout()
+    weather_fig.text(0.04, 0.5, key_figure.replace('coeff.', 'Coefficient'),
+                     va='center', rotation='vertical')
+    # plt.tight_layout()
     # plt.title('{} of wind speed calculation with different methods in {}'.format(
     #     key_figure, year))
     # Save as png and as pdf
