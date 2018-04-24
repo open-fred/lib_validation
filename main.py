@@ -53,7 +53,8 @@ cases = [
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
-    'wind_farm_1',
+#     'wind_farm_1',
+    'wind_farm_2',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
 #     'weather_wind_speed_2',
@@ -582,8 +583,8 @@ def run_main(case, parameters, year):
                                 wind_farm.object_name)))
 
             # --- wind speed definition for next cases --- #
-            if case == 'weather_single_turbine_2':
-                # Use wind speed from first row GreenWind data as weather data
+            if (case == 'wind_farm_2' or case == 'weather_single_turbine_2'):
+               # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
                     pickle_filename=os.path.join(
@@ -592,8 +593,6 @@ def run_main(case, parameters, year):
                     pickle_load=pickle_load_greenwind, case=case)
                 wind_speed = single_data_raw[['wf_{}_wind_speed'.format(
                     wind_farm.object_name.split('_')[1])]]
-
-            # --- power output calculations single turbine --- #
             elif case == 'power_output_1':
                 # Get Greenwind data and get wind speed from each turbine
                 greenwind_data = get_greenwind_data(
