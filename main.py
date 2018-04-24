@@ -798,7 +798,7 @@ def run_main(case, parameters, year):
                         smoothing=False).to_frame(
                         name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
-            if ('TI' in approach_list and case == 'wind_farm_1'):
+            if ('TI' in approach_list and 'wind_farm' in case):
                 wind_farm.efficiency = read_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
@@ -812,7 +812,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_TI'.format(
                             wind_farm.object_name)))
-            if ('St._Pf.' in approach_list and case == 'wind_farm_1'):
+            if ('St._Pf.' in approach_list and 'wind_farm' in case):
                 wind_farm.efficiency = read_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
