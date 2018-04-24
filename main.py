@@ -43,13 +43,14 @@ cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-    'smoothing_1',
-    'smoothing_2',
+#     'smoothing_1',
+#     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-    'wake_losses_1',
+#     'wake_losses_1',
+    'wake_losses_2'
 # ---- Single Turbine Model ---- '
-    'single_turbine_1',
+#     'single_turbine_1',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
 #     'weather_wind_speed_2',
@@ -63,7 +64,7 @@ min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -773,6 +774,16 @@ def run_main(case, parameters, year):
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Dena'.format(
+                            wind_farm.object_name)))
+            if 'Knorr_extreme2' in approach_list:
+                wind_farm.efficiency = read_wind_efficiency_curve(
+                    curve_name='knorr_extreme2')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='wind_efficiency_curve',
+                        smoothing=False).to_frame(
+                        name='{0}_calculated_Knorr_extreme2'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
