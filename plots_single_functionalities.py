@@ -36,7 +36,7 @@ def run_bar_plots_from_files():
     for output_method in output_methods:
         for filename, index_header_col, ylabel in zip(filenames, index_header_cols, ylabels):
             input_filename = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots', filename)
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots', filename)
             output_filename = os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/inc/images/bar_plots_others',
@@ -51,7 +51,7 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     plot_df = pd.DataFrame()
     for case in cases:
         filename_csv = os.path.join(
-            os.path.dirname(__file__), 'csv_for_plots',
+            os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
             'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                 case, year, weather_data_name))
         case_df = pd.read_csv(filename_csv, index_col=[1, 0],

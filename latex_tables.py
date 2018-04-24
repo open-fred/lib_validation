@@ -67,7 +67,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 column_format=create_column_format(len(latex_df.columns), 'c'),
                 multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'annual_energy_approach_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -248,7 +248,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -421,7 +421,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'std_dev_time_series_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -459,7 +459,7 @@ def mean_figure_table(latex_tables_folder, case, figure):
         mean_rmse_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1],
@@ -517,7 +517,7 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
     for year in years:
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'std_dev_time_series_smoothing_2_{0}_{1}.csv'.format(
                     year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
@@ -555,7 +555,7 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
         buf=filename_table, column_format=column_format,
         multicolumn_format='c', index=False)
     filename_csv = os.path.join(
-        os.path.dirname(__file__), 'csv_for_plots',
+        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
         'mean_std_dev_smoothing_2.csv')
     mean_std_dev_df.to_csv(filename_csv, index=False)
 
@@ -575,7 +575,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
         mean_deviaton_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'annual_energy_approach_{0}_{1}_{2}.csv'.format(
                     'power_output_1', year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0],
@@ -616,7 +616,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), 'csv_for_plots',
+                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                         'std_dev_time_series_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
@@ -653,7 +653,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), 'csv_for_plots',
+                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                         'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0, 1])
