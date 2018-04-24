@@ -686,6 +686,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='turbine_power_curves',
                         roughness_length=weather[
@@ -697,6 +698,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='turbine_power_curves').to_frame(
                             name='{0}_calculated_Turbine_St._Pf.'.format(
@@ -706,6 +708,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='wind_farm_power_curves',
                         roughness_length=weather[
@@ -717,6 +720,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
                             name='{0}_calculated_Farm St._Pf.'.format(
@@ -731,6 +735,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='wind_farm_power_curves',
                         roughness_length=weather[
@@ -742,6 +747,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
                         name='{0}_calculated_St._Pf.'.format(
@@ -755,6 +761,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
+                        wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Calculated'.format(
@@ -766,6 +773,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
+                        wind_speed=wind_speed,
                         wake_losses_method='constant_efficiency',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Constant'.format(
@@ -776,6 +784,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
+                        wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Dena'.format(
@@ -786,6 +795,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
+                        wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Knorr_extreme2'.format(
@@ -794,6 +804,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
+                        wind_speed=wind_speed,
                         wake_losses_method=None,
                         smoothing=False).to_frame(
                         name='{0}_calculated_No_losses'.format(
@@ -805,7 +816,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=True,
+                        smoothing=True, wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='wind_farm_power_curves',
                         roughness_length=weather[
@@ -819,7 +830,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=True,
+                        smoothing=True, wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
                         name='{0}_calculated_St._Pf.'.format(

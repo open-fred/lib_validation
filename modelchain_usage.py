@@ -1,11 +1,8 @@
 # Imports from Windpowerlib
 from windpowerlib.modelchain import ModelChain
 from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
-from windpowerlib import wind_speed
+from windpowerlib.wind_speed import logarithmic_profile, hellman
 from windpowerlib import tools as wpl_tools
-
-# Imports from lib_validation
-import tools
 
 # Other imports
 import logging
@@ -84,7 +81,8 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
                          block_width=0.5,
                          standard_deviation_method='turbulence_intensity',
                          density_correction_order='wind_farm_power_curves',
-                         smoothing_order='wind_farm_power_curves', **kwargs):
+                         smoothing_order='wind_farm_power_curves',
+                         wind_speed=None, **kwargs):
     r"""
     Calculate power output of... TODO: add to docstring
 
@@ -179,6 +177,16 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
         'standard_deviation_method': standard_deviation_method,
         'density_correction_order': density_correction_order,
         'smoothing_order': smoothing_order}
+    if wind_speed is not None:
+        # Attention: in this thesis used for a validation data set, where hub
+        # height of turbines within one wind farm is the same!
+        wind_object.mean_hub_height()
+        df = pd.DataFrame(
+            data=wind_speed.values,
+            index=wind_speed.index,
+            columns=[np.array(['wind_speed']),
+                     np.array([wind_object.hub_height])])
+        weather_df = pd.concat([weather_df, df], axis=1)
     wf_mc = TurbineClusterModelChain(
         wind_object, **wf_modelchain_data).run_model(weather_df, **kwargs)
     return wf_mc.power_output
@@ -217,7 +225,7 @@ def wind_speed_to_hub_height(wind_turbine_fleet, weather_df,
             min(range(len(weather_df['wind_speed'].columns)),
                 key=lambda i: abs(weather_df['wind_speed'].columns[i] -
                                   hub_height))]
-        wind_speed_hub = wind_speed.logarithmic_profile(
+        wind_speed_hub = logarithmic_profile(
             weather_df['wind_speed'][closest_height], closest_height,
             hub_height, weather_df['roughness_length'].ix[:, 0],
             obstacle_height)
@@ -227,7 +235,7 @@ def wind_speed_to_hub_height(wind_turbine_fleet, weather_df,
             min(range(len(weather_df['wind_speed'].columns)),
                 key=lambda i: abs(weather_df['wind_speed'].columns[i] -
                                   hub_height))]
-        wind_speed_hub = wind_speed.hellman(
+        wind_speed_hub = hellman(
             weather_df['wind_speed'][closest_height], closest_height,
             hub_height, weather_df['roughness_length'].ix[:, 0], hellman_exp)
     elif wind_speed_model == 'interpolation_extrapolation':

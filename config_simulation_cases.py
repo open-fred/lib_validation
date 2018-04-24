@@ -266,6 +266,7 @@ def get_configuration(case=None):
     if case == 'wind_farm_2':  # Calcualted with first row wind speeds
         config_dict['approach_list'] = ['TI', 'St._Pf.', 'aggregation']
         config_dict['validation_data_list'] = ['GreenWind']
+        config_dict['weather_data_list'] = ['open_FRED']  # Weather data only for smoothing (z0) or if other than power curve is used.
         config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
 
     # ---- weather data ---- #
