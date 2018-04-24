@@ -160,8 +160,8 @@ def run_bar_plot_key_figures():
         ['wake_losses_3'],
         ['wind_farm_1']
     ]
-    not_for_monthly_list =  ['wake_losses_1', 'wake_losses_2', 'wake_losses_3',
-                             'wind_farm_2', 'smoothing_2', 'power_output_1']
+    not_for_monthly_list = ['wake_losses_1', 'wake_losses_2', 'wake_losses_3',
+                            'wind_farm_2', 'smoothing_2', 'power_output_1']
     years = [
         2015,
         2016
@@ -177,11 +177,12 @@ def run_bar_plot_key_figures():
         'monthly'
     ]
     for output_method in output_methods:
-        if (output_method == 'monthly' and cases[0] in not_for_monthly_list):
-            pass
-        else:
-            for key_figure in key_figures:
-                for cases in cases_list:
+        for key_figure in key_figures:
+            for cases in cases_list:
+                if (output_method == 'monthly' and
+                        cases[0] in not_for_monthly_list):
+                    pass
+                else:
                     if 'wind_speed' in cases[0]:
                         key_figure = key_figure.replace('MW', 'm/s')
                     else:
