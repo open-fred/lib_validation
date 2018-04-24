@@ -285,6 +285,7 @@ def correlation_subplot(df, filename):
     plt.ylim(ymin=0, ymax=absolute_maximum)
     plt.tight_layout()
     fig.savefig(filename)
+    fig.savefig(filename + '.pdf')
     plt.close()
 
 

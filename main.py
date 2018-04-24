@@ -789,13 +789,13 @@ def run_main(case, parameters, year):
                         smoothing=False).to_frame(
                         name='{0}_calculated_Knorr_extreme2'.format(
                             wind_farm.object_name)))
-            if 'Aggregation2' in approach_list:
+            if 'No_losses' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None,
                         smoothing=False).to_frame(
-                        name='{0}_calculated_Aggregation2'.format(
+                        name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
@@ -1367,7 +1367,7 @@ if __name__ == "__main__":
         for year in years:
             run_main(case=case, year=year, parameters=parameters)
 
-    # ---- Further latex tables ----#
+    # ---- Further latex tables and plots ----#
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
     if 'power_output_1' in cases:
@@ -1382,6 +1382,5 @@ if __name__ == "__main__":
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['single_turbine_1'])
-    if ('wind_speed_1' in cases or 'wind_speed_4' in cases):
-        plots_single_functionalities.run_all_plots()
+    plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")

@@ -85,11 +85,13 @@ def bar_plot_key_figures(year, output_method, key_figure, cases,
     if 'wind_speed' in cases[0]:
         folder = 'wind_speeds'
     elif 'smoothing_2' in cases:
-        folder = 'smoothing'
+        folder = 'smoothing_2'
     elif 'single_turbine' in cases[0]:
         folder = 'single_turbine'
-    elif 'wake_losses' in cases[0]:
-        folder = 'wake_losses'
+    elif 'wake_losses_1' in cases[0]:
+        folder = 'wake_losses_1'
+    elif 'wake_losses_3' in cases[0]:
+        folder = 'wake_losses_3'
     else:
         folder = ''
     # Save as png and as pdf
@@ -116,7 +118,8 @@ def run_bar_plot_key_figures():
         # ['weather_wind_speed_1'],  # For best function for MERRA
         ['smoothing_2'],
         ['single_turbine_1'],
-        ['wake_losses_1']
+        ['wake_losses_1'],
+        ['wake_losses_3']
     ]
     years = [
         2015,
@@ -143,7 +146,8 @@ def run_bar_plot_key_figures():
                             key_figure = key_figure.replace('m/s', 'MW')
                         if (('wind_speed_1' in cases or
                                     'wind_speed_5' in cases or
-                                    'wake_losses_1' in cases) and
+                                    'wake_losses_1' in cases or
+                                    'wake_losses_3' in cases) and
                                 weather_data_name == 'MERRA'):
                             pass
                         else:

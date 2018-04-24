@@ -241,14 +241,13 @@ def get_configuration(case=None):
             ('Dena', 'Dena mean')]
     if case == 'wake_losses_3':
         config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant',
-                                        'Aggregation2']
+                                        'No_losses']
         config_dict['validation_data_list'] = ['GreenWind']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['replacement'] = [
-            ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.'),
-            ('Aggreation2', 'Agg.')]
+            ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
 
     # ---- Single Turbine Model ---- #
     if case == 'single_turbine_1':
