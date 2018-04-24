@@ -474,13 +474,18 @@ def mean_figure_table(latex_tables_folder, case, figure):
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
                     ['-curve', weather_data_name, '-curve', weather_data_name]]
+            elif case == 'single_turbine_1':
+                mean_rmse_df.columns = [
+                    mean_rmse_df.columns,
+                    [weather_data_name for i in range(3)]]
             else:
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
                     ['-curve', weather_data_name, '-curve']]
             mean_rmse_df_weather = pd.concat([mean_rmse_df_weather,
                                               mean_rmse_df], axis=1)
-            if weather_data_name != weather_data_list[-1]:
+            if (weather_data_name != weather_data_list[-1] and
+                    case != 'single_turbine_1'):
                 mean_rmse_df_weather.drop(['P', 'Cp'], axis=1,
                                           inplace=True)
             else:
@@ -691,5 +696,8 @@ if __name__ == "__main__":
     concat_std_dev_tables_smoothing_1(latex_tables_folder)
     concat_key_figures_tables_smoothing_1(latex_tables_folder)
     mean_std_dev_smoothing_2(latex_tables_folder)
-    cases = ['power_output_1', 'single_turbine_1']
+    cases = [
+        'power_output_1',
+        'single_turbine_1'
+    ]
     carry_out_mean_figure_tables(latex_tables_folder, cases)

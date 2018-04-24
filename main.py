@@ -935,7 +935,7 @@ def run_main(case, parameters, year):
             time_series_dump_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
                 case, weather_data_name, year))
         csv_filename = os.path.join(time_series_df_folder,
-                                    'time_series_df_{0}_{1}_{2}.p'.format(
+                                    'time_series_df_{0}_{1}_{2}.csv'.format(
                                         case, weather_data_name, year))
         if pickle_load_time_series_df:
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
