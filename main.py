@@ -43,16 +43,16 @@ cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-#     'smoothing_1',
-    # 'smoothing_2',
+    'smoothing_1',
+    'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-#     'wake_losses_1',
+    'wake_losses_1',
 # ---- Single Turbine Model ---- '
-#     'single_turbine_1',
+    'single_turbine_1',
 # ---- weather data ---- #
-    'weather_wind_speed_1',
-    'weather_wind_speed_2',
+#     'weather_wind_speed_1',
+#     'weather_wind_speed_2',
     # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',
     # 'weather_single_turbine_2',
@@ -125,10 +125,11 @@ def run_main(case, parameters, year):
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        (None, None),
+        # (None, None),  # for whole year
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
         ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
-        ('{0}-06-01'.format(year), '{0}-06-07'.format(year))
+        ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
+        ('{0}-03-01'.format(year), '{0}-03-14'.format(year))
         ]
 
     #extra_plots = np.array([ # NOTE: not working
@@ -1140,7 +1141,7 @@ def run_main(case, parameters, year):
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = 'Plots/{0}/'.format(folder)
+                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
                 for method in output_methods:
                     # Resample if necessary
                     if method == 'hourly':
@@ -1200,7 +1201,7 @@ def run_main(case, parameters, year):
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = 'Plots/{0}/'.format(folder)
+                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
                 for method in output_methods:
                     if (method == 'half_hourly' and
                             weather_data_name == 'MERRA'):
