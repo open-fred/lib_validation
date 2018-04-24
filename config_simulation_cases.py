@@ -268,6 +268,10 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['GreenWind']
         config_dict['weather_data_list'] = ['open_FRED']  # Weather data only for smoothing (z0) or if other than power curve is used.
         config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
+        config_dict['key_figures_print'] = ['rmse',
+                                            # 'rmse_normalized',
+                                            'pearson',
+                                            'mean_bias']
 
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
