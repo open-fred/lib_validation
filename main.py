@@ -1145,10 +1145,11 @@ def run_main(case, parameters, year):
                 plot_dfs = time_series_df_parts
                 approach_string = 'multiple'
                 # Bring df into order
-                first_col = [col for col in plot_dfs if 'measured' in col]
-                others = [col for col in plot_dfs if
-                          'measured' not in col].sort()
-                plot_dfs = plot_dfs[first_col.append(others)]
+                cols = [col for col in list(plot_dfs[0]) if 'measured' in col]
+                others = [col for col in list(plot_dfs[0]) if
+                          'measured' not in col]
+                cols.extend(others)
+                plot_dfs = [plot_dfs[0][cols]]
             else:
                 plot_dfs = time_series_pairs
                 approach_string = None
