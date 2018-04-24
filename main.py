@@ -726,10 +726,12 @@ def run_main(case, parameters, year):
                             name='{0}_calculated_Farm St._Pf.'.format(
                                 wind_farm.object_name)))
             if 'aggregation' in approach_list:
-                calculation_df_list.append(modelchain_usage.power_output_simple(
-                    wind_farm.wind_turbine_fleet, weather).to_frame(
-                        name='{0}_calculated_aggregation'.format(
-                            wind_farm.object_name)))
+                calculation_df_list.append(
+                    modelchain_usage.power_output_simple(
+                        wind_farm.wind_turbine_fleet, weather,
+                        wind_speed=wind_speed).to_frame(
+                            name='{0}_calculated_aggregation'.format(
+                                wind_farm.object_name)))
             if ('TI' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
