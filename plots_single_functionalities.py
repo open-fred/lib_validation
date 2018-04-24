@@ -32,7 +32,7 @@ def run_bar_plots_from_files():
     filenames = ['mean_std_dev_smoothing_2.csv']
     index_header_cols = [([1, 0], 1)]
     ylabels = ['Mean standard deviation in MW']
-    output_methods = ['hourly', 'monthly', 'half-hourly']
+    output_methods = ['hourly', 'half-hourly']
     for output_method in output_methods:
         for filename, index_header_col, ylabel in zip(filenames, index_header_cols, ylabels):
             input_filename = os.path.join(
@@ -161,7 +161,8 @@ def run_bar_plot_key_figures():
         ['wind_farm_1']
     ]
     not_for_monthly_list = ['wake_losses_1', 'wake_losses_2', 'wake_losses_3',
-                            'wind_farm_2', 'smoothing_2', 'power_output_1']
+                            'wind_farm_2', 'smoothing_2', 'power_output_1',
+                            'single_turbine_1']
     years = [
         2015,
         2016
@@ -184,7 +185,7 @@ def run_bar_plot_key_figures():
                     pass
                 else:
                     if 'wind_speed' in cases[0]:
-                        key_figure = key_figure.replace('MW', 'm/s')
+                        # key_figure = key_figure.replace('MW', 'm/s')
                     else:
                         key_figure = key_figure.replace('m/s', 'MW')
                     bar_plot_key_figures(
