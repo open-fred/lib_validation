@@ -43,13 +43,13 @@ cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-#     'smoothing_1',
-#     'smoothing_2',
+    'smoothing_1',
+    'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-#     'wake_losses_1',
-#     'wake_losses_2',
-#     'wake_losses_3',
+    'wake_losses_1',
+    'wake_losses_2',
+    'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
@@ -583,7 +583,8 @@ def run_main(case, parameters, year):
                                 wind_farm.object_name)))
 
             # --- wind speed definition for next cases --- #
-            if (case == 'wind_farm_2' or case == 'weather_single_turbine_2'):
+            if (case == 'wind_farm_2' or case == 'weather_single_turbine_2' or
+                    'wake_losses' in case or 'smoothing' in case):
                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
@@ -693,7 +694,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_Turbine_TI'.format(
                                 wind_farm.object_name)))
-            if 'Turbine_St._Pf.' in approach_list:
+            if 'Turbine_SP' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -701,7 +702,7 @@ def run_main(case, parameters, year):
                         wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='turbine_power_curves').to_frame(
-                            name='{0}_calculated_Turbine_St._Pf.'.format(
+                            name='{0}_calculated_Turbine_SP'.format(
                                 wind_farm.object_name)))
             if 'Farm_TI' in approach_list:
                 calculation_df_list.append(
@@ -715,7 +716,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_Farm_TI'.format(
                                 wind_farm.object_name)))
-            if 'Farm St._Pf.' in approach_list:
+            if 'Farm SP' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -723,7 +724,7 @@ def run_main(case, parameters, year):
                         wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                            name='{0}_calculated_Farm St._Pf.'.format(
+                            name='{0}_calculated_Farm SP'.format(
                                 wind_farm.object_name)))
             if 'aggregation' in approach_list:
                 calculation_df_list.append(
@@ -744,7 +745,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_TI'.format(
                             wind_farm.object_name)))
-            if ('St._Pf.' in approach_list and case == 'smoothing_2'):
+            if ('SP' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -752,7 +753,7 @@ def run_main(case, parameters, year):
                         wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                        name='{0}_calculated_St._Pf.'.format(
+                        name='{0}_calculated_SP'.format(
                             wind_farm.object_name)))
             if 'Calculated' in approach_list:
                 wind_farm.efficiency = wind_eff_curves[[wind_farm.object_name]]
@@ -825,7 +826,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_TI'.format(
                             wind_farm.object_name)))
-            if ('St._Pf.' in approach_list and 'wind_farm' in case):
+            if ('SP' in approach_list and 'wind_farm' in case):
                 wind_farm.efficiency = read_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
@@ -835,7 +836,7 @@ def run_main(case, parameters, year):
                         smoothing=True, wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                        name='{0}_calculated_St._Pf.'.format(
+                        name='{0}_calculated_SP'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
