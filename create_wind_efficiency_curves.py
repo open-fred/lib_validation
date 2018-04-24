@@ -417,7 +417,7 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    load_curves = False
+    load_curves = True
     plot_curves = True
     evaluate_curves = False
     standardize_curves = False
@@ -430,7 +430,7 @@ if __name__ == "__main__":
 
     if plot_curves:
         plot_calcualted_and_dena()
-        
+
     years = [
         2015,
         2016
