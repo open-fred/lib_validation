@@ -605,6 +605,57 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
         multicolumn_format='c')
 
 
+def annual_energy_deviation(latex_tables_folder, case, single=True):
+    weather_data_list = ['MERRA', 'open_FRED']
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    years = [2015, 2016]
+    mean_deviaton_df_years = pd.DataFrame()
+    for year in years:
+        mean_deviaton_df_weather = pd.DataFrame()
+        for weather_data_name in weather_data_list:
+            filename_csv = os.path.join(
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                'annual_energy_approach_{0}_{1}_{2}.csv'.format(
+                    case, year, weather_data_name))
+            latex_df = pd.read_csv(filename_csv, index_col=[0],
+                                   header=[0, 1])
+            deviation_df = latex_df.drop('measured', axis=1)
+            deviation_df.drop('[MWh]', axis=1, level=1, inplace=True)
+            deviation_df.columns = deviation_df.columns.droplevel(1)
+            if single:
+                filename_table = os.path.join(
+                    path_latex_tables,
+                    'annual_deviation_{}_{}_{}.tex'.format(
+                        case, weather_data_name, year))
+                column_format = create_column_format(
+                    number_of_columns=len(list(deviation_df)),
+                    index_columns='l')
+                deviation_df.round(2).to_latex(
+                    buf=filename_table, column_format=column_format,
+                    multicolumn_format='c')
+            mean_deviation_df = pd.DataFrame()
+            mean_deviation_df['{}'.format(year)] = deviation_df.mean()
+            mean_deviation_df = mean_deviation_df.transpose()
+            mean_deviation_df.columns = [
+                mean_deviation_df.columns,
+                [weather_data_name for i in mean_deviation_df.columns]]
+            mean_deviaton_df_weather = pd.concat([mean_deviaton_df_weather,
+                                                  mean_deviation_df], axis=1)
+            mean_deviaton_df_weather.sort_index(axis=1, inplace=True)
+        mean_deviaton_df_years = pd.concat([mean_deviaton_df_years,
+                                            mean_deviaton_df_weather], axis=0)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'mean_deviation_weather_years_{}.tex'.format(case))
+    column_format = create_column_format(
+        number_of_columns=len(list(mean_deviaton_df_years)),
+        index_columns='l')
+    mean_deviaton_df_years.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c')
+
+
 def concat_std_dev_tables_smoothing_1(latex_tables_folder):
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
@@ -696,3 +747,10 @@ if __name__ == "__main__":
         'single_turbine_1'
     ]
     carry_out_mean_figure_tables(latex_tables_folder, cases)
+    cases_2 = [
+        'wind_farm_2',
+        'wind_farm_gw'
+    ]
+    single = True
+    for case in cases_2:
+        annual_energy_deviation(latex_tables_folder, case=case, single=single)
