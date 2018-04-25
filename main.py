@@ -43,18 +43,18 @@ cases = [
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
-#     'smoothing_1',
-    'smoothing_2',
+    'smoothing_1',
+    # 'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-    'wake_losses_1',
-    'wake_losses_2',
-    'wake_losses_3',
+#     'wake_losses_1',
+#     'wake_losses_2',
+#     'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_1',
-    'wind_farm_2',
+#     'wind_farm_2',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
 #     'weather_wind_speed_2',
@@ -716,7 +716,7 @@ def run_main(case, parameters, year):
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_Farm_TI'.format(
                                 wind_farm.object_name)))
-            if 'Farm SP' in approach_list:
+            if 'Farm_SP' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
