@@ -559,13 +559,18 @@ def evaluate_nans(years, before_processing=False, available_time_steps=False):
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}.p'.format(year))
                 data = pickle.load(open(pickle_filename, 'rb'))
-                selected_data = data[[
-                    'wf_BE_power_output', 'wf_BNW_power_output',
-                    'wf_BS_power_output']]
-                selected_data.rename(columns={col: col.replace(
-                    'wf_', 'WF ').replace('_power_output', '') for
-                                              col in list(selected_data)},
-                                     inplace=True)
+                if add_on == 'wf':
+                    selected_data = data[[
+                        'wf_BE_power_output', 'wf_BNW_power_output',
+                        'wf_BS_power_output']]
+                    selected_data.rename(columns={col: col.replace(
+                        'wf_', 'WF ').replace('_power_output', '') for
+                                                  col in list(selected_data)},
+                                         inplace=True)
+                else:
+                    selected_data = data.rename(columns={
+                        col: col.replace('wf_', '').replace('_', ' ') for
+                        col in list(data)})
                 if available_time_steps:
                     df_part = pd.DataFrame(
                         selected_data.count()).sort_index()
