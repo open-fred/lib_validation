@@ -39,9 +39,9 @@ def get_standard_case_of_configuration():
                            'hourly', 'monthly'],
         'visualization_methods': [
            # 'box_plots',
-           #  'feedin_comparison',
-           #  'plot_correlation',  # Attention: this takes a long time for high resolution
-           #  'subplots_correlation'
+            'feedin_comparison',
+            'plot_correlation',  # Attention: this takes a long time for high resolution
+            'subplots_correlation'
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
@@ -275,8 +275,9 @@ def get_configuration(case=None):
             ('_', ' '), ('aggregation', 'Agg.')]
 
     if case == 'wind_farm_2':
-        config_dict['approach_list'] = ['Dena-TI', 'Dena-SP', 'Const.-TI',
-                                        'Const.-SP']
+        config_dict['approach_list'] = ['Dena-TI', 'Dena-SP', 'aggregation']
+        config_dict['replacement'] = [
+            ('_', ' '), ('aggregation', 'Agg.')]
 
     # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
     #     config_dict['approach_list'] = [] # TODO add if needed

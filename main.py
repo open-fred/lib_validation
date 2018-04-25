@@ -27,7 +27,7 @@ import numpy as np
 import pickle
 import logging
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
@@ -53,8 +53,8 @@ cases = [
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
-    'wind_farm_gw',
-    # 'wind_farm_2',
+#     'wind_farm_gw',
+    'wind_farm_2',
     # 'wind_farm_3',
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
