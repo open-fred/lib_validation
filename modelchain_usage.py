@@ -76,11 +76,9 @@ def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
     return farm_power_output
 
 
-def power_output_cluster(wind_object, weather_df, density_correction=False,
-                         wake_losses_method=None, smoothing=True,
-                         block_width=0.5,
+def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
+                         smoothing=True, block_width=0.5,
                          standard_deviation_method='turbulence_intensity',
-                         density_correction_order='wind_farm_power_curves',
                          smoothing_order='wind_farm_power_curves',
                          wind_speed=None, **kwargs):
     r"""
@@ -104,9 +102,6 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
         measured at a height of 10 m). See documentation of
         :func:`modelchain.ModelChain.run_model` for an example on how to
         create the weather_df DataFrame.
-    density_correction : Boolean
-        If True a density correction will be applied to the power curves
-        before the summation. Default: False.
     wake_losses_method : String
         Defines the method for talking wake losses within the farm into
         consideration. Default: 'constant_efficiency'.
@@ -121,11 +116,6 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
         distribution. Options: 'turbulence_intensity', 'Norgaard', 'Staffell'.
         Default in :py:func:`~.power_output.smooth_power_curve`:
         'turbulence_intensity'.
-    density_correction_order : String
-        Defines when the density correction takes place if `density_correction`
-        is True. Options: 'turbine_power_curves' (to the single turbine power
-        curves), 'wind_farm_power_curves' or 'cluster_power_curve'.
-        Default: 'wind_farm_power_curves'.
     smoothing_order : String
         Defines when the smoothing takes place if `smoothing` is True. Options:
         'turbine_power_curves' (to the single turbine power curves),
@@ -170,12 +160,10 @@ def power_output_cluster(wind_object, weather_df, density_correction=False,
         Simulated power output of wind farm.
     """
     wf_modelchain_data = {
-        'density_correction': density_correction,
         'wake_losses_method': wake_losses_method,
         'smoothing': smoothing,
         'block_width': block_width,
         'standard_deviation_method': standard_deviation_method,
-        'density_correction_order': density_correction_order,
         'smoothing_order': smoothing_order}
     if wind_speed is not None:
         # Attention: in this thesis used for a validation data set, where hub

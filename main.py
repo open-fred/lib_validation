@@ -763,10 +763,9 @@ def run_main(case, parameters, year):
                     wind_farm.object_name: 'efficiency'}, inplace=True)
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wind_speed=wind_speed,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=True).to_frame(
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
             if 'Constant' in approach_list:
@@ -775,10 +774,9 @@ def run_main(case, parameters, year):
                 wind_farm.efficiency = 0.8
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wind_speed=wind_speed,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='constant_efficiency',
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=True).to_frame(
                         name='{0}_calculated_Constant'.format(
                             wind_farm.object_name)))
             if 'Dena' in approach_list:
@@ -786,10 +784,9 @@ def run_main(case, parameters, year):
                     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wind_speed=wind_speed,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=True).to_frame(
                         name='{0}_calculated_Dena'.format(
                             wind_farm.object_name)))
             if 'Knorr_extreme2' in approach_list:
@@ -806,10 +803,9 @@ def run_main(case, parameters, year):
             if 'No_losses' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wind_speed=wind_speed,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method=None,
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=True).to_frame(
                         name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
             if ('TI' in approach_list and 'wind_farm' in case):
@@ -884,7 +880,6 @@ def run_main(case, parameters, year):
         #         calculation_df_list.append(modelchain_usage.power_output_cluster(
         #             wind_farm, weather, density_correction=False,
         #             wake_losses_method='wind_efficiency_curve', smoothing=True,
-        #             density_correction_order='wind_farm_power_curves',
         #             smoothing_order='wind_farm_power_curves',
         #             roughness_length=weather[
         #                 'roughness_length'][0].mean()).to_frame(
