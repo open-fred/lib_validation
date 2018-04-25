@@ -1366,21 +1366,22 @@ def run_main(case, parameters, year):
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)
         if 'subplots_correlation' in visualization_methods:
-            for time_series_df_part in time_series_df_parts:
-                if weather_data_name == 'open_FRED':
-                    # Resample the DataFrame columns
-                    time_series_df_part = tools.resample_with_nan_theshold(
-                        df=time_series_df_part, frequency='H',
-                        threshold=get_threshold(
-                            'H', time_series_df_part.index.freq.n))
-                wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
-                visualization_tools.correlation_subplot(
-                    time_series_df_part,
-                    filename=os.path.join(
-                        os.path.dirname(__file__),
-                        '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
-                        'Correlation_{}_{}_{}_{}'.format(
-                            case, weather_data_name, year, wf_name)))
+            if len(approach_list) <= 4:
+                for time_series_df_part in time_series_df_parts:
+                    if weather_data_name == 'open_FRED':
+                        # Resample the DataFrame columns
+                        time_series_df_part = tools.resample_with_nan_theshold(
+                            df=time_series_df_part, frequency='H',
+                            threshold=get_threshold(
+                                'H', time_series_df_part.index.freq.n))
+                    wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
+                    visualization_tools.correlation_subplot(
+                        time_series_df_part,
+                        filename=os.path.join(
+                            os.path.dirname(__file__),
+                            '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
+                            'Correlation_{}_{}_{}_{}'.format(
+                                case, weather_data_name, year, wf_name)))
 
     #         if 'box_plots' in visualization_methods:
     #             # Store all bias time series of a validation set in one
