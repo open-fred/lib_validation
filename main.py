@@ -766,7 +766,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=False, density_correction=True).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
             if 'Constant' in approach_list:
@@ -777,7 +777,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='constant_efficiency',
-                        smoothing=False, density_correction=True).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Constant'.format(
                             wind_farm.object_name)))
             if 'Dena' in approach_list:
@@ -787,7 +787,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='wind_efficiency_curve',
-                        smoothing=False, density_correction=True).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Dena'.format(
                             wind_farm.object_name)))
             if 'Knorr_extreme2' in approach_list:
@@ -806,7 +806,7 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method=None,
-                        smoothing=False, density_correction=True).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
             if ('TI' in approach_list and 'wind_farm' in case):
