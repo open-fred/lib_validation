@@ -161,7 +161,7 @@ def run_bar_plot_key_figures():
         ['wind_farm_1']
     ]
     not_for_monthly_list = ['wake_losses_1', 'wake_losses_2', 'wake_losses_3',
-                            'wind_farm_2', 'smoothing_2', 'power_output_1',
+                            'wind_farm_2', 'power_output_1',
                             'single_turbine_1']
     years = [
         2015,
