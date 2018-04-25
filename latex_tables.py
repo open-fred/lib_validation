@@ -31,7 +31,6 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                        wind_farm_names, key_figures_print, output_methods,
                        path_latex_tables, filename_add_on, year, case,
                        replacement):
-    print(year)
     if 'annual_energy_approaches' in latex_output:
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
@@ -147,17 +146,14 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         else:
             unit = '[MW]'
         for weather_data_name in weather_data_list:
-            print(weather_data_name)
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
                     weather_data_name].items():
-                print(outerKey)
                 for wf_name in wind_farm_names:
                     if (wf_name not in restriction_list and not
                             (wf_name == 'single_BE' and
                                 outerKey == 'monthly') and not
                             (wf_name == 'single')):
-                        print(wf_name)
                         df_wf_part = pd.DataFrame()
                         if 'rmse' in key_figures_print:
                             df_part = pd.DataFrame(
@@ -668,8 +664,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
         latex_df.reset_index(inplace=True)
         second_columns = ['name', 'resolution']
         second_columns.extend(latex_df.columns.get_level_values(1)[2:])
-        second_columns = [col.replace('turb', 'Turb').replace(
-            'farm', 'Farm') for col in second_columns]
+        second_columns = [col for col in second_columns]
         latex_df.columns = [latex_df.columns.get_level_values(0), second_columns]
         std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
     filename_table = os.path.join(

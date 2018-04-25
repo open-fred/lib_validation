@@ -176,10 +176,6 @@ def get_configuration(case=None):
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['hourly', 'monthly']
-        config_dict['key_figures_print'] = ['rmse',
-                                            'rmse_normalized',
-                                            'pearson',
-                                            'mean_bias']
         config_dict['replacement'] = [
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
@@ -204,14 +200,17 @@ def get_configuration(case=None):
     #     config_dict['years'] = [2016]  # Enertrag data only for 2016
     if case == 'smoothing_1':
         config_dict['approach_list'] = ['Turbine_TI', 'Farm_TI',
-                                        'Turbine_SP', 'Farm SP']  # smoothing to farm pc or turbine pc
+                                        'Turbine_SP', 'Farm_SP']  # smoothing to farm pc or turbine pc
         config_dict['validation_data_list'] = ['Enertrag']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
+        config_dict['key_figures_print'] = ['rmse',
+                                            'pearson',
+                                            'mean_bias']
         config_dict['years'] = [2016]  # Enertrag data only for 2016
         config_dict['replacement'] = [
-            ('_', ' '), ('Turbine', 'T'), ('Farm', 'F')]
+            ('_', '-'), ('Turbine', 'T'), ('Farm', 'F')]
 
     if case == 'smoothing_2':  # Calcualted with first row wind speeds
         config_dict['approach_list'] = ['TI', 'SP', 'aggregation']  # Validation
