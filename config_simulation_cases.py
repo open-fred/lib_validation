@@ -212,19 +212,14 @@ def get_configuration(case=None):
         config_dict['replacement'] = [
             ('_', '-'), ('Turbine', 'T'), ('Farm', 'F')]
 
-    if case == 'smoothing_2':  # Calcualted with first row wind speeds
+    if case == 'smoothing_2':
         config_dict['approach_list'] = ['TI', 'SP', 'aggregation']  # Validation
         # GW wind speeds are used. oF and MERRA only if other weather data needed
-        config_dict['validation_data_list'] = ['GreenWind']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
-        config_dict['output_methods'] = ['half_hourly',  # Only if possible
-                           'hourly']
         config_dict['replacement'] = [
             ('_', ' '), ('aggregation', 'Agg.')]
-    # if case == 'density_correction_1':
-    #     config_dict['approach_list'] = ['turbine', 'farm']
 
     # ---- Single functions - Wake losses ---- #
     if case == 'wake_losses_1':  # Calcualted with first row wind speeds
