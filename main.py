@@ -44,12 +44,12 @@ cases = [
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
 #     'smoothing_1',
-    'smoothing_2',
+#     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
 #     'wake_losses_1',
 #     'wake_losses_2',
-#     'wake_losses_3',
+    'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
