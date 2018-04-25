@@ -527,7 +527,7 @@ def evaluate_duplicates(years):
     return duplicates_dict
 
 
-def evaluate_nans(years, before_processing=False):
+def evaluate_nans(years, before_processing=False, available_time_steps=False):
     if before_processing:
         df = pd.DataFrame()
         for year in years:
@@ -566,7 +566,12 @@ def evaluate_nans(years, before_processing=False):
                     'wf_', 'WF ').replace('_power_output', '') for
                                               col in list(selected_data)},
                                      inplace=True)
-                df_part = pd.DataFrame(selected_data.isnull().sum()).sort_index()
+                if available_time_steps:
+                    df_part = pd.DataFrame(
+                        selected_data.count()).sort_index()
+                else:
+                    df_part = pd.DataFrame(
+                        selected_data.isnull().sum()).sort_index()
                 df_part.columns = [year]
                 df = pd.concat([df, df_part], axis=1)
             df.to_csv(os.path.join(
@@ -1296,7 +1301,8 @@ if __name__ == "__main__":
 
     # Evaluation of nans
     if nans_evaluation:
-        nans_df = evaluate_nans(years, before_processing=False)
+        nans_df = evaluate_nans(years, before_processing=False,
+                                available_time_steps=True)
 
     # Evaluation of duplicates
     if duplicates_evaluation:
