@@ -267,9 +267,12 @@ def get_configuration(case=None):
 
     # ---- Wind Farm Model ---- #
     if case == 'wind_farm_gw':  # Only gw farms
-        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI', 'Calc.-SP',
-                                        'Const.-SP']
+        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI',
+                                        # 'Calc.-SP', 'Const.-SP',
+                                        'Dena-TI', 'aggregation']
         config_dict['validation_data_list'] = ['GreenWind']
+        config_dict['replacement'] = [
+            ('_', ' '), ('aggregation', 'Agg.')]
 
     if case == 'wind_farm_2':
         config_dict['approach_list'] = ['Dena-TI', 'Dena-SP', 'Const.-TI',
