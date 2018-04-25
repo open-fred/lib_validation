@@ -724,7 +724,7 @@ def run_main(case, parameters, year):
                         wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                            name='{0}_calculated_Farm SP'.format(
+                            name='{0}_calculated_Farm_SP'.format(
                                 wind_farm.object_name)))
             if 'aggregation' in approach_list:
                 calculation_df_list.append(
