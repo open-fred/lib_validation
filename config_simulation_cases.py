@@ -210,6 +210,9 @@ def get_configuration(case=None):
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
         config_dict['years'] = [2016]  # Enertrag data only for 2016
+        config_dict['replacement'] = [
+            ('_', ' '), ('Turbine', 'T'), ('Farm', 'F')]
+
     if case == 'smoothing_2':  # Calcualted with first row wind speeds
         config_dict['approach_list'] = ['TI', 'SP', 'aggregation']  # Validation
         # GW wind speeds are used. oF and MERRA only if other weather data needed
