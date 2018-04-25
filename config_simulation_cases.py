@@ -266,18 +266,23 @@ def get_configuration(case=None):
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
     # ---- Wind Farm Model ---- #
-    if case == 'wind_farm_1':
-        config_dict['approach_list'] = ['TI', 'SP', 'aggregation']
-        config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
-
-    if case == 'wind_farm_2':  # Calcualted with first row wind speeds
-        config_dict['approach_list'] = ['TI', 'SP', 'aggregation']
+    if case == 'wind_farm_gw':  # Only gw farms
+        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI', 'Calc.-SP',
+                                        'Const.-SP']
         config_dict['validation_data_list'] = ['GreenWind']
-        config_dict['weather_data_list'] = ['open_FRED']  # Weather data only for smoothing (z0) or if other than power curve is used.
-        config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
-        config_dict['output_methods'] = ['half_hourly',  # Only if possible
-                                         'hourly']
 
+    if case == 'wind_farm_2':
+        config_dict['approach_list'] = ['Dena-TI', 'Dena-SP', 'Const.-TI',
+                                        'Const.-TI']
+
+    # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
+    #     config_dict['approach_list'] = [] # TODO add if needed
+    #     config_dict['validation_data_list'] = ['GreenWind']
+    #     config_dict['weather_data_list'] = [
+    #         'open_FRED']  # Weather data only for smoothing (z0) or if other than power curve is used.
+    #     config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
+    #     config_dict['output_methods'] = ['half_hourly',  # Only if possible
+    #                                      'hourly']
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
         config_dict['approach_list'] = [
