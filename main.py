@@ -430,7 +430,7 @@ def run_main(case, parameters, year):
                 weather_data_name, wind_farm.coordinates, pickle_load=True,
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
-            if 'wake_losses' in case:
+            if ('wake_losses' in case or 'wind_farm' in case):
                 highest_power_output = False
                 file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
