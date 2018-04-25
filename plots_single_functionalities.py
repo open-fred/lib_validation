@@ -185,7 +185,7 @@ def run_bar_plot_key_figures():
                     pass
                 else:
                     if 'wind_speed' in cases[0]:
-                        # key_figure = key_figure.replace('MW', 'm/s')
+                        key_figure = key_figure.replace('MW', 'm/s')
                     else:
                         key_figure = key_figure.replace('m/s', 'MW')
                     bar_plot_key_figures(
