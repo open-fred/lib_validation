@@ -273,7 +273,7 @@ def get_configuration(case=None):
 
     if case == 'wind_farm_2':
         config_dict['approach_list'] = ['Dena-TI', 'Dena-SP', 'Const.-TI',
-                                        'Const.-TI']
+                                        'Const.-SP']
 
     # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
     #     config_dict['approach_list'] = [] # TODO add if needed

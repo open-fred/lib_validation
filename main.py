@@ -858,7 +858,7 @@ def run_main(case, parameters, year):
                         smoothing=True, wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                        name='{0}_calculated_Const.-Const.-SP'.format(
+                        name='{0}_calculated_Const.-SP'.format(
                             wind_farm.object_name)))
             if 'Calc.-TI' in approach_list:
                 wind_farm.efficiency = wind_eff_curves[[wind_farm.object_name]]
