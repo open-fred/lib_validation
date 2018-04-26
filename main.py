@@ -55,7 +55,7 @@ cases = [
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
 #     'wind_farm_2',
-#     'wind_farm_3',
+# #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
     'weather_wind_speed_1',
 #     # 'weather_wind_speed_2',  # not used anymore
