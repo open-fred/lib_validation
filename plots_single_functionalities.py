@@ -93,12 +93,12 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     filename_add_on = '_less_data_points'
                 else:
                     filename_add_on = ''
-                if ('wind_speed' in cases[0] and 'weather' not in cases[0]):
-                    folder = 'wind_speeds'
+                if ('wind_speed_1' in cases[0] and 'weather' not in cases[0]):
+                    folder = 'wind_speed_1'
                 elif 'smoothing_2' in cases:
                     folder = 'smoothing_2'
-                elif 'single_turbine' in cases[0]:
-                    folder = 'single_turbine'
+                elif 'single_turbine_1' in cases[0]:
+                    folder = 'single_turbine_1'
                 elif 'wake_losses_1' in cases[0]:
                     folder = 'wake_losses_1'
                 elif 'wake_losses_3' in cases[0]:
@@ -124,9 +124,11 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 fig.savefig(filename_start + '.pdf', bbox_inches="tight")
                 fig.savefig(filename_start, bbox_inches="tight")
                 plt.close()
+                # Combine data frames for double plots
                 weather_df = pd.concat([weather_df, plot_df], axis=1)
             weather_plot_df = pd.DataFrame()
             for column_name in set(list(weather_df)):
+                # Take mean from years
                 weather_plot_df[column_name] = weather_df[column_name].mean(axis=1)
             weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False)
             weather_ax.annotate(weather_data_name, xy=(0.99, 0.99),
@@ -157,14 +159,14 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         # ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
-        # ['weather_wind_speed_1'],  # For best function for MERRA
-        ['smoothing_2'],
-        ['single_turbine_1'],
-        ['wake_losses_3'],
-        ['wind_farm_gw'],
-        ['wind_farm_2']
+        # ['weather_wind_speed_1'],
+        # ['smoothing_2'],
+        # ['single_turbine_1'],
+        # ['wake_losses_3'],
+        # ['wind_farm_gw'],
+        # ['wind_farm_2']
     ]
     not_for_monthly_list = ['wind_farm_3', 'power_output_1',
                             'single_turbine_1']
