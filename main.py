@@ -1481,11 +1481,35 @@ if __name__ == "__main__":
         latex_tables.concat_key_figures_tables_smoothing_1(latex_tables_folder)
     if 'smoothing_2' in cases:
         latex_tables.mean_std_dev_smoothing_2(latex_tables_folder)
-    logging.info(
-        "--- Depending on the cases further plots are created. ---")
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['single_turbine_1'])
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='single_turbine_1', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='single_turbine_1')
+    if 'weather_wind_speed_1' in cases:
+        latex_tables.carry_out_mean_figure_tables(
+            latex_tables_folder, cases=['weather_wind_speed_1'])
+    if 'weather_wind_farm' in cases:
+        latex_tables.carry_out_mean_figure_tables(
+            latex_tables_folder, cases=['weather_wind_farm'])
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='weather_wind_farm', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='weather_wind_farm')
+    if 'wind_farm_2' in cases:
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='wind_farm_2', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='wind_farm_2')
+    if 'wind_farm_gw' in cases:
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='wind_farm_gw', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='wind_farm_gw')
+    logging.info(
+        "--- Depending on the cases further plots are created. ---")
     if plot_single_func:
         plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")
