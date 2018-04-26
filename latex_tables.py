@@ -354,8 +354,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                          axis=1).round(2)
             # Sort columns and index
             columns_names = list(set(latex_df.columns.get_level_values(0)))
-            optional_names_order = ['RMSE [m/s]', 'RMSE [%]', 'Pearson coeff.',
-                                    'mean bias [m/s]']
+            optional_names_order = ['RMSE {}'.format(unit), 'RMSE [%]',
+                                    'Pearson coeff.', 'mean bias {}'.format(
+                    unit)]
             name_order = [name for name in optional_names_order if
                           name in columns_names]
             latex_df = latex_df[name_order]
