@@ -54,10 +54,10 @@ cases = [
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
-    'wind_farm_2',
-    # 'wind_farm_3',
+#     'wind_farm_2',
+#     'wind_farm_3',
 # ---- weather data ---- #
-#     'weather_wind_speed_1',
+    'weather_wind_speed_1',
 #     'weather_wind_speed_2',
     # 'weather_wind_speed_3',  # BS, BE North...
     # 'weather_single_turbine_1',

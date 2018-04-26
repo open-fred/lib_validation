@@ -292,21 +292,23 @@ def get_configuration(case=None):
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
         config_dict['approach_list'] = [
-            'logarithmic', 'hellman', 'hellman_2']
+            'logarithmic', 'hellman', 'hellman_2', 'log._interp.']
         config_dict['validation_data_list'] = ['single']
         config_dict['latex_output'] = ['key_figures_weather',
                                        'key_figures_approaches']
-        config_dict['replacement'] = [('_', ' '), ('hellman', 'H'),
-                                      ('logarithmic', 'Log')]
-    if case == 'weather_wind_speed_2':
-        config_dict['approach_list'] = [
-            'logarithmic', 'lin._interp.', 'log._interp.']
-        config_dict['validation_data_list'] = ['single']
-        config_dict['weather_data_list'] = ['open_FRED']
-        config_dict['latex_output'] = ['key_figures_weather',
-                                       'key_figures_approaches']
-        config_dict['replacement'] = [('_', ' '), ('logarithmic', 'Log'),
-                                      ('interp', 'int')]
+        config_dict['replacement'] = [
+            ('_', ' '), ('hellman', 'H'),
+            ('logarithmic', 'Log'), ('interp', 'int')]
+
+    # if case == 'weather_wind_speed_2':
+    #     config_dict['approach_list'] = [
+    #         'logarithmic', 'lin._interp.', 'log._interp.']
+    #     config_dict['validation_data_list'] = ['single']
+    #     config_dict['weather_data_list'] = ['open_FRED']
+    #     config_dict['latex_output'] = ['key_figures_weather',
+    #                                    'key_figures_approaches']
+    #     config_dict['replacement'] = [('_', ' '), ('logarithmic', 'Log'),
+    #                                   ('interp', 'int')]
     # if case == 'weather_wind_speed_3': # less values (North ...)
     #     config_dict['approach_list'] = [
     #         'logarithmic', 'lin._interp.', 'log._interp.']
