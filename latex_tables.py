@@ -475,18 +475,15 @@ def mean_figure_table(latex_tables_folder, case, figure):
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
                     ['-curve', weather_data_name, '-curve', weather_data_name]]
-            elif case == 'single_turbine_1':
-                mean_rmse_df.columns = [
-                    mean_rmse_df.columns,
-                    [weather_data_name for i in range(3)]]
             else:
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
-                    ['-curve', weather_data_name, '-curve']]
+                    [weather_data_name for i in range(len(
+                        list(mean_rmse_df.columns)))]]
             mean_rmse_df_weather = pd.concat([mean_rmse_df_weather,
                                               mean_rmse_df], axis=1)
             if (weather_data_name != weather_data_list[-1] and
-                    case != 'single_turbine_1'):
+                    case == 'power_output_1'):
                 mean_rmse_df_weather.drop(['P', 'Cp'], axis=1,
                                           inplace=True)
             else:
@@ -496,13 +493,13 @@ def mean_figure_table(latex_tables_folder, case, figure):
     filename_table = os.path.join(
         path_latex_tables,
         'mean_{}_weather_{}.tex'.format(figure.replace(' ', '_').replace(
-            '%', 'percent'), case))
+            '%', 'percent').replace('/', '_'), case))
     column_format = create_column_format(
         number_of_columns=len(list(mean_rmse_df_years)),
         index_columns='l')
-    # Mean RMSE in kW
-    if figure == 'RMSE [MW]':
-        mean_rmse_df_years = mean_rmse_df_years * 1000
+    # # Mean RMSE in kW
+    # if figure == 'RMSE [MW]':
+    #     mean_rmse_df_years = mean_rmse_df_years * 1000
     mean_rmse_df_years.round(2).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
@@ -737,6 +734,8 @@ def carry_out_mean_figure_tables(latex_tables_folder, cases):
     figures = ['RMSE [MW]', 'RMSE [%]']
     for figure in figures:
         for case in cases:
+            if 'wind_speed' in case:
+                figure = figure.replace('MW', 'm/s')
             mean_figure_table(latex_tables_folder, case, figure=figure)
 
 
@@ -749,7 +748,8 @@ if __name__ == "__main__":
     mean_std_dev_smoothing_2(latex_tables_folder)
     cases = [
         'power_output_1',
-        'single_turbine_1'
+        'single_turbine_1',
+        'weather_wind_speed_1'
     ]
     carry_out_mean_figure_tables(latex_tables_folder, cases)
     cases_2 = [
