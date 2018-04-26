@@ -71,6 +71,8 @@ min_periods_pearson = None  # Integer
 # is set to False, `pickle_load_time_series_df` is automatically set to False
 pickle_load_time_series_df = False
 
+plot_single_func = False  # TODO: do not plot at RLI pc
+
 pickle_load_merra = True
 pickle_load_open_fred = True
 pickle_load_arge = True
@@ -1483,5 +1485,6 @@ if __name__ == "__main__":
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['single_turbine_1'])
-    plots_single_functionalities.run_all_plots()
+    if plot_single_func:
+        plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")
