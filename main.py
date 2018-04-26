@@ -1305,9 +1305,7 @@ def run_main(case, parameters, year):
                                 weather_data_name == 'MERRA'):
                             pass
                         else:
-                            visualization_tools.plot_feedin_comparison(
-                                data=plot_df, method=method,
-                                filename=(
+                            feedin_filename = (
                                     save_folder +
                                     '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
                                         case, method, wf_string, year,
@@ -1316,13 +1314,24 @@ def run_main(case, parameters, year):
                                         (start_end[0].split(':')[0] if
                                          start_end[0] else ''),
                                         (start_end[1].split(':')[0] if
-                                         start_end[0] else ''))),
-                                title=(
+                                         start_end[0] else '')))
+                            feedin_title = (
                                     '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
                                         method.replace('_', ' '),
                                         examined_value, wf_string,
                                         weather_data_name, year,
-                                        approach_string) + title_add_on),
+                                        approach_string) + title_add_on)
+                            visualization_tools.plot_feedin_comparison(
+                                data=plot_df, method=method,
+                                filename=feedin_filename, title=feedin_title,
+                                tick_label=None, start=start_end[0],
+                                end=start_end[1],
+                                y_label_add_on=y_label_add_on)
+                            # Also plot as pdf
+                            visualization_tools.plot_feedin_comparison(
+                                data=plot_df, method=method,
+                                filename=feedin_filename.replace(
+                                    '.png', '.pdf'), title=feedin_title,
                                 tick_label=None, start=start_end[0],
                                 end=start_end[1],
                                 y_label_add_on=y_label_add_on)
@@ -1354,20 +1363,28 @@ def run_main(case, parameters, year):
                             list(time_series_pair)[1].split('_')[3:])
                         wf_string = '_'.join(
                             list(time_series_pair)[0].split('_')[:2])
-                        visualization_tools.plot_correlation(
-                            data=time_series_pair, method=method,
-                            filename=(
+                        corr_filename = (
                                 save_folder +
                                 '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
                                     case, method, wf_string, year,
                                     weather_data_name, approach_string,
-                                    add_on)),
-                            title=(
+                                    add_on))
+                        corr_title = (
                                 '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
                                     method.replace('_', ' '), examined_value,
                                     wf_string, weather_data_name, year,
                                     approach_string) +
-                                'approach)' + title_add_on),
+                                'approach)' + title_add_on)
+                        visualization_tools.plot_correlation(
+                            data=time_series_pair, method=method,
+                            filename=corr_filename, title=corr_title,
+                            color='darkblue', marker_size=3,
+                            y_label_add_on=y_label_add_on)
+                        # Also plot as pdf
+                        visualization_tools.plot_correlation(
+                            data=time_series_pair, method=method,
+                            filename=corr_filename.replace(
+                                '.png', '.pdf'), title=corr_title,
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)
         if 'subplots_correlation' in visualization_methods:
@@ -1380,13 +1397,17 @@ def run_main(case, parameters, year):
                             threshold=get_threshold(
                                 'H', time_series_df_part.index.freq.n))
                     wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
-                    visualization_tools.correlation_subplot(
-                        time_series_df_part,
-                        filename=os.path.join(
+                    sub_filename = os.path.join(
                             os.path.dirname(__file__),
                             '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
                             'Correlation_{}_{}_{}_{}'.format(
-                                case, weather_data_name, year, wf_name)))
+                                case, weather_data_name, year, wf_name))
+                    visualization_tools.correlation_subplot(
+                        time_series_df_part, filename=sub_filename)
+                    # Also plot as pdf
+                    visualization_tools.correlation_subplot(
+                        time_series_df_part, filename=sub_filename.replace(
+                            '.png', '.pdf'))
 
     #         if 'box_plots' in visualization_methods:
     #             # Store all bias time series of a validation set in one
