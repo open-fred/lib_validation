@@ -317,21 +317,21 @@ def get_configuration(case=None):
     #                                    'key_figures_approaches']
     #     config_dict['output_methods'] = ['half_hourly',  # Only if possible
     #                        'hourly']
-    if case == 'weather_single_turbine_1':
-        config_dict['approach_list'] = [
-            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
-        config_dict['validation_data_list'] = ['single']
-        config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    if case == 'weather_single_turbine_2':
-        config_dict['approach_list'] = [
-            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
-        config_dict['validation_data_list'] = ['single']
-        config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    if case == 'highest_wind_speed':
-        config_dict['approach_list'] = [
-            'logarithmic', 'lin._interp.', 'log._interp.']
-        config_dict['validation_data_list'] = ['single']
-        config_dict['latex_output'] = ['key_figures_weather',
-                                       'key_figures_approaches']
+    # if case == 'weather_single_turbine_1':
+    #     config_dict['approach_list'] = [
+    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+    #     config_dict['validation_data_list'] = ['single']
+    #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
+    # if case == 'weather_single_turbine_2':
+    #     config_dict['approach_list'] = [
+    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+    #     config_dict['validation_data_list'] = ['single']
+    #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
+    # if case == 'highest_wind_speed':
+    #     config_dict['approach_list'] = [
+    #         'logarithmic', 'lin._interp.', 'log._interp.']
+    #     config_dict['validation_data_list'] = ['single']
+    #     config_dict['latex_output'] = ['key_figures_weather',
+    #                                    'key_figures_approaches']
 
     return config_dict
