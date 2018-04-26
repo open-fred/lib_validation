@@ -1235,10 +1235,12 @@ def run_main(case, parameters, year):
             folder = 'smoothing'
         elif 'wake_losses' in case:
             folder = 'wake_losses'
-        elif 'wind_farm' in case:
+        elif ('wind_farm' in case and 'weather' not in case):
             folder = 'wind_farm'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
+        elif 'weather_wind_farm' in case:
+            folder = 'weather_wind_farm'
         elif (case == 'weather_single_turbine_1' or
               case == 'weather_single_turbine_2'):
             folder = 'weather_single_turbine'

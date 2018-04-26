@@ -175,14 +175,14 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         # ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
-        # ['weather_wind_speed_1'],
-        # ['smoothing_2'],
+        ['weather_wind_speed_1'],
+        ['smoothing_2'],
         ['single_turbine_1'],
-        # ['wake_losses_3'],
-        # ['wind_farm_gw'],
-        # ['wind_farm_2'],
+        ['wake_losses_3'],
+        ['wind_farm_gw'],
+        ['wind_farm_2'],
         ['weather_wind_farm']
     ]
     not_for_monthly_list = ['wind_farm_3', 'power_output_1',
