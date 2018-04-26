@@ -275,7 +275,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -290,7 +291,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -305,7 +307,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -320,7 +323,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -336,7 +340,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
