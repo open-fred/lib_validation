@@ -786,6 +786,8 @@ def carry_out_mean_figure_tables(latex_tables_folder, cases):
         for case in cases:
             if 'wind_speed' in case:
                 figure = figure.replace('MW', 'm/s')
+            else:
+                figure = figure.replace('m/s', 'MW')
             mean_figure_table(latex_tables_folder, case, figure=figure)
 
 
