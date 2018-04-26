@@ -300,9 +300,7 @@ def get_configuration(case=None):
             ('_', ' '), ('hellman', 'H'),
             ('logarithmic', 'Log'), ('interp', 'int')]
     if case == 'weather_wind_farm':
-        config_dict['approach_list'] = ['Dena-TI', 'Const.-TI', 'aggregation']
-        config_dict['replacement'] = [
-            ('_', ' '), ('aggregation', 'Agg.')]
+        config_dict['approach_list'] = ['Dena-TI', 'Const.-TI']
 
     # if case == 'weather_wind_speed_2':
     #     config_dict['approach_list'] = [
