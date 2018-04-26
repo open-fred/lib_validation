@@ -93,7 +93,7 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     filename_add_on = '_less_data_points'
                 else:
                     filename_add_on = ''
-                if 'wind_speed' in cases[0]:
+                if ('wind_speed' in cases[0] and 'weather' not in cases[0]):
                     folder = 'wind_speeds'
                 elif 'smoothing_2' in cases:
                     folder = 'smoothing_2'
@@ -109,6 +109,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     folder = 'wind_farm_2'
                 elif 'wind_farm_3' in cases[0]:
                     folder = 'wind_farm_3'
+                elif 'weather_wind_speed_1' in cases[0]:
+                    folder = 'weather_wind_speed_1'
                 else:
                     folder = ''
                 # Save as png and as pdf
