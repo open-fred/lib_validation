@@ -48,6 +48,7 @@ def run_bar_plots_from_files():
 
 def bar_plot_key_figures(years, output_method, key_figure, cases,
                          weather_data_names):
+    # Initialize double plot (both weather data sets)
     weather_fig, axes = plt.subplots(1, 2, sharey='row')
     for weather_data_name, weather_ax in zip(weather_data_names, axes):
         if (('wind_speed_1' in cases or
@@ -61,12 +62,14 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
             for year in years:
                 plot_df = pd.DataFrame()
                 for case in cases:
+                    # Read data
                     filename_csv = os.path.join(
                         os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                         'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                             case, year, weather_data_name))
                     case_df = pd.read_csv(filename_csv, index_col=[1, 0],
                                           header=[0, 1])
+                    # Choose data with output method and key figure
                     figure_case_df = case_df.loc[output_method][key_figure]
                     if (case == 'wind_speed_4' or case == 'wind_speed_8'):
                         figure_case_df = figure_case_df.loc[:, ['Log. interp.']]
@@ -77,6 +80,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                         figure_case_df = figure_case_df[[
                             '{} {}'.format(list(figure_case_df)[0].split(' ')[0],
                                            height) for height in ['100', '80', '10']]]
+                    # Create data frame for plot containing data from different
+                    # approaches for one year and weather data set
                     plot_df = pd.concat([plot_df, figure_case_df], axis=1)
                 fig, ax = plt.subplots()
                 plot_df.plot(kind='bar', ax=ax, legend=False)
@@ -111,6 +116,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     folder = 'wind_farm_3'
                 elif 'weather_wind_speed_1' in cases[0]:
                     folder = 'weather_wind_speed_1'
+                elif 'weather_wind_farm' in cases:
+                    folder = 'weather_wind_farm'
                 else:
                     folder = ''
                 # Save as png and as pdf
@@ -130,9 +137,18 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
             for column_name in set(list(weather_df)):
                 # Take mean from years
                 weather_plot_df[column_name] = weather_df[column_name].mean(axis=1)
+            # Plot into subplot
             weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False)
             weather_ax.annotate(weather_data_name, xy=(0.99, 0.99),
                          xycoords='axes fraction', ha='right', va='top')
+            # Csv dump for calculations
+            weather_plot_df.to_csv(os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/Tables/differences/csvs',
+                'mean_years_{}_{}_{}_{}_{}.csv'.format(
+                        key_figure.replace(' ', '_').replace('/', '_').replace(
+                            '.', '').replace('%', 'percentage'), weather_data_name,
+                        output_method, case, filename_add_on)))
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.xticks(rotation='vertical')
     weather_fig.text(0.04, 0.5, key_figure.replace('coeff.', 'Coefficient'),
@@ -159,14 +175,15 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         # ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         # ['weather_wind_speed_1'],
         # ['smoothing_2'],
-        # ['single_turbine_1'],
+        ['single_turbine_1'],
         # ['wake_losses_3'],
         # ['wind_farm_gw'],
-        # ['wind_farm_2']
+        # ['wind_farm_2'],
+        ['weather_wind_farm']
     ]
     not_for_monthly_list = ['wind_farm_3', 'power_output_1',
                             'single_turbine_1']
