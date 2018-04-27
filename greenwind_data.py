@@ -549,48 +549,51 @@ def evaluate_nans(years, before_processing=False, available_time_steps=False,
     else:
         add_ons = ['wf', 'first_row']
         for add_on in add_ons:
-            df = pd.DataFrame()
-            for year in years:
-                if add_on == 'wf':
-                    pickle_filename = os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_{0}_raw_resolution.p'.format(year))
-                else:
-                    pickle_filename = os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}{1}.p'.format(
-                            year, filename_add_on))
-                data = pickle.load(open(pickle_filename, 'rb'))
-                if add_on == 'wf':
-                    selected_data = data[[
-                        'wf_BE_power_output', 'wf_BNW_power_output',
-                        'wf_BS_power_output']]
-                    selected_data.rename(columns={col: col.replace(
-                        'wf_', 'WF ').replace('_power_output', '') for
-                                                  col in list(selected_data)},
-                                         inplace=True)
-                else:
-                    selected_data = data.rename(columns={
-                        col: col.replace('wf_', '').replace('_', ' ') for
-                        col in list(data)})
-                if available_time_steps:
-                    df_part = pd.DataFrame(
-                        selected_data.count()).sort_index()
-                else:
-                    df_part = pd.DataFrame(
-                        selected_data.isnull().sum()).sort_index()
-                df_part.columns = [year]
-                df = pd.concat([df, df_part], axis=1)
-            df.to_csv(os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
-                'nans_evaluation_{}{}.csv'.format(add_on, filename_add_on)))
-            df.to_latex(os.path.join(
-                os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
-                'nans_evaluation_{}{}.tex'.format(add_on, filename_add_on)),
-                column_format=latex_tables.create_column_format(
-                    len(df.columns), 'l'), multicolumn_format='c')
+            if (add_on == 'wf' and filename_add_on == ''):
+                pass
+            else:
+                df = pd.DataFrame()
+                for year in years:
+                    if add_on == 'wf':
+                        pickle_filename = os.path.join(
+                            os.path.dirname(__file__), 'dumps/validation_data',
+                            'greenwind_data_{0}_raw_resolution.p'.format(year))
+                    else:
+                        pickle_filename = os.path.join(
+                            os.path.dirname(__file__), 'dumps/validation_data',
+                            'greenwind_data_first_row_{0}{1}.p'.format(
+                                year, filename_add_on))
+                    data = pickle.load(open(pickle_filename, 'rb'))
+                    if add_on == 'wf':
+                        keep_cols = ['wf_{}_power_output'.format(wf) for wf in [
+                            'SH', 'BE', 'BS', 'BNW', 'BNE']]
+                        selected_data = data[keep_cols]
+                        selected_data.rename(columns={col: col.replace(
+                            'wf_', 'WF ').replace('_power_output', '') for
+                                                      col in list(selected_data)},
+                                             inplace=True)
+                    else:
+                        selected_data = data.rename(columns={
+                            col: col.replace('wf_', '').replace('_', ' ') for
+                            col in list(data)})
+                    if available_time_steps:
+                        df_part = pd.DataFrame(
+                            selected_data.count()).sort_index()
+                    else:
+                        df_part = pd.DataFrame(
+                            selected_data.isnull().sum()).sort_index()
+                    df_part.columns = [year]
+                    df = pd.concat([df, df_part], axis=1)
+                df.to_csv(os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
+                    'nans_evaluation_{}{}.csv'.format(add_on, filename_add_on)))
+                df.to_latex(os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
+                    'nans_evaluation_{}{}.tex'.format(add_on, filename_add_on)),
+                    column_format=latex_tables.create_column_format(
+                        len(df.columns), 'l'), multicolumn_format='c')
     return df
 
 
@@ -1309,7 +1312,7 @@ if __name__ == "__main__":
     # Evaluation of nans
     if nans_evaluation:
         add_ons = ['', '_weather_wind_speed_3']
-        for add_on in add_ons
+        for add_on in add_ons:
             nans_df = evaluate_nans(years, before_processing=False,
                                     available_time_steps=True,
                                     filename_add_on=add_on)
