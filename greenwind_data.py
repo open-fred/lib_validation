@@ -566,7 +566,7 @@ def evaluate_nans(years, before_processing=False, available_time_steps=False,
                     data = pickle.load(open(pickle_filename, 'rb'))
                     if add_on == 'wf':
                         keep_cols = ['wf_{}_power_output'.format(wf) for wf in [
-                            'SH', 'BE', 'BS', 'BNW', 'BNE']]
+                            'BE', 'BNW', 'BS']]
                         selected_data = data[keep_cols]
                         selected_data.rename(columns={col: col.replace(
                             'wf_', 'WF ').replace('_power_output', '') for
