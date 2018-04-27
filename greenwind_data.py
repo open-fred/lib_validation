@@ -527,7 +527,8 @@ def evaluate_duplicates(years):
     return duplicates_dict
 
 
-def evaluate_nans(years, before_processing=False, available_time_steps=False):
+def evaluate_nans(years, before_processing=False, available_time_steps=False,
+                  filename_add_on=''):
     if before_processing:
         df = pd.DataFrame()
         for year in years:
@@ -557,7 +558,8 @@ def evaluate_nans(years, before_processing=False, available_time_steps=False):
                 else:
                     pickle_filename = os.path.join(
                         os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}.p'.format(year))
+                        'greenwind_data_first_row_{0}{1}.p'.format(
+                            year, filename_add_on))
                 data = pickle.load(open(pickle_filename, 'rb'))
                 if add_on == 'wf':
                     selected_data = data[[
@@ -582,11 +584,11 @@ def evaluate_nans(years, before_processing=False, available_time_steps=False):
             df.to_csv(os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
-                'nans_evaluation_{}.csv'.format(add_on)))
+                'nans_evaluation_{}{}.csv'.format(add_on, filename_add_on)))
             df.to_latex(os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
-                'nans_evaluation_{}.tex'.format(add_on)),
+                'nans_evaluation_{}{}.tex'.format(add_on, filename_add_on)),
                 column_format=latex_tables.create_column_format(
                     len(df.columns), 'l'), multicolumn_format='c')
     return df
@@ -1306,8 +1308,11 @@ if __name__ == "__main__":
 
     # Evaluation of nans
     if nans_evaluation:
-        nans_df = evaluate_nans(years, before_processing=False,
-                                available_time_steps=True)
+        add_ons = ['', '_weather_wind_speed_3']
+        for add_on in add_ons
+            nans_df = evaluate_nans(years, before_processing=False,
+                                    available_time_steps=True,
+                                    filename_add_on=add_on)
 
     # Evaluation of duplicates
     if duplicates_evaluation:
