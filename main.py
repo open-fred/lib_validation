@@ -667,7 +667,7 @@ def run_main(case, parameters, year):
                         wind_speed_model='logarithmic',
                         density_model='ideal_gas',
                         temperature_model='linear_gradient',
-                        power_output_model='power_coefficient_curve',
+                        power_output_model='power_curve',
                         density_correction=True,
                         obstacle_height=0, hellman_exp=None).to_frame(
                         name='{0}_calculated_p-curve_(d._c.)'.format(
