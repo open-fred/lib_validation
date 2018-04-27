@@ -44,7 +44,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                          innerKey not in restriction_list) for
                      innerstKey, values in innerstDict.items()},
                     index=[outerKey.replace('wf_', 'WF ').replace(
-                        '_', ' ')])
+                        'single_', '').replace('_', ' ')])
                 df_part['measured', '[MWh]'] = (
                     annual_energy_dicts[weather_data_name][outerKey][
                         'measured_annual_energy'])
@@ -86,7 +86,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                               restriction_list) for
                              innerstKey, values in innerstDict.items()},
                             index=[outerKey.replace('wf_', 'WF ').replace(
-                                   '_', ' ')]).round(2)
+                                    'single_', '').replace('_', ' ')]).round(2)
                         if weather_data_name == weather_data_list[0]:
                             df_part['measured', '[MWh]'] = round(
                                 annual_energy_dicts[weather_data_name][
@@ -123,7 +123,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                      innerstKey, values in innerstDict.items() if
                      innerstKey == 'deviation [%]'},
                     index=[outerKey.replace('wf_', 'WF ').replace(
-                           '_', ' ')]).round(2)
+                                    'single_', '').replace('_', ' ')]).round(2)
                 df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
             latex_df = pd.concat([latex_df, df_part_weather], axis=1)
         # Sort columns and index
