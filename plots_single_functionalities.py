@@ -78,9 +78,9 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     figure_case_df = case_df.loc[output_method][key_figure]
                     if (case == 'wind_speed_4' or case == 'wind_speed_8'):
                         figure_case_df = figure_case_df.loc[:, ['Log. interp.']]
-                    if (case == 'wind_speed_1' and
-                            case is not 'wind_speed_2' and
-                            case is not 'wind_speed_3'):
+                    if case in ['wind_speed_1', 'wind_speed_2', 'wind_speed_3',
+                                'wind_speed_5', 'wind_speed_6',
+                                'wind_speed_7']:
                         # Order columns
                         figure_case_df = figure_case_df[[
                             '{} {}'.format(list(figure_case_df)[0].split(' ')[0],
@@ -105,23 +105,23 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     filename_add_on = ''
                 if 'wind_speed_1' in cases:
                     folder = 'wind_speed_1'
-                elif 'wind_speed_5':
+                elif 'wind_speed_5' in cases:
                     folder = 'wind_speed_5'
                 elif 'smoothing_2' in cases:
                     folder = 'smoothing_2'
-                elif 'single_turbine_1' in cases[0]:
+                elif 'single_turbine_1' in cases:
                     folder = 'single_turbine_1'
-                elif 'wake_losses_1' in cases[0]:
+                elif 'wake_losses_1' in cases:
                     folder = 'wake_losses_1'
-                elif 'wake_losses_3' in cases[0]:
+                elif 'wake_losses_3' in cases:
                     folder = 'wake_losses_3'
-                elif 'wind_farm_gw' in cases[0]:
+                elif 'wind_farm_gw' in cases:
                     folder = 'wind_farm_gw'
-                elif 'wind_farm_2' in cases[0]:
+                elif 'wind_farm_2' in cases:
                     folder = 'wind_farm_2'
-                elif 'wind_farm_3' in cases[0]:
+                elif 'wind_farm_3' in cases:
                     folder = 'wind_farm_3'
-                elif 'weather_wind_speed_1' in cases[0]:
+                elif 'weather_wind_speed_1' in cases:
                     folder = 'weather_wind_speed_1'
                 elif 'weather_wind_farm' in cases:
                     folder = 'weather_wind_farm'
@@ -164,16 +164,17 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
     # plt.title('{} of wind speed calculation with different methods in {}'.format(
     #     key_figure, year))
     # Save as png and as pdf
-    filename_start = os.path.join(
-        os.path.dirname(__file__),
-        '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures',
-        folder, 'yearly_mean', 'Barplot_wind_speed_methods_{}_{}_{}_{}{}'.format(
-            key_figure.replace(' ', '_').replace('/', '_').replace(
-                '.', '').replace('%', 'percentage'), 'yearly_mean',
-            'both_weather',
-            output_method, filename_add_on))
-    weather_fig.savefig(filename_start + '.pdf', bbox_inches="tight")
-    weather_fig.savefig(filename_start, bbox_inches="tight")
+    if ('wind_speed_5' not in cases):
+        filename_start = os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures',
+            folder, 'yearly_mean', 'Barplot_wind_speed_methods_{}_{}_{}_{}{}'.format(
+                key_figure.replace(' ', '_').replace('/', '_').replace(
+                    '.', '').replace('%', 'percentage'), 'yearly_mean',
+                'both_weather',
+                output_method, filename_add_on))
+        weather_fig.savefig(filename_start + '.pdf', bbox_inches="tight")
+        weather_fig.savefig(filename_start, bbox_inches="tight")
     plt.close()
 
 def run_bar_plot_key_figures():
@@ -182,7 +183,7 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         ['weather_wind_speed_1'],
         ['smoothing_2'],
