@@ -227,6 +227,7 @@ def create_wind_efficiency_curve(first_row_data, wind_farm_power_output,
                          (df.loc[:, 'wind_speed'] > (
                              v_std - 0.5))].index
         df['v_std'].loc[indices] = v_std
+    # Add column with calculated efficiency
     df['efficiency'] = df['wind_farm_power_output'] / (
         number_of_turbines * df['single_power_output'])
     if drop_higher_one:
