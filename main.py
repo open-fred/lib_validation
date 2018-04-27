@@ -36,10 +36,10 @@ cases = [
 #     'wind_speed_2',
 #     'wind_speed_3',
 #     'wind_speed_4',
-#     'wind_speed_5',  # first row like weather_wind_speed_3
-#     'wind_speed_6',  # first row like weather_wind_speed_3
-#     'wind_speed_7',  # first row like weather_wind_speed_3
-#     'wind_speed_8',  # first row like weather_wind_speed_3
+    'wind_speed_5',  # first row like weather_wind_speed_3
+    'wind_speed_6',  # first row like weather_wind_speed_3
+    'wind_speed_7',  # first row like weather_wind_speed_3
+    'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
@@ -57,13 +57,13 @@ cases = [
 #     'wind_farm_2',
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
-    'weather_wind_speed_1',
+#     'weather_wind_speed_1',
 #     # 'weather_wind_speed_2',  # not used anymore
 #     # 'weather_wind_speed_3',  # BS, BE North...  # not used anymore
 #     # 'weather_single_turbine_1',  # not used anymore
 #     # 'weather_single_turbine_2',  # not used anymore
 #     # 'highest_wind_speed',  # not used anymore
-    'weather_wind_farm'
+#     'weather_wind_farm'
 ]
 
 min_periods_pearson = None  # Integer

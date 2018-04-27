@@ -100,9 +100,13 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
             '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
             '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
                 'single' if grouped is False else grouped, turbine.object_name,
-                weather_data_name, standard_deviation_method,
+                weather_data_name,standard_deviation_method.replace(
+                    'turbulence_intensity', 'TI').replace(
+                    'Staffell', 'ST').replace('Pfenninger', 'Pf') if
+                grouped != 'std_dev' else standard_deviation_method,
                 block_width, wind_speed_range).replace(
-                '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
+                '.', '_').replace(' ', '_').replace('pdf', '.pdf').replace(
+                ',', '_').replace('[', '').replace(']', '')))
         plt.close()
 
 
@@ -202,7 +206,7 @@ def plot_aggregated_vs_smoothed_pc():
 
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = False
+    grouped_plots = True
     turbine_plots = False
     plot_gauss = False
     plot_aggregated_vs_smoothed = False

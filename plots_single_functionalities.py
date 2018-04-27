@@ -40,11 +40,16 @@ def run_bar_plots_from_files():
             output_filename = os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/inc/images/bar_plots_others',
-                'bar_plot_{}_{}'.format(filename.split('.')[0], output_method))
+                'bar_plot_{}_{}.png'.format(filename.split('.')[0], output_method))
             bar_plot_from_file(
                 input_filename, output_filename=output_filename,
                 index_cols=index_header_col[0],
                 header_cols=index_header_col[1], index=output_method, ylabel=ylabel)
+            bar_plot_from_file(
+                input_filename, output_filename=output_filename.replace('.png', '.pdf'),
+                index_cols=index_header_col[0],
+                header_cols=index_header_col[1], index=output_method,
+                ylabel=ylabel)
 
 def bar_plot_key_figures(years, output_method, key_figure, cases,
                          weather_data_names):
@@ -98,8 +103,10 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     filename_add_on = '_less_data_points'
                 else:
                     filename_add_on = ''
-                if ('wind_speed_1' in cases[0] and 'weather' not in cases[0]):
+                if 'wind_speed_1' in cases:
                     folder = 'wind_speed_1'
+                elif 'wind_speed_5':
+                    folder = 'wind_speed_5'
                 elif 'smoothing_2' in cases:
                     folder = 'smoothing_2'
                 elif 'single_turbine_1' in cases[0]:
@@ -176,7 +183,7 @@ def run_bar_plot_key_figures():
     ]
     cases_list = [
         ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
-        # ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
+        ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         ['weather_wind_speed_1'],
         ['smoothing_2'],
         ['single_turbine_1'],
