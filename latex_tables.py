@@ -587,11 +587,12 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
             mean_deviation_df = mean_deviation_df.transpose()
             mean_deviation_df.columns = [
                 mean_deviation_df.columns,
-                ['-curve', '-curve', weather_data_name, weather_data_name]]
+                ['-curve', weather_data_name, weather_data_name,
+                 weather_data_name]]
             mean_deviaton_df_weather = pd.concat([mean_deviaton_df_weather,
                                                   mean_deviation_df], axis=1)
             if weather_data_name != weather_data_list[-1]:
-                mean_deviaton_df_weather.drop(['P', 'Cp'], axis=1,
+                mean_deviaton_df_weather.drop(['P'], axis=1,
                                               inplace=True)
             else:
                 mean_deviaton_df_weather.sort_index(axis=1, inplace=True)
@@ -603,7 +604,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
     column_format = create_column_format(
         number_of_columns=len(list(mean_deviaton_df_years)),
         index_columns='l')
-    mean_deviaton_df_years.round(2).to_latex(
+    mean_deviaton_df_years.round(4).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
 
