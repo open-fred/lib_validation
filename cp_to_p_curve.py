@@ -55,10 +55,11 @@ def cp_to_p_curve_single_plots():
 
 def cp_to_p_curve_subplots():
     turbines = initialize_turbines([
-        'enerconE70', 'vestasV90',
+        # 'enerconE70',
+        'vestasV90',
         'vestasV80',
         'ge_1500',
-        # 'enerconE82_2000'
+        'enerconE82_2000'
     ])
 
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,  sharex='col')
