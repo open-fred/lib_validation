@@ -1309,7 +1309,7 @@ if __name__ == "__main__":
     # Evaluation of nans
     if nans_evaluation:
         add_ons = ['', '_weather_wind_speed_3']
-        for add_on in add_ons
+        for add_on in add_ons:
             nans_df = evaluate_nans(years, before_processing=False,
                                     available_time_steps=True,
                                     filename_add_on=add_on)
