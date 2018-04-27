@@ -183,7 +183,7 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         ['weather_wind_speed_1'],
         ['smoothing_2'],
