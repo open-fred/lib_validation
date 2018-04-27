@@ -334,7 +334,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                         },
                     'wf_BS': {
                         'wf_BS_2': (266, 276), 'wf_BS_7': (276, 353),
-                        'wf_BS_12': (119, 119), 'wf_BS_13': (355.5, 360), # actually 1.5
+                        # 'wf_BS_12': (119, 119),  # unwahrscheinlich
+                        'wf_BS_13': (355.5, 360), # actually 1.5
                         'wf_BS_9': (353, 355.5)},
                     'wf_BNW': {
                         'wf_BNW_1': (0, 174), 'wf_BNW_2': (174, 354)
