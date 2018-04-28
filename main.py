@@ -54,7 +54,8 @@ cases = [
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
-    'wind_farm_2',
+#     'wind_farm_2',
+    'wind_farm_4'
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -851,6 +852,32 @@ def run_main(case, parameters, year):
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_Const.-TI'.format(
+                            wind_farm.object_name)))
+            if 'Const.-TI-70' in approach_list:
+                wind_farm.efficiency = 0.7
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Const.-TI-70'.format(
+                            wind_farm.object_name)))
+            if 'Const.-TI-60' in approach_list:
+                wind_farm.efficiency = 0.6
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Const.-TI-60'.format(
                             wind_farm.object_name)))
             if 'Const.-SP' in approach_list:
                 wind_farm.efficiency = 0.8

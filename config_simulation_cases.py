@@ -282,6 +282,14 @@ def get_configuration(case=None):
         config_dict['replacement'] = [
             ('_', ' '), ('aggregation', 'Agg.')]
 
+    if case == 'wind_farm_4':  # Only gw farms
+        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI',
+                                        'Const.-TI-60', 'Const.-TI-70',
+                                        'aggregation']
+        config_dict['validation_data_list'] = ['GreenWind']
+        config_dict['replacement'] = [
+            ('_', ' '), ('aggregation', 'Agg.')]
+
     # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
     #     config_dict['approach_list'] = [] # TODO add if needed
     #     config_dict['validation_data_list'] = ['GreenWind']
