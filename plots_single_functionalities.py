@@ -121,6 +121,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     folder = 'wind_farm_2'
                 elif 'wind_farm_3' in cases:
                     folder = 'wind_farm_3'
+                elif 'wind_farm_4' in cases:
+                    folder = 'wind_farm_4'
                 elif 'weather_wind_speed_1' in cases:
                     folder = 'weather_wind_speed_1'
                 elif 'weather_wind_farm' in cases:
@@ -189,11 +191,15 @@ def run_bar_plot_key_figures():
         ['smoothing_2'],
         ['single_turbine_1'],
         ['wake_losses_3'],
+        ['wind_farm_4'],
         ['wind_farm_gw'],
         ['wind_farm_2'],
         ['weather_wind_farm']
     ]
-    not_for_monthly_list = ['wind_farm_3', 'power_output_1',
+    not_for_monthly_list = [
+        'wind_farm_3',
+        # 'wind_farm_4',
+        'power_output_1',
                             'single_turbine_1']
     years = [
         2015,
