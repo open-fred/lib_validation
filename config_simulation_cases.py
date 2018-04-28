@@ -48,7 +48,8 @@ def get_standard_case_of_configuration():
             'annual_energy_approaches',  # AEO all approaches
             'annual_energy_weather_approaches',  # AEO all approaches and weather sets
             'key_figures_weather',     # Key figures of all weather sets
-            'key_figures_approaches'  # Key figures of all approaches
+            'key_figures_approaches',  # Key figures of all approaches
+            'std_dev_time_series'
             ],
         'key_figures_print': ['rmse',
                               'rmse_normalized',
