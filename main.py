@@ -1,6 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_farm as wf
-from windpowerlib.wake_losses import read_wind_efficiency_curve
+from windpowerlib.wake_losses import get_wind_efficiency_curve
 
 # Imports from lib_validation
 import visualization_tools
@@ -18,7 +18,7 @@ from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
                             get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
 import plots_single_functionalities
-from create_wind_efficiency_curves import get_wind_efficiency_curves
+from create_wind_efficiency_curves import get_power_efficiency_curves
 
 # Other imports
 import os
@@ -439,7 +439,7 @@ def run_main(case, parameters, year):
                 file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
                 # below in calculations
-                wind_eff_curves = get_wind_efficiency_curves(
+                wind_eff_curves = get_power_efficiency_curves(
                     drop_higher_one=True,
                     pickle_load=False,
                     filename=os.path.join(os.path.dirname(__file__), 'dumps',
@@ -786,7 +786,7 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_Constant'.format(
                             wind_farm.object_name)))
             if 'Dena' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
+                wind_farm.efficiency = get_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
@@ -796,7 +796,7 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_Dena'.format(
                             wind_farm.object_name)))
             if 'Knorr_extreme2' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
+                wind_farm.efficiency = get_wind_efficiency_curve(
                     curve_name='knorr_extreme2')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
@@ -815,7 +815,7 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_No_losses'.format(
                             wind_farm.object_name)))
             if 'Dena-TI' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
+                wind_farm.efficiency = get_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
@@ -829,7 +829,7 @@ def run_main(case, parameters, year):
                         name='{0}_calculated_Dena-TI'.format(
                             wind_farm.object_name)))
             if 'Dena-SP' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
+                wind_farm.efficiency = get_wind_efficiency_curve(
                     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
@@ -957,7 +957,7 @@ def run_main(case, parameters, year):
         #                 name='{0}_calculated_constant_efficiency_80_%'.format(
         #                     wind_farm.object_name)))
         #     if 'efficiency_curve' in approach_list:
-        #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #         wind_farm.efficiency = get_wind_efficiency_curve(
         #             curve_name='dena_mean', plot=False)
         #         calculation_df_list.append(modelchain_usage.power_output_cluster(
         #             wind_farm, weather, density_correction=False,
@@ -965,7 +965,7 @@ def run_main(case, parameters, year):
         #             name='{0}_calculated_efficiency_curve'.format(
         #                 wind_farm.object_name)))
         #     if 'eff_curve_smooth' in approach_list:
-        #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #         wind_farm.efficiency = get_wind_efficiency_curve(
         #             curve_name='dena_mean', plot=False)
         #         calculation_df_list.append(modelchain_usage.power_output_cluster(
         #             wind_farm, weather, density_correction=False,
@@ -977,7 +977,7 @@ def run_main(case, parameters, year):
         #                 wind_farm.object_name)))
         #     if 'lin._interp.' in approach_list:
         #         if len(list(weather['wind_speed'])) > 1:
-        #             wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #             wind_farm.efficiency = get_wind_efficiency_curve(
         #                 curve_name='dena_mean', plot=False)
         #             calculation_df_list.append(
         #                 modelchain_usage.power_output_cluster(
