@@ -90,7 +90,7 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                                    smoothed_power_curve['power'] / 1000,
                                    label=std_dev_method.replace(
                                        'turbulence_intensity', 'TI').replace(
-                                       'Staffel_Pfenninger', 'SP'))
+                                       'Staffell_Pfenninger', 'SP'))
                 handles.append(handle)
         plt.ylabel('Power in kW')
         plt.xlabel('Wind speed in m/s')
