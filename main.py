@@ -1,6 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_farm as wf
-from windpowerlib.wind_farm import read_wind_efficiency_curve
+from windpowerlib.wake_losses import read_wind_efficiency_curve
 
 # Imports from lib_validation
 import visualization_tools
@@ -49,13 +49,13 @@ cases = [
 # ---- Single functions - Wake losses ---- #
 # #     'wake_losses_1',  # not used anymore
 # #     'wake_losses_2',  # not used anymore
-#     'wake_losses_3',
+    'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
 #     'wind_farm_2',
-    'wind_farm_4'
+#     'wind_farm_4'
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -770,7 +770,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
-                        wake_losses_method='wind_efficiency_curve',
+                        wake_losses_method='power_efficiency_curve',
                         smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
@@ -899,7 +899,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
-                        wake_losses_method='wind_efficiency_curve',
+                        wake_losses_method='power_efficiency_curve',
                         smoothing=True,
                         standard_deviation_method='turbulence_intensity',
                         density_correction=False,
@@ -917,7 +917,7 @@ def run_main(case, parameters, year):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
-                        wake_losses_method='wind_efficiency_curve',
+                        wake_losses_method='power_efficiency_curve',
                         smoothing=True,
                         smoothing_order='wind_farm_power_curves',
                         standard_deviation_method='Staffell_Pfenninger',
