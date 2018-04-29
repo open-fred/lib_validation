@@ -1,4 +1,4 @@
-from windpowerlib import wind_farm
+from windpowerlib import wind_farm, wake_losses
 
 from greenwind_data import (get_first_row_turbine_time_series,
                             get_greenwind_data)
@@ -358,26 +358,27 @@ def get_power_efficiency_curves(drop_higher_one=True, pickle_load=False,
     return power_efficiency_curves
 
 
-def plot_calcualted_and_dena():
+def plot_calculated_and_dena():
     calculated_curves = pd.read_csv(
         'helper_files/calculated_power_efficiency_curves.csv', index_col=0)
-    calculated_curves.rename(columns={col: col.replace('wf_', 'WF ') for
-                                      col in calculated_curves.columns},
+    calculated_curves.rename(
+        columns={col: '{} power eff.'.format(col.replace('wf_', 'WF ')) for
+                 col in calculated_curves.columns},
                              inplace=True)
-    dena_mean_curve = wind_farm.read_wind_efficiency_curve('dena_mean')
+    dena_mean_curve = wake_losses.get_wind_efficiency_curve('dena_mean')
     dena_mean_curve.set_index('wind_speed', inplace=True)
-    dena_mean_curve.rename(columns={'efficiency': 'dena mean'},
+    dena_mean_curve.rename(columns={'efficiency': 'dena mean wind eff.'},
                            inplace=True)
-    knorr_exreme = wind_farm.read_wind_efficiency_curve('knorr_extreme2')
-    knorr_exreme.set_index('wind_speed', inplace=True)
-    knorr_exreme.rename(columns={'efficiency': 'knorr extreme2'},
+    knorr_extreme = wake_losses.get_wind_efficiency_curve('knorr_extreme2')
+    knorr_extreme.set_index('wind_speed', inplace=True)
+    knorr_extreme.rename(columns={'efficiency': 'knorr extreme2 wind eff.'},
                            inplace=True)
-    plot_df = pd.concat([dena_mean_curve, knorr_exreme,
+    plot_df = pd.concat([dena_mean_curve, knorr_extreme,
                          calculated_curves], axis=1)
     fig, ax = plt.subplots()
     plot_df.plot(ax=ax, legend=True)
     plt.xlabel('Wind speed in m/s')
-    plt.ylabel('Efficiency')
+    plt.ylabel('Efficiency (power or  wind)')
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/',
@@ -430,7 +431,7 @@ if __name__ == "__main__":
                                        'power_efficiency_curves.p'))
 
     if plot_curves:
-        plot_calcualted_and_dena()
+        plot_calculated_and_dena()
 
     years = [
         2015,
