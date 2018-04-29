@@ -270,17 +270,23 @@ def correlation_subplot(df, filename):
         #                          linestyle='--', label='100 % deviation')
         # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
         # Rename columns for x and y labels
-        df.rename(columns={old_col: old_col.replace('_', ' ').replace('calculated', 'calculation method:').replace('Calculated', 'Calc.').replace('Constant', 'Const.') for old_col in
-                           df.columns}, inplace=True)
+        df.rename(columns={old_col: old_col.replace('_', ' ').replace(
+            'calculated', 'calculation method:').replace(
+            'Calculated', 'Calc.').replace('Constant', 'Const.').replace(
+            'single', '').replace('wf', 'WF') for old_col in df.columns},
+                  inplace=True)
         # Choose x and y values column name
         x_value = [col for col in list(df) if 'calculation' in col][0]
         y_value = [col for col in list(df) if 'measured' in col][0]
         df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue', s=2)
-        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 4)),
+        ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 3)),
                     xy=(1, 0), xycoords='axes fraction',
                     xytext=(-1, -1), textcoords='offset points',
                     ha='right', va='bottom')
-    limit = math.ceil(max(maxima)) + 1
+    if 'power_output_1' in filename:
+        limit = max(maxima)
+    else:
+        limit = math.ceil(max(maxima)) + 1
     for ax in axes:
         ax.set_xlim(xmin=0, xmax=limit)
         ax.set_ylim(ymin=0, ymax=limit)
