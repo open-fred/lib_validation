@@ -49,9 +49,9 @@ cases = [
 # ---- Single functions - Wake losses ---- #
 # #     'wake_losses_1',  # not used anymore
 # #     'wake_losses_2',  # not used anymore
-    'wake_losses_3',
+#     'wake_losses_3',
 # ---- Single Turbine Model ---- '
-#     'single_turbine_1',
+    'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
 #     'wind_farm_2',
@@ -83,7 +83,7 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
-csv_load_time_series_df = False  # Load time series data frame from csv dump
+csv_load_time_series_df = True  # Load time series data frame from csv dump
 if pickle_load_time_series_df:
     csv_dump_time_series_df = False
 else:
@@ -1523,7 +1523,8 @@ if __name__ == "__main__":
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
     if 'power_output_1' in cases:
-        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
+                                                         'power_output_1')
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['power_output_1'])
     if 'smoothing_1' in cases:
@@ -1538,6 +1539,8 @@ if __name__ == "__main__":
             latex_tables_folder, case='single_turbine_1', single=True)
         latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
                                                  case='single_turbine_1')
+        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
+                                                         'single_turbine_1')
     if 'weather_wind_speed_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['weather_wind_speed_1'])
@@ -1553,11 +1556,15 @@ if __name__ == "__main__":
             latex_tables_folder, case='wind_farm_2', single=True)
         latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
                                                  case='wind_farm_2')
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'wind_farm_2')
     if 'wind_farm_gw' in cases:
         latex_tables.annual_energy_deviation(
             latex_tables_folder, case='wind_farm_gw', single=True)
         latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
                                                  case='wind_farm_gw')
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'wind_farm_gw')
     logging.info(
         "--- Depending on the cases further plots are created. ---")
     if plot_single_func:
