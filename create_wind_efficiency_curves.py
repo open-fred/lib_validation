@@ -373,10 +373,10 @@ def plot_calculated_and_dena():
     knorr_extreme.set_index('wind_speed', inplace=True)
     knorr_extreme.rename(columns={'efficiency': 'knorr extreme2 wind eff.'},
                            inplace=True)
-    plot_df = pd.concat([dena_mean_curve, knorr_extreme,
-                         calculated_curves], axis=1)
     fig, ax = plt.subplots()
-    plot_df.plot(ax=ax, legend=True)
+    dena_mean_curve.plot(ax=ax, legend=True)
+    knorr_extreme.plot(ax=ax, legend=True)
+    calculated_curves.plot(ax=ax, legend=True)
     plt.xlabel('Wind speed in m/s')
     plt.ylabel('Efficiency (power or  wind)')
     fig.savefig(os.path.join(
