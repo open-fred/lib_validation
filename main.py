@@ -36,10 +36,10 @@ cases = [
 #     'wind_speed_2',
 #     'wind_speed_3',
 #     'wind_speed_4',
-#     'wind_speed_5',  # first row like weather_wind_speed_3
-#     'wind_speed_6',  # first row like weather_wind_speed_3
-#     'wind_speed_7',  # first row like weather_wind_speed_3
-#     'wind_speed_8',  # first row like weather_wind_speed_3
+    # 'wind_speed_5',  # first row like weather_wind_speed_3
+    # 'wind_speed_6',  # first row like weather_wind_speed_3
+    # 'wind_speed_7',  # first row like weather_wind_speed_3
+    # 'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
@@ -51,11 +51,11 @@ cases = [
 # #     'wake_losses_2',  # not used anymore
 #     'wake_losses_3',
 # ---- Single Turbine Model ---- '
-    'single_turbine_1',
+#     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
-#     'wind_farm_2',
-#     'wind_farm_4'
+    'wind_farm_2',
+#     'wind_farm_4',
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
