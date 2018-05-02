@@ -171,7 +171,7 @@ def get_configuration(case=None):
     # ---- Single functions - power output ---- #
     if case == 'power_output_1':  # gw wind speeds as validation data
         config_dict['approach_list'] = [
-            'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+            'p-curve', 'cp-curve', 'p-curve_(d._c.)']
         config_dict['validation_data_list'] = ['gw_wind_speeds']
         config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches',
@@ -331,12 +331,12 @@ def get_configuration(case=None):
     #                        'hourly']
     # if case == 'weather_single_turbine_1':
     #     config_dict['approach_list'] = [
-    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)']
     #     config_dict['validation_data_list'] = ['single']
     #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
     # if case == 'weather_single_turbine_2':
     #     config_dict['approach_list'] = [
-    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)', 'cp-curve_(d._c.)']
+    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)']
     #     config_dict['validation_data_list'] = ['single']
     #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
     # if case == 'highest_wind_speed':

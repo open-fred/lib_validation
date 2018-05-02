@@ -673,19 +673,6 @@ def run_main(case, parameters, year):
                         obstacle_height=0, hellman_exp=None).to_frame(
                         name='{0}_calculated_p-curve_(d._c.)'.format(
                             wind_farm.object_name)))
-            if 'cp-curve_(d._c.)' in approach_list:
-                calculation_df_list.append(
-                    modelchain_usage.power_output_simple(
-                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                        weather_df=weather, wind_speed=wind_speed,
-                        wind_speed_model='logarithmic',
-                        density_model='ideal_gas',
-                        temperature_model='linear_gradient',
-                        power_output_model='power_coefficient_curve',
-                        density_correction=True,
-                        obstacle_height=0, hellman_exp=None).to_frame(
-                        name='{0}_calculated_cp-curve_(d._c.)'.format(
-                            wind_farm.object_name)))
 
             # --- power output calculations wind farms --- #
             if 'Turbine_TI' in approach_list:
