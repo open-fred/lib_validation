@@ -83,7 +83,7 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
-csv_load_time_series_df = True  # Load time series data frame from csv dump
+csv_load_time_series_df = False  # Load time series data frame from csv dump
 if pickle_load_time_series_df:
     csv_dump_time_series_df = False
 else:
