@@ -31,7 +31,6 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                        wind_farm_names, key_figures_print, output_methods,
                        path_latex_tables, filename_add_on, year, case,
                        replacement):
-    print(year)
     if 'annual_energy_approaches' in latex_output:
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
@@ -45,7 +44,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                          innerKey not in restriction_list) for
                      innerstKey, values in innerstDict.items()},
                     index=[outerKey.replace('wf_', 'WF ').replace(
-                        '_', ' ')])
+                        'single_', '').replace('_', ' ')])
                 df_part['measured', '[MWh]'] = (
                     annual_energy_dicts[weather_data_name][outerKey][
                         'measured_annual_energy'])
@@ -67,7 +66,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 column_format=create_column_format(len(latex_df.columns), 'c'),
                 multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'annual_energy_approach_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -87,7 +86,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                               restriction_list) for
                              innerstKey, values in innerstDict.items()},
                             index=[outerKey.replace('wf_', 'WF ').replace(
-                                   '_', ' ')]).round(2)
+                                    'single_', '').replace('_', ' ')]).round(2)
                         if weather_data_name == weather_data_list[0]:
                             df_part['measured', '[MWh]'] = round(
                                 annual_energy_dicts[weather_data_name][
@@ -124,7 +123,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                      innerstKey, values in innerstDict.items() if
                      innerstKey == 'deviation [%]'},
                     index=[outerKey.replace('wf_', 'WF ').replace(
-                           '_', ' ')]).round(2)
+                                    'single_', '').replace('_', ' ')]).round(2)
                 df_part_weather = pd.concat([df_part_weather, df_part], axis=0)
             latex_df = pd.concat([latex_df, df_part_weather], axis=1)
         # Sort columns and index
@@ -147,17 +146,14 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
         else:
             unit = '[MW]'
         for weather_data_name in weather_data_list:
-            print(weather_data_name)
             latex_df = pd.DataFrame()
             for outerKey, innerDict in val_obj_dict[
                     weather_data_name].items():
-                print(outerKey)
                 for wf_name in wind_farm_names:
                     if (wf_name not in restriction_list and not
                             (wf_name == 'single_BE' and
                                 outerKey == 'monthly') and not
                             (wf_name == 'single')):
-                        print(wf_name)
                         df_wf_part = pd.DataFrame()
                         if 'rmse' in key_figures_print:
                             df_part = pd.DataFrame(
@@ -248,7 +244,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -279,7 +275,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -294,7 +291,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -309,7 +307,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -324,7 +323,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -340,7 +340,8 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                              innerKey, innerstList in
                                              innerDict.items() for
                                              val_obj in innerstList if
-                                             val_obj.object_name == wf_name},
+                                             (val_obj.object_name == wf_name and
+                                                innerKey == approach)},
                                             index=[[wf_name.replace(
                                                 'wf_', 'WF ').replace(
                                                 'single_', '')],
@@ -353,8 +354,9 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                          axis=1).round(2)
             # Sort columns and index
             columns_names = list(set(latex_df.columns.get_level_values(0)))
-            optional_names_order = ['RMSE [m/s]', 'RMSE [%]', 'Pearson coeff.',
-                                    'mean bias [m/s]']
+            optional_names_order = ['RMSE {}'.format(unit), 'RMSE [%]',
+                                    'Pearson coeff.', 'mean bias {}'.format(
+                    unit)]
             name_order = [name for name in optional_names_order if
                           name in columns_names]
             latex_df = latex_df[name_order]
@@ -421,7 +423,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'std_dev_time_series_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -459,7 +461,7 @@ def mean_figure_table(latex_tables_folder, case, figure):
         mean_rmse_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1],
@@ -469,37 +471,53 @@ def mean_figure_table(latex_tables_folder, case, figure):
             for resolution in resolutions:
                 mean_rmse_df['{} {}'.format(resolution, year)] = rmse_df.iloc[
                     rmse_df.index.get_level_values(1) == resolution].mean()
+            mean_rmse_df.columns = [
+                [col.split(' ')[1] for col in mean_rmse_df],
+                [col.split(' ')[0] for col in mean_rmse_df]]
             mean_rmse_df = mean_rmse_df.transpose()
             if case == 'power_output_1':
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
-                    ['-curve', weather_data_name, '-curve', weather_data_name]]
+                    [weather_data_name, '-', weather_data_name]]
             else:
                 mean_rmse_df.columns = [
                     mean_rmse_df.columns,
-                    ['-curve', weather_data_name, '-curve']]
+                    [weather_data_name for i in range(len(
+                        list(mean_rmse_df.columns)))]]
             mean_rmse_df_weather = pd.concat([mean_rmse_df_weather,
                                               mean_rmse_df], axis=1)
-            if weather_data_name != weather_data_list[-1]:
-                mean_rmse_df_weather.drop(['P', 'Cp'], axis=1,
+            if (weather_data_name != weather_data_list[-1] and
+                    case == 'power_output_1'):
+                mean_rmse_df_weather.drop(['P'], axis=1,
                                           inplace=True)
             else:
                 mean_rmse_df_weather.sort_index(axis=1, inplace=True)
         mean_rmse_df_years = pd.concat([mean_rmse_df_years,
                                         mean_rmse_df_weather], axis=0)
+    mean_rmse_df_years.index.names = ['', 'Temporal']
+    second_row_cols = ['Year', 'resolution']
+    second_row_cols.extend(list(
+        mean_rmse_df_years.columns.get_level_values(1)))
+    mean_rmse_df_years.reset_index(level=[1,0], inplace=True)
+    mean_rmse_df_years.columns = [
+    mean_rmse_df_years.columns.get_level_values(0), second_row_cols]
     filename_table = os.path.join(
         path_latex_tables,
         'mean_{}_weather_{}.tex'.format(figure.replace(' ', '_').replace(
-            '%', 'percent'), case))
+            '%', 'percent').replace('/', '_'), case))
     column_format = create_column_format(
         number_of_columns=len(list(mean_rmse_df_years)),
         index_columns='l')
-    # Mean RMSE in kW
-    if figure == 'RMSE [MW]':
-        mean_rmse_df_years = mean_rmse_df_years * 1000
-    mean_rmse_df_years.round(2).to_latex(
+    # # Mean RMSE in kW
+    # if figure == 'RMSE [MW]':
+    #     mean_rmse_df_years = mean_rmse_df_years * 1000
+    if case == 'power_output_1':
+        dump_df = mean_rmse_df_years.round(3) # TODO
+    else:
+        dump_df = mean_rmse_df_years.round(2)
+    dump_df.to_latex(
         buf=filename_table, column_format=column_format,
-        multicolumn_format='c')
+        multicolumn_format='c', index=False)
 
 
 def mean_std_dev_smoothing_2(latex_tables_folder):
@@ -512,7 +530,7 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
     for year in years:
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'std_dev_time_series_smoothing_2_{0}_{1}.csv'.format(
                     year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
@@ -550,14 +568,13 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
         buf=filename_table, column_format=column_format,
         multicolumn_format='c', index=False)
     filename_csv = os.path.join(
-        os.path.dirname(__file__), 'csv_for_plots',
+        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
         'mean_std_dev_smoothing_2.csv')
     mean_std_dev_df.to_csv(filename_csv, index=False)
 
 
-def mean_annual_energy_deviation_tables(latex_tables_folder):
+def mean_annual_energy_deviation_tables(latex_tables_folder, case):
     """
-    For case == power_output_1
 
     """
     weather_data_list = ['MERRA', 'open_FRED']
@@ -565,14 +582,14 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
                                      latex_tables_folder)
     years = [2015, 2016]
     resolutions = ['hourly', 'monthly']
-    mean_deviaton_df_years = pd.DataFrame()
+    mean_deviation_df_years = pd.DataFrame()
     for year in years:
-        mean_deviaton_df_weather = pd.DataFrame()
+        mean_deviation_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), 'csv_for_plots',
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                 'annual_energy_approach_{0}_{1}_{2}.csv'.format(
-                    'power_output_1', year, weather_data_name))
+                    case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0],
                                    header=[0, 1])
             deviation_df = latex_df.drop('measured', axis=1)
@@ -581,25 +598,143 @@ def mean_annual_energy_deviation_tables(latex_tables_folder):
             mean_deviation_df = pd.DataFrame()
             mean_deviation_df['{}'.format(year)] = deviation_df.mean()
             mean_deviation_df = mean_deviation_df.transpose()
-            mean_deviation_df.columns = [
-                mean_deviation_df.columns,
-                ['-curve', '-curve', weather_data_name, weather_data_name]]
-            mean_deviaton_df_weather = pd.concat([mean_deviaton_df_weather,
+            if (case == 'wind_farm_gw' or case == 'wind_farm_2'):
+                second_row_cols = [weather_data_name for
+                                   i in range(len(
+                        list(mean_deviation_df)) - 1)]
+                second_row_cols.append('')
+                mean_deviation_df.columns = [
+                mean_deviation_df.columns, second_row_cols]
+            else:
+                mean_deviation_df.columns = [
+                    mean_deviation_df.columns,
+                    ['-', weather_data_name, weather_data_name]]
+            mean_deviation_df_weather = pd.concat([mean_deviation_df_weather,
                                                   mean_deviation_df], axis=1)
-            if weather_data_name != weather_data_list[-1]:
-                mean_deviaton_df_weather.drop(['P', 'Cp'], axis=1,
+            if (weather_data_name != weather_data_list[-1] and
+                    case not in ['wind_farm_gw', 'wind_farm_2']):
+                mean_deviation_df_weather.drop(['P'], axis=1,
                                               inplace=True)
             else:
-                mean_deviaton_df_weather.sort_index(axis=1, inplace=True)
-        mean_deviaton_df_years = pd.concat([mean_deviaton_df_years,
-                                            mean_deviaton_df_weather], axis=0)
+                mean_deviation_df_weather.sort_index(axis=1, inplace=True)
+        mean_deviation_df_years = pd.concat([mean_deviation_df_years,
+                                            mean_deviation_df_weather], axis=0)
+    # Rename and reset index
+    mean_deviation_df_years.index.names = ['']
+    second_row_cols = ['Year']
+    second_row_cols.extend(list(
+        mean_deviation_df_years.columns.get_level_values(1)))
+    mean_deviation_df_years.reset_index(inplace=True)
+    mean_deviation_df_years.columns = [
+        mean_deviation_df_years.columns.get_level_values(0), second_row_cols]
     filename_table = os.path.join(
         path_latex_tables,
-        'mean_deviation_weather_power_output_1.tex')
+        'mean_deviation_weather_{}.tex'.format(case))
     column_format = create_column_format(
-        number_of_columns=len(list(mean_deviaton_df_years)),
+        number_of_columns=len(list(mean_deviation_df_years)),
         index_columns='l')
-    mean_deviaton_df_years.round(2).to_latex(
+    mean_deviation_df_years.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c', index=False)
+
+
+def annual_energy_deviation(latex_tables_folder, case, single=True):
+    """
+        average over wfs
+    """
+    weather_data_list = ['MERRA', 'open_FRED']
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    years = [2015, 2016]
+    mean_deviation_df_years = pd.DataFrame()
+    for year in years:
+        mean_deviation_df_weather = pd.DataFrame()
+        for weather_data_name in weather_data_list:
+            filename_csv = os.path.join(
+                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                'annual_energy_approach_{0}_{1}_{2}.csv'.format(
+                    case, year, weather_data_name))
+            latex_df = pd.read_csv(filename_csv, index_col=[0],
+                                   header=[0, 1])
+            deviation_df = latex_df.drop('measured', axis=1)
+            deviation_df.drop('[MWh]', axis=1, level=1, inplace=True)
+            deviation_df.columns = deviation_df.columns.droplevel(1)
+            if single:
+                filename_table = os.path.join(
+                    path_latex_tables,
+                    'annual_deviation_{}_{}_{}.tex'.format(
+                        case, weather_data_name, year))
+                column_format = create_column_format(
+                    number_of_columns=len(list(deviation_df)),
+                    index_columns='l')
+                deviation_df.round(2).to_latex(
+                    buf=filename_table, column_format=column_format,
+                    multicolumn_format='c')
+            mean_deviation_df = pd.DataFrame()
+            mean_deviation_df['{}'.format(year)] = deviation_df.mean()
+            mean_deviation_df = mean_deviation_df.transpose()
+            mean_deviation_df.columns = [
+                mean_deviation_df.columns,
+                [weather_data_name for i in mean_deviation_df.columns]]
+            mean_deviation_df_weather = pd.concat([mean_deviation_df_weather,
+                                                  mean_deviation_df], axis=1)
+            mean_deviation_df_weather.sort_index(axis=1, inplace=True)
+        mean_deviation_df_years = pd.concat([mean_deviation_df_years,
+                                            mean_deviation_df_weather], axis=0)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'mean_deviation_weather_years_{}.tex'.format(case))
+    column_format = create_column_format(
+        number_of_columns=len(list(mean_deviation_df_years)),
+        index_columns='l')
+    mean_deviation_df_years.round(2).to_latex(
+        buf=filename_table, column_format=column_format,
+        multicolumn_format='c')
+
+
+def annual_energy_deviation_wfs(latex_tables_folder, case):
+    """
+    average over years
+    """
+    weather_data_list = ['MERRA', 'open_FRED']
+    path_latex_tables = os.path.join(os.path.dirname(__file__),
+                                     latex_tables_folder)
+    years = [2015, 2016]
+    mean_deviation_df_wfs = pd.DataFrame()
+    for weather_data_name in weather_data_list:
+        deviation_df_weather = pd.DataFrame()
+        for year in years:
+            filename_csv = os.path.join(
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                'annual_energy_approach_{0}_{1}_{2}.csv'.format(
+                    case, year, weather_data_name))
+            latex_df = pd.read_csv(filename_csv, index_col=[0],
+                                   header=[0, 1])
+            deviation_df = latex_df.drop('measured', axis=1)
+            deviation_df.drop('[MWh]', axis=1, level=1, inplace=True)
+            deviation_df.columns = deviation_df.columns.droplevel(1)
+            deviation_df_weather = pd.concat([deviation_df_weather,
+                                             deviation_df], axis=0)
+        mean_deviation_df = pd.DataFrame()
+        for wf in deviation_df.index:
+            df = pd.DataFrame()
+            df['{}'.format(wf)] = deviation_df_weather.loc[[
+                wf]].mean()
+            df = df.transpose()
+            df.columns = [df.columns, [weather_data_name for i in df.columns]]
+            mean_deviation_df = pd.concat([mean_deviation_df, df], axis=0)
+            # mean_deviation_df.sort_index(axis=1, inplace=True)
+        mean_deviation_df_wfs = pd.concat([mean_deviation_df_wfs,
+                                          mean_deviation_df], axis=1)
+    mean_deviation_df_wfs.sort_index(axis=1, level=0, inplace=True)
+    filename_table = os.path.join(
+        path_latex_tables,
+        'mean_deviation_weather_wfs_{}.tex'.format(case))
+    column_format = create_column_format(
+        number_of_columns=len(list(mean_deviation_df_wfs)),
+        index_columns='l')
+    mean_deviation_df_wfs.round(2).to_latex(
         buf=filename_table, column_format=column_format,
         multicolumn_format='c')
 
@@ -611,7 +746,7 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), 'csv_for_plots',
+                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                         'std_dev_time_series_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
@@ -631,6 +766,9 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
             'farm', 'Farm') for col in latex_df.columns]
         latex_df.columns = [first_columns, latex_df.columns]
         std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
+    # # Change order of columns
+    # col_order = ['Weather data', 'Temporal', ]
+    # std_dev_df = std_dev_df[col_order]
     filename_table = os.path.join(
         path_latex_tables,
         'std_dev_smoothing_1.tex')
@@ -648,7 +786,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), 'csv_for_plots',
+                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
                         'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0, 1])
@@ -663,8 +801,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder):
         latex_df.reset_index(inplace=True)
         second_columns = ['name', 'resolution']
         second_columns.extend(latex_df.columns.get_level_values(1)[2:])
-        second_columns = [col.replace('turb', 'Turb').replace(
-            'farm', 'Farm') for col in second_columns]
+        second_columns = [col for col in second_columns]
         latex_df.columns = [latex_df.columns.get_level_values(0), second_columns]
         std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
     filename_table = os.path.join(
@@ -681,15 +818,38 @@ def carry_out_mean_figure_tables(latex_tables_folder, cases):
     figures = ['RMSE [MW]', 'RMSE [%]']
     for figure in figures:
         for case in cases:
+            if 'wind_speed' in case:
+                figure = figure.replace('MW', 'm/s')
+            else:
+                figure = figure.replace('m/s', 'MW')
             mean_figure_table(latex_tables_folder, case, figure=figure)
 
 
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                            'automatic/')
-    mean_annual_energy_deviation_tables(latex_tables_folder)
     concat_std_dev_tables_smoothing_1(latex_tables_folder)
     concat_key_figures_tables_smoothing_1(latex_tables_folder)
     mean_std_dev_smoothing_2(latex_tables_folder)
-    cases = ['power_output_1', 'single_turbine_1']
+    cases = [
+        'power_output_1',
+        'single_turbine_1',
+        'weather_wind_speed_1',
+        'weather_wind_farm'
+    ]
     carry_out_mean_figure_tables(latex_tables_folder, cases)
+    cases_2 = [
+        'wind_farm_2',
+        'wind_farm_gw',
+        'single_turbine_1',
+        'weather_wind_farm'
+    ]
+    single = True
+    for case in cases_2:
+        annual_energy_deviation(latex_tables_folder, case=case, single=single)
+        annual_energy_deviation_wfs(latex_tables_folder, case=case)
+    cases_3 = [
+        'power_output_1', 'single_turbine_1',
+        'wind_farm_gw', 'wind_farm_2']
+    for case in cases_3:
+        mean_annual_energy_deviation_tables(latex_tables_folder, case)

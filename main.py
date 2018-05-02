@@ -1,6 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_farm as wf
-from windpowerlib.wind_farm import read_wind_efficiency_curve
+from windpowerlib.wake_losses import get_wind_efficiency_curve
 
 # Imports from lib_validation
 import visualization_tools
@@ -18,7 +18,7 @@ from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
                             get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
 import plots_single_functionalities
-from create_wind_efficiency_curves import get_wind_efficiency_curves
+from create_wind_efficiency_curves import get_power_efficiency_curves
 
 # Other imports
 import os
@@ -27,7 +27,7 @@ import numpy as np
 import pickle
 import logging
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
@@ -36,10 +36,10 @@ cases = [
 #     'wind_speed_2',
 #     'wind_speed_3',
 #     'wind_speed_4',
-#     'wind_speed_5',  # first row like weather_wind_speed_3
-#     'wind_speed_6',  # first row like weather_wind_speed_3
-#     'wind_speed_7',  # first row like weather_wind_speed_3
-#     'wind_speed_8',  # first row like weather_wind_speed_3
+    # 'wind_speed_5',  # first row like weather_wind_speed_3
+    # 'wind_speed_6',  # first row like weather_wind_speed_3
+    # 'wind_speed_7',  # first row like weather_wind_speed_3
+    # 'wind_speed_8',  # first row like weather_wind_speed_3
 # ---- Single functions - wind speed ---- # (only open_FRED)
 #     'power_output_1',
 # ---- Single functions - smoothing, density... ---- #
@@ -47,25 +47,33 @@ cases = [
 #     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-#     'wake_losses_1',
-#     'wake_losses_2',
-    'wake_losses_3',
+# #     'wake_losses_1',  # not used anymore
+# #     'wake_losses_2',  # not used anymore
+#     'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
+# ---- Wind Farm Model ---- '
+#     'wind_farm_gw',
+    'wind_farm_2',
+#     'wind_farm_4',
+# #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
-#     'weather_wind_speed_2',
-    # 'weather_wind_speed_3',  # BS, BE North...
-    # 'weather_single_turbine_1',
-    # 'weather_single_turbine_2',
-    # 'highest_wind_speed'
+#     # 'weather_wind_speed_2',  # not used anymore
+#     # 'weather_wind_speed_3',  # BS, BE North...  # not used anymore
+#     # 'weather_single_turbine_1',  # not used anymore
+#     # 'weather_single_turbine_2',  # not used anymore
+#     # 'highest_wind_speed',  # not used anymore
+#     'weather_wind_farm'
 ]
 
 min_periods_pearson = None  # Integer
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
-pickle_load_time_series_df = True
+pickle_load_time_series_df = False
+
+plot_single_func = False  # TODO: do not plot at RLI pc
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -426,12 +434,12 @@ def run_main(case, parameters, year):
                 weather_data_name, wind_farm.coordinates, pickle_load=True,
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
-            if 'wake_losses' in case:
+            if ('wake_losses' in case or 'wind_farm' in case):
                 highest_power_output = False
                 file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
                 # below in calculations
-                wind_eff_curves = get_wind_efficiency_curves(
+                wind_eff_curves = get_power_efficiency_curves(
                     drop_higher_one=True,
                     pickle_load=False,
                     filename=os.path.join(os.path.dirname(__file__), 'dumps',
@@ -580,8 +588,10 @@ def run_main(case, parameters, year):
                                 wind_farm.object_name)))
 
             # --- wind speed definition for next cases --- #
-            if case == 'weather_single_turbine_2':
-                # Use wind speed from first row GreenWind data as weather data
+            # if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
+            #         'wake_losses' in case):
+            if (case == 'wind_farm_3' or case == 'weather_single_turbine_2'):
+               # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
                     pickle_filename=os.path.join(
@@ -590,8 +600,6 @@ def run_main(case, parameters, year):
                     pickle_load=pickle_load_greenwind, case=case)
                 wind_speed = single_data_raw[['wf_{}_wind_speed'.format(
                     wind_farm.object_name.split('_')[1])]]
-
-            # --- power output calculations single turbine --- #
             elif case == 'power_output_1':
                 # Get Greenwind data and get wind speed from each turbine
                 greenwind_data = get_greenwind_data(
@@ -660,7 +668,7 @@ def run_main(case, parameters, year):
                         wind_speed_model='logarithmic',
                         density_model='ideal_gas',
                         temperature_model='linear_gradient',
-                        power_output_model='power_coefficient_curve',
+                        power_output_model='power_curve',
                         density_correction=True,
                         obstacle_height=0, hellman_exp=None).to_frame(
                         name='{0}_calculated_p-curve_(d._c.)'.format(
@@ -685,65 +693,73 @@ def run_main(case, parameters, year):
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='turbine_power_curves',
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_Turbine_TI'.format(
                                 wind_farm.object_name)))
-            if 'Turbine_St._Pf.' in approach_list:
+            if 'Turbine_SP' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='turbine_power_curves').to_frame(
-                            name='{0}_calculated_Turbine_St._Pf.'.format(
+                            name='{0}_calculated_Turbine_SP'.format(
                                 wind_farm.object_name)))
             if 'Farm_TI' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='wind_farm_power_curves',
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
                             name='{0}_calculated_Farm_TI'.format(
                                 wind_farm.object_name)))
-            if 'Farm St._Pf.' in approach_list:
+            if 'Farm_SP' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                            name='{0}_calculated_Farm St._Pf.'.format(
+                            name='{0}_calculated_Farm_SP'.format(
                                 wind_farm.object_name)))
             if 'aggregation' in approach_list:
-                calculation_df_list.append(modelchain_usage.power_output_simple(
-                    wind_farm.wind_turbine_fleet, weather).to_frame(
-                        name='{0}_calculated_aggregation'.format(
-                            wind_farm.object_name)))
-            if 'TI' in approach_list:
+                calculation_df_list.append(
+                    modelchain_usage.power_output_simple(
+                        wind_farm.wind_turbine_fleet, weather,
+                        wind_speed=wind_speed).to_frame(
+                            name='{0}_calculated_aggregation'.format(
+                                wind_farm.object_name)))
+            if ('TI' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='turbulence_intensity',
                         smoothing_order='wind_farm_power_curves',
                         roughness_length=weather[
                             'roughness_length'][0].mean()).to_frame(
                         name='{0}_calculated_TI'.format(
                             wind_farm.object_name)))
-            if 'St._Pf.' in approach_list:
+            if ('SP' in approach_list and case == 'smoothing_2'):
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
                         wake_losses_method=None, smoothing=True,
+                        wind_speed=wind_speed,
                         standard_deviation_method='Staffell_Pfenninger',
                         smoothing_order='wind_farm_power_curves').to_frame(
-                        name='{0}_calculated_St._Pf.'.format(
+                        name='{0}_calculated_SP'.format(
                             wind_farm.object_name)))
             if 'Calculated' in approach_list:
                 wind_farm.efficiency = wind_eff_curves[[wind_farm.object_name]]
@@ -753,9 +769,9 @@ def run_main(case, parameters, year):
                     wind_farm.object_name: 'efficiency'}, inplace=True)
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wake_losses_method='wind_efficiency_curve',
-                        smoothing=False).to_frame(
+                        wind_farm, weather, wind_speed=wind_speed,
+                        wake_losses_method='power_efficiency_curve',
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.object_name)))
             if 'Constant' in approach_list:
@@ -764,38 +780,149 @@ def run_main(case, parameters, year):
                 wind_farm.efficiency = 0.8
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method='constant_efficiency',
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Constant'.format(
                             wind_farm.object_name)))
             if 'Dena' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
-                    curve_name='dena_mean')
+                # wind_farm.efficiency = get_wind_efficiency_curve(
+                #     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
-                        wake_losses_method='wind_efficiency_curve',
-                        smoothing=False).to_frame(
+                        wind_farm, weather, wind_speed=wind_speed,
+                        wake_losses_method='dena_mean',
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_Dena'.format(
                             wind_farm.object_name)))
             if 'Knorr_extreme2' in approach_list:
-                wind_farm.efficiency = read_wind_efficiency_curve(
-                    curve_name='knorr_extreme2')
+                # wind_farm.efficiency = get_wind_efficiency_curve(
+                #     curve_name='knorr_extreme2')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
-                        wake_losses_method='wind_efficiency_curve',
+                        wind_speed=wind_speed,
+                        wake_losses_method='knorr_extreme2',
                         smoothing=False).to_frame(
                         name='{0}_calculated_Knorr_extreme2'.format(
                             wind_farm.object_name)))
             if 'No_losses' in approach_list:
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
-                        wind_farm, weather, density_correction=False,
+                        wind_farm, weather, wind_speed=wind_speed,
                         wake_losses_method=None,
-                        smoothing=False).to_frame(
+                        smoothing=False, density_correction=False).to_frame(
                         name='{0}_calculated_No_losses'.format(
+                            wind_farm.object_name)))
+            if 'Dena-TI' in approach_list:
+                # wind_farm.efficiency = get_wind_efficiency_curve(
+                #     curve_name='dena_mean')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='dena_mean',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Dena-TI'.format(
+                            wind_farm.object_name)))
+            if 'Dena-SP' in approach_list:
+                # wind_farm.efficiency = get_wind_efficiency_curve(
+                #     curve_name='dena_mean')
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='dena_mean',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='Staffell_Pfenninger',
+                        smoothing_order='wind_farm_power_curves').to_frame(
+                        name='{0}_calculated_Dena-SP'.format(
+                            wind_farm.object_name)))
+            if 'Const.-TI' in approach_list:
+                wind_farm.efficiency = 0.8
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Const.-TI'.format(
+                            wind_farm.object_name)))
+            if 'Const.-TI-70' in approach_list:
+                wind_farm.efficiency = 0.7
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Const.-TI-70'.format(
+                            wind_farm.object_name)))
+            if 'Const.-TI-60' in approach_list:
+                wind_farm.efficiency = 0.6
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='turbulence_intensity',
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Const.-TI-60'.format(
+                            wind_farm.object_name)))
+            if 'Const.-SP' in approach_list:
+                wind_farm.efficiency = 0.8
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, density_correction=False,
+                        wake_losses_method='constant_efficiency',
+                        smoothing=True, wind_speed=wind_speed,
+                        standard_deviation_method='Staffell_Pfenninger',
+                        smoothing_order='wind_farm_power_curves').to_frame(
+                        name='{0}_calculated_Const.-SP'.format(
+                            wind_farm.object_name)))
+            if 'Calc.-TI' in approach_list:
+                wind_farm.efficiency = wind_eff_curves[[wind_farm.object_name]]
+                wind_farm.efficiency.reset_index(level=0, inplace=True)
+                wind_farm.efficiency.rename(columns={
+                    'index': 'wind_speed',
+                    wind_farm.object_name: 'efficiency'}, inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, wind_speed=wind_speed,
+                        wake_losses_method='power_efficiency_curve',
+                        smoothing=True,
+                        standard_deviation_method='turbulence_intensity',
+                        density_correction=False,
+                        smoothing_order='wind_farm_power_curves',
+                        roughness_length=weather[
+                            'roughness_length'][0].mean()).to_frame(
+                        name='{0}_calculated_Calc.-TI'.format(
+                            wind_farm.object_name)))
+            if 'Calc.-SP' in approach_list:
+                wind_farm.efficiency = wind_eff_curves[[wind_farm.object_name]]
+                wind_farm.efficiency.reset_index(level=0, inplace=True)
+                wind_farm.efficiency.rename(columns={
+                    'index': 'wind_speed',
+                    wind_farm.object_name: 'efficiency'}, inplace=True)
+                calculation_df_list.append(
+                    modelchain_usage.power_output_cluster(
+                        wind_farm, weather, wind_speed=wind_speed,
+                        wake_losses_method='power_efficiency_curve',
+                        smoothing=True,
+                        smoothing_order='wind_farm_power_curves',
+                        standard_deviation_method='Staffell_Pfenninger',
+                        density_correction=False).to_frame(
+                        name='{0}_calculated_Calc.-SP'.format(
                             wind_farm.object_name)))
         #     if 'density_correction' in approach_list:
         #         calculation_df_list.append(modelchain_usage.power_output_simple(
@@ -830,7 +957,7 @@ def run_main(case, parameters, year):
         #                 name='{0}_calculated_constant_efficiency_80_%'.format(
         #                     wind_farm.object_name)))
         #     if 'efficiency_curve' in approach_list:
-        #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #         wind_farm.efficiency = get_wind_efficiency_curve(
         #             curve_name='dena_mean', plot=False)
         #         calculation_df_list.append(modelchain_usage.power_output_cluster(
         #             wind_farm, weather, density_correction=False,
@@ -838,12 +965,11 @@ def run_main(case, parameters, year):
         #             name='{0}_calculated_efficiency_curve'.format(
         #                 wind_farm.object_name)))
         #     if 'eff_curve_smooth' in approach_list:
-        #         wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #         wind_farm.efficiency = get_wind_efficiency_curve(
         #             curve_name='dena_mean', plot=False)
         #         calculation_df_list.append(modelchain_usage.power_output_cluster(
         #             wind_farm, weather, density_correction=False,
         #             wake_losses_method='wind_efficiency_curve', smoothing=True,
-        #             density_correction_order='wind_farm_power_curves',
         #             smoothing_order='wind_farm_power_curves',
         #             roughness_length=weather[
         #                 'roughness_length'][0].mean()).to_frame(
@@ -851,7 +977,7 @@ def run_main(case, parameters, year):
         #                 wind_farm.object_name)))
         #     if 'lin._interp.' in approach_list:
         #         if len(list(weather['wind_speed'])) > 1:
-        #             wind_farm.efficiency = wf.read_wind_efficiency_curve(
+        #             wind_farm.efficiency = get_wind_efficiency_curve(
         #                 curve_name='dena_mean', plot=False)
         #             calculation_df_list.append(
         #                 modelchain_usage.power_output_cluster(
@@ -907,7 +1033,7 @@ def run_main(case, parameters, year):
             time_series_dump_folder, 'time_series_df_{0}_{1}_{2}.p'.format(
                 case, weather_data_name, year))
         csv_filename = os.path.join(time_series_df_folder,
-                                    'time_series_df_{0}_{1}_{2}.p'.format(
+                                    'time_series_df_{0}_{1}_{2}.csv'.format(
                                         case, weather_data_name, year))
         if pickle_load_time_series_df:
             time_series_df = pickle.load(open(time_series_filename, 'rb'))
@@ -1136,8 +1262,12 @@ def run_main(case, parameters, year):
             folder = 'smoothing'
         elif 'wake_losses' in case:
             folder = 'wake_losses'
+        elif ('wind_farm' in case and 'weather' not in case):
+            folder = 'wind_farm'
         elif 'weather_wind_speed' in case:
             folder = 'weather_wind_speed'
+        elif 'weather_wind_farm' in case:
+            folder = 'weather_wind_farm'
         elif (case == 'weather_single_turbine_1' or
               case == 'weather_single_turbine_2'):
             folder = 'weather_single_turbine'
@@ -1202,9 +1332,7 @@ def run_main(case, parameters, year):
                                 weather_data_name == 'MERRA'):
                             pass
                         else:
-                            visualization_tools.plot_feedin_comparison(
-                                data=plot_df, method=method,
-                                filename=(
+                            feedin_filename = (
                                     save_folder +
                                     '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
                                         case, method, wf_string, year,
@@ -1213,13 +1341,24 @@ def run_main(case, parameters, year):
                                         (start_end[0].split(':')[0] if
                                          start_end[0] else ''),
                                         (start_end[1].split(':')[0] if
-                                         start_end[0] else ''))),
-                                title=(
+                                         start_end[0] else '')))
+                            feedin_title = (
                                     '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
                                         method.replace('_', ' '),
                                         examined_value, wf_string,
                                         weather_data_name, year,
-                                        approach_string) + title_add_on),
+                                        approach_string) + title_add_on)
+                            visualization_tools.plot_feedin_comparison(
+                                data=plot_df, method=method,
+                                filename=feedin_filename, title=feedin_title,
+                                tick_label=None, start=start_end[0],
+                                end=start_end[1],
+                                y_label_add_on=y_label_add_on)
+                            # Also plot as pdf
+                            visualization_tools.plot_feedin_comparison(
+                                data=plot_df, method=method,
+                                filename=feedin_filename.replace(
+                                    '.png', '.pdf'), title=feedin_title,
                                 tick_label=None, start=start_end[0],
                                 end=start_end[1],
                                 y_label_add_on=y_label_add_on)
@@ -1251,38 +1390,51 @@ def run_main(case, parameters, year):
                             list(time_series_pair)[1].split('_')[3:])
                         wf_string = '_'.join(
                             list(time_series_pair)[0].split('_')[:2])
-                        visualization_tools.plot_correlation(
-                            data=time_series_pair, method=method,
-                            filename=(
+                        corr_filename = (
                                 save_folder +
                                 '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
                                     case, method, wf_string, year,
                                     weather_data_name, approach_string,
-                                    add_on)),
-                            title=(
+                                    add_on))
+                        corr_title = (
                                 '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
                                     method.replace('_', ' '), examined_value,
                                     wf_string, weather_data_name, year,
                                     approach_string) +
-                                'approach)' + title_add_on),
+                                'approach)' + title_add_on)
+                        visualization_tools.plot_correlation(
+                            data=time_series_pair, method=method,
+                            filename=corr_filename, title=corr_title,
+                            color='darkblue', marker_size=3,
+                            y_label_add_on=y_label_add_on)
+                        # Also plot as pdf
+                        visualization_tools.plot_correlation(
+                            data=time_series_pair, method=method,
+                            filename=corr_filename.replace(
+                                '.png', '.pdf'), title=corr_title,
                             color='darkblue', marker_size=3,
                             y_label_add_on=y_label_add_on)
         if 'subplots_correlation' in visualization_methods:
-            for time_series_df_part in time_series_df_parts:
-                if weather_data_name == 'open_FRED':
-                    # Resample the DataFrame columns
-                    time_series_df_part = tools.resample_with_nan_theshold(
-                        df=time_series_df_part, frequency='H',
-                        threshold=get_threshold(
-                            'H', time_series_df_part.index.freq.n))
-                wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
-                visualization_tools.correlation_subplot(
-                    time_series_df_part,
-                    filename=os.path.join(
-                        os.path.dirname(__file__),
-                        '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
-                        'Correlation_{}_{}_{}_{}'.format(
-                            case, weather_data_name, year, wf_name)))
+            if len(approach_list) <= 4:
+                for time_series_df_part in time_series_df_parts:
+                    if weather_data_name == 'open_FRED':
+                        # Resample the DataFrame columns
+                        time_series_df_part = tools.resample_with_nan_theshold(
+                            df=time_series_df_part, frequency='H',
+                            threshold=get_threshold(
+                                'H', time_series_df_part.index.freq.n))
+                    wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
+                    sub_filename = os.path.join(
+                            os.path.dirname(__file__),
+                            '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
+                            'Correlation_{}_{}_{}_{}'.format(
+                                case, weather_data_name, year, wf_name))
+                    visualization_tools.correlation_subplot(
+                        time_series_df_part, filename=sub_filename)
+                    # Also plot as pdf
+                    visualization_tools.correlation_subplot(
+                        time_series_df_part, filename=sub_filename.replace(
+                            '.png', '.pdf'))
 
     #         if 'box_plots' in visualization_methods:
     #             # Store all bias time series of a validation set in one
@@ -1371,7 +1523,8 @@ if __name__ == "__main__":
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
     if 'power_output_1' in cases:
-        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder)
+        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
+                                                         'power_output_1')
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['power_output_1'])
     if 'smoothing_1' in cases:
@@ -1382,5 +1535,38 @@ if __name__ == "__main__":
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['single_turbine_1'])
-    plots_single_functionalities.run_all_plots()
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='single_turbine_1', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='single_turbine_1')
+        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
+                                                         'single_turbine_1')
+    if 'weather_wind_speed_1' in cases:
+        latex_tables.carry_out_mean_figure_tables(
+            latex_tables_folder, cases=['weather_wind_speed_1'])
+    if 'weather_wind_farm' in cases:
+        latex_tables.carry_out_mean_figure_tables(
+            latex_tables_folder, cases=['weather_wind_farm'])
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='weather_wind_farm', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='weather_wind_farm')
+    if 'wind_farm_2' in cases:
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='wind_farm_2', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='wind_farm_2')
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'wind_farm_2')
+    if 'wind_farm_gw' in cases:
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, case='wind_farm_gw', single=True)
+        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
+                                                 case='wind_farm_gw')
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'wind_farm_gw')
+    logging.info(
+        "--- Depending on the cases further plots are created. ---")
+    if plot_single_func:
+        plots_single_functionalities.run_all_plots()
     logging.info("--- Done ---")

@@ -218,7 +218,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                    'power_output' in column]
         greenwind_df = tools.negative_values_to_nan(greenwind_df,
                                                     columns=power_columns )
-        # Set power output of turbines above nominal power (all 2 MW) to nan
+        # Set power output of turbines above 5% higher of nominal power
+        # (all 2 MW) to nan
         greenwind_df = tools.higher_values_to_nan(
             df=greenwind_df, limit=2100, columns=power_columns)
         # Set wind farm power output to nan, where power output of a wind
@@ -333,7 +334,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                         },
                     'wf_BS': {
                         'wf_BS_2': (266, 276), 'wf_BS_7': (276, 353),
-                        'wf_BS_12': (119, 119), 'wf_BS_13': (355.5, 360), # actually 1.5
+                        # 'wf_BS_12': (119, 119),  # unwahrscheinlich
+                        'wf_BS_13': (355.5, 360), # actually 1.5
                         'wf_BS_9': (353, 355.5)},
                     'wf_BNW': {
                         'wf_BNW_1': (0, 174), 'wf_BNW_2': (174, 354)
@@ -526,19 +528,73 @@ def evaluate_duplicates(years):
     return duplicates_dict
 
 
-def evaluate_nans(years):
-    df = pd.DataFrame()
-    for year in years:
-        df_part_year = pd.DataFrame()
-        filenames = [
-            'WF1_{0}.csv'.format(year),
-            'WF2_{0}.csv'.format(year),
-            'WF3_{0}.csv'.format(year)]
-        for name in filenames:
-            df_part = pd.DataFrame(read_data(name).isnull().sum()).sort_index()
-            df_part.columns = [year]
-            df_part_year = pd.concat([df_part_year, df_part], axis=0)
-        df = pd.concat([df, df_part_year], axis=1)
+def evaluate_nans(years, before_processing=False, available_time_steps=False,
+                  filename_add_on=''):
+    if before_processing:
+        df = pd.DataFrame()
+        for year in years:
+            df_part_year = pd.DataFrame()
+            filenames = [
+                'WF1_{0}.csv'.format(year),
+                'WF2_{0}.csv'.format(year),
+                'WF3_{0}.csv'.format(year)]
+            for name in filenames:
+                df_part = pd.DataFrame(read_data(name).isnull().sum()).sort_index()
+                df_part.columns = [year]
+                df_part_year = pd.concat([df_part_year, df_part], axis=0)
+            df = pd.concat([df, df_part_year], axis=1)
+        df.to_csv(os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Daten/Twele/',
+            'nans_evaluation.csv'))
+    else:
+        add_ons = ['wf', 'first_row']
+        for add_on in add_ons:
+            if (add_on == 'wf' and filename_add_on == ''):
+                pass
+            else:
+                df = pd.DataFrame()
+                for year in years:
+                    if add_on == 'wf':
+                        pickle_filename = os.path.join(
+                            os.path.dirname(__file__), 'dumps/validation_data',
+                            'greenwind_data_{0}_raw_resolution.p'.format(year))
+                    else:
+                        pickle_filename = os.path.join(
+                            os.path.dirname(__file__), 'dumps/validation_data',
+                            'greenwind_data_first_row_{0}{1}.p'.format(
+                                year, filename_add_on))
+                    data = pickle.load(open(pickle_filename, 'rb'))
+                    if add_on == 'wf':
+                        keep_cols = ['wf_{}_power_output'.format(wf) for wf in [
+                            'BE', 'BNW', 'BS']]
+                        selected_data = data[keep_cols]
+                        selected_data.rename(columns={col: col.replace(
+                            'wf_', 'WF ').replace('_power_output', '') for
+                                                      col in list(selected_data)},
+                                             inplace=True)
+                    else:
+                        selected_data = data.rename(columns={
+                            col: col.replace('wf_', '').replace('_', ' ') for
+                            col in list(data)})
+                    if available_time_steps:
+                        df_part = pd.DataFrame(
+                            selected_data.count()).sort_index()
+                    else:
+                        df_part = pd.DataFrame(
+                            selected_data.isnull().sum()).sort_index()
+                    df_part.columns = [year]
+                    df = pd.concat([df, df_part], axis=1)
+                df.to_csv(os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
+                    'nans_evaluation_{}{}.csv'.format(add_on, filename_add_on)))
+                df.to_latex(os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/nans/',
+                    'nans_evaluation_{}{}.tex'.format(add_on, filename_add_on)),
+                    column_format=latex_tables.create_column_format(
+                        len(df.columns), 'l'), multicolumn_format='c')
     return df
 
 
@@ -949,16 +1005,16 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
-    evaluate_first_row_turbine = True
-    evaluate_highest_wind_speed = True
-    evaluate_highest_power_output = True
+    load_data = False
+    evaluate_first_row_turbine = False
+    evaluate_highest_wind_speed = False
+    evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
     wind_dir_vs_gondel_position = False
     plot_wind_dir_vs_power = False
-    nans_evaluation = False
+    nans_evaluation = True
     duplicates_evaluation = False
     error_numbers = False
 
@@ -1256,11 +1312,11 @@ if __name__ == "__main__":
 
     # Evaluation of nans
     if nans_evaluation:
-        nans_df = evaluate_nans(years)
-        nans_df.to_csv(os.path.join(
-            os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Daten/Twele/',
-            'nans_evaluation.csv'))
+        add_ons = ['', '_weather_wind_speed_3']
+        for add_on in add_ons:
+            nans_df = evaluate_nans(years, before_processing=False,
+                                    available_time_steps=True,
+                                    filename_add_on=add_on)
 
     # Evaluation of duplicates
     if duplicates_evaluation:
