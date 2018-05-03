@@ -14,7 +14,7 @@ class ValidationObject(object):
 
     Parameters
     ----------
-    object_name : String
+    name : String
         Name of ValidationObject (name of wind farm or region).
     data : pd.DataFrame
         # TODO: add here and adapt attributes
@@ -37,7 +37,7 @@ class ValidationObject(object):
 
     Attributes
     ----------
-    object_name : String
+    name : String
         Name of ValidationObject (name of wind farm or region).
     output_method : String
         Specifies the form of the time series (`simulation_series` and
@@ -77,10 +77,10 @@ class ValidationObject(object):
         Standard deviation of the simulation time series (`simulation_series`).
 
     """
-    def __init__(self, object_name, data, output_method=None,
+    def __init__(self, name, data, output_method=None,
                  weather_data_name=None, validation_name=None, approach=None,
                  min_periods_pearson=None):
-        self.object_name = object_name
+        self.name = name
         self.data = data
         self.output_method = output_method
         self.weather_data_name = weather_data_name
@@ -217,7 +217,7 @@ def correlation(val_obj, sample_resolution=None):
     b = data.resample(sample_resolution).agg({'corr': lambda x: x[data.columns[0]].corr(
         x[data.columns[1]])})
     corr = b['corr'].drop(b['corr'].columns[1], axis=1)
-    corr.columns = ['{0} {1}'.format(val_obj.object_name,
+    corr.columns = ['{0} {1}'.format(val_obj.name,
                     val_obj.weather_data_name)]
     return corr
 

@@ -35,7 +35,7 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
                 'greenwind_data_{0}_raw_resolution.p'.format(year)))   #
         # Select aggregated power output of wind farm (rename)
         greenwind_power_data = greenwind_data[[
-            '{0}_power_output'.format(data['object_name']) for
+            '{0}_power_output'.format(data['name']) for
             data in wind_farm_data_gw]]
         greenwind_power_data.index = greenwind_power_data.index.tz_convert(
             'UTC')
@@ -279,7 +279,7 @@ def get_power_efficiency_curves(drop_higher_one=True, pickle_load=False,
                     'greenwind_data_{0}_raw_resolution.p'.format(year)))  #
             # Select aggregated power output of wind farm (rename)
             greenwind_power_data = greenwind_data[[
-                '{0}_power_output'.format(data['object_name']) for
+                '{0}_power_output'.format(data['name']) for
                 data in wind_farm_data_gw]]
             greenwind_power_data.index = greenwind_power_data.index.tz_convert(
                 'UTC')  # TODO needed?

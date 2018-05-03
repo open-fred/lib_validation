@@ -94,13 +94,13 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
                 handles.append(handle)
         plt.ylabel('Power in kW')
         plt.xlabel('Wind speed in m/s')
-        # plt.title(turbine.object_name)
+        # plt.title(turbine.name)
         plt.legend(handles=handles)
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
             '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
-                'single' if grouped is False else grouped, turbine.object_name,
+                'single' if grouped is False else grouped, turbine.name,
                 weather_data_name,standard_deviation_method.replace(
                     'turbulence_intensity', 'TI').replace(
                     'Staffell', 'ST').replace('Pfenninger', 'Pf') if
@@ -119,10 +119,10 @@ def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
     handles = []
     for turbine, mean_roughness_length in zip(
             turbines, mean_roughness_lengths):
-        if turbine.object_name == 'GE 1,5 SLE':
+        if turbine.name == 'GE 1,5 SLE':
             name = 'GE 1.5'
         else:
-            name = ' '.join(turbine.object_name.split(' ')[1:3])
+            name = ' '.join(turbine.name.split(' ')[1:3])
         if standard_deviation_method == 'turbulence_intensity':
             turbulence_intensity = tools.estimate_turbulence_intensity(
                 turbine.hub_height, mean_roughness_length)
@@ -146,7 +146,7 @@ def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
         handles.append(b)
     plt.ylabel('Power in kW')
     plt.xlabel('Wind speed in m/s')
-    # plt.title(turbine.object_name)
+    # plt.title(turbine.name)
     plt.legend(handles=handles)
     fig.savefig(os.path.join(
         os.path.dirname(__file__),

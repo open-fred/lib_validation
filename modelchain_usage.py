@@ -165,6 +165,8 @@ def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
         'block_width': block_width,
         'standard_deviation_method': standard_deviation_method,
         'smoothing_order': smoothing_order}
+    if 'density_correction' in kwargs:
+        wf_modelchain_data['density_correction'] = kwargs['density_correction']
     if wind_speed is not None:
         # Attention: in this thesis used for a validation data set, where hub
         # height of turbines within one wind farm is the same!
@@ -176,7 +178,7 @@ def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
                      np.array([wind_object.hub_height])])
         weather_df = pd.concat([weather_df, df], axis=1)
     wf_mc = TurbineClusterModelChain(
-        wind_object, **wf_modelchain_data).run_model(weather_df, **kwargs)
+        wind_object, **wf_modelchain_data).run_model(weather_df)
     return wf_mc.power_output
 
 

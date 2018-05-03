@@ -259,7 +259,7 @@ def correlation_subplot(df, filename):
     maxima = []
     for df, ax in zip(pairs, axes):
         val_obj = ValidationObject(
-            object_name='plot', data=df)
+            name='plot', data=df)
         maximum = max(df.iloc[:, 0].max(), df.iloc[:, 1].max())
         maxima.append(maximum)
         ideal, = ax.plot([0, maximum], [0, maximum], color='black',
