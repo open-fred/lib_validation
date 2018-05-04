@@ -149,8 +149,6 @@ def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
         The Hellman exponent, which combines the increase in wind speed due to
         stability of atmospheric conditions and surface roughness into one
         constant.
-    roughness_length : float, optional.
-        Roughness length.
     turbulence_intensity : float, optional.
         Turbulence intensity.
 

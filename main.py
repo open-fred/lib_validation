@@ -105,7 +105,7 @@ latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
 # Other plots
 plot_arge_feedin = False  # If True plots each column of ArgeNetz data frame
 
-# Filename specifications
+# Folder specifications
 validation_pickle_folder = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'dumps/validation_data'))
 wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
@@ -1056,7 +1056,7 @@ def run_main(case, parameters, year):
                         time_series_df.loc[:, column_name[0]].loc[
                             time_series_df.loc[
                             :, column_name[0]].isnull() == True].index] = np.nan
-            # Only keep columns within the right year
+            # Only keep rows within the right year
             time_series_df['boolean'] = (time_series_df.index.year == year)
             time_series_df = time_series_df.loc[
                time_series_df.loc[time_series_df['boolean']].index].drop(
