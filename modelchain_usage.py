@@ -76,7 +76,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
     return farm_power_output
 
 
-def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
+def power_output_cluster(wind_object, weather_df, wake_losses_model=None,
                          smoothing=True, block_width=0.5,
                          standard_deviation_method='turbulence_intensity',
                          smoothing_order='wind_farm_power_curves',
@@ -102,7 +102,7 @@ def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
         measured at a height of 10 m). See documentation of
         :func:`modelchain.ModelChain.run_model` for an example on how to
         create the weather_df DataFrame.
-    wake_losses_method : String
+    wake_losses_model : String
         Defines the method for talking wake losses within the farm into
         consideration. Default: 'constant_efficiency'.
     smoothing : Boolean
@@ -158,7 +158,7 @@ def power_output_cluster(wind_object, weather_df, wake_losses_method=None,
         Simulated power output of wind farm.
     """
     wf_modelchain_data = {
-        'wake_losses_method': wake_losses_method,
+        'wake_losses_model': wake_losses_model,
         'smoothing': smoothing,
         'block_width': block_width,
         'standard_deviation_method': standard_deviation_method,
