@@ -21,7 +21,7 @@ validation_pickle_folder = os.path.abspath(os.path.join(
 
 def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
                                     drop_higher_one=False, plot=True,
-                                    exact_degrees=False):
+                                    exact_degrees=False, csv_folder='evaluation.csv'):
     for year in years:
         # Get wind farm data
         wind_farm_data_gw = get_wind_farm_data(
@@ -37,8 +37,6 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
         greenwind_power_data = greenwind_data[[
             '{0}_power_output'.format(data['name']) for
             data in wind_farm_data_gw]]
-        greenwind_power_data.index = greenwind_power_data.index.tz_convert(
-            'UTC')
         if exact_degrees:
             pickle_filename_add_on_2 = '_exact_degrees'
         else:
@@ -51,7 +49,6 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
             year=year, pickle_load=True,
             pickle_filename=pickle_filename, resample=False, frequency='30T',
             threshold=2)
-        gw_first_row.index = gw_first_row.index.tz_convert('UTC')
         if greenwind_power_data.index.freq != gw_first_row.index.freq:
             raise ValueError('Attention - different frequencies: ' +
                              'wf data: {}, first row data: {}'.format(
@@ -134,6 +131,30 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
                 df['v_std'].loc[indices] = v_std
             df['efficiency'] = df['wind_farm_power_output'] / (
                 number_of_turbines * df['single_power_output'])
+            # This is only used teporaryly: todo
+            highest = get_first_row_turbine_time_series(
+                year=year, pickle_load=True,
+                pickle_filename=os.path.join(
+                    os.path.dirname(__file__), 'dumps/validation_data',
+                    'greenwind_data_first_row_{0}_highest_powerwith_info.p'.format(
+                        year)), resample=False, frequency='30T', threshold=2)
+            highest_wf_cols = [col for col in list(highest) if
+                               (wf in col and 'wind_speed' not in col)]
+            highest_wf = highest[highest_wf_cols]
+            first_row = get_first_row_turbine_time_series(
+            year=year, pickle_load=True,
+            pickle_filename=pickle_filename.replace('.p', 'with_info.p'),
+                resample=False, frequency='30T', threshold=2, add_info=True)
+            first_row_wf_cols = [col for col in list(first_row) if wf in col]
+            first_row_wf = first_row[first_row_wf_cols]
+            evaluation_df = pd.concat([df, highest_wf, first_row_wf], axis=1)
+            if exact_degrees:
+                add_string = 'exact_degrees'
+            else:
+                add_string = ''
+            evaluation_df.to_csv(os.path.join(
+                csv_folder, 'evaluation_power_eff_curve_wf_{}_{}.csv'.format(
+                    wf, add_string)))
             if drop_higher_one:
                 # Set efficiency to nan where it is greater than 1.0
                 indices = df[df.loc[:, 'efficiency'] > 1.0].index
@@ -148,6 +169,7 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
             df.set_index('v_std', inplace=True)
             df2 = df[['efficiency']]
             df2 = df2.groupby(df.index).mean()
+
             empty_curve = pd.DataFrame([
                 np.nan for i in range(len(standard_wind_speeds))],
                 index=standard_wind_speeds)
@@ -163,7 +185,7 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
             efficiency_curve.drop([col for col in efficiency_curve.columns if
                                    col != 'efficiency'], axis=1, inplace=True)
             efficiency_curve.fillna(1.0, inplace=True)
-            dena_mean_curve = wind_farm.read_wind_efficiency_curve('dena_mean')
+            dena_mean_curve = wake_losses.get_wind_efficiency_curve('dena_mean')
             dena_mean_curve.set_index('wind_speed', inplace=True)
             dena_mean_curve.rename(columns={'efficiency': 'dena mean curve'},
                                    inplace=True)
@@ -281,8 +303,6 @@ def get_power_efficiency_curves(drop_higher_one=True, pickle_load=False,
             greenwind_power_data = greenwind_data[[
                 '{0}_power_output'.format(data['name']) for
                 data in wind_farm_data_gw]]
-            greenwind_power_data.index = greenwind_power_data.index.tz_convert(
-                'UTC')  # TODO needed?
             if highest_power_output:
                 gw_first_row = get_first_row_turbine_time_series(
                     year=year, pickle_load=True,
@@ -305,7 +325,6 @@ def get_power_efficiency_curves(drop_higher_one=True, pickle_load=False,
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}.p'.format(year)),
                     resample=False, frequency='30T', threshold=2)
-            gw_first_row.index = gw_first_row.index.tz_convert('UTC')
             if greenwind_power_data.index.freq != gw_first_row.index.freq:
                 raise ValueError('Attention - different frequencies: ' +
                                  'wf data: {}, first row data: {}'.format(
@@ -419,9 +438,9 @@ def standardize_wind_eff_curves_dena_knorr(curve_names, plot=False):
         plt.show()
 
 if __name__ == "__main__":
-    load_curves = True
-    plot_curves = True
-    evaluate_curves = False
+    load_curves = False
+    plot_curves = False
+    evaluate_curves = True
     standardize_curves = False
 
     if load_curves:
@@ -439,14 +458,26 @@ if __name__ == "__main__":
     ]
 
     if evaluate_curves:
-        mean_wind_dir = True
-        bias = True
-        drop_higher_one_list = [True, False]
-        exact_degrees_list = [True, False]
+        plot = False
+        mean_wind_dir = False
+        bias = False
+        drop_higher_one_list = [
+            True,
+            # False
+        ]
+        exact_degrees_list = [
+            True,
+            # False
+        ]
         pickle_filename_add_ons = [
-            '', '_wind_dir_real',
-            '_weather_wind_speed_3', '_weather_wind_speed_3_real',
-            '_highest_power']
+            '',
+            # '_wind_dir_real',
+            # '_weather_wind_speed_3', '_weather_wind_speed_3_real',
+            # '_highest_power'
+        ]
+        csv_folder = os.path.join(
+            os.path.dirname(__file__),
+            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/power_eff_curves')
         if mean_wind_dir:
             pickle_filename_add_ons = [item + 'mean_wind_dir' for
                                        item in pickle_filename_add_ons if
@@ -465,7 +496,8 @@ if __name__ == "__main__":
                             evaluate_power_efficiency_curves(
                                 years=years, drop_higher_one=drop_higher_one,
                                 pickle_filename_add_on=add_on,
-                                exact_degrees=exact_degrees)
+                                exact_degrees=exact_degrees, plot=plot,
+                                csv_folder=csv_folder)
 
     # --- standardize curves --- #
     if standardize_curves:
