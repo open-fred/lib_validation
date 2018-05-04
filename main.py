@@ -117,6 +117,7 @@ time_series_df_folder = os.path.join(
 time_series_dump_folder = os.path.join(
     os.path.dirname(__file__),
     'dumps/time_series_dfs')
+
 csv_folder = '../../../User-Shares/Masterarbeit/Latex/csv_for_plots'
 
 # Heights for which temperature of MERRA shall be calculated
@@ -132,7 +133,7 @@ if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_greenwind or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
-def run_main(case, parameters, year):
+def run_main(case, parameters, year):  # TODO functions out of run_main if possible
     logging.info("--- Simulation with case {0} in year {1} starts ---".format(
         case, year))
 
@@ -436,8 +437,8 @@ def run_main(case, parameters, year):
                 filename=filename_weather, year=year,
                 temperature_heights=temperature_heights)
             if ('wake_losses' in case or 'wind_farm' in case):
-                highest_power_output = False
-                file_add_on = ''
+                # highest_power_output = False
+                # file_add_on = ''
                 # Get wind efficiency curves - they are assigned to wind farms
                 # below in calculations
                 wind_eff_curves = get_power_efficiency_curves(
