@@ -837,6 +837,15 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
         for i in range(turbine_nb):
             df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, i + 1),
                                 'wf_{}_{}_wind_dir_real'.format(wf, i + 1)]]
+            if i + 1 == 14:
+                # Set negative values of wind direction to 360 + wind direction
+                df['temp_360'] = 360.0
+                negativ_indices = df.loc[
+                    df['wf_BS_14_wind_dir'] < 0].index
+                df['wf_BS_14_wind_dir'].loc[negativ_indices] = (
+                    df['temp_360'] +
+                    df['wf_BS_14_wind_dir'])
+                df.drop('temp_360', axis=1, inplace=True)
             corr = df.corr().iloc[:, 0][1]
             dict['{}_{}'.format(wf, i + 1)] = corr
         dict_df = pd.DataFrame(dict, index=['corr']).transpose()
@@ -1033,11 +1042,11 @@ if __name__ == "__main__":
     load_data = False
     evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
-    evaluate_highest_power_output = True
+    evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
-    wind_dir_vs_gondel_position = False
+    wind_dir_vs_gondel_position = True
     plot_wind_dir_vs_power = False
     nans_evaluation = False
     duplicates_evaluation = False
