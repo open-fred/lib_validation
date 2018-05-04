@@ -131,7 +131,10 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
                 df['v_std'].loc[indices] = v_std
             df['efficiency'] = df['wind_farm_power_output'] / (
                 number_of_turbines * df['single_power_output'])
-            # This is only used teporaryly: todo
+            ##### This is only used teporaryly: todo
+            higher_one_df = df.loc[df['efficiency'] > 1.0]
+            v_std_amount = higher_one_df.groupby(['v_std']).agg(['count'])[
+                'efficiency']
             highest = get_first_row_turbine_time_series(
                 year=year, pickle_load=True,
                 pickle_filename=os.path.join(
@@ -155,6 +158,10 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
             evaluation_df.to_csv(os.path.join(
                 csv_folder, 'evaluation_power_eff_curve_wf_{}_{}.csv'.format(
                     wf, add_string)))
+            v_std_amount.to_csv(os.path.join(
+                csv_folder, 'higher_one_amount_wf_{}_{}.csv'.format(
+                    wf, add_string)))
+            #####
             if drop_higher_one:
                 # Set efficiency to nan where it is greater than 1.0
                 indices = df[df.loc[:, 'efficiency'] > 1.0].index
@@ -466,8 +473,8 @@ if __name__ == "__main__":
             # False
         ]
         exact_degrees_list = [
-            True,
-            # False
+            # True,
+            False
         ]
         pickle_filename_add_ons = [
             '',
