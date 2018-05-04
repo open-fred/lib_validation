@@ -30,7 +30,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                        restriction_list, val_obj_dict, annual_energy_dicts,
                        wind_farm_names, key_figures_print, output_methods,
                        path_latex_tables, filename_add_on, year, case,
-                       replacement):
+                       replacement, csv_folder):
     if 'annual_energy_approaches' in latex_output:
         for weather_data_name in weather_data_list:
             latex_df = pd.DataFrame()
@@ -66,7 +66,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                 column_format=create_column_format(len(latex_df.columns), 'c'),
                 multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'annual_energy_approach_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -244,7 +244,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'key_figures_approaches_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -423,7 +423,7 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                                        column_format=column_format,
                                        multicolumn_format='c')
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'std_dev_time_series_{0}_{1}_{2}{3}.csv'.format(
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
@@ -461,7 +461,7 @@ def mean_figure_table(latex_tables_folder, case, figure):
         mean_rmse_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'key_figures_approaches_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1],
@@ -530,7 +530,7 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
     for year in years:
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'std_dev_time_series_smoothing_2_{0}_{1}.csv'.format(
                     year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0)
@@ -568,12 +568,12 @@ def mean_std_dev_smoothing_2(latex_tables_folder):
         buf=filename_table, column_format=column_format,
         multicolumn_format='c', index=False)
     filename_csv = os.path.join(
-        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+        os.path.dirname(__file__), csv_folder,
         'mean_std_dev_smoothing_2.csv')
     mean_std_dev_df.to_csv(filename_csv, index=False)
 
 
-def mean_annual_energy_deviation_tables(latex_tables_folder, case):
+def mean_annual_energy_deviation_tables(latex_tables_folder, case, csv_folder):
     """
 
     """
@@ -587,7 +587,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case):
         mean_deviation_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'annual_energy_approach_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0],
@@ -638,7 +638,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case):
         multicolumn_format='c', index=False)
 
 
-def annual_energy_deviation(latex_tables_folder, case, single=True):
+def annual_energy_deviation(latex_tables_folder, case, csv_folder, single=True):
     """
         average over wfs
     """
@@ -651,7 +651,7 @@ def annual_energy_deviation(latex_tables_folder, case, single=True):
         mean_deviation_df_weather = pd.DataFrame()
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                os.path.dirname(__file__), csv_folder,
                 'annual_energy_approach_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0],
@@ -692,7 +692,7 @@ def annual_energy_deviation(latex_tables_folder, case, single=True):
         multicolumn_format='c')
 
 
-def annual_energy_deviation_wfs(latex_tables_folder, case):
+def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
     """
     average over years
     """
@@ -706,7 +706,7 @@ def annual_energy_deviation_wfs(latex_tables_folder, case):
         for year in years:
             filename_csv = os.path.join(
                 os.path.dirname(__file__),
-                '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                csv_folder,
                 'annual_energy_approach_{0}_{1}_{2}.csv'.format(
                     case, year, weather_data_name))
             latex_df = pd.read_csv(filename_csv, index_col=[0],
@@ -739,14 +739,14 @@ def annual_energy_deviation_wfs(latex_tables_folder, case):
         multicolumn_format='c')
 
 
-def concat_std_dev_tables_smoothing_1(latex_tables_folder):
+def concat_std_dev_tables_smoothing_1(latex_tables_folder, csv_folder):
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
     weather_data_names = ['MERRA', 'open_FRED']
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                        os.path.dirname(__file__), csv_folder,
                         'std_dev_time_series_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=0).drop(
@@ -779,14 +779,14 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder):
         multicolumn_format='c', index=False)
 
 
-def concat_key_figures_tables_smoothing_1(latex_tables_folder):
+def concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder):
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
     weather_data_names = ['MERRA', 'open_FRED']
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                        os.path.dirname(__file__), csv_folder,
                         'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
                             weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0, 1])

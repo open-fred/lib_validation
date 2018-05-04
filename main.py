@@ -117,6 +117,7 @@ time_series_df_folder = os.path.join(
 time_series_dump_folder = os.path.join(
     os.path.dirname(__file__),
     'dumps/time_series_dfs')
+csv_folder = '../../../User-Shares/Masterarbeit/Latex/csv_for_plots'
 
 # Heights for which temperature of MERRA shall be calculated
 temperature_heights = [60, 64, 65, 105, 114]
@@ -1467,7 +1468,7 @@ def run_main(case, parameters, year):
         wind_farm_names=wind_farm_names, key_figures_print=key_figures_print,
         output_methods=output_methods, path_latex_tables=path_latex_tables,
         filename_add_on=filename_add_on, year=year, case=case,
-        replacement=replacement)
+        replacement=replacement, csv_folder=csv_folder)
 
     # ------------------------------- Extra plots ------------------------------- #
     # if 'annual_bars_weather' in extra_plots:
@@ -1510,48 +1511,61 @@ if __name__ == "__main__":
     logging.info(
         "--- Depending on the cases further latex tables are created. ---")
     if 'power_output_1' in cases:
-        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
-                                                         'power_output_1')
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'power_output_1', csv_folder=csv_folder)
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['power_output_1'])
+            latex_tables_folder, cases=['power_output_1'],
+            csv_folder=csv_folder)
     if 'smoothing_1' in cases:
-        latex_tables.concat_std_dev_tables_smoothing_1(latex_tables_folder)
-        latex_tables.concat_key_figures_tables_smoothing_1(latex_tables_folder)
+        latex_tables.concat_std_dev_tables_smoothing_1(
+            latex_tables_folder, csv_folder=csv_folder)
+        latex_tables.concat_key_figures_tables_smoothing_1(
+            latex_tables_folder, csv_folder=csv_folder)
     if 'smoothing_2' in cases:
-        latex_tables.mean_std_dev_smoothing_2(latex_tables_folder)
+        latex_tables.mean_std_dev_smoothing_2(latex_tables_folder,
+                                              csv_folder=csv_folder)
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['single_turbine_1'])
+            latex_tables_folder, cases=['single_turbine_1'],
+            csv_folder=csv_folder)
         latex_tables.annual_energy_deviation(
-            latex_tables_folder, case='single_turbine_1', single=True)
-        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
-                                                 case='single_turbine_1')
-        latex_tables.mean_annual_energy_deviation_tables(latex_tables_folder,
-                                                         'single_turbine_1')
+            latex_tables_folder, case='single_turbine_1', single=True,
+            csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, case='single_turbine_1',
+            csv_folder=csv_folder)
+        latex_tables.mean_annual_energy_deviation_tables(
+            latex_tables_folder, 'single_turbine_1', csv_folder=csv_folder)
     if 'weather_wind_speed_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['weather_wind_speed_1'])
+            latex_tables_folder, cases=['weather_wind_speed_1'],
+            csv_folder=csv_folder)
     if 'weather_wind_farm' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['weather_wind_farm'])
+            latex_tables_folder, cases=['weather_wind_farm'],
+            csv_folder=csv_folder)
         latex_tables.annual_energy_deviation(
-            latex_tables_folder, case='weather_wind_farm', single=True)
-        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
-                                                 case='weather_wind_farm')
+            latex_tables_folder, case='weather_wind_farm', single=True,
+            csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, case='weather_wind_farm',
+            csv_folder=csv_folder)
     if 'wind_farm_2' in cases:
         latex_tables.annual_energy_deviation(
-            latex_tables_folder, case='wind_farm_2', single=True)
-        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
-                                                 case='wind_farm_2')
+            latex_tables_folder, case='wind_farm_2', single=True,
+            csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, case='wind_farm_2', csv_folder=csv_folder)
         latex_tables.mean_annual_energy_deviation_tables(
-            latex_tables_folder, 'wind_farm_2')
+            latex_tables_folder, 'wind_farm_2', csv_folder=csv_folder)
     if 'wind_farm_gw' in cases:
         latex_tables.annual_energy_deviation(
-            latex_tables_folder, case='wind_farm_gw', single=True)
-        latex_tables.annual_energy_deviation_wfs(latex_tables_folder,
-                                                 case='wind_farm_gw')
+            latex_tables_folder, case='wind_farm_gw', single=True,
+            csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, case='wind_farm_gw', csv_folder=csv_folder)
         latex_tables.mean_annual_energy_deviation_tables(
-            latex_tables_folder, 'wind_farm_gw')
+            latex_tables_folder, 'wind_farm_gw', csv_folder=csv_folder)
     logging.info(
         "--- Depending on the cases further plots are created. ---")
     if plot_single_func:
