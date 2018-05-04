@@ -26,49 +26,49 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
     # Turbine data specification - feel free to add
     turbine_dict = {
         'enerconE70': {
-            'object_name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
+            'name': 'ENERCON E 70 2300', # NOTE: Peak power should be 2.37 MW - is 2,31 for turbine in windpowerlib
             'hub_height': 64,  # in m
             'rotor_diameter': 71,  # in m    source: www.wind-turbine-models.com
             'fetch_curve': 'power_curve'
         },
         # 'enerconE66_1800_65': {
-        #     'object_name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
+        #     'name': 'ENERCON E 66 1800', # NOTE: Peak power should be 1.86 MW - ist 1,8 for turbine in windpowerlib
         #     'hub_height': 65,  # in m
         #     'rotor_diameter': 70,  # in m    source: www.wind-turbine-models.com
         #     'fetch_curve': 'power_curve'
         # },
         'enerconE66_1800_98': {
-            'object_name': 'ENERCON E 66 1800',
+            'name': 'ENERCON E 66 1800',
             'hub_height': 98,  # in m
             'rotor_diameter': 70,  # in m
             'fetch_curve': 'power_curve'
         },
         'enerconE66_2000': {
-            'object_name': 'ENERCON E 66 2000',
+            'name': 'ENERCON E 66 2000',
             'hub_height': 114,  # in m
             'rotor_diameter': 70,  # in m
             'fetch_curve': 'power_curve'
         },
         'enerconE82_2000': {
-            'object_name': 'ENERCON E 82 2000',
+            'name': 'ENERCON E 82 2000',
             'hub_height': 138.3,  # in m
             'rotor_diameter': 82,  # in m
             'fetch_curve': 'power_curve'
         },
         'vestasV90': {
-            'object_name': 'VESTAS V 90 2000',
+            'name': 'VESTAS V 90 2000',
             'hub_height': 105,  # in m
             'rotor_diameter': 90,  # in m    source: www.wind-turbine-models.com
             'fetch_curve': 'power_curve'
         },
         'vestasV80': {
-            'object_name': 'VESTAS V 80 2000',
+            'name': 'VESTAS V 80 2000',
             'hub_height': 60,  # in m
             'rotor_diameter': 80,  # in m    source: www.wind-turbine-models.com
             'fetch_curve': 'power_curve'
         },
         'ge_1500': {
-            'object_name': 'GE 1,5 SLE',
+            'name': 'GE 1,5 SLE',
             'hub_height': 100,  # in m
             'rotor_diameter': 77,  # in m
             'fetch_curve': 'power_curve'
@@ -112,19 +112,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 #     ['enerconE70', 'enerconE66_1800_65'])
 
                 # wf_1 = {
-                #     'object_name': 'wf_1',
+                #     'name': 'wf_1',
                 #     'wind_turbine_fleet': [{'wind_turbine': e70,
                 #                             'number_of_turbines': 16}],
                 #     'coordinates': []
                 # }
                 wf_SH = {
-                    'object_name': 'wf_SH',
+                    'name': 'wf_SH',
                     'wind_turbine_fleet': [{'wind_turbine': e70,
                                             'number_of_turbines': 6}],
                     'coordinates': []
                 }
                 # wf_3 = {
-                #     'object_name': 'wf_3',
+                #     'name': 'wf_3',
                 #     'wind_turbine_fleet': [{'wind_turbine': e70,
                 #                             'number_of_turbines': 13},
                 #                            {'wind_turbine': e66,
@@ -132,13 +132,13 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 #     'coordinates': []
                 # }
                 # wf_4 = {
-                #     'object_name': 'wf_4',
+                #     'name': 'wf_4',
                 #     'wind_turbine_fleet': [{'wind_turbine': e70,
                 #                             'number_of_turbines': 22}],
                 #     'coordinates': []
                 # }
                 # wf_5 = {
-                #     'object_name': 'wf_5',
+                #     'name': 'wf_5',
                 #     'wind_turbine_fleet': [{'wind_turbine': e70,
                 #                             'number_of_turbines': 14}],
                 #     'coordinates': []
@@ -152,7 +152,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 wind_farm_data = []
                 for i in range(6):
                     wind_farm_data.append({
-                        'object_name': 'wf_SH',
+                        'name': 'wf_SH',
                         'wind_turbine_fleet': [{'wind_turbine': e70,
                                                 'number_of_turbines': 1}],
                         'coordinates': []})
@@ -161,19 +161,19 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             if (filename == 'farm_specification_greenwind_2015.p' or
                     filename == 'farm_specification_greenwind_2016.p'):
                 wf_BE = {
-                    'object_name': 'wf_BE',
+                    'name': 'wf_BE',
                     'wind_turbine_fleet': [{'wind_turbine': v90,
                                             'number_of_turbines': 9}],
                     'coordinates': []
                 }
                 wf_BS = {
-                    'object_name': 'wf_BS',
+                    'name': 'wf_BS',
                     'wind_turbine_fleet': [{'wind_turbine': v90,
                                             'number_of_turbines': 14}],
                     'coordinates': []
                 }
                 wf_BNW = {
-                    'object_name': 'wf_BNW',
+                    'name': 'wf_BNW',
                     'wind_turbine_fleet': [{'wind_turbine': v80,
                                             'number_of_turbines': 2}],
                     'coordinates': []
@@ -190,13 +190,13 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                         'coordinates': []})
                 for i in range(14):
                     wind_farm_data.append({
-                        'object_name': 'BS_{}'.format(i+1),
+                        'name': 'BS_{}'.format(i+1),
                         'wind_turbine_fleet': [{'wind_turbine': v90,
                                                 'number_of_turbines': 1}],
                         'coordinates': []})
                 for i in range(2):
                     wind_farm_data.append({
-                        'object_name': 'BNW_{}'.format(i+1),
+                        'name': 'BNW_{}'.format(i+1),
                         'wind_turbine_fleet': [{'wind_turbine': v80,
                                                 'number_of_turbines': 1}],
                         'coordinates': []})
@@ -205,7 +205,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 'enerconE66_1800_98', 'ge_1500', 'enerconE66_2000',
                 'enerconE82_2000'])
             wf_BNE = {
-                'object_name': 'wf_BNE',
+                'name': 'wf_BNE',
                 'wind_turbine_fleet': [{'wind_turbine': e66_1800,
                                         'number_of_turbines': 7},
                                        {'wind_turbine': ge_1500,

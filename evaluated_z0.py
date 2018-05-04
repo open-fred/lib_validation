@@ -36,7 +36,7 @@ def evaluate_z0_data(weather_data_name, wind_farm_data, year,
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/inc/images/z0',
                 'z0_{}_{}_{}'.format(weather_data_name,
-                                     wf_data['object_name'], year)))
+                                     wf_data['name'], year)))
         plt.close()
 
 
