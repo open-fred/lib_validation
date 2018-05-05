@@ -169,7 +169,7 @@ def get_configuration(case=None):
         config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
 
     # ---- Single functions - power output ---- #
-    if case == 'power_output_1':  # gw wind speeds as validation data
+    if case == 'power_output_1':  # gw wind speeds as weather data
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)']
         config_dict['validation_data_list'] = ['gw_wind_speeds']
@@ -181,7 +181,7 @@ def get_configuration(case=None):
         config_dict['replacement'] = [
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
-    # if case == 'power_output_2':  # wf SH wind speeds as validation data
+    # if case == 'power_output_2':  # wf SH wind speeds as weather data
     #     config_dict['approach_list'] = ['p-curve', 'cp-curve']
     #     config_dict['validation_data_list'] = ['sh_wind_speeds']
     #     config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
