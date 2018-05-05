@@ -95,7 +95,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 if key_figure == 'RMSE [m/s]':
                     plt.ylim(ymin=0.0, ymax=2.5)
                 # plt.xlabel('Wind farms')
-                plt.xticks(rotation='vertical')
+                plt.xticks(rotation='horizontal')
+                plt.grid()
                 # plt.title('{} of wind speed calculation with different methods in {}'.format(
                 #     key_figure, year))
                 plt.tight_layout()
@@ -143,9 +144,16 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 # Combine data frames for double plots
                 weather_df = pd.concat([weather_df, plot_df], axis=1)
             weather_plot_df = pd.DataFrame()
-            for column_name in set(list(weather_df)):
+            column_names = list(set(list(weather_df)))
+            column_names.sort()
+            for column_name in column_names:
                 # Take mean from years
                 weather_plot_df[column_name] = weather_df[column_name].mean(axis=1)
+            if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
+                # Bring column into desired order
+                cols = ['Log 100', 'Log 80', 'Log 10', 'H 100', 'H 80', 'H 10',
+                        'H2 100', 'H2 80', 'H2 10', 'Log. interp.']
+                weather_plot_df = weather_plot_df[cols]
             # Plot into subplot
             weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False)
             weather_ax.annotate(weather_data_name, xy=(0.99, 0.99),
@@ -158,8 +166,36 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                         key_figure.replace(' ', '_').replace('/', '_').replace(
                             '.', '').replace('%', 'percentage'), weather_data_name,
                         output_method, case, filename_add_on)))
+            if ((('wind_speed_1' in cases or 'wind_speed_5' in cases)and
+                    'weather_wind_speed_1' not in cases) or
+                            'wake_losses_3' in cases):
+                if 'wind_speed_1' in cases:
+                    weather_plot_df.index = ['{} ({} m)'.format(
+                        item, height) for item, height in zip(
+                        weather_plot_df.index, [105, 60, 105])]
+                single_fig, ax = plt.subplots()
+                weather_plot_df.plot(kind='bar', ax=ax, legend=True)
+                ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+                plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
+                plt.xticks(rotation='horizontal')
+                plt.grid()
+                if key_figure == 'RMSE [m/s]':
+                    plt.ylim(ymin=0.0, ymax=2.5)
+                plt.tight_layout()
+                filename_start = os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures',
+                    folder, 'yearly_mean', 'Barplot_wind_speed_methods_{}_{}_{}_{}{}'.format(
+                        key_figure.replace(' ', '_').replace('/', '_').replace(
+                            '.', '').replace('%', 'percentage'), 'yearly_mean',
+                        weather_data_name, output_method, filename_add_on))
+                single_fig.savefig(filename_start + '.pdf',
+                                    bbox_inches="tight")
+                single_fig.savefig(filename_start, bbox_inches="tight")
+                plt.close()
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.xticks(rotation='vertical')
+    plt.xticks(rotation='horizontal')
+    plt.grid()
     weather_fig.text(0.04, 0.5, key_figure.replace('coeff.', 'Coefficient'),
                      va='center', rotation='vertical')
     # plt.tight_layout()

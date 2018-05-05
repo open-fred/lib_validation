@@ -1518,6 +1518,12 @@ if __name__ == "__main__":
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['power_output_1'],
             csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, csv_folder=csv_folder,
+            case='power_output_1', single=True)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, csv_folder=csv_folder,
+                                    case='power_output_1')
     if 'smoothing_1' in cases:
         latex_tables.concat_std_dev_tables_smoothing_1(
             latex_tables_folder, csv_folder=csv_folder)
