@@ -199,9 +199,16 @@ def plot_aggregated_vs_smoothed_pc():
         pd.Series(aggregated_curve.index), aggregated_curve['power'],
         standard_deviation_method='Staffell_Pfenninger')
     smoothed_curve_sp.set_index('wind_speed', inplace=True)
+    # Values in kW
+    smoothed_curve = smoothed_curve / 1000
+    smoothed_curve_sp = smoothed_curve_sp / 1000
+    aggregated_curve = aggregated_curve / 1000
     smoothed_curve.columns = ['Farm TI']
     smoothed_curve_sp.columns = ['Farm SP']
-    aggregated_curve.columns = ['Simple Aggregation']
+    aggregated_curve.columns = ['Aggregation']
+    # Add zeros to aggreated curve for nicer plot
+    aggregated_curve.loc[25.5] = 0.0
+    aggregated_curve.loc[40.5] = 0.0
     # Get aggregated power curve from smoothed turbine power curves
     df_2 = pd.DataFrame()
     df_3 = pd.DataFrame()
@@ -224,9 +231,10 @@ def plot_aggregated_vs_smoothed_pc():
             'wind_speed') * fleet['number_of_turbines']
         df_3 = pd.concat([df_3, smoothed_turbine_curve_sp], axis=1)
     df_2.interpolate(method='index', inplace=True)
-    aggregated_smoothed_curves = pd.DataFrame(df_2.sum(axis=1), columns=['Turbine TI'])
+    aggregated_smoothed_curves = pd.DataFrame(df_2.sum(axis=1) / 1000,
+                                              columns=['Turbine TI'])
     df_3.interpolate(method='index', inplace=True)
-    aggregated_smoothed_curves_sp = pd.DataFrame(df_3.sum(axis=1),
+    aggregated_smoothed_curves_sp = pd.DataFrame(df_3.sum(axis=1) / 1000,
                                                  columns=['Turbine SP'])
     fig, ax = plt.subplots()
     aggregated_curve.plot(ax=ax, legend=True)
@@ -235,6 +243,8 @@ def plot_aggregated_vs_smoothed_pc():
     smoothed_curve_sp.plot(ax=ax, legend=True)
     aggregated_smoothed_curves_sp.plot(ax=ax, legend=True)
     plt.legend()
+    plt.ylabel('Power in kW')
+    plt.xlabel('Wind speed in m/s')
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_vs_agg',
