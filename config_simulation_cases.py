@@ -224,16 +224,16 @@ def get_configuration(case=None):
             ('_', ' '), ('aggregation', 'Agg.')]
 
     # ---- Single functions - Wake losses ---- #
-    # if case == 'wake_losses_1':
-    #     config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant']
-    #     config_dict['validation_data_list'] = ['GreenWind']
-    #     config_dict['weather_data_list'] = ['open_FRED']  # GW wind speeds are used. oF only if other weather data needed
-    #     config_dict['latex_output'] = ['key_figures_approaches',
-    #                                    'annual_energy_approaches']
-    #     config_dict['output_methods'] = ['half_hourly',  # Only if possible
-    #                                      'hourly']
-    #     config_dict['replacement'] = [
-    #         ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
+    if case == 'wake_losses_1':
+        config_dict['approach_list'] = ['aggregation', 'No_losses']
+        config_dict['validation_data_list'] = ['GreenWind']
+        config_dict['weather_data_list'] = ['open_FRED']  # GW wind speeds are used. oF only if other weather data needed
+        config_dict['latex_output'] = ['key_figures_approaches',
+                                       'annual_energy_approaches']
+        config_dict['output_methods'] = ['half_hourly',  # Only if possible
+                                         'hourly']
+        config_dict['replacement'] = [
+            ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
     # if case == 'wake_losses_2':
     #     config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant',
     #                                     'Knorr_extreme2']
