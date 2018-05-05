@@ -853,6 +853,15 @@ def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
         for i in range(turbine_nb):
             df = green_wind_df[['wf_{}_{}_wind_dir'.format(wf, i + 1),
                                 'wf_{}_{}_wind_dir_real'.format(wf, i + 1)]]
+            if i + 1 == 14:
+                # Set negative values of wind direction to 360 + wind direction
+                df['temp_360'] = 360.0
+                negativ_indices = df.loc[
+                    df['wf_BS_14_wind_dir'] < 0].index
+                df['wf_BS_14_wind_dir'].loc[negativ_indices] = (
+                    df['temp_360'] +
+                    df['wf_BS_14_wind_dir'])
+                df.drop('temp_360', axis=1, inplace=True)
             bias = df.iloc[:, 0] - df.iloc[:, 1]
             dict_df['mean_bias'].loc['{}_{}'.format(wf, i + 1)] = bias.mean()
         dict_df.to_csv(os.path.join(
