@@ -47,14 +47,14 @@ cases = [
 #     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-# #     'wake_losses_1',  # not used anymore
+    'wake_losses_1',  # not used anymore
 # #     'wake_losses_2',  # not used anymore
 #     'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
-    'wind_farm_2',
+#     'wind_farm_2',
 #     'wind_farm_4',
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
@@ -592,7 +592,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
             # --- wind speed definition for next cases --- #
             # if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
             #         'wake_losses' in case):
-            if (case == 'wind_farm_3' or case == 'weather_single_turbine_2'):
+            if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
+                    case == 'wake_losses_1'):
                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
