@@ -715,6 +715,8 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                         case, year, weather_data_name))
                 latex_df = pd.read_csv(filename_csv, index_col=[0],
                                        header=[0, 1])
+                if case == 'power_output_1':
+                    latex_df.index = [item.split(' ')[0] for item in latex_df.index]
                 if weather_mean:
                     latex_df = latex_df.drop('measured', axis=1)
                     latex_df.drop('[MWh]', axis=1, level=1, inplace=True)
@@ -722,7 +724,9 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                 deviation_df_weather = pd.concat([deviation_df_weather,
                                                   latex_df], axis=0)
             mean_deviation_df = pd.DataFrame()
-            for wf in latex_df.index:
+            wfs = list(set(latex_df.index))
+            wfs.sort()
+            for wf in wfs:
                 df = pd.DataFrame()
                 df['{}'.format(wf)] = deviation_df_weather.loc[[
                     wf]].mean()
@@ -862,11 +866,12 @@ if __name__ == "__main__":
     carry_out_mean_figure_tables(latex_tables_folder, cases=cases,
                                  csv_folder=csv_folder)
     cases_2 = [
-        'wind_farm_2',
-        'wind_farm_gw',
-        'single_turbine_1',
-        'weather_wind_farm',
-        'smoothing_2'
+        # 'wind_farm_2',
+        # 'wind_farm_gw',
+        # 'single_turbine_1',
+        # 'weather_wind_farm',
+        # 'smoothing_2',
+        'power_output_1'
     ]
     single = True
     for case in cases_2:
