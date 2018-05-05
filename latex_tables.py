@@ -447,7 +447,7 @@ def sort_columns_height(df, case):
     return sorted_df
 
 
-def mean_figure_table(latex_tables_folder, case, figure):
+def mean_figure_table(latex_tables_folder, case, figure, csv_folder):
     """
 
     """
@@ -814,7 +814,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder):
         multicolumn_format='c', index=False)
 
 
-def carry_out_mean_figure_tables(latex_tables_folder, cases):
+def carry_out_mean_figure_tables(latex_tables_folder, cases, csv_folder):
     figures = ['RMSE [MW]', 'RMSE [%]']
     for figure in figures:
         for case in cases:
@@ -822,7 +822,8 @@ def carry_out_mean_figure_tables(latex_tables_folder, cases):
                 figure = figure.replace('MW', 'm/s')
             else:
                 figure = figure.replace('m/s', 'MW')
-            mean_figure_table(latex_tables_folder, case, figure=figure)
+            mean_figure_table(latex_tables_folder, case, figure=figure,
+                              csv_folder=csv_folder)
 
 
 if __name__ == "__main__":
@@ -838,7 +839,8 @@ if __name__ == "__main__":
         'weather_wind_speed_1',
         'weather_wind_farm'
     ]
-    carry_out_mean_figure_tables(latex_tables_folder, cases=cases)
+    carry_out_mean_figure_tables(latex_tables_folder, cases=cases,
+                                 csv_folder=csv_folder)
     cases_2 = [
         'wind_farm_2',
         'wind_farm_gw',
