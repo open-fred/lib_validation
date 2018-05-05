@@ -824,7 +824,6 @@ def plot_wind_directions_of_farms(year, pickle_load_wind_dir_df,
 
 
 def evaluate_wind_dir_vs_gondel_position(year, save_folder, corr_min):
-    # TODO laufen lassen auf RLI PC!!
     # Load greenwind data without resampling and do not dump.
     green_wind_df = get_greenwind_data(
         year=year, pickle_load=True,
