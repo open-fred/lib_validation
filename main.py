@@ -1515,8 +1515,7 @@ if __name__ == "__main__":
         latex_tables.mean_annual_energy_deviation_tables(
             latex_tables_folder, 'power_output_1', csv_folder=csv_folder)
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['power_output_1'],
-            csv_folder=csv_folder)
+            latex_tables_folder, cases=['power_output_1'])
     if 'smoothing_1' in cases:
         latex_tables.concat_std_dev_tables_smoothing_1(
             latex_tables_folder, csv_folder=csv_folder)
@@ -1527,8 +1526,7 @@ if __name__ == "__main__":
                                               csv_folder=csv_folder)
     if 'single_turbine_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['single_turbine_1'],
-            csv_folder=csv_folder)
+            latex_tables_folder, cases=['single_turbine_1'])
         latex_tables.annual_energy_deviation(
             latex_tables_folder, case='single_turbine_1', single=True,
             csv_folder=csv_folder)
@@ -1539,12 +1537,10 @@ if __name__ == "__main__":
             latex_tables_folder, 'single_turbine_1', csv_folder=csv_folder)
     if 'weather_wind_speed_1' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['weather_wind_speed_1'],
-            csv_folder=csv_folder)
+            latex_tables_folder, cases=['weather_wind_speed_1'])
     if 'weather_wind_farm' in cases:
         latex_tables.carry_out_mean_figure_tables(
-            latex_tables_folder, cases=['weather_wind_farm'],
-            csv_folder=csv_folder)
+            latex_tables_folder, cases=['weather_wind_farm'])
         latex_tables.annual_energy_deviation(
             latex_tables_folder, case='weather_wind_farm', single=True,
             csv_folder=csv_folder)

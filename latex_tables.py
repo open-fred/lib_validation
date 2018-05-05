@@ -520,7 +520,7 @@ def mean_figure_table(latex_tables_folder, case, figure):
         multicolumn_format='c', index=False)
 
 
-def mean_std_dev_smoothing_2(latex_tables_folder):
+def mean_std_dev_smoothing_2(latex_tables_folder, csv_folder):
     weather_data_list = ['MERRA', 'open_FRED']
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
@@ -828,16 +828,17 @@ def carry_out_mean_figure_tables(latex_tables_folder, cases):
 if __name__ == "__main__":
     latex_tables_folder = ('../../../User-Shares/Masterarbeit/Latex/Tables/' +
                            'automatic/')
-    concat_std_dev_tables_smoothing_1(latex_tables_folder)
-    concat_key_figures_tables_smoothing_1(latex_tables_folder)
-    mean_std_dev_smoothing_2(latex_tables_folder)
+    csv_folder = '../../../User-Shares/Masterarbeit/Latex/csv_for_plots'
+    concat_std_dev_tables_smoothing_1(latex_tables_folder, csv_folder)
+    concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder)
+    mean_std_dev_smoothing_2(latex_tables_folder, csv_folder)
     cases = [
         'power_output_1',
         'single_turbine_1',
         'weather_wind_speed_1',
         'weather_wind_farm'
     ]
-    carry_out_mean_figure_tables(latex_tables_folder, cases)
+    carry_out_mean_figure_tables(latex_tables_folder, cases=cases)
     cases_2 = [
         'wind_farm_2',
         'wind_farm_gw',
@@ -846,10 +847,13 @@ if __name__ == "__main__":
     ]
     single = True
     for case in cases_2:
-        annual_energy_deviation(latex_tables_folder, case=case, single=single)
-        annual_energy_deviation_wfs(latex_tables_folder, case=case)
+        annual_energy_deviation(latex_tables_folder, csv_folder=csv_folder,
+                                case=case, single=single)
+        annual_energy_deviation_wfs(latex_tables_folder, csv_folder=csv_folder,
+                                    case=case)
     cases_3 = [
         'power_output_1', 'single_turbine_1',
         'wind_farm_gw', 'wind_farm_2']
     for case in cases_3:
-        mean_annual_energy_deviation_tables(latex_tables_folder, case)
+        mean_annual_energy_deviation_tables(latex_tables_folder,
+                                            csv_folder=csv_folder, case=case)
