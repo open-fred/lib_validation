@@ -136,6 +136,8 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     folder = 'weather_wind_speed_1'
                 elif 'weather_wind_farm' in cases:
                     folder = 'weather_wind_farm'
+                elif 'wind_farm_final' in cases:
+                    folder = 'wind_farm_final'
                 else:
                     folder = ''
                 # Save as png and as pdf
@@ -297,8 +299,12 @@ def bar_plot_key_figures_all_in_one(cases, output_method='hourly'):
                 ax.grid(zorder=0)
                 ax.set_ylabel(key_figure)
                 # Rotate xticks
-                ax.set_xticklabels(ax.get_xticklabels(), rotation=0,
-                                   fontsize=8)
+                if len(figure_plot_df.index) <= 4:
+                    ax.set_xticklabels(ax.get_xticklabels(), rotation=0,
+                                       fontsize=8)
+                else:
+                    ax.set_xticklabels(ax.get_xticklabels(), rotation=0,
+                                       fontsize=6)
                 plt.figlegend(loc='upper center', ncol=5, prop={'size': 8},
                               bbox_to_anchor=(0, 0.07, 1, 1),
                               bbox_transform=plt.gcf().transFigure)
@@ -326,7 +332,8 @@ def run_bar_plot_key_figures():
         ['wind_farm_4'],
         ['wind_farm_gw'],
         ['wind_farm_2'],
-        ['weather_wind_farm']
+        ['weather_wind_farm'],
+        ['wind_farm_final']
     ]
     not_for_monthly_list = [
         'wind_farm_3',
@@ -347,20 +354,20 @@ def run_bar_plot_key_figures():
         'hourly',
         'monthly'
     ]
-    # for output_method in output_methods:
-    #     for key_figure in key_figures:
-    #         for cases in cases_list:
-    #             if (output_method == 'monthly' and
-    #                     cases[0] in not_for_monthly_list):
-    #                 pass
-    #             else:
-    #                 if 'wind_speed' in cases[0]:
-    #                     key_figure = key_figure.replace('MW', 'm/s')
-    #                 else:
-    #                     key_figure = key_figure.replace('m/s', 'MW')
-    #                 bar_plot_key_figures(
-    #                     years, output_method, key_figure,
-    #                     cases, weather_data_names)
+    for output_method in output_methods:
+        for key_figure in key_figures:
+            for cases in cases_list:
+                if (output_method == 'monthly' and
+                        cases[0] in not_for_monthly_list):
+                    pass
+                else:
+                    if 'wind_speed' in cases[0]:
+                        key_figure = key_figure.replace('MW', 'm/s')
+                    else:
+                        key_figure = key_figure.replace('m/s', 'MW')
+                    bar_plot_key_figures(
+                        years, output_method, key_figure,
+                        cases, weather_data_names)
 
     for cases in cases_list:
             bar_plot_key_figures_all_in_one(cases=cases,

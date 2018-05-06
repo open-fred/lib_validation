@@ -870,7 +870,8 @@ if __name__ == "__main__":
         'power_output_1',
         'single_turbine_1',
         'weather_wind_speed_1',
-        'weather_wind_farm'
+        'weather_wind_farm',
+        'wind_farm_final'
     ]
     carry_out_mean_figure_tables(latex_tables_folder, cases=cases,
                                  csv_folder=csv_folder)
@@ -882,7 +883,8 @@ if __name__ == "__main__":
         'smoothing_2',
         'power_output_1',
         'wake_losses_1',
-        'wake_losses_3'
+        'wake_losses_3',
+        'wind_farm_final'
     ]
     single = True
     for case in cases_2:
