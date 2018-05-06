@@ -521,12 +521,11 @@ def mean_figure_table(latex_tables_folder, case, figure, csv_folder):
 
 
 def mean_std_dev_smoothing_2(latex_tables_folder, csv_folder):
-    weather_data_list = ['MERRA', 'open_FRED']
+    weather_data_list = ['open_FRED']
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
     years = [2015, 2016]
     counter = 0
-
     for year in years:
         for weather_data_name in weather_data_list:
             filename_csv = os.path.join(
@@ -581,7 +580,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case, csv_folder):
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
     years = [2015, 2016]
-    resolutions = ['hourly', 'monthly']
+    #
     mean_deviation_df_years = pd.DataFrame()
     for year in years:
         mean_deviation_df_weather = pd.DataFrame()
@@ -716,7 +715,8 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                 latex_df = pd.read_csv(filename_csv, index_col=[0],
                                        header=[0, 1])
                 if case == 'power_output_1':
-                    latex_df.index = [item.split(' ')[0] for item in latex_df.index]
+                    latex_df.index = [item.split(' ')[0] for
+                                      item in latex_df.index]
                 if weather_mean:
                     latex_df = latex_df.drop('measured', axis=1)
                     latex_df.drop('[MWh]', axis=1, level=1, inplace=True)
@@ -732,7 +732,14 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                     wf]].mean()
                 df = df.transpose()
                 if weather_mean:
-                    df.columns = [df.columns, [weather_data_name for i in df.columns]]
+                    if case == 'power_output_1':
+                        df.columns = [df.columns, ['-', weather_data_name,
+                                                   weather_data_name]]
+                        if weather_data_name != weather_data_list[-1]:
+                            df.drop(['P'], axis=1, inplace=True)
+                    else:
+                        df.columns = [df.columns,
+                                      [weather_data_name for i in df.columns]]
                 mean_deviation_df = pd.concat([mean_deviation_df, df], axis=0)
                 # mean_deviation_df.sort_index(axis=1, inplace=True)
             # Save to file if not weather mean
@@ -752,6 +759,8 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                                                   mean_deviation_df], axis=1)
         if weather_mean:
             mean_deviation_df_wfs.sort_index(axis=1, level=0, inplace=True)
+            if case == 'power_output_1':
+                mean_deviation_df_wfs.loc['Average'] = mean_deviation_df_wfs.mean()
             filename_table = os.path.join(
                 path_latex_tables,
                 'mean_deviation_weather_wfs_{}.tex'.format(case))
@@ -839,7 +848,7 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder):
 
 
 def carry_out_mean_figure_tables(latex_tables_folder, cases, csv_folder):
-    figures = ['RMSE [MW]', 'RMSE [%]']
+    figures = ['RMSE [MW]', 'RMSE [%]', 'Pearson coefficient']
     for figure in figures:
         for case in cases:
             if 'wind_speed' in case:
@@ -866,12 +875,14 @@ if __name__ == "__main__":
     carry_out_mean_figure_tables(latex_tables_folder, cases=cases,
                                  csv_folder=csv_folder)
     cases_2 = [
-        # 'wind_farm_2',
-        # 'wind_farm_gw',
-        # 'single_turbine_1',
-        # 'weather_wind_farm',
-        # 'smoothing_2',
-        'power_output_1'
+        'wind_farm_2',
+        'wind_farm_gw',
+        'single_turbine_1',
+        'weather_wind_farm',
+        'smoothing_2',
+        'power_output_1',
+        'wake_losses_1',
+        'wake_losses_3'
     ]
     single = True
     for case in cases_2:

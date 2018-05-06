@@ -17,7 +17,8 @@ def bar_plot_from_file(source_filename, output_filename, index=None,
         # Select whole data frame
         plot_df = df
     fig, ax = plt.subplots()
-    plot_df.plot(kind='bar', ax=ax, legend=False)
+    plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+    ax.grid(zorder=0)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.ylabel(ylabel)
     # plt.xlabel('Wind farms')
@@ -28,25 +29,32 @@ def bar_plot_from_file(source_filename, output_filename, index=None,
     fig.savefig(output_filename, bbox_inches="tight")
     plt.close()
 
+
 def run_bar_plots_from_files():
     filenames = ['mean_std_dev_smoothing_2.csv']
     index_header_cols = [([1, 0], 1)]
     ylabels = ['Mean standard deviation in MW']
     output_methods = ['hourly', 'monthly', 'half-hourly']
     for output_method in output_methods:
-        for filename, index_header_col, ylabel in zip(filenames, index_header_cols, ylabels):
+        for filename, index_header_col, ylabel in zip(
+                filenames, index_header_cols, ylabels):
             input_filename = os.path.join(
-                os.path.dirname(__file__), '../../../User-Shares/Masterarbeit/Latex/csv_for_plots', filename)
+                os.path.dirname(__file__),
+                '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                filename)
             output_filename = os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/inc/images/bar_plots_others',
-                'bar_plot_{}_{}.png'.format(filename.split('.')[0], output_method))
+                'bar_plot_{}_{}.png'.format(filename.split('.')[0],
+                          output_method))
             bar_plot_from_file(
                 input_filename, output_filename=output_filename,
                 index_cols=index_header_col[0],
-                header_cols=index_header_col[1], index=output_method, ylabel=ylabel)
+                header_cols=index_header_col[1], index=output_method,
+                ylabel=ylabel)
             bar_plot_from_file(
-                input_filename, output_filename=output_filename.replace('.png', '.pdf'),
+                input_filename, output_filename=output_filename.replace(
+                    '.png', '.pdf'),
                 index_cols=index_header_col[0],
                 header_cols=index_header_col[1], index=output_method,
                 ylabel=ylabel)
@@ -89,14 +97,14 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     # approaches for one year and weather data set
                     plot_df = pd.concat([plot_df, figure_case_df], axis=1)
                 fig, ax = plt.subplots()
-                plot_df.plot(kind='bar', ax=ax, legend=False)
+                plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+                ax.grid(zorder=0)
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
                 if key_figure == 'RMSE [m/s]':
                     plt.ylim(ymin=0.0, ymax=2.5)
                 # plt.xlabel('Wind farms')
                 plt.xticks(rotation='horizontal')
-                plt.grid()
                 # plt.title('{} of wind speed calculation with different methods in {}'.format(
                 #     key_figure, year))
                 plt.tight_layout()
@@ -155,9 +163,12 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                         'H2 100', 'H2 80', 'H2 10', 'Log. interp.']
                 weather_plot_df = weather_plot_df[cols]
             # Plot into subplot
-            weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False)
+            weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False,
+                                 zorder=3)
             weather_ax.annotate(weather_data_name, xy=(0.99, 0.99),
-                         xycoords='axes fraction', ha='right', va='top')
+                                xycoords='axes fraction', ha='right', va='top',
+                                zorder=3)
+            weather_ax.grid(zorder=0)
             # Csv dump for calculations
             weather_plot_df.to_csv(os.path.join(
                 os.path.dirname(__file__),
@@ -166,19 +177,20 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                         key_figure.replace(' ', '_').replace('/', '_').replace(
                             '.', '').replace('%', 'percentage'), weather_data_name,
                         output_method, case, filename_add_on)))
-            if ((('wind_speed_1' in cases or 'wind_speed_5' in cases)and
+            if ((('wind_speed_1' in cases or 'wind_speed_5' in cases) and
                     'weather_wind_speed_1' not in cases) or
                             'wake_losses_3' in cases):
-                if 'wind_speed_1' in cases:
+                if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
                     weather_plot_df.index = ['{} ({} m)'.format(
                         item, height) for item, height in zip(
                         weather_plot_df.index, [105, 60, 105])]
                 single_fig, ax = plt.subplots()
-                weather_plot_df.plot(kind='bar', ax=ax, legend=True)
+                weather_plot_df.plot(kind='bar', ax=ax, legend=True, zorder=3)
+                ax.grid(zorder=0)
+                if len(weather_plot_df) < 4:
+                    plt.xticks(rotation='horizontal')
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
-                plt.xticks(rotation='horizontal')
-                plt.grid()
                 if key_figure == 'RMSE [m/s]':
                     plt.ylim(ymin=0.0, ymax=2.5)
                 plt.tight_layout()
@@ -195,7 +207,6 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 plt.close()
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.xticks(rotation='horizontal')
-    plt.grid()
     weather_fig.text(0.04, 0.5, key_figure.replace('coeff.', 'Coefficient'),
                      va='center', rotation='vertical')
     # plt.tight_layout()
@@ -214,6 +225,91 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
         weather_fig.savefig(filename_start + '.pdf', bbox_inches="tight")
         weather_fig.savefig(filename_start, bbox_inches="tight")
     plt.close()
+
+
+def bar_plot_key_figures_all_in_one(cases, output_method='hourly'):
+    """ average over years"""
+    key_figures = ['RMSE [m/s]', 'RMSE [%]', 'Pearson coefficient',
+                   'mean bias [m/s]']
+    if 'wind_speed' in cases[0]:
+        key_figures = [figure.replace('MW', 'm/s') for figure in key_figures]
+    else:
+        key_figures = [figure.replace('m/s', 'MW') for figure in key_figures]
+    weather_data_names = ['MERRA', 'open_FRED']
+    for weather_data_name in weather_data_names:
+        if (('wind_speed_1' in cases or
+                     'wind_speed_5' in cases or
+                     'wake_losses_1' in cases or
+                     'wake_losses_3' in cases) and
+                    weather_data_name == 'MERRA'):
+            pass
+        else:
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)  #sharex='row'
+            for key_figure, ax in zip(key_figures, fig.axes):
+                figure_df = pd.DataFrame()
+                for year in [2015, 2016]:
+                    plot_df = pd.DataFrame()
+                    for case in cases:
+                        # Read data
+                        filename_csv = os.path.join(
+                            os.path.dirname(__file__),
+                            '../../../User-Shares/Masterarbeit/Latex/csv_for_plots',
+                            'key_figures_approaches_{0}_{1}_{2}.csv'.format(
+                                case, year, weather_data_name))
+                        case_df = pd.read_csv(filename_csv, index_col=[1, 0],
+                                              header=[0, 1])
+                        # Choose data with output method and key figure
+                        figure_case_df = case_df.loc[output_method][key_figure]
+                        if (case == 'wind_speed_4' or case == 'wind_speed_8'):
+                            figure_case_df = figure_case_df.loc[:,
+                                             ['Log. interp.']]
+                        if case in ['wind_speed_1', 'wind_speed_2',
+                                    'wind_speed_3',
+                                    'wind_speed_5', 'wind_speed_6',
+                                    'wind_speed_7']:
+                            # Order columns
+                            figure_case_df = figure_case_df[[
+                                '{} {}'.format(
+                                    list(figure_case_df)[0].split(' ')[0],
+                                    height) for height in ['100', '80', '10']]]
+                        # Create data frame from all cases
+                        plot_df = pd.concat([plot_df, figure_case_df], axis=1)
+                    # Combine data frames from both years
+                    figure_df = pd.concat([figure_df, plot_df], axis=1)
+                figure_plot_df = pd.DataFrame()
+                column_names = list(set(list(figure_df)))
+                column_names.sort()
+                for column_name in column_names:
+                    # Take mean from years
+                    figure_plot_df[column_name] = figure_df[
+                        column_name].mean(axis=1)
+                if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
+                    # Bring column into desired order
+                    cols = ['Log 100', 'Log 80', 'Log 10', 'H 100', 'H 80',
+                            'H 10',
+                            'H2 100', 'H2 80', 'H2 10', 'Log. interp.']
+                    figure_plot_df = figure_plot_df[cols]
+                    figure_plot_df.index = ['{} ({} m)'.format(
+                        item, height) for item, height in zip(
+                        figure_plot_df.index, [105, 60, 105])]
+                # Plot into subplot
+                figure_plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+                ax.grid(zorder=0)
+                ax.set_ylabel(key_figure)
+                # Rotate xticks
+                ax.set_xticklabels(ax.get_xticklabels(), rotation=0,
+                                   fontsize=8)
+                plt.figlegend(loc='upper center', ncol=5, prop={'size': 8},
+                              bbox_to_anchor=(0, 0.07, 1, 1),
+                              bbox_transform=plt.gcf().transFigure)
+            plt.tight_layout()
+            filename_start = os.path.join(
+                    os.path.dirname(__file__),
+                    '../../../User-Shares/Masterarbeit/Latex/inc/images/key_figures/subplots',
+                    'Sub_Barplots_yearly_mean_{}_{}_{}'.format(
+                        weather_data_name, output_method, case))
+            fig.savefig(filename_start + '.pdf', bbox_inches="tight")
+            plt.close()
 
 def run_bar_plot_key_figures():
     weather_data_names = [
@@ -251,20 +347,25 @@ def run_bar_plot_key_figures():
         'hourly',
         'monthly'
     ]
-    for output_method in output_methods:
-        for key_figure in key_figures:
-            for cases in cases_list:
-                if (output_method == 'monthly' and
-                        cases[0] in not_for_monthly_list):
-                    pass
-                else:
-                    if 'wind_speed' in cases[0]:
-                        key_figure = key_figure.replace('MW', 'm/s')
-                    else:
-                        key_figure = key_figure.replace('m/s', 'MW')
-                    bar_plot_key_figures(
-                        years, output_method, key_figure,
-                        cases, weather_data_names)
+    # for output_method in output_methods:
+    #     for key_figure in key_figures:
+    #         for cases in cases_list:
+    #             if (output_method == 'monthly' and
+    #                     cases[0] in not_for_monthly_list):
+    #                 pass
+    #             else:
+    #                 if 'wind_speed' in cases[0]:
+    #                     key_figure = key_figure.replace('MW', 'm/s')
+    #                 else:
+    #                     key_figure = key_figure.replace('m/s', 'MW')
+    #                 bar_plot_key_figures(
+    #                     years, output_method, key_figure,
+    #                     cases, weather_data_names)
+
+    for cases in cases_list:
+            bar_plot_key_figures_all_in_one(cases=cases,
+                                            output_method='hourly')
+
 
 def run_all_plots():
     run_bar_plot_key_figures()
