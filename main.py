@@ -47,7 +47,7 @@ cases = [
 #     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-    'wake_losses_1',  # not used anymore
+#     'wake_losses_1',  # not used anymore
 # #     'wake_losses_2',  # not used anymore
 #     'wake_losses_3',
 # ---- Single Turbine Model ---- '
@@ -56,6 +56,7 @@ cases = [
 #     'wind_farm_gw',
 #     'wind_farm_2',
 #     'wind_farm_4',
+    'wind_farm_final',
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',

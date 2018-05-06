@@ -290,6 +290,11 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['GreenWind']
         config_dict['replacement'] = [
             ('_', ' '), ('aggregation', 'Agg.')]
+    if case == 'wind_farm_final':
+        config_dict['approach_list'] = ['Dena', 'Dena-TI',
+                                        'Const.', 'aggregation']
+        config_dict['replacement'] = [
+            ('_', ' '), ('aggregation', 'Agg.')]
 
     # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
     #     config_dict['approach_list'] = [] # TODO add if needed
