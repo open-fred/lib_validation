@@ -173,7 +173,7 @@ def get_configuration(case=None):
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)']
         config_dict['validation_data_list'] = ['gw_wind_speeds']
-        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
+        config_dict['weather_data_list'] = ['open_FRED'] # TODO: 'MERRA',
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['hourly', 'monthly']
@@ -292,9 +292,9 @@ def get_configuration(case=None):
             ('_', ' '), ('aggregation', 'Agg.')]
     if case == 'wind_farm_final':
         config_dict['approach_list'] = ['Dena', 'Dena-TI',
-                                        'Const.', 'aggregation']
+                                        'Constant', 'aggregation']
         config_dict['replacement'] = [
-            ('_', ' '), ('aggregation', 'Agg.')]
+            ('_', ' '), ('aggregation', 'Agg.'),  ('Constant', 'Const.')]
 
     # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
     #     config_dict['approach_list'] = [] # TODO add if needed
