@@ -22,7 +22,7 @@ def bar_plot_from_file(source_filename, output_filename, index=None,
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.ylabel(ylabel)
     # plt.xlabel('Wind farms')
-    # plt.xticks(rotation='vertical')
+    plt.xticks(rotation='horizontal')
     # plt.title('{} of wind speed calculation with different methods in {}'.format(
     #     key_figure, year))
     plt.tight_layout()
@@ -171,17 +171,24 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                                 xycoords='axes fraction', ha='right', va='top',
                                 zorder=3)
             weather_ax.grid(zorder=0)
+            # Rotate xticks
+            if len(weather_plot_df.index) <= 4:
+                weather_ax.set_xticklabels(weather_ax.get_xticklabels(),
+                                           rotation=0, fontsize=8)
+            else:
+                weather_ax.set_xticklabels(weather_ax.get_xticklabels(),
+                                           rotation=0, fontsize=6)
             # Csv dump for calculations
             weather_plot_df.to_csv(os.path.join(
                 os.path.dirname(__file__),
                 '../../../User-Shares/Masterarbeit/Latex/Tables/differences/csvs',
                 'mean_years_{}_{}_{}_{}_{}.csv'.format(
                         key_figure.replace(' ', '_').replace('/', '_').replace(
-                            '.', '').replace('%', 'percentage'), weather_data_name,
-                        output_method, case, filename_add_on)))
+                            '.', '').replace('%', 'percentage'),
+                weather_data_name, output_method, case, filename_add_on)))
             if ((('wind_speed_1' in cases or 'wind_speed_5' in cases) and
                     'weather_wind_speed_1' not in cases) or
-                            'wake_losses_3' in cases):
+                        'wake_losses_3' in cases or 'smoothing_2' in cases):
                 if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
                     weather_plot_df.index = ['{} ({} m)'.format(
                         item, height) for item, height in zip(
@@ -189,8 +196,7 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 single_fig, ax = plt.subplots()
                 weather_plot_df.plot(kind='bar', ax=ax, legend=True, zorder=3)
                 ax.grid(zorder=0)
-                if len(weather_plot_df) < 4:
-                    plt.xticks(rotation='horizontal')
+                plt.xticks(rotation='horizontal')
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
                 if key_figure == 'RMSE [m/s]':
@@ -208,7 +214,6 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 single_fig.savefig(filename_start, bbox_inches="tight")
                 plt.close()
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.xticks(rotation='horizontal')
     weather_fig.text(0.04, 0.5, key_figure.replace('coeff.', 'Coefficient'),
                      va='center', rotation='vertical')
     # plt.tight_layout()
@@ -323,17 +328,17 @@ def run_bar_plot_key_figures():
         'open_FRED'
     ]
     cases_list = [
-        ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
-        ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
+        # ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
+        # ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
         ['weather_wind_speed_1'],
-        ['smoothing_2'],
-        ['single_turbine_1'],
-        ['wake_losses_3'],
-        ['wind_farm_4'],
-        ['wind_farm_gw'],
-        ['wind_farm_2'],
-        ['weather_wind_farm'],
-        ['wind_farm_final']
+        # ['smoothing_2'],
+        # ['single_turbine_1'],
+        # ['wake_losses_3'],
+        # ['wind_farm_4'],
+        # ['wind_farm_gw'],
+        # ['wind_farm_2'],
+        # ['weather_wind_farm'],
+        # ['wind_farm_final']
     ]
     not_for_monthly_list = [
         'wind_farm_3',
