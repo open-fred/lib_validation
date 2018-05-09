@@ -361,14 +361,15 @@ if __name__ == "__main__":
         # variables = np.arange(-15.0, 15.0, 0.5)
         std_dev = 0.15
         mean = 0.0
-        gauss = tools.gaussian_distribution(
+        gauss = tools.gauss_distribution(
             variables, standard_deviation=std_dev*wind_speed, mean=0)
         # gauss.index = gauss.index + wind_speed
-        gauss_percentage = gauss * 100
+        gauss = pd.DataFrame(gauss)
+        gauss.index = [item + 8 for item in gauss.index]
         fig = plt.figure()
-        gauss_percentage.plot(color='darkblue')
+        gauss.plot(color='darkblue', legend=False)
         plt.xlabel('Wind speed in m/s')
-        plt.ylabel('Probability in %')
+        plt.ylabel('Probability')
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/gauss',
