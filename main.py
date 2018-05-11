@@ -141,15 +141,17 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        (None, None),  # for whole year
+        # (None, None),  # for whole year
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
     #     ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
     #     ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
     #     ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
     #     ('{0}-09-01'.format(year), '{0}-09-07'.format(year)),
-        ('{0}-10-07'.format(year), '{0}-10-14'.format(year)),
-        ('{0}-05-01'.format(year), '{0}-05-14'.format(year)),
-        ('{0}-11-01'.format(year), '{0}-11-14'.format(year))
+    #     ('{0}-10-07'.format(year), '{0}-10-14'.format(year)),
+    #     ('{0}-05-01'.format(year), '{0}-05-14'.format(year)),
+    #     ('{0}-11-01'.format(year), '{0}-11-14'.format(year)),
+    #     ('{0}-05-07'.format(year), '{0}-05-08'.format(year)),
+        ('{0}-05-06'.format(year), '{0}-05-08'.format(year))
         ]
 
     #extra_plots = np.array([ # NOTE: not working
