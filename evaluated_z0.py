@@ -1,11 +1,9 @@
-from wind_farm_specifications import (get_joined_wind_farm_data,
-                                      get_wind_farm_data)
+from wind_farm_specifications import get_joined_wind_farm_data
 import tools
 
 from matplotlib import pyplot as plt
 import os
 import numpy as np
-import pandas as pd
 
 
 def evaluate_z0_data(weather_data_name, wind_farm_data, year,

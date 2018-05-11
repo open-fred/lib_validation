@@ -2,8 +2,7 @@
 The ``open_fred_weather_data`` module contains functions to read and dump the
 open_FRED weather data from csv files.
 
-TODO: The time stamps are in UTC. in the tools module a function converts them.
-Try is this would work with the whole dataframe (with all locations) - took lots of time
+The time stamps are in UTC
 
 """
 
@@ -20,12 +19,13 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
 
     Parameters
     ----------
-    filename : String
+    filename : string
         Name (including path) of file to load open_FRED data from.
         Default: 'fred_data_2015_sh.csv'.
-    pickle_filename : String
+    pickle_filename : string
         Name (including path) of file of pickle dump. Default: 'pickle_dump.p'.
-
+    pickle_load : boolean
+        If True data is loaded from the pickle dump. Default: False.
     Returns
     -------
     data_frame : pd.DataFrame
@@ -54,12 +54,12 @@ def join_of_data(path1, paths2, year):
 
     Parameters
     ----------
-    path1 : String
+    path1 : string
         Filename including path to csv file containing data.
-    paths2 : List
+    paths2 : list
         Contains filenames including paths to csv files to be joined to data
         frame from `path1`.
-    year : Integer
+    year : integer
         Year.
 
     """

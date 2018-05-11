@@ -2,8 +2,7 @@
 The ``merra_weather_data`` module contains functions to read and dump the
 MERRA-2 weather data from csv files.
 
-TODO: The time stamps are in UTC. in the tools module a function converts them.
-Try is this would work with the whole dataframe (with all locations) - took lots of time
+The time stamps are in UTC.
 
 """
 
@@ -27,22 +26,22 @@ def get_merra_data(year, raw_data=False, multi_index=True, heights=None,
 
     Parameters
     ----------
-    year : Integer
+    year : integer
         Year the weather data is fetched for.
-    raw_data : Boolean
+    raw_data : boolean
         If True only the raw weather data will be returned and dumped. Set
         `pickle_load` to False if you do not know whether the pickle dump
         contains raw data or revised data. Default: False.
-    multi_index : Boolean
+    multi_index : boolean
         True if the data shall be dumped as a MultiIndex pandas DataFrame.
         Default: True.
-    heights : List, optional
+    heights : list, optional
         Contains heights for which the temperature shall be calculated (only
         for MultiIndex DataFrame). Default: None.
-    filename : String
+    filename : string
         Name (including path) of file to load data from or if MERRA data is
         retrieved function 'create_merra_df' is used. Default: 'pickle_dump.p'.
-    pickle_load : Boolean
+    pickle_load : boolean
         True if data has already been dumped before. Default: False.
 
     Returns
@@ -118,7 +117,7 @@ def rename_columns(weather_df, additional_columns_drop=None):
     df = weather_df.drop(drop_columns, axis=1)
     df = df.rename(
         columns={'v_50m': 'wind_speed', 'z0': 'roughness_length',
-                 'rho': 'density', 'p': 'pressure'}) # TODO: check units of Merra data
+                 'rho': 'density', 'p': 'pressure'})
     return df
 
 
@@ -136,5 +135,3 @@ if __name__ == "__main__":
         weather_df = get_merra_data(year, raw_data=False, multi_index=True,
                                     heights=heights, filename=filename_weather,
                                     pickle_load=False)
-    # print(weather_df)
-    # print(len(weather_df))

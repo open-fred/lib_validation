@@ -82,7 +82,7 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
         # if (turbine_type == 'vestasV90' or turbine_type == 'vestasV80'):
         # Add power coefficient curve
         if (turbine_type is not 'enerconE66_1800_98' and
-            turbine_type is not 'enerconE66_2000'):
+                turbine_type is not 'enerconE66_2000'):
             turbine.fetch_curve = 'power_coefficient_curve'
             turbine.fetch_turbine_data()
         turbine_list.append(turbine)
@@ -107,10 +107,6 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
             e70 = initialize_turbines(['enerconE70'])[0]
             if (filename == 'farm_specification_argenetz_2015.p' or
                     filename == 'farm_specification_argenetz_2016.p'):
-                # Initialize turbines
-                # e70, e66 = initialize_turbines(
-                #     ['enerconE70', 'enerconE66_1800_65'])
-
                 # wf_1 = {
                 #     'name': 'wf_1',
                 #     'wind_turbine_fleet': [{'wind_turbine': e70,

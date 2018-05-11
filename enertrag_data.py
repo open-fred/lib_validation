@@ -13,15 +13,14 @@ Additionally the sum of the power output of all wind turbines is available in
 column 'wf_BNE_power_output'.
 
 DateTimeIndex in 'Europe/Berlin' time zone.
+
 """
 
 # Imports from lib_validation
 import tools
 
 # Other imports
-from matplotlib import pyplot as plt
 import pandas as pd
-import numpy as np
 import os
 import pickle
 
@@ -47,34 +46,23 @@ def read_data(filename):
 
 
 def get_enertrag_data(pickle_load=False, filename='enertrag_dump.p',
-                      resample=True, plot=False, x_limit=None,
-                      frequency='30T', curtailment=True):
-    # TODO: add plots to check data
+                      resample=True, frequency='30T'):
     r"""
     Fetches Enertrag data.
 
     Parameters
     ----------
-    pickle_load : Boolean
+    pickle_load : boolean
         If True data frame is loaded from the pickle dump if False the data is
         loaded from the original csv files (or from smaller csv file that was
         created in an earlier run if `csv_load` is True).
         Either set `pickle_load` or `csv_load` to True. Default: False.
     filename : String
         Filename including path of pickle dump. Default: 'enertrag_dump.p'.
-    resample : Boolean
+    resample : boolean
         If True the data will be resampled to the `frequency`. (mean power)
-    plot : Boolean
-        If True each column of the data farme is plotted into a seperate
-        figure. Default: False
-    x_limit : list of floats or integers
-        Values for xmin and xmax in case of `plot` being True and x limits
-        wanted. Default: None.
-    frequency : String (or freq object...?)
-        # TODO add
-    curtailment : Boolean
-        If True an average (30min) curtailment of the wind farm power output is
-        added.
+    frequency : String
+        Frequency attribute.
 
     Returns
     -------
@@ -134,6 +122,7 @@ def get_enertrag_curtailment_data(frequency):
     -------
     curtailment_data : pd.DataFrame
         Enertrag wind farm curtailment in column 'curtail_rel'.
+
     """
     data = read_data(
         'windpark_nechlin_production_and_curtailment_2016_15min.csv')

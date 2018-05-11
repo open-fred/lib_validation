@@ -35,7 +35,7 @@ def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
         turbine type in wind farm) as keys.
     weather_df : pandas.DataFrame
         DataFrame with time series for wind speed `wind_speed` in m/s and
-        roughness length `roughness_length` in m. TODO: add from wpl
+        roughness length `roughness_length` in m.
     wind_speed : pd.Series or np.array
         If this parameter is given, this wind_speed instead of the one in
         `weather_df` is used for calculations. Default: None.
@@ -82,7 +82,7 @@ def power_output_cluster(wind_object, weather_df, wake_losses_model=None,
                          smoothing_order='wind_farm_power_curves',
                          wind_speed=None, **kwargs):
     r"""
-    Calculate power output of... TODO: add to docstring
+    Calculate power output of a wind farm or cluster.
 
     Parameters
     ----------

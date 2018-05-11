@@ -2,8 +2,7 @@
 The ``argenetz_data`` module contains functions to read and dump measured
 feed-in time series from ArgeNetz wind farms.
 
-The following data is available for 5 wind farms (year 2015) or 4 wind farms
-(year 2016):
+The following data is available for 5 wind farms for the years 2015 and 2016:
 - measured feed-in (power) [kW]
 - wind speed [m/s]
 - wind direction
@@ -11,6 +10,11 @@ The following data is available for 5 wind farms (year 2015) or 4 wind farms
 - installed power [kW]
 
 The time stamps are in local time 'Europe/Berlin'.
+
+ATTENTION:
+Please note that in this case wind farms are defined by ownership. From
+Screenshots in the project folder it can be seen how the wind turbines
+actually group to wind farms.
 
 """
 
@@ -32,7 +36,6 @@ import pickle
 import sys
 
 
-# for other validation data modules, too
 def read_data(filename, **kwargs):
     r"""
     Fetches data from a csv file.
@@ -47,7 +50,7 @@ def read_data(filename, **kwargs):
     datapath : string, optional
         Path where the data file is stored. Default: './data'
     usecols : list of strings or list of integers, optional
-        TODO: add explanation Default: None
+        Columns to extract. Default: None
 
     Returns
     -------
@@ -125,11 +128,6 @@ def new_column_names(year):
             'wf_3_power_output', 'wf_3_theoretical_power', 'wf_4_power_output',
             'wf_4_theoretical_power', 'wf_4_wind_speed', 'wf_5_power_output',
             'wf_5_installed_power', 'wf_5_theoretical_power']
-#        new_column_names = [
-#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-#           'wf_2_power_output', 'wf_2_installed_power', 'wf_3_power_output',
-#           'wf_3_wind_speed', 'wf_4_power_output', 'wf_4_wind_speed',
-#           'wf_5_power_output', 'wf_5_installed_power']
     if (year == 2016 or year == 2017):
         new_column_names = [
             'wf_1_power_output', 'wf_1_theoretical_power', 'wf_1_wind_speed',
@@ -140,11 +138,6 @@ def new_column_names(year):
             'wf_4_installed_power', 'wf_5_power_output',
             'wf_5_theoretical_power', 'wf_5_wind_speed', 'wf_5_wind_dir',
             'wf_5_installed_power']
-#        new_column_names = [
-#           'wf_1_power_output', 'wf_1_wind_speed', 'wf_1_installed_power',
-#           'wf_3_power_output', 'wf_3_wind_speed', 'wf_3_installed_power',
-#           'wf_4_power_output', 'wf_4_wind_speed', 'wf_4_installed_power',
-#           'wf_5_power_output', 'wf_5_wind_speed', 'wf_5_installed_power']
     return new_column_names
 
 
@@ -155,15 +148,23 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
 
     Parameters
     ----------
-    filename_files : String
+    filename_files : string
         Filename of file containing filenames of csv file to be read.
-    year : Integer
+    year : integer
         Year of data to be fetched.
+    filename_pickle : string
+        Filename including path of pickle dump. Default: 'pickle_dump.p'.
+    pickle_load : boolean
+        If True data frame is loaded from the pickle dump if False the data
+        frame is created. Default: False.
+    filter_interpolated_data : boolean
+        If True interpolated data that represents missing measurement data
+        is filtered.
 
     Returns
     -------
     df : pandas.DataFrame
-        Data of ArgeNetz wind farms with readable column names.
+        Data of ArgeNetz wind farms with renamed columns.
 
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -235,7 +236,8 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
             df_wf_2.drop([col for col in list(df_wf_2) if 'drop_col' in col],
                          inplace=True)
             # Convert string index to Datetime index
-            df_wf_2.index = [pd.to_datetime(index.replace(replace, ''), utc=True) for
+            df_wf_2.index = [pd.to_datetime(index.replace(replace, ''),
+                                            utc=True) for
                              index in df_wf_2.index]
             # Set time zone
             df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
@@ -276,7 +278,8 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
                 filename, datapath=file_dir)
             df_wf_2 = pd.concat([df_wf_2, df_part])
         # Rename columns
-        old_names = [col for col in list(df_wf_2) if 'Nordstrand ::' not in col]
+        old_names = [col for col in list(df_wf_2) if
+                     'Nordstrand ::' not in col]
         new_names = []
         aliases = {'NordstranderWind_E21897010000000000000000000100001': '1',
                    'Morsumkoog_E21897010000000000000000000100002': '2',
@@ -304,7 +307,8 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
         df_wf_2.drop([col for col in list(df_wf_2) if 'drop_col' in col],
                      inplace=True, axis=1)
         # Convert string index to Datetime index
-        df_wf_2.index = [pd.to_datetime(index.replace('PT1M', ''), utc=True) for
+        df_wf_2.index = [pd.to_datetime(index.replace('PT1M', ''),
+                                        utc=True) for
                          index in df_wf_2.index]
         # Set time zone
         df_wf_2.index = df_wf_2.index.tz_convert('Europe/Berlin')
@@ -326,34 +330,6 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
         pickle.dump(df_wf_2, open(pickle_filename, 'wb'))
     return df_wf_2
 
-def data_evaluation(filename, csv_print=True):
-    """
-    Evaluate the data in terms of which data series exist of which farm for
-    which year.
-
-    Parameters:
-    -----------
-    filename : string
-        Name of file that contains names of files to be evaluated.
-    csv_print : boolean
-        Decision whether to print resulting data frame to csv file.
-
-    """
-    ########## ATTENTION: not working at the moment!!! ##########
-    # Initialise pandas.DataFrame
-    df_compare = pd.DataFrame()
-    # Read file and add to DataFrame for each line (= filenames)
-    with open(filename) as file:
-            for line in file:
-                name = line.strip()
-                df = restructure_data(name, drop_na=True)
-                df2 = pd.DataFrame(data=df, index=list(df),
-                                   columns=[name])
-                df_compare = pd.concat([df_compare, df2], axis=1)
-    if csv_print:
-        df_compare.to_csv('evaluation.csv')
-    return df_compare
-
 
 def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
     r"""
@@ -363,8 +339,6 @@ def plot_argenetz_data(df, save_folder, y_limit=None, x_limit=None):
     -----------
     df : pandas.DataFrame
         Contains data to be plotted.
-    y_limit, x_limit : list of floats or integers
-        Values for ymin, ymax, xmin and xmax
 
     """
     for column in df.columns:
@@ -387,29 +361,29 @@ def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
                       csv_load=False, csv_dump=True,
                       filter_interpolated_data=True, plot=False, x_limit=None):
     r"""
-    Fetches ArgeNetz data for specified year and plots feedin.
+    Fetches ArgeNetz data for specified year and plots feed-in.
 
-    year : Integer
+    year : integer
         Desired year to get the data for.
-    pickle_load : Boolean
+    pickle_load : boolean
         If True data frame is loaded from the pickle dump if False the data is
         loaded from the original csv files (or from smaller csv file that was
         created in an earlier run if `csv_load` is True).
         Either set `pickle_load` or `csv_load` to True. Default: False.
-    filename : String
+    filename : string
         Filename including path of pickle dump. Default: 'pickle_dump.p'.
-    csv_load : Boolean
+    csv_load : boolean
         If True the data is loaded from a csv file that was created in an
         earlier run, if False the data is loaded from the original csv files
         from ArgeNetz (or loaded by pickle if `pickle_load` is True).
         Either set `pickle_load` or `csv_load` to True. Default: False
-    csv_dump : Boolean
+    csv_dump : boolean
         If True the data is written into a csv file. Default: True
-    filter_interpolated_data : Boolean
+    filter_interpolated_data : boolean
         If True the interpolated data (indicator for missing data) is filtered.
         The missing values are set to None. Default: True.
-    plot : Boolean
-        If True each column of the data farme is plotted into a seperate
+    plot : boolean
+        If True each column of the data farms is plotted into a separate
         figure. Default: False
     x_limit : list of floats or integers
         Values for xmin and xmax in case of `plot` being True and x limits
@@ -533,10 +507,9 @@ if __name__ == "__main__":
             plot=False)  # Plot each column of dataframe
 
 # Other parameters:
-#    evaluate_data = False  # Check which variables are given for which farm
     correlation_wind_power = False
-    check_theo_power = False  # theoretical power against wind speed if True
-    wf_2_single = False
+    check_theo_power = False  # theoretical power vs wind speed if True
+    wf_2_single = False  # Get data of single wind turbines of wf2 (Nordstrand)
 
     if wf_2_single:
         wf_2_single_data(
@@ -548,16 +521,3 @@ if __name__ == "__main__":
         years = [2015, 2016]
         for year in years:
             correlation_of_wind_speed_and_power(year)
-#    if evaluate_data:
-#        # Filenames: filenames_all.txt, filenames_2016.txt,.. see helper_files
-#        df_compare = data_evaluation('helper_files/filenames_2016.txt')
-#     if check_theo_power:
-#         year = 2016  # dont use 2015 - no wind speed!
-#         start = None
-#         end = None
-#         # Get ArgeNetz Data
-#         arge_netz_data = get_argenetz_data(
-#             year, pickle_load=True, filename=pickle_path, plot=False)
-#         check_theoretical_power(arge_netz_data, year, start, end)
-#         print("Plots for comparing theoretical power with simulated power " +
-#               "(measured wind speed) are saved in 'Plots/Test_Arge'")

@@ -1,6 +1,5 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_farm as wf
-from windpowerlib.wake_losses import get_wind_efficiency_curve
 
 # Imports from lib_validation
 import visualization_tools
@@ -11,7 +10,7 @@ from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
 from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-from argenetz_data import get_argenetz_data, wf_2_single_data
+from argenetz_data import get_argenetz_data
 from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
 from analysis_tools import ValidationObject
 from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
@@ -31,50 +30,36 @@ logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
-# ---- Single functions - wind speed ---- # (only open_FRED)
-#     'wind_speed_1',
-#     'wind_speed_2',
-#     'wind_speed_3',
-#     'wind_speed_4',
-    # 'wind_speed_5',  # first row like weather_wind_speed_3
-    # 'wind_speed_6',  # first row like weather_wind_speed_3
-    # 'wind_speed_7',  # first row like weather_wind_speed_3
-    # 'wind_speed_8',  # first row like weather_wind_speed_3
-# ---- Single functions - wind speed ---- # (only open_FRED)
-#     'power_output_1',
-# ---- Single functions - smoothing, density... ---- #
-#     'smoothing_1',
-#     'smoothing_2',
-    # 'density_correction_1',
-# ---- Single functions - Wake losses ---- #
-#     'wake_losses_1',  # not used anymore
-# #     'wake_losses_2',  # not used anymore
-#     'wake_losses_3',
-# ---- Single Turbine Model ---- '
-#     'single_turbine_1',
-# ---- Wind Farm Model ---- '
-#     'wind_farm_gw',
-#     'wind_farm_2',
-#     'wind_farm_4',
+    # ---- Single functions - wind speed ---- # (only open_FRED)
+    'wind_speed_1',
+    'wind_speed_2',
+    'wind_speed_3',
+    'wind_speed_4',
+    'wind_speed_5',  # first row like weather_wind_speed_3
+    'wind_speed_6',  # first row like weather_wind_speed_3
+    'wind_speed_7',  # first row like weather_wind_speed_3
+    'wind_speed_8',  # first row like weather_wind_speed_3
+    # ---- Single functions - wind speed ---- # (only open_FRED)
+    'power_output_1',
+    # ---- Single functions - smoothing, density... ---- #
+    'smoothing_1',
+    'smoothing_2',
+    # ---- Single functions - Wake losses ---- #
+    'wake_losses_3',
+    # ---- Single Turbine Model ---- '
+    'single_turbine_1',
+    # ---- Wind Farm Model ---- '
     'wind_farm_final',
-# #     'wind_farm_3',  # not used anymore
-# ---- weather data ---- #
-#     'weather_wind_speed_1',
-#     # 'weather_wind_speed_2',  # not used anymore
-#     # 'weather_wind_speed_3',  # BS, BE North...  # not used anymore
-#     # 'weather_single_turbine_1',  # not used anymore
-#     # 'weather_single_turbine_2',  # not used anymore
-#     # 'highest_wind_speed',  # not used anymore
-#     'weather_wind_farm'
+    # ---- weather data ---- #
+    'weather_wind_speed_1',
+    'weather_wind_farm'
 ]
 
-min_periods_pearson = None  # Integer
+min_periods_pearson = None  # Minimum amount of periods for correlation.
 
 # Pickle load time series data frame - if one of the below pickle_load options
 # is set to False, `pickle_load_time_series_df` is automatically set to False
 pickle_load_time_series_df = False
-
-plot_single_func = False  # TODO: do not plot at RLI pc
 
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -84,14 +69,16 @@ pickle_load_greenwind = True
 pickle_load_wind_farm_data = True
 pickle_load_wind_efficiency_curves = True
 
-csv_load_time_series_df = False  # Load time series data frame from csv dump
+csv_load_time_series_df = True  # Load time series data frame from csv dump
 if pickle_load_time_series_df:
     csv_dump_time_series_df = False
 else:
-    csv_dump_time_series_df = True  # Dump df as csv
+    csv_dump_time_series_df = False  # Dump df as csv
+
+plot_single_func = False
 
 feedin_comparsion_all_in_one = True  # Plots all calculated series for one
-                                      # wind farm in one plot (multiple)
+                                     # wind farm in one plot (multiple)
 
 # Select time of day you want to observe or None for all day
 time_period = (
@@ -134,29 +121,18 @@ if (not pickle_load_merra or not pickle_load_open_fred or not
         pickle_load_greenwind or not pickle_load_wind_farm_data):
     pickle_load_time_series_df = False
 
-def run_main(case, parameters, year):  # TODO functions out of run_main if possible
+
+def run_main(case, parameters, year):
     logging.info("--- Simulation with case {0} in year {1} starts ---".format(
         case, year))
 
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        # (None, None),  # for whole year
-    #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
-    #     ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
-    #     ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
-    #     ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
-    #     ('{0}-09-01'.format(year), '{0}-09-07'.format(year)),
-    #     ('{0}-10-07'.format(year), '{0}-10-14'.format(year)),
-    #     ('{0}-05-01'.format(year), '{0}-05-14'.format(year)),
-    #     ('{0}-11-01'.format(year), '{0}-11-14'.format(year)),
-    #     ('{0}-05-07'.format(year), '{0}-05-08'.format(year)),
+        (None, None),  # for whole year
+        ('{0}-05-07'.format(year), '{0}-05-08'.format(year)),
         ('{0}-05-06'.format(year), '{0}-05-08'.format(year))
         ]
-
-    #extra_plots = np.array([ # NOTE: not working
-    ##    'annual_bars_weather'  # Bar plot of annual energy output for all weather data and years
-    #    ])
 
     # Set paramters
     restriction_list = parameters['restriction_list']
@@ -172,9 +148,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
     # -------------------------------- Warning ------------------------------ #
     if (year == 2015 and validation_data_list[0] == 'Enertrag' and
             validation_data_list[-1] == 'Enertrag'):
-        raise ValueError("Enertrag data not available for 2015 - select other " +
-                         "validation data or year 2016")
-
+        raise ValueError("Enertrag data not available for 2015 - select " +
+                         "other validation data or year 2016")
 
     # ------------------------ Validation Feedin Data ----------------------- #
     def get_threshold(out_frequency, original_resolution):
@@ -187,7 +162,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
         if original_resolution == 1:
             original_resolution = 60
         return resolution / original_resolution * threshold_factor
-
 
     def get_validation_data(frequency):
         r"""
@@ -298,18 +272,21 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         'greenwind_data_{0}.p'.format(year)),
                     case=case)
                 if 'wind_speed' in case:
-                    # Get first row single turbine wind speed and rename columns
-                    single_data = single_data[[col for col in list(single_data) if
+                    # Get first row single turbine wind speed and rename
+                    # columns
+                    single_data = single_data[[col for
+                                               col in list(single_data) if
                                                'wind_speed' in col]].rename(
                         columns={column: column.replace(
-                            'wind_speed', 'measured').replace('wf', 'single') for
-                            column in list(single_data)})
+                            'wind_speed', 'measured').replace(
+                            'wf', 'single') for column in list(single_data)})
                 else:
-                    single_data = single_data[[col for col in list(single_data) if
+                    single_data = single_data[[col for
+                                               col in list(single_data) if
                                                'power_output' in col]].rename(
                         columns={column: column.replace(
-                            'power_output', 'measured').replace('wf', 'single') for
-                            column in list(single_data)})
+                            'power_output', 'measured').replace(
+                            'wf', 'single') for column in list(single_data)})
             # Resample the DataFrame columns with `frequency` and add to list
             threshold = get_threshold(frequency, single_data.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
@@ -326,24 +303,25 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
             # Select only power output columns and drop wind farm power output
             turbine_power_output = greenwind_data[[
                 column_name for column_name in list(greenwind_data) if
-                    'power_output' in column_name]].drop(
+                'power_output' in column_name]].drop(
                 ['wf_{}_power_output'.format(wf) for
                  wf in ['BE', 'BS', 'BNW']], axis=1)
-            turbine_power_output.rename(columns = {
+            turbine_power_output.rename(columns={
                 old_col: old_col.replace('wf_', '').replace(
                     'power_output', 'measured') for
                 old_col in list(turbine_power_output)}, inplace=True)
             # Resample the DataFrame columns with `frequency` and add to list
-            threshold = get_threshold(frequency, turbine_power_output.index.freq.n)
+            threshold = get_threshold(frequency,
+                                      turbine_power_output.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
-                df=turbine_power_output, frequency=frequency, threshold=threshold))
+                df=turbine_power_output, frequency=frequency,
+                threshold=threshold))
         # Join DataFrames - power output in MW - wind speed in m/s
         if 'wind_speed' in case:
             validation_df = pd.concat(validation_df_list, axis=1)
         else:
             validation_df = pd.concat(validation_df_list, axis=1) / 1000
         return validation_df
-
 
     # ---------------------------- Wind farm data --------------------------- #
     def return_wind_farm_data(single=False, gw_wind_speeds=False,
@@ -581,8 +559,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                     calculation_df_list.append(
                         modelchain_usage.wind_speed_to_hub_height(
                             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                            weather_df=weather,
-                            wind_speed_model='interpolation_extrapolation').to_frame(
+                            wind_speed_model='interpolation_extrapolation',
+                            weather_df=weather).to_frame(
                             name='{0}_calculated_lin._interp.'.format(
                                 wind_farm.name)))
             if 'log._interp.' in approach_list:
@@ -590,17 +568,15 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                     calculation_df_list.append(
                         modelchain_usage.wind_speed_to_hub_height(
                             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                            weather_df=weather,
-                            wind_speed_model='log_interpolation_extrapolation').to_frame(
+                            wind_speed_model='log_interpolation_extrapolation',
+                            weather_df=weather).to_frame(
                             name='{0}_calculated_log._interp.'.format(
                                 wind_farm.name)))
 
             # --- wind speed definition for next cases --- #
-            # if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
-            #         'wake_losses' in case):
             if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
                     case == 'wake_losses_1'):
-               # Use wind speed from first row GreenWind data as weather data
+                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
                     pickle_filename=os.path.join(
@@ -621,15 +597,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                 # Select wind speed column of specific turbine
                 wind_speed = greenwind_data[['wf_{}_wind_speed'.format(
                     wind_farm.name)]]
-            # elif case == 'power_output_2':
-            #     # Get ArgeNetz data and get wind speed from turbines
-            #     arge_single_data = wf_2_single_data(
-            #         pickle_load=pickle_load_arge,
-            #         pickle_filename=os.path.join(
-            #             os.path.dirname(__file__), 'dumps/validation_data',
-            #             'wf_SH_single.p'))
-            #     wind_speed = arge_single_data[['{}_wind_speed'.format(
-            #         wind_farm.name)]]
             else:
                 wind_speed = None
             if wind_speed is not None:
@@ -771,8 +738,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         name='{0}_calculated_Calculated'.format(
                             wind_farm.name)))
             if 'Constant' in approach_list:
-                # efficiency = wind_eff_curves[[wind_farm.name]]
-                # wind_farm.efficiency = efficiency.mean()[0]
                 wind_farm.efficiency = 0.8
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
@@ -782,8 +747,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         name='{0}_calculated_Constant'.format(
                             wind_farm.name)))
             if 'Dena' in approach_list:
-                # wind_farm.efficiency = get_wind_efficiency_curve(
-                #     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, wind_speed=wind_speed,
@@ -792,8 +755,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         name='{0}_calculated_Dena'.format(
                             wind_farm.name)))
             if 'Knorr_extreme2' in approach_list:
-                # wind_farm.efficiency = get_wind_efficiency_curve(
-                #     curve_name='knorr_extreme2')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -811,8 +772,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         name='{0}_calculated_No_losses'.format(
                             wind_farm.name)))
             if 'Dena-TI' in approach_list:
-                # wind_farm.efficiency = get_wind_efficiency_curve(
-                #     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -825,8 +784,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         name='{0}_calculated_Dena-TI'.format(
                             wind_farm.name)))
             if 'Dena-SP' in approach_list:
-                # wind_farm.efficiency = get_wind_efficiency_curve(
-                #     curve_name='dena_mean')
                 calculation_df_list.append(
                     modelchain_usage.power_output_cluster(
                         wind_farm, weather, density_correction=False,
@@ -920,85 +877,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         density_correction=False).to_frame(
                         name='{0}_calculated_Calc.-SP'.format(
                             wind_farm.name)))
-        #     if 'density_correction' in approach_list:
-        #         calculation_df_list.append(modelchain_usage.power_output_simple(
-        #             wind_farm.wind_turbine_fleet, weather,
-        #             density_correction=True).to_frame(
-        #                 name='{0}_calculated_density_correction'.format(
-        #                     wind_farm.name)))
-        #     if 'smooth_wf' in approach_list:
-        #         calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #             wind_farm, weather, density_correction=False,
-        #             wake_losses_model=None, smoothing=True,
-        #             block_width=0.5,
-        #             standard_deviation_method='turbulence_intensity',
-        #             smoothing_order='wind_farm_power_curves',
-        #             roughness_length=weather[
-        #                 'roughness_length'][0].mean(),
-        #             wind_speed_model='logarithmic').to_frame(
-        #                     name='{0}_calculated_smooth_wf'.format(
-        #                         wind_farm.name)))
-        #     if 'constant_efficiency_90_%' in approach_list:
-        #         wind_farm.efficiency = 0.8
-        #         calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #             wind_farm, weather, density_correction=False,
-        #             wake_losses_model='constant_efficiency', smoothing=False).to_frame(
-        #                 name='{0}_calculated_constant_efficiency_90_%'.format(
-        #                     wind_farm.name)))
-        #     if 'constant_efficiency_80_%' in approach_list:
-        #         wind_farm.efficiency = 0.8
-        #         calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #             wind_farm, weather, density_correction=False,
-        #             wake_losses_model='constant_efficiency', smoothing=False).to_frame(
-        #                 name='{0}_calculated_constant_efficiency_80_%'.format(
-        #                     wind_farm.name)))
-        #     if 'efficiency_curve' in approach_list:
-        #         wind_farm.efficiency = get_wind_efficiency_curve(
-        #             curve_name='dena_mean', plot=False)
-        #         calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #             wind_farm, weather, density_correction=False,
-        #             wake_losses_model='wind_efficiency_curve', smoothing=False).to_frame(
-        #             name='{0}_calculated_efficiency_curve'.format(
-        #                 wind_farm.name)))
-        #     if 'eff_curve_smooth' in approach_list:
-        #         wind_farm.efficiency = get_wind_efficiency_curve(
-        #             curve_name='dena_mean', plot=False)
-        #         calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #             wind_farm, weather, density_correction=False,
-        #             wake_losses_model='wind_efficiency_curve', smoothing=True,
-        #             smoothing_order='wind_farm_power_curves',
-        #             roughness_length=weather[
-        #                 'roughness_length'][0].mean()).to_frame(
-        #             name='{0}_calculated_eff_curve_smooth'.format(
-        #                 wind_farm.name)))
-        #     if 'lin._interp.' in approach_list:
-        #         if len(list(weather['wind_speed'])) > 1:
-        #             wind_farm.efficiency = get_wind_efficiency_curve(
-        #                 curve_name='dena_mean', plot=False)
-        #             calculation_df_list.append(
-        #                 modelchain_usage.power_output_cluster(
-        #                     wind_farm, weather,
-        #                     density_correction=False,
-        #                     wake_losses_model='wind_efficiency_curve',
-        #                     smoothing=True,
-        #                     wind_speed_model='interpolation_extrapolation',
-        #                     roughness_length=weather[
-        #                         'roughness_length'][0].mean()).to_frame(
-        #                     name='{0}_calculated_lin._interp.'.format(
-        #                         wind_farm.name)))
-        # if 'test_cluster' in approach_list:
-        #     test_cluster = wtc.WindTurbineCluster('test', wind_farm_list)
-        #     calculation_df_list.append(modelchain_usage.power_output_cluster(
-        #         test_cluster, weather, density_correction=False,
-        #         wake_losses_model=None, smoothing=True,
-        #         block_width=0.5,
-        #         standard_deviation_method='turbulence_intensity',
-        #         smoothing_order='wind_farm_power_curves',
-        #         roughness_length=weather[
-        #             'roughness_length'][0].mean(),
-        #         wind_speed_model='logarithmic').to_frame(
-        #         name='{0}_calculated_test_cluster'.format(
-        #             wind_farm.name)))
         # Join DataFrames - power output in MW - wind speed in m/s
         if 'wind_speed' in case:
             calculation_df = pd.concat(calculation_df_list, axis=1)
@@ -1058,13 +936,15 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                 time_series_df.loc[:, column_name[0]].loc[
                     time_series_df.loc[:, column_name[1]].loc[
                         time_series_df.loc[
-                            :, column_name[1]].isnull() == True].index] = np.nan
+                            :, column_name[1]].isnull() == True].index] = (
+                            np.nan)
                 # Nans of measured data to calculated data
                 for i in range(len(column_name) - 1):
                     time_series_df.loc[:, column_name[i+1]].loc[
                         time_series_df.loc[:, column_name[0]].loc[
                             time_series_df.loc[
-                            :, column_name[0]].isnull() == True].index] = np.nan
+                            :, column_name[0]].isnull() == True].index] = (
+                                np.nan)
             # Only keep rows within the right year
             time_series_df['boolean'] = (time_series_df.index.year == year)
             time_series_df = time_series_df.loc[
@@ -1104,16 +984,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                 for wf_string in wf_strings}
         return dictionary
 
-
-    def join_dictionaries(list_of_dicts): # TODO: delete if not needed
-        # Start with copy of first entry
-        z = list_of_dicts[0].copy()
-        # Update with the remaining dictionaries
-        for i in range(len(list_of_dicts) - 1):
-            z.update(list_of_dicts[i + 1])
-        return z
-
-
     # ---------------------------- Data Evaluation -------------------------- #
     # Get wind farm data
     if 'single' in validation_data_list:
@@ -1146,8 +1016,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
         time_series_df = get_time_series_df(weather_data_name,
                                             wind_farm_data_list)
         if time_period is not None:
-            # TODO: is now for all wind farms. if decided to use time period for argenetz -
-            # TODO: only apply on arge (put values to nan, that are outside the period)- leave this for times of day evaluation
             time_series_df = tools.select_certain_time_steps(time_series_df,
                                                              time_period)
         # Create list of time series data frames (for each wind farm for each
@@ -1156,7 +1024,7 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
             time_series_df.loc[:, [
                 column_name for column_name in list(time_series_df) if
                 '{}_'.format(wf_name) in column_name]] for
-                wf_name in wind_farm_names if
+                    wf_name in wind_farm_names if
             wf_name not in restriction_list]
         time_series_pairs = [time_series_df.loc[:, [
             '{0}_measured'.format(wf_name), '{0}_calculated_{1}'.format(
@@ -1187,8 +1055,9 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                     if 'measured' not in column_name:
                         approach_string = '_'.join(column_name.split('_')[3:])
                         calculated_output = tools.annual_energy_output(
-                            time_series_df_part.loc[:,'{0}_calculated_{1}'.format(
-                                wf_string, approach_string)])
+                            time_series_df_part.loc[
+                                :, '{0}_calculated_{1}'.format(
+                                    wf_string, approach_string)])
                         annual_energy_dict_weather[wf_string][
                             approach_string]['[MWh]'] = (
                             calculated_output)
@@ -1232,8 +1101,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
                     monthly_series = tools.resample_with_nan_theshold(
                         df=time_series_pair, frequency='M',
-                        threshold=get_threshold('M',
-                                            time_series_pair.index.freq.n))
+                        threshold=get_threshold(
+                            'M', time_series_pair.index.freq.n))
                     val_obj_dict[weather_data_name]['monthly'][
                         approach_string].append(ValidationObject(
                             name=wf_string, data=monthly_series,
@@ -1301,7 +1170,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
+                save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
+                               'images/Plots/{0}/'.format(folder))
                 for method in output_methods:
                     # Resample if necessary
                     if method == 'hourly':
@@ -1370,7 +1240,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                 else:
                     add_on = 'None'
                     title_add_on = ''
-                save_folder = '../../../User-Shares/Masterarbeit/Latex/inc/images/Plots/{0}/'.format(folder)
+                save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
+                               'images/Plots/{0}/'.format(folder))
                 for method in output_methods:
                     if (method == 'half_hourly' and
                             weather_data_name == 'MERRA'):
@@ -1419,10 +1290,12 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                             df=time_series_df_part, frequency='H',
                             threshold=get_threshold(
                                 'H', time_series_df_part.index.freq.n))
-                    wf_name = '_'.join(list(time_series_df_part)[0].split('_')[0:2])
+                    wf_name = '_'.join(list(
+                        time_series_df_part)[0].split('_')[0:2])
                     sub_filename = os.path.join(
                             os.path.dirname(__file__),
-                            '../../../User-Shares/Masterarbeit/Latex/inc/images/correlation_sub',
+                            '../../../User-Shares/Masterarbeit/Latex/inc/' +
+                            'images/correlation_sub',
                             'Correlation_{}_{}_{}_{}'.format(
                                 case, weather_data_name, year, wf_name))
                     visualization_tools.correlation_subplot(
@@ -1432,41 +1305,13 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
                         time_series_df_part, filename=sub_filename.replace(
                             '.png', '.pdf'))
 
-    #         if 'box_plots' in visualization_methods:
-    #             # Store all bias time series of a validation set in one
-    #             # DataFrame for Boxplot
-    #             bias_df = pd.DataFrame()
-    #             for validation_object in validation_set:
-    #                 if 'all' not in validation_object.name:
-    #                     df_part = pd.DataFrame(
-    #                         data=validation_object.bias,
-    #                         columns=[validation_object.name])
-    #                     bias_df = pd.concat([bias_df, df_part], axis=1)
-    #             # Specify filename
-    #             filename = (save_folder +
-    #                         '{0}_Boxplot_{1}_{2}_{3}_{4}.pdf'.format(
-    #                             validation_set[0].output_method, year,
-    #                             validation_data_name,
-    #                             weather_data_name, approach))
-    #             title = (
-    #                 'Deviation of ' +
-    #                 '{0} {1} from {2}\n in {3} ({4} approach)'.format(
-    #                     weather_data_name,
-    #                     validation_set[0].output_method.replace('_',
-    #                                                             ' '),
-    #                     validation_data_name, year, approach) +
-    #                 title_add_on)
-    #             visualization_tools.box_plots_bias(
-    #                 bias_df, filename=filename, title=title)
-
-    # ---------------------------------- LaTeX Output --------------------------- #
+    # ------------------------------ LaTeX Output --------------------------- #
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
     if time_period is not None:
         filename_add_on = '_{0}_{1}'.format(time_period[0], time_period[1])
     else:
         filename_add_on = ''
-
 
     # Write latex output
     latex_tables.write_latex_output(
@@ -1477,32 +1322,6 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
         output_methods=output_methods, path_latex_tables=path_latex_tables,
         filename_add_on=filename_add_on, year=year, case=case,
         replacement=replacement, csv_folder=csv_folder)
-
-    # ------------------------------- Extra plots ------------------------------- #
-    # if 'annual_bars_weather' in extra_plots:
-    #     years = [2015, 2016]
-    #     if 'annual_energy_output' not in output_methods:
-    #         raise ValueError("'annual_energy_output' not in `output_methods` - " +
-    #                          "cannot generate 'annual_bars_weather' plot")
-    #     for approach in approach_list:
-    #         for validation_data_name in validation_data_list:
-    #             filenames = []
-    #             for year in years:
-    #                 validation_sets = []
-    #                 filenames.extend(['validation_sets_{0}_{1}_{2}_{3}'.format(
-    #                     year, weather_data_name,
-    #                     validation_data_name, approach) +
-    #                              '_annual_energy_output.p'
-    #                              for weather_data_name in weather_data_list])
-    #                 for filename in filenames:
-    #                     if (approach in filename and 'annual_energy_output' in filename
-    #                             and validation_data_name in filename
-    #                             and str(year) in filename):
-    #                         validation_sets.append(pickle.load(open(filename, 'rb')))
-    #                     index = [year]
-    #                     columns = [validation_data_name]
-    #                     columns.extend([name for name in weather_data_list])
-    #                     data = []
 
     logging.info("--- Simulation with case {0} in year {1} end ---".format(
         case, year))
@@ -1528,8 +1347,7 @@ if __name__ == "__main__":
             latex_tables_folder, csv_folder=csv_folder,
             case='power_output_1', single=True)
         latex_tables.annual_energy_deviation_wfs(
-            latex_tables_folder, csv_folder=csv_folder,
-                                    case='power_output_1')
+            latex_tables_folder, csv_folder=csv_folder, case='power_output_1')
     if 'smoothing_1' in cases:
         latex_tables.concat_std_dev_tables_smoothing_1(
             latex_tables_folder, csv_folder=csv_folder)

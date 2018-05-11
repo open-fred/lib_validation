@@ -13,6 +13,7 @@ import os
 import pandas as pd
 import numpy as np
 
+
 def plot_smoothed_pcs(standard_deviation_method, block_width,
                       wind_speed_range, turbines, weather_data_name,
                       grouped=False, mean_roughness_length=None,
@@ -28,8 +29,10 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
         fig = plt.figure()
         wind_speeds = turbine.power_curve['wind_speed']
         p_values = turbine.power_curve['power'] / 1000
-        p_values = p_values.append(pd.Series(0.0, index=[p_values.index[-1] + 1]))
-        wind_speeds = wind_speeds.append(pd.Series(40.0, index=[wind_speeds.index[-1] + 1]))
+        p_values = p_values.append(pd.Series(0.0,
+                                             index=[p_values.index[-1] + 1]))
+        wind_speeds = wind_speeds.append(
+            pd.Series(40.0, index=[wind_speeds.index[-1] + 1]))
         a, = plt.plot(wind_speeds, p_values, label='Original')
         # Get smoothed power curve
         if grouped is False:
@@ -98,10 +101,11 @@ def plot_smoothed_pcs(standard_deviation_method, block_width,
         plt.legend(handles=handles)
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc',
+            '../../../User-Shares/Masterarbeit/Latex/inc/images/' +
+            'power_curves/smoothed_pc',
             '{}_{}_{}_{}_blockwidth{}_range{}.pdf'.format(
                 'single' if grouped is False else grouped, turbine.name,
-                weather_data_name,standard_deviation_method.replace(
+                weather_data_name, standard_deviation_method.replace(
                     'turbulence_intensity', 'TI').replace(
                     'Staffell', 'ST').replace('Pfenninger', 'Pf') if
                 grouped != 'std_dev' else standard_deviation_method,
@@ -150,12 +154,14 @@ def plot_smoothed_pc_turbines(standard_deviation_method, block_width,
     plt.legend(handles=handles)
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
-        '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_pc/by_turbine',
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/' +
+        'power_curves/smoothed_pc/by_turbine',
         'turbines_{}_{}_blockwidth{}_range{}.pdf'.format(
             weather_data_name, standard_deviation_method,
             block_width, wind_speed_range).replace(
             '.', '_').replace(' ', '_').replace('pdf', '.pdf')))
     plt.close()
+
 
 def get_roughness_length(weather_data_name, coordinates):
     z0 = pd.DataFrame()
@@ -184,7 +190,8 @@ def plot_aggregated_vs_smoothed_pc():
     for fleet in wf.wind_turbine_fleet:
         # Put aggregated turbine (type) power curves to data frame for
         # aggregation
-        curve = fleet['wind_turbine'].power_curve.set_index('wind_speed') * fleet['number_of_turbines']
+        curve = (fleet['wind_turbine'].power_curve.set_index('wind_speed') *
+                 fleet['number_of_turbines'])
         df = pd.concat([df, curve], axis=1)
     # Aggregated power curve
     df.interpolate(method='index', inplace=True)
@@ -192,7 +199,8 @@ def plot_aggregated_vs_smoothed_pc():
     smoothed_curve = smooth_power_curve(
                 pd.Series(aggregated_curve.index), aggregated_curve['power'],
                 turbulence_intensity=tools.estimate_turbulence_intensity(
-                    height=wf.hub_height, roughness_length=get_roughness_length(
+                    height=wf.hub_height,
+                    roughness_length=get_roughness_length(
                         'open_FRED', wf.coordinates)[0]))
     smoothed_curve.set_index('wind_speed', inplace=True)
     smoothed_curve_sp = smooth_power_curve(
@@ -217,10 +225,11 @@ def plot_aggregated_vs_smoothed_pc():
         smoothed_turbine_curve = smooth_power_curve(
             fleet['wind_turbine'].power_curve['wind_speed'],
             fleet['wind_turbine'].power_curve['power'],
-                turbulence_intensity=tools.estimate_turbulence_intensity(
+            turbulence_intensity=tools.estimate_turbulence_intensity(
                     wf.hub_height, get_roughness_length(
                         'open_FRED', wf.coordinates)[0]))
-        smoothed_turbine_curve = smoothed_turbine_curve.set_index('wind_speed') * fleet['number_of_turbines']
+        smoothed_turbine_curve = smoothed_turbine_curve.set_index(
+            'wind_speed') * fleet['number_of_turbines']
         df_2 = pd.concat([df_2, smoothed_turbine_curve], axis=1)
         # SP approach
         smoothed_turbine_curve_sp = smooth_power_curve(
@@ -247,15 +256,15 @@ def plot_aggregated_vs_smoothed_pc():
     plt.xlabel('Wind speed in m/s')
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
-        '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_vs_agg',
-        'smoothed_vs_agg_wf_BNE.pdf'))
+        '../../../User-Shares/Masterarbeit/Latex/inc/images/' +
+        'power_curves/smoothed_vs_agg', 'smoothed_vs_agg_wf_BNE.pdf'))
 
 if __name__ == "__main__":
     single_plots = False
     grouped_plots = False
     turbine_plots = False
-    plot_gauss = False
-    plot_aggregated_vs_smoothed = True
+    plot_gauss = True
+    plot_aggregated_vs_smoothed = False
 
     if (single_plots or grouped_plots or turbine_plots):
         # turbulence_intensity = 0.15  # Only for single plot
@@ -273,12 +282,13 @@ if __name__ == "__main__":
             5.0, 10.0, 20.0,
             15.0
         ]
-        weather_data_names = ['MERRA', 'open_FRED']
+        weather_data_names = [
+            # 'MERRA',
+            'open_FRED']
 
         # Initialise WindTurbine objects
         e70, v90, v80, ge, e82 = initialize_turbines(
             ['enerconE70', 'vestasV90', 'vestasV80', 'ge_1500',
-             # 'enerconE66_1800_65', # Note: war nur für wf_3
              'enerconE82_2000'])
         # Wind farm data
         wind_farm_data = {
@@ -286,7 +296,8 @@ if __name__ == "__main__":
             'wf_BS': [51.785053, 14.456623],
             'wf_BNW': [53.128206, 12.114433],
             'wf_BNE': [53.4582543833, 13.8976882575],
-            'wf_SH': [54.509708, 8.9007]}
+            'wf_SH': [54.509708, 8.9007]
+        }
         for weather_data_name in weather_data_names:
             turbines_list = []
             z0_list = []
@@ -329,7 +340,11 @@ if __name__ == "__main__":
                                 grouped='block_width',
                                 weather_data_name=weather_data_name)
                     # different standard deviation methods
-                    for range in [10.0, 15.0, 20.0]:
+                    for range in [
+                        # 10.0,
+                        15.0,
+                        # 20.0
+                    ]:
                         plot_smoothed_pcs(
                             standard_deviation_method=standard_deviaton_methods,
                             block_width=0.5,
@@ -356,7 +371,7 @@ if __name__ == "__main__":
 
     if plot_gauss:
         variables = pd.Series(data=np.arange(-7.0, 7.5, 0.1),
-                              index=np.arange(-7.0, 7.5 , 0.1))
+                              index=np.arange(-7.0, 7.5, 0.1))
         wind_speed = 8
         # variables = np.arange(-15.0, 15.0, 0.5)
         std_dev = 0.15
@@ -366,8 +381,8 @@ if __name__ == "__main__":
         # gauss.index = gauss.index + wind_speed
         gauss = pd.DataFrame(gauss)
         gauss.index = [item + 8 for item in gauss.index]
-        fig = plt.figure()
-        gauss.plot(color='darkblue', legend=False)
+        fig, ax = plt.subplots()
+        gauss.plot(color='darkblue', ax=ax, legend=False)
         plt.xlabel('Wind speed in m/s')
         plt.ylabel('Probability')
         fig.savefig(os.path.join(

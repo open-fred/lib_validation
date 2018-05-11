@@ -144,26 +144,8 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
         and/or `end` is None the whole time series is plotted. Default: None.
 
     """
-#    def label_bars(bars, labels):
-#        # TODO: Remove from here - but save for other possible labels
-#        r"""
-#        Attach a label above each bar.
-#
-#        Parameters
-#        ----------
-#        bars : List
-#            Contains the patches of the axis (ax.patches).
-#        labels : List
-#            Contains the labels.
-#
-#        """
-#        for bar, label in zip(bars, labels):
-#            height = bar.get_height()
-#            ax.text(bar.get_x() + bar.get_width()/2.,  height + 3, label,
-#                    ha='center', va='bottom', fontsize=6)
-
     # Drop nans and rename columns
-    data = deepcopy(data).rename(columns={ # TODO: remove deepcopy if not necessary
+    data = deepcopy(data).rename(columns={
         old_name: new_name.replace('_', ' ') for old_name, new_name in
         zip(list(data), list(data))})
     fig, ax = plt.subplots()
@@ -172,10 +154,6 @@ def plot_feedin_comparison(data, method=None, filename='Tests/feedin_test.pdf',
         data.index = pd.Series(
             data.index).dt.strftime('%b')
         data.plot(kind='bar', ax=ax)
-#        # Add RMSE labels to bars
-#        rmse_labels = ['RMSE [{0}]\n{1}'.format(label_part, round(entry, 2))
-#                       for entry in validation_object.rmse_monthly]
-#        label_bars(ax.patches[:12], rmse_labels)
     else:
         data.plot(
             legend=True, ax=ax)
@@ -207,7 +185,6 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
         Title of figure. Default: 'Test'.
 
     """
-    # TODO: think of bins.. maybe like in Shap's phd
     # Maximum value for xlim and ylim and line
     maximum = max(data.iloc[:, 0].max(), data.iloc[:, 1].max())
     if method == 'monthly':
@@ -231,16 +208,6 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
     plt.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
     plt.title(title)
     plt.legend(handles=[ideal, deviation_100])
-    # Add certain values to plot as text
-    # plt.annotate(
-    #     'RMSE = {0} \n Pr = {1} \n mean bias = {2}{3} \n std dev = {4}'.format(
-    #         round(validation_object.rmse, 2),
-    #         round(validation_object.pearson_s_r, 2),
-    #         round(validation_object.mean_bias, 2), 'MW',
-    #         round(validation_object.standard_deviation, 2)) + 'MW',
-    #     xy=(1, 1), xycoords='axes fraction',
-    #     xytext=(-6, -6), textcoords='offset points',
-    #     ha='right', va='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
     fig.savefig(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), filename)))
@@ -265,10 +232,6 @@ def correlation_subplot(df, filename):
         ideal, = ax.plot([0, maximum], [0, maximum], color='black',
                          linestyle='--', linewidth=1,
                          label='ideal correlation')
-        # deviation_100, = ax.plot([0, maximum], [0, maximum * 2],
-        #                          color='orange',
-        #                          linestyle='--', label='100 % deviation')
-        # ax.plot([0, maximum * 2], [0, maximum], color='orange', linestyle='--')
         # Rename columns for x and y labels
         df.rename(columns={old_col: old_col.replace('_', ' ').replace(
             'calculated', 'calculation method:').replace(

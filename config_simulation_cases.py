@@ -1,4 +1,9 @@
-import numpy as np
+"""
+The ``config_simulation_cases`` module contains functions for the configuration
+of simulations cases for main.py
+
+"""
+
 
 
 def get_standard_case_of_configuration():
@@ -7,32 +12,7 @@ def get_standard_case_of_configuration():
 
     """
     config_dict = {
-        'restriction_list' : [],
-        # 'restriction_list': [
-        #     'simple',
-        #     'density_correction',
-        #     'smooth_wf',
-        #     'constant_efficiency_90_%',
-        #     'constant_efficiency_80_%',
-        #     'efficiency_curve',
-        # #    'eff_curve_smooth',
-        # #    'linear_interpolation'
-        # #    'wf_1',
-        # #    'wf_2',
-        # #     'wf_3',
-        # #     'wf_4', 'wf_5'
-        #     ],
-        # 'approach_list': [  # TODO: wahrscheinlich nicht hier - immer unterschiedlich
-        #     'simple',  # logarithmic wind profile, simple aggregation for farm output
-        #     'density_correction',  # density corrected power curve, simple aggregation
-        #     'smooth_wf',  # Smoothed power curves at wind farm level
-        #     'constant_efficiency_90_%',  # Constant wind farm efficiency of 90 % without smoothing
-        #     'constant_efficiency_80_%',  # Constant wind farm efficiency of 80 % without smoothing
-        #     'efficiency_curve',  # Wind farm efficiency curve without smoothing
-        #     'eff_curve_smooth',   # Wind farm efficiency curve with smoothing
-        #     'lin._interp.',
-        #     'test_cluster'
-        #     ],
+        'restriction_list': [],
         'weather_data_list': ['MERRA', 'open_FRED'],
         'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
         'output_methods': ['half_hourly',  # Only if possible
@@ -40,35 +20,32 @@ def get_standard_case_of_configuration():
         'visualization_methods': [
            # 'box_plots',
            #  'feedin_comparison',
-           #  'plot_correlation',  # Attention: this takes a long time for high resolution
+           #  'plot_correlation',  # This takes a long time for high resolution
            #  'subplots_correlation'
            ],
         'latex_output': [
             'annual_energy_weather',  # Annual energy output all weather sets
             'annual_energy_approaches',  # AEO all approaches
-            'annual_energy_weather_approaches',  # AEO all approaches and weather sets
+            'annual_energy_weather_approaches',
             'key_figures_weather',     # Key figures of all weather sets
             'key_figures_approaches',  # Key figures of all approaches
-            'std_dev_time_series'
+            'std_dev_time_series'  # Standard deviation of time series
             ],
         'key_figures_print': ['rmse',
                               'rmse_normalized',
                               'pearson',
                               'mean_bias',
-                              # 'standard_deviation' # is std dev of bias!
+                              # 'standard_deviation' # std dev of bias
                               ],
-        'replacement': [('_', ' ')],   # ('_wf', '')
-        'years': [
-            2015,
-            2016
-            ]
-        }
+        'replacement': [('_', ' ')],
+        'years': [2015, 2016]
+    }
     return config_dict
 
 
 def get_configuration(case=None):
     r"""
-    ...
+    Returns configuration depending on the case.
 
     Parameters
     ----------
@@ -98,7 +75,6 @@ def get_configuration(case=None):
         Temporal output resolutions to take into consideration.
     visualization_methods : list
         Plot applications to take into consideration.
-        Options: 'feedin_comparison', ..
     latex_output : list
         Type of latex tables to take into consideration.
     key_figures_print : list
@@ -139,28 +115,28 @@ def get_configuration(case=None):
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
         config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
-    if case == 'wind_speed_5':  # first row like weather_wind_speed_3
+    if case == 'wind_speed_5':  # first row north/west
         config_dict['approach_list'] = [
             'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
         config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
-    if case == 'wind_speed_6':  # first row like weather_wind_speed_3
+    if case == 'wind_speed_6':  # first row north/west
         config_dict['approach_list'] = [
             'hellman_100', 'hellman_80', 'hellman_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
         config_dict['replacement'] = [('_', ' '), ('hellman', 'H')]
-    if case == 'wind_speed_7':  # first row like weather_wind_speed_3
+    if case == 'wind_speed_7':  # first row north/west
         config_dict['approach_list'] = [
             'hellman2_100', 'hellman2_80', 'hellman2_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches']
         config_dict['replacement'] = [('_', ' '), ('hellman', 'H')]
-    if case == 'wind_speed_8':  # first row like weather_wind_speed_3
+    if case == 'wind_speed_8':  # first row north/west
         config_dict['approach_list'] = [
             'log._interp.', 'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
@@ -169,11 +145,11 @@ def get_configuration(case=None):
         config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
 
     # ---- Single functions - power output ---- #
-    if case == 'power_output_1':  # gw wind speeds as weather data
+    if case == 'power_output_1':  # measured wind speeds as weather data
         config_dict['approach_list'] = [
             'p-curve', 'cp-curve', 'p-curve_(d._c.)']
         config_dict['validation_data_list'] = ['gw_wind_speeds']
-        config_dict['weather_data_list'] = ['open_FRED'] # TODO: 'MERRA',
+        config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['hourly', 'monthly']
@@ -181,42 +157,26 @@ def get_configuration(case=None):
         config_dict['replacement'] = [
             ('cp-curve', 'Cp'), ('p-curve', 'P'),
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
-    # if case == 'power_output_2':  # wf SH wind speeds as weather data
-    #     config_dict['approach_list'] = ['p-curve', 'cp-curve']
-    #     config_dict['validation_data_list'] = ['sh_wind_speeds']
-    #     config_dict['weather_data_list'] = ['MERRA', 'open_FRED']
-    #     config_dict['latex_output'] = ['key_figures_approaches',
-    #                                    'annual_energy_approaches']
-    #     config_dict['output_methods'] = ['hourly', 'monthly']
-    #     config_dict['replacement'] = [
-    #         ('cp-curve', 'Cp'), ('p-curve', 'P')]
-    #     config_dict['years'] = [2016]
 
     # ---- Single functions - Smoothing ---- #
-    # if case == 'smoothing_1':
-    #     config_dict['approach_list'] = ['turbine', 'farm']  # smoothing to farm pc or turbine pc
+    # if case == 'smoothing_1':  # NOTE: not used anymore
+    #     config_dict['approach_list'] = ['Turbine_TI', 'Farm_TI',
+    #                                     'Turbine_SP', 'Farm_SP']
     #     config_dict['validation_data_list'] = ['Enertrag']
     #     config_dict['latex_output'] = ['key_figures_approaches',
     #                                    'annual_energy_approaches',
     #                                    'std_dev_time_series']
+    #     config_dict['key_figures_print'] = ['rmse',
+    #                                         'pearson',
+    #                                         'mean_bias']
     #     config_dict['years'] = [2016]  # Enertrag data only for 2016
-    if case == 'smoothing_1':
-        config_dict['approach_list'] = ['Turbine_TI', 'Farm_TI',
-                                        'Turbine_SP', 'Farm_SP']  # smoothing to farm pc or turbine pc
-        config_dict['validation_data_list'] = ['Enertrag']
-        config_dict['latex_output'] = ['key_figures_approaches',
-                                       'annual_energy_approaches',
-                                       'std_dev_time_series']
-        config_dict['key_figures_print'] = ['rmse',
-                                            'pearson',
-                                            'mean_bias']
-        config_dict['years'] = [2016]  # Enertrag data only for 2016
-        config_dict['replacement'] = [
-            ('_', '-'), ('Turbine', 'T'), ('Farm', 'F')]
+    #     config_dict['replacement'] = [
+    #         ('_', '-'), ('Turbine', 'T'), ('Farm', 'F')]
 
     if case == 'smoothing_2':
-        config_dict['approach_list'] = ['TI', 'SP', 'aggregation']  # Validation
-        # GW wind speeds are used. oF and MERRA only if other weather data needed
+        # GW wind speeds are used. Open_FRED and MERRA only if other weather
+        # data needed
+        config_dict['approach_list'] = ['TI', 'SP', 'aggregation']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches',
                                        'std_dev_time_series']
@@ -227,34 +187,20 @@ def get_configuration(case=None):
     if case == 'wake_losses_1':
         config_dict['approach_list'] = ['aggregation', 'No_losses']
         config_dict['validation_data_list'] = ['GreenWind']
-        config_dict['weather_data_list'] = ['open_FRED']  # GW wind speeds are used. oF only if other weather data needed
+        # GW wind speeds are used. Open_FRED only if other weather data needed
+        config_dict['weather_data_list'] = ['open_FRED']
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['half_hourly',  # Only if possible
                                          'hourly']
         config_dict['replacement'] = [
             ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
-    # if case == 'wake_losses_2':
-    #     config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant',
-    #                                     'Knorr_extreme2']
-    #     config_dict['validation_data_list'] = ['GreenWind']
-    #     config_dict['weather_data_list'] = ['open_FRED']  # GW wind speeds are used. oF only if other weather data needed
-    #     config_dict['latex_output'] = ['key_figures_approaches',
-    #                                    'annual_energy_approaches']
-    #     # config_dict['output_methods'] = ['half_hourly',  # Only if possible
-    #     #                                  'hourly']
-    #     config_dict['replacement'] = [
-    #         ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.'),
-    #         ('Dena', 'Dena mean')]
     if case == 'wake_losses_3':
         config_dict['approach_list'] = ['Dena', 'Calculated', 'Constant',
                                         'No_losses']
         config_dict['validation_data_list'] = ['GreenWind']
-        # config_dict['weather_data_list'] = ['open_FRED']  # GW wind speeds are used. oF only if other weather data needed
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
-        # config_dict['output_methods'] = ['half_hourly',  # Only if possible
-        #                                  'hourly']
         config_dict['replacement'] = [
             ('_', ' '), ('Calculated', 'Calc.'), ('Constant', 'Const.')]
 
@@ -268,42 +214,12 @@ def get_configuration(case=None):
             ('(d._c.)', '(d.-c.)'), ('_', ' ')]
 
     # ---- Wind Farm Model ---- #
-    if case == 'wind_farm_gw':  # Only gw farms
-        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI',
-                                        # 'Calc.-SP', 'Const.-SP',
-                                        'Dena-TI', 'aggregation']
-        config_dict['validation_data_list'] = ['GreenWind']
-        config_dict['replacement'] = [
-            ('_', ' '), ('aggregation', 'Agg.')]
-
-    if case == 'wind_farm_2':
-        config_dict['approach_list'] = ['Dena-TI', 'Dena-SP',
-                                        'Const.-TI', 'Const.-SP',
-                                        'aggregation']
-        config_dict['replacement'] = [
-            ('_', ' '), ('aggregation', 'Agg.')]
-
-    if case == 'wind_farm_4':  # Only gw farms
-        config_dict['approach_list'] = ['Calc.-TI', 'Const.-TI',
-                                        'Const.-TI-60', 'Const.-TI-70',
-                                        'aggregation']
-        config_dict['validation_data_list'] = ['GreenWind']
-        config_dict['replacement'] = [
-            ('_', ' '), ('aggregation', 'Agg.')]
     if case == 'wind_farm_final':
         config_dict['approach_list'] = ['Dena', 'Dena-TI',
                                         'Constant', 'aggregation']
         config_dict['replacement'] = [
             ('_', ' '), ('aggregation', 'Agg.'),  ('Constant', 'Const.')]
 
-    # if case == 'wind_farm_3':  # Calcualted with first row wind speeds
-    #     config_dict['approach_list'] = [] # TODO add if needed
-    #     config_dict['validation_data_list'] = ['GreenWind']
-    #     config_dict['weather_data_list'] = [
-    #         'open_FRED']  # Weather data only for smoothing (z0) or if other than power curve is used.
-    #     config_dict['replacement'] = [('_', ' '), ('aggregation', 'Agg.')]
-    #     config_dict['output_methods'] = ['half_hourly',  # Only if possible
-    #                                      'hourly']
     # ---- weather data ---- #
     if case == 'weather_wind_speed_1':
         config_dict['approach_list'] = [
@@ -316,39 +232,4 @@ def get_configuration(case=None):
             ('logarithmic', 'Log'), ('interp', 'int')]
     if case == 'weather_wind_farm':
         config_dict['approach_list'] = ['Dena-TI', 'Const.-TI']
-
-    # if case == 'weather_wind_speed_2':
-    #     config_dict['approach_list'] = [
-    #         'logarithmic', 'lin._interp.', 'log._interp.']
-    #     config_dict['validation_data_list'] = ['single']
-    #     config_dict['weather_data_list'] = ['open_FRED']
-    #     config_dict['latex_output'] = ['key_figures_weather',
-    #                                    'key_figures_approaches']
-    #     config_dict['replacement'] = [('_', ' '), ('logarithmic', 'Log'),
-    #                                   ('interp', 'int')]
-    # if case == 'weather_wind_speed_3': # less values (North ...)
-    #     config_dict['approach_list'] = [
-    #         'logarithmic', 'lin._interp.', 'log._interp.']
-    #     config_dict['validation_data_list'] = ['single']
-    #     config_dict['latex_output'] = ['key_figures_weather',
-    #                                    'key_figures_approaches']
-    #     config_dict['output_methods'] = ['half_hourly',  # Only if possible
-    #                        'hourly']
-    # if case == 'weather_single_turbine_1':
-    #     config_dict['approach_list'] = [
-    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)']
-    #     config_dict['validation_data_list'] = ['single']
-    #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    # if case == 'weather_single_turbine_2':
-    #     config_dict['approach_list'] = [
-    #         'p-curve', 'cp-curve', 'p-curve_(d._c.)']
-    #     config_dict['validation_data_list'] = ['single']
-    #     config_dict['restriction_list'] = ['cp-curve_(d._c.)']
-    # if case == 'highest_wind_speed':
-    #     config_dict['approach_list'] = [
-    #         'logarithmic', 'lin._interp.', 'log._interp.']
-    #     config_dict['validation_data_list'] = ['single']
-    #     config_dict['latex_output'] = ['key_figures_weather',
-    #                                    'key_figures_approaches']
-
     return config_dict

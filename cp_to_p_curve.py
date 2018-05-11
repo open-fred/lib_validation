@@ -35,7 +35,6 @@ def get_curves_for_plot(turbine):
 def cp_to_p_curve_single_plots():
     turbines = initialize_turbines([
         'enerconE70', 'vestasV90', 'vestasV80', 'ge_1500',
-        # 'enerconE66_1800_65', # Note: war nur für wf_3
         'enerconE82_2000'])
         # These implies also most often installe turbines from dena study
 

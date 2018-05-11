@@ -8,10 +8,13 @@ def create_column_format(number_of_columns, position='c', index_columns='l'):
 
         Parameters
         ----------
-        number_of_columns : Integer
-            Number of columns of the table to be created without index column.
-        position : String
+        number_of_columns : integer
+            Number of columns of the table to be created exclusive index
+            column.
+        position : string
             Position of text in columns. For example: 'c', 'l', 'r'.
+            Default: 'c'.
+        index_columns : string
 
         """
         column_format = index_columns
@@ -21,6 +24,17 @@ def create_column_format(number_of_columns, position='c', index_columns='l'):
 
 
 def replacement_of_characters(string, replacement_list):
+    r"""
+    Applies the replace() function on a string.
+
+    Parameters
+    ----------
+    string : string
+        Replace() function is applied on `string`.
+    replacement_list : list
+        Contains tuples (string, string) with replacment characters.
+
+    """
     for replacement in replacement_list:
         string = string.replace(replacement[0], replacement[1])
     return string
@@ -249,8 +263,6 @@ def write_latex_output(latex_output, weather_data_list, approach_list,
                     case, year, weather_data_name, filename_add_on))
             latex_df.to_csv(filename_csv)
 
-# TODO set_names([]) for index names
-
     if 'key_figures_weather' in latex_output:
         if 'wind_speed' in case:
             unit = '[m/s]'
@@ -448,9 +460,6 @@ def sort_columns_height(df, case):
 
 
 def mean_figure_table(latex_tables_folder, case, figure, csv_folder):
-    """
-
-    """
     weather_data_list = ['MERRA', 'open_FRED']
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
@@ -498,9 +507,9 @@ def mean_figure_table(latex_tables_folder, case, figure, csv_folder):
     second_row_cols = ['Year', 'resolution']
     second_row_cols.extend(list(
         mean_rmse_df_years.columns.get_level_values(1)))
-    mean_rmse_df_years.reset_index(level=[1,0], inplace=True)
+    mean_rmse_df_years.reset_index(level=[1, 0], inplace=True)
     mean_rmse_df_years.columns = [
-    mean_rmse_df_years.columns.get_level_values(0), second_row_cols]
+        mean_rmse_df_years.columns.get_level_values(0), second_row_cols]
     filename_table = os.path.join(
         path_latex_tables,
         'mean_{}_weather_{}.tex'.format(figure.replace(' ', '_').replace(
@@ -508,11 +517,8 @@ def mean_figure_table(latex_tables_folder, case, figure, csv_folder):
     column_format = create_column_format(
         number_of_columns=len(list(mean_rmse_df_years)),
         index_columns='l')
-    # # Mean RMSE in kW
-    # if figure == 'RMSE [MW]':
-    #     mean_rmse_df_years = mean_rmse_df_years * 1000
     if case == 'power_output_1':
-        dump_df = mean_rmse_df_years.round(3) # TODO
+        dump_df = mean_rmse_df_years.round(3)
     else:
         dump_df = mean_rmse_df_years.round(2)
     dump_df.to_latex(
@@ -556,7 +562,8 @@ def mean_std_dev_smoothing_2(latex_tables_folder, csv_folder):
     first_columns = ['Weather data', 'Temporal']
     first_columns.extend(['Standard deviation in MW' for i in range(4)])
     mean_std_dev_df.columns = [col.replace(
-        'aggregation', 'Aggregation').replace('mea', 'Mea') for col in mean_std_dev_df.columns]
+        'aggregation', 'Aggregation').replace('mea', 'Mea') for
+                               col in mean_std_dev_df.columns]
     mean_std_dev_df.columns = [first_columns, mean_std_dev_df.columns]
     filename_table = os.path.join(
         path_latex_tables,
@@ -600,10 +607,10 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case, csv_folder):
             if (case == 'wind_farm_gw' or case == 'wind_farm_2'):
                 second_row_cols = [weather_data_name for
                                    i in range(len(
-                        list(mean_deviation_df)) - 1)]
+                                       list(mean_deviation_df)) - 1)]
                 second_row_cols.append('')
                 mean_deviation_df.columns = [
-                mean_deviation_df.columns, second_row_cols]
+                    mean_deviation_df.columns, second_row_cols]
             else:
                 mean_deviation_df.columns = [
                     mean_deviation_df.columns,
@@ -612,8 +619,7 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case, csv_folder):
                                                   mean_deviation_df], axis=1)
             if (weather_data_name != weather_data_list[-1] and
                     case not in ['wind_farm_gw', 'wind_farm_2']):
-                mean_deviation_df_weather.drop(['P'], axis=1,
-                                              inplace=True)
+                mean_deviation_df_weather.drop(['P'], axis=1, inplace=True)
             else:
                 mean_deviation_df_weather.sort_index(axis=1, inplace=True)
         mean_deviation_df_years = pd.concat([mean_deviation_df_years,
@@ -637,10 +643,8 @@ def mean_annual_energy_deviation_tables(latex_tables_folder, case, csv_folder):
         multicolumn_format='c', index=False)
 
 
-def annual_energy_deviation(latex_tables_folder, case, csv_folder, single=True):
-    """
-        average over wfs
-    """
+def annual_energy_deviation(latex_tables_folder, case, csv_folder,
+                            single=True):
     weather_data_list = ['MERRA', 'open_FRED']
     path_latex_tables = os.path.join(os.path.dirname(__file__),
                                      latex_tables_folder)
@@ -693,7 +697,8 @@ def annual_energy_deviation(latex_tables_folder, case, csv_folder, single=True):
 
 def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
     """
-    average over years for both weather data sets
+    Average over years for both weather data sets.
+
     """
     weather_data_list = ['MERRA', 'open_FRED']
     path_latex_tables = os.path.join(os.path.dirname(__file__),
@@ -741,7 +746,6 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
                         df.columns = [df.columns,
                                       [weather_data_name for i in df.columns]]
                 mean_deviation_df = pd.concat([mean_deviation_df, df], axis=0)
-                # mean_deviation_df.sort_index(axis=1, inplace=True)
             # Save to file if not weather mean
             if weather_mean is False:
                 filename_table = os.path.join(
@@ -760,7 +764,8 @@ def annual_energy_deviation_wfs(latex_tables_folder, case, csv_folder):
         if weather_mean:
             mean_deviation_df_wfs.sort_index(axis=1, level=0, inplace=True)
             if case == 'power_output_1':
-                mean_deviation_df_wfs.loc['Average'] = mean_deviation_df_wfs.mean()
+                mean_deviation_df_wfs.loc['Average'] = (
+                    mean_deviation_df_wfs.mean())
             filename_table = os.path.join(
                 path_latex_tables,
                 'mean_deviation_weather_wfs_{}.tex'.format(case))
@@ -799,9 +804,6 @@ def concat_std_dev_tables_smoothing_1(latex_tables_folder, csv_folder):
             'farm', 'Farm') for col in latex_df.columns]
         latex_df.columns = [first_columns, latex_df.columns]
         std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
-    # # Change order of columns
-    # col_order = ['Weather data', 'Temporal', ]
-    # std_dev_df = std_dev_df[col_order]
     filename_table = os.path.join(
         path_latex_tables,
         'std_dev_smoothing_1.tex')
@@ -819,9 +821,9 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder):
     std_dev_df = pd.DataFrame()
     for weather_data_name in weather_data_names:
         filename_csv = os.path.join(
-                        os.path.dirname(__file__), csv_folder,
-                        'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
-                            weather_data_name))
+            os.path.dirname(__file__), csv_folder,
+            'key_figures_approaches_smoothing_1_2016_{}.csv'.format(
+                weather_data_name))
         latex_df = pd.read_csv(filename_csv, index_col=[0, 1], header=[0, 1])
         if weather_data_name == 'MERRA':
             latex_df.index.set_levels([weather_data_name, weather_data_name],
@@ -835,7 +837,8 @@ def concat_key_figures_tables_smoothing_1(latex_tables_folder, csv_folder):
         second_columns = ['name', 'resolution']
         second_columns.extend(latex_df.columns.get_level_values(1)[2:])
         second_columns = [col for col in second_columns]
-        latex_df.columns = [latex_df.columns.get_level_values(0), second_columns]
+        latex_df.columns = [latex_df.columns.get_level_values(0),
+                            second_columns]
         std_dev_df = pd.concat([std_dev_df, latex_df], axis=0)
     filename_table = os.path.join(
         path_latex_tables,
