@@ -179,27 +179,72 @@ def plot_aggregated_vs_smoothed_pc():
         'farm_specification_enertrag_2016.p')
     # WF BNE
     wf = WindFarm(**wind_farm_data[0])
-    wf.hub_height = wf.mean_hub_height()
+    wf.mean_hub_height()
     df = pd.DataFrame()
-    amounts = [7, 7, 1, 2]
     for fleet in wf.wind_turbine_fleet:
-        curve = fleet['wind_turbine'].power_curve.set_index('wind_speed') *\
-                fleet['number_of_turbines']
+        # Put aggregated turbine (type) power curves to data frame for
+        # aggregation
+        curve = fleet['wind_turbine'].power_curve.set_index('wind_speed') * fleet['number_of_turbines']
         df = pd.concat([df, curve], axis=1)
+    # Aggregated power curve
     df.interpolate(method='index', inplace=True)
     aggregated_curve = pd.DataFrame(df.sum(axis=1), columns=['power'])
     smoothed_curve = smooth_power_curve(
                 pd.Series(aggregated_curve.index), aggregated_curve['power'],
                 turbulence_intensity=tools.estimate_turbulence_intensity(
-                    wf.hub_height, get_roughness_length(
+                    height=wf.hub_height, roughness_length=get_roughness_length(
                         'open_FRED', wf.coordinates)[0]))
     smoothed_curve.set_index('wind_speed', inplace=True)
-    smoothed_curve.columns = ['Smoothed']
-    aggregated_curve.columns = ['Aggregated']
+    smoothed_curve_sp = smooth_power_curve(
+        pd.Series(aggregated_curve.index), aggregated_curve['power'],
+        standard_deviation_method='Staffell_Pfenninger')
+    smoothed_curve_sp.set_index('wind_speed', inplace=True)
+    # Values in kW
+    smoothed_curve = smoothed_curve / 1000
+    smoothed_curve_sp = smoothed_curve_sp / 1000
+    aggregated_curve = aggregated_curve / 1000
+    smoothed_curve.columns = ['Farm TI']
+    smoothed_curve_sp.columns = ['Farm SP']
+    aggregated_curve.columns = ['Aggregation']
+    # Add zeros to aggreated curve for nicer plot
+    aggregated_curve.loc[25.5] = 0.0
+    aggregated_curve.loc[40.5] = 0.0
+    # Get aggregated power curve from smoothed turbine power curves
+    df_2 = pd.DataFrame()
+    df_3 = pd.DataFrame()
+    for fleet in wf.wind_turbine_fleet:
+        # TI approach
+        smoothed_turbine_curve = smooth_power_curve(
+            fleet['wind_turbine'].power_curve['wind_speed'],
+            fleet['wind_turbine'].power_curve['power'],
+                turbulence_intensity=tools.estimate_turbulence_intensity(
+                    wf.hub_height, get_roughness_length(
+                        'open_FRED', wf.coordinates)[0]))
+        smoothed_turbine_curve = smoothed_turbine_curve.set_index('wind_speed') * fleet['number_of_turbines']
+        df_2 = pd.concat([df_2, smoothed_turbine_curve], axis=1)
+        # SP approach
+        smoothed_turbine_curve_sp = smooth_power_curve(
+            fleet['wind_turbine'].power_curve['wind_speed'],
+            fleet['wind_turbine'].power_curve['power'],
+            standard_deviation_method='Staffell_Pfenninger')
+        smoothed_turbine_curve_sp = smoothed_turbine_curve_sp.set_index(
+            'wind_speed') * fleet['number_of_turbines']
+        df_3 = pd.concat([df_3, smoothed_turbine_curve_sp], axis=1)
+    df_2.interpolate(method='index', inplace=True)
+    aggregated_smoothed_curves = pd.DataFrame(df_2.sum(axis=1) / 1000,
+                                              columns=['Turbine TI'])
+    df_3.interpolate(method='index', inplace=True)
+    aggregated_smoothed_curves_sp = pd.DataFrame(df_3.sum(axis=1) / 1000,
+                                                 columns=['Turbine SP'])
     fig, ax = plt.subplots()
     aggregated_curve.plot(ax=ax, legend=True)
     smoothed_curve.plot(ax=ax, legend=True)
+    aggregated_smoothed_curves.plot(ax=ax, legend=True)
+    smoothed_curve_sp.plot(ax=ax, legend=True)
+    aggregated_smoothed_curves_sp.plot(ax=ax, legend=True)
     plt.legend()
+    plt.ylabel('Power in kW')
+    plt.xlabel('Wind speed in m/s')
     fig.savefig(os.path.join(
         os.path.dirname(__file__),
         '../../../User-Shares/Masterarbeit/Latex/inc/images/power_curves/smoothed_vs_agg',
@@ -207,10 +252,10 @@ def plot_aggregated_vs_smoothed_pc():
 
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = True
+    grouped_plots = False
     turbine_plots = False
     plot_gauss = False
-    plot_aggregated_vs_smoothed = False
+    plot_aggregated_vs_smoothed = True
 
     if (single_plots or grouped_plots or turbine_plots):
         # turbulence_intensity = 0.15  # Only for single plot
@@ -310,17 +355,21 @@ if __name__ == "__main__":
                         mean_roughness_lengths=z0_list)
 
     if plot_gauss:
-        variables = pd.Series(data=np.arange(-7.0, 7.5, 0.1), index=np.arange(-7.0, 7.5 , 0.1))
+        variables = pd.Series(data=np.arange(-7.0, 7.5, 0.1),
+                              index=np.arange(-7.0, 7.5 , 0.1))
         wind_speed = 8
         # variables = np.arange(-15.0, 15.0, 0.5)
         std_dev = 0.15
         mean = 0.0
-        gauss = tools.gaussian_distribution(variables, standard_deviation=std_dev*wind_speed, mean=0)
+        gauss = tools.gauss_distribution(
+            variables, standard_deviation=std_dev*wind_speed, mean=0)
         # gauss.index = gauss.index + wind_speed
+        gauss = pd.DataFrame(gauss)
+        gauss.index = [item + 8 for item in gauss.index]
         fig = plt.figure()
-        gauss.plot(color='darkblue')
+        gauss.plot(color='darkblue', legend=False)
         plt.xlabel('Wind speed in m/s')
-        plt.ylabel('Probability in %')
+        plt.ylabel('Probability')
         fig.savefig(os.path.join(
             os.path.dirname(__file__),
             '../../../User-Shares/Masterarbeit/Latex/inc/images/gauss',

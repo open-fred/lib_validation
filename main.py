@@ -47,15 +47,16 @@ cases = [
 #     'smoothing_2',
     # 'density_correction_1',
 # ---- Single functions - Wake losses ---- #
-# #     'wake_losses_1',  # not used anymore
+#     'wake_losses_1',  # not used anymore
 # #     'wake_losses_2',  # not used anymore
 #     'wake_losses_3',
 # ---- Single Turbine Model ---- '
 #     'single_turbine_1',
 # ---- Wind Farm Model ---- '
 #     'wind_farm_gw',
-    'wind_farm_2',
+#     'wind_farm_2',
 #     'wind_farm_4',
+    'wind_farm_final',
 # #     'wind_farm_3',  # not used anymore
 # ---- weather data ---- #
 #     'weather_wind_speed_1',
@@ -140,12 +141,17 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
     # Start and end date for time period to be plotted when 'feedin_comparison'
     # is selected. (not for monthly output).
     start_end_list = [
-        (None, None),  # for whole year
+        # (None, None),  # for whole year
     #    ('{0}-10-01 11:00:00+00:00'.format(year), '{0}-10-01 16:00:00+00:00'.format(year)),
-        ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
-        ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
-        ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
-        ('{0}-09-01'.format(year), '{0}-09-07'.format(year))
+    #     ('{0}-10-01'.format(year), '{0}-10-07'.format(year)),
+    #     ('{0}-06-01'.format(year), '{0}-06-07'.format(year)),
+    #     ('{0}-03-01'.format(year), '{0}-03-07'.format(year)),
+    #     ('{0}-09-01'.format(year), '{0}-09-07'.format(year)),
+    #     ('{0}-10-07'.format(year), '{0}-10-14'.format(year)),
+    #     ('{0}-05-01'.format(year), '{0}-05-14'.format(year)),
+    #     ('{0}-11-01'.format(year), '{0}-11-14'.format(year)),
+    #     ('{0}-05-07'.format(year), '{0}-05-08'.format(year)),
+        ('{0}-05-06'.format(year), '{0}-05-08'.format(year))
         ]
 
     #extra_plots = np.array([ # NOTE: not working
@@ -592,7 +598,8 @@ def run_main(case, parameters, year):  # TODO functions out of run_main if possi
             # --- wind speed definition for next cases --- #
             # if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
             #         'wake_losses' in case):
-            if (case == 'wind_farm_3' or case == 'weather_single_turbine_2'):
+            if (case == 'wind_farm_3' or case == 'weather_single_turbine_2' or
+                    case == 'wake_losses_1'):
                # Use wind speed from first row GreenWind data as weather data
                 single_data_raw = get_first_row_turbine_time_series(
                     year=year, filter_errors=True, print_error_amount=False,
@@ -1517,6 +1524,12 @@ if __name__ == "__main__":
         latex_tables.carry_out_mean_figure_tables(
             latex_tables_folder, cases=['power_output_1'],
             csv_folder=csv_folder)
+        latex_tables.annual_energy_deviation(
+            latex_tables_folder, csv_folder=csv_folder,
+            case='power_output_1', single=True)
+        latex_tables.annual_energy_deviation_wfs(
+            latex_tables_folder, csv_folder=csv_folder,
+                                    case='power_output_1')
     if 'smoothing_1' in cases:
         latex_tables.concat_std_dev_tables_smoothing_1(
             latex_tables_folder, csv_folder=csv_folder)

@@ -21,7 +21,7 @@ validation_pickle_folder = os.path.abspath(os.path.join(
 
 def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
                                     drop_higher_one=False, plot=True,
-                                    exact_degrees=False, csv_folder='evaluation.csv'):
+                                    exact_degrees=False, csv_folder=''):
     for year in years:
         # Get wind farm data
         wind_farm_data_gw = get_wind_farm_data(
@@ -156,11 +156,11 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
             else:
                 add_string = ''
             evaluation_df.to_csv(os.path.join(
-                csv_folder, 'evaluation_power_eff_curve_wf_{}_{}.csv'.format(
-                    wf, add_string)))
+                csv_folder, 'evaluation_power_eff_curve_wf_{}_{}_{}.csv'.format(
+                    wf, year, add_string)))
             v_std_amount.to_csv(os.path.join(
-                csv_folder, 'higher_one_amount_wf_{}_{}.csv'.format(
-                    wf, add_string)))
+                csv_folder, 'higher_one_amount_wf_{}_{}_{}.csv'.format(
+                    wf, year, add_string)))
             #####
             if drop_higher_one:
                 # Set efficiency to nan where it is greater than 1.0
