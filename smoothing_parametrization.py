@@ -261,9 +261,9 @@ def plot_aggregated_vs_smoothed_pc():
 
 if __name__ == "__main__":
     single_plots = False
-    grouped_plots = False
+    grouped_plots = True
     turbine_plots = False
-    plot_gauss = True
+    plot_gauss = False
     plot_aggregated_vs_smoothed = False
 
     if (single_plots or grouped_plots or turbine_plots):
@@ -276,11 +276,10 @@ if __name__ == "__main__":
             'Staffell_Pfenninger'
         ]
         block_widths = [
-            0.1, 1.0,
-            0.5]
+            0.1, 0.5, 1.0]
         wind_speed_ranges = [
-            5.0, 10.0, 20.0,
-            15.0
+            5.0, 10.0, 15.0, 20.0
+
         ]
         weather_data_names = [
             # 'MERRA',
