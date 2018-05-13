@@ -215,13 +215,26 @@ def plot_correlation(data, method=None, filename='Tests/correlation_test.pdf',
 
 
 def correlation_subplot(df, filename):
+    if 'wind_speed' in filename:
+        unit = 'm/s'
+        term = 'v'
+    else:
+        unit = 'MW'
+        term = 'feed-in'
     measured_column = [col for col in list(df) if 'measured' in col][0]
     calculated_columns = [col for col in list(df) if 'measured' not in col]
     pairs = [df.loc[:, [measured_column, calculated_column]] for
              calculated_column in calculated_columns]
+    if 'wind_speed_4' in filename:
+        # Change order of pairs
+        pairs_ordered = []
+        approaches = ['log_10', 'log_80', 'log_100', 'log._interp.']
+        for approach in approaches:
+            pairs_ordered.append([df for df in pairs if '_'.join(list(df)[1].split('_')[3:]) == approach][0])
+        pairs = pairs_ordered
     col_row_subplots = math.ceil(np.sqrt(len(list(pairs))))
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
-        col_row_subplots, col_row_subplots, sharey='row')
+        col_row_subplots, col_row_subplots, sharey='row', sharex='col')
     axes = [ax1, ax2, ax3, ax4]
     maxima = []
     for df, ax in zip(pairs, axes):
@@ -232,14 +245,15 @@ def correlation_subplot(df, filename):
         ideal, = ax.plot([0, maximum], [0, maximum], color='black',
                          linestyle='--', linewidth=1,
                          label='ideal correlation')
+        ax.set_title([' '.join(col.split('_')[3:] ) for
+                      col in df.columns if 'calculated' in col][0])
         # Rename columns for x and y labels
-        df.rename(columns={old_col: old_col.replace('_', ' ').replace(
-            'calculated', 'calculation method:').replace(
-            'Calculated', 'Calc.').replace('Constant', 'Const.').replace(
-            'single', '').replace('wf', 'WF') for old_col in df.columns},
+        df.rename(columns={old_col: 'calculated {} in {}'.format(
+            term, unit) if 'calculated' in old_col
+        else 'measured {} in {}'.format(term, unit) for old_col in df.columns},
                   inplace=True)
         # Choose x and y values column name
-        x_value = [col for col in list(df) if 'calculation' in col][0]
+        x_value = [col for col in list(df) if 'calculated' in col][0]
         y_value = [col for col in list(df) if 'measured' in col][0]
         df.plot.scatter(x=x_value, y=y_value, ax=ax, c='darkblue', s=2)
         ax.annotate('Pr = {}'.format(round(val_obj.pearson_s_r, 3)),
