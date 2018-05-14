@@ -291,11 +291,11 @@ if __name__ == "__main__":
              'enerconE82_2000'])
         # Wind farm data
         wind_farm_data = {
-            'wf_BE': [52.564506, 13.724137],
-            'wf_BS': [51.785053, 14.456623],
-            'wf_BNW': [53.128206, 12.114433],
-            'wf_BNE': [53.4582543833, 13.8976882575],
-            'wf_SH': [54.509708, 8.9007]
+            'wf_BE': [],
+            'wf_BS': [],
+            'wf_BNW': [],
+            'wf_BNE': [],
+            'wf_SH': []
         }
         for weather_data_name in weather_data_names:
             turbines_list = []
@@ -305,15 +305,15 @@ if __name__ == "__main__":
                                           wind_farm_data[wf_data])[0]
                 z0_list.append(z0)
                 if (wf_data == 'wf_BE' or wf_data == 'wf_BS'):
-                    turbines = [v90]
+                    turbines = []
                 elif wf_data == 'wf_BNW':
-                    turbines = [v80]
+                    turbines = []
                 elif wf_data == 'wf_BNE':
-                    turbines = [ge, e82]
+                    turbines = []
                     # append z0 a second time
                     z0_list.append(z0)
                 elif wf_data == 'wf_SH':
-                    turbines = [e70]
+                    turbines = []
                 turbines_list.extend(turbines)
                 if single_plots:
                     for std_dev_method in standard_deviaton_methods:
