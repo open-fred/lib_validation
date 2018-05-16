@@ -16,7 +16,9 @@ def bar_plot_from_file(source_filename, output_filename, index=None,
         # Select whole data frame
         plot_df = df
     fig, ax = plt.subplots()
-    plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+    plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3,
+                 cmap='Blues_r', edgecolor=['black'] * len(plot_df),
+                 linewidth=0.5)
     ax.grid(zorder=0)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.ylabel(ylabel)
@@ -96,7 +98,10 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                     # approaches for one year and weather data set
                     plot_df = pd.concat([plot_df, figure_case_df], axis=1)
                 fig, ax = plt.subplots()
-                plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+                plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3,
+                             cmap='Blues_r',
+                             edgecolor=['black'] * len(plot_df),
+                             linewidth=0.5)
                 ax.grid(zorder=0)
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 plt.ylabel(key_figure.replace('coeff.', 'Coefficient'))
@@ -137,7 +142,9 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                 weather_plot_df = weather_plot_df[cols]
             # Plot into subplot
             weather_plot_df.plot(kind='bar', ax=weather_ax, legend=False,
-                                 zorder=3)
+                                 zorder=3, cmap='Blues_r',
+                                 edgecolor=['black'] * len(plot_df),
+                                 linewidth=0.5)
             weather_ax.annotate(weather_data_name, xy=(0.99, 0.99),
                                 xycoords='axes fraction', ha='right', va='top',
                                 zorder=3)
@@ -166,7 +173,30 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
                         item, height) for item, height in zip(
                         weather_plot_df.index, [105, 60, 105])]
                 single_fig, ax = plt.subplots()
-                weather_plot_df.plot(kind='bar', ax=ax, legend=True, zorder=3)
+                weather_plot_df.plot(kind='bar', ax=ax, legend=True, zorder=3,
+                                     cmap='Blues_r',
+                                     edgecolor=['black'] * len(plot_df),
+                                     linewidth=0.5)
+                if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
+                    # redefine colors
+                    if 'wind_speed_1' in cases:
+                        multiplicator = 3
+                    else:
+                        multiplicator = 2
+                    colors = (['black'] * multiplicator)
+                    colors.extend(['grey'] * multiplicator)
+                    colors.extend(['white'] * multiplicator)
+                    colors.extend(['darkblue'] * multiplicator)
+                    colors.extend(['blue'] * multiplicator)
+                    colors.extend(['lightblue'] * multiplicator)
+                    colors.extend(['green'] * multiplicator)
+                    colors.extend(['yellowgreen'] * multiplicator)
+                    colors.extend(['lightgreen'] * multiplicator)
+                    colors.extend(['khaki'] * multiplicator)
+                    bars = ax.patches
+                    for bar, color in zip(bars, colors):
+                        bar.set_color(color)
+                        bar.set_edgecolor('black')
                 ax.grid(zorder=0)
                 plt.xticks(rotation='horizontal')
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -262,14 +292,31 @@ def bar_plot_key_figures_all_in_one(cases, output_method='hourly'):
                 if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
                     # Bring column into desired order
                     cols = ['Log 100', 'Log 80', 'Log 10', 'H 100', 'H 80',
-                            'H 10',
-                            'H2 100', 'H2 80', 'H2 10', 'Log. interp.']
+                            'H 10', 'H2 100', 'H2 80', 'H2 10', 'Log. interp.']
                     figure_plot_df = figure_plot_df[cols]
                     figure_plot_df.index = ['{} ({} m)'.format(
                         item, height) for item, height in zip(
                         figure_plot_df.index, [105, 60, 105])]
                 # Plot into subplot
-                figure_plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3)
+                figure_plot_df.plot(kind='bar', ax=ax, legend=False, zorder=3,
+                                    cmap='Blues_r',
+                                    edgecolor=['black'] * len(plot_df),
+                                    linewidth=0.5, width=0.75)
+                if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
+                    colors = (['black'] * 3)
+                    colors.extend(['grey'] * 3)
+                    colors.extend(['white'] * 3)
+                    colors.extend(['darkblue'] * 3)
+                    colors.extend(['blue'] * 3)
+                    colors.extend(['lightblue'] * 3)
+                    colors.extend(['green'] * 3)
+                    colors.extend(['yellowgreen'] * 3)
+                    colors.extend(['lightgreen'] * 3)
+                    colors.extend(['khaki'] * 3)
+                    bars = ax.patches
+                    for bar, color in zip(bars, colors):
+                        bar.set_color(color)
+                        bar.set_edgecolor('black')
                 ax.grid(zorder=0)
                 ax.set_ylabel(key_figure)
                 # Rotate xticks
@@ -301,15 +348,15 @@ def run_bar_plot_key_figures():
     cases_list = [
         ['wind_speed_1', 'wind_speed_2', 'wind_speed_3', 'wind_speed_4'],  # from 4 only log.interp
         ['wind_speed_5', 'wind_speed_6', 'wind_speed_7', 'wind_speed_8'],  # first row like weather_wind_speed_3
-        ['weather_wind_speed_1'],
-        ['smoothing_2'],
-        ['single_turbine_1'],
-        ['wake_losses_3'],
-        ['wind_farm_4'],
-        ['wind_farm_gw'],
-        ['wind_farm_2'],
-        ['weather_wind_farm'],
-        ['wind_farm_final']
+        # ['weather_wind_speed_1'],
+        # ['smoothing_2'],
+        # ['single_turbine_1'],
+        # ['wake_losses_3'],
+        # ['wind_farm_4'],
+        # ['wind_farm_gw'],
+        # ['wind_farm_2'],
+        # ['weather_wind_farm'],
+        # ['wind_farm_final']
     ]
     not_for_monthly_list = [
         'wind_farm_3',
