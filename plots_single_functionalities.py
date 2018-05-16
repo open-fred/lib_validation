@@ -161,7 +161,7 @@ def bar_plot_key_figures(years, output_method, key_figure, cases,
             if ((('wind_speed_1' in cases or 'wind_speed_5' in cases) and
                     'weather_wind_speed_1' not in cases) or
                     'wake_losses_3' in cases or 'smoothing_2' in cases):
-                if 'wind_speed_1' in cases or 'wind_speed_5' in cases:
+                if 'wind_speed_1' in cases:
                     weather_plot_df.index = ['{} ({} m)'.format(
                         item, height) for item, height in zip(
                         weather_plot_df.index, [105, 60, 105])]
