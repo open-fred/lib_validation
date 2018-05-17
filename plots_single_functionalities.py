@@ -1,7 +1,18 @@
 # Imports
 from matplotlib import pyplot as plt
+import matplotlib.colors as colors
 import pandas as pd
+import numpy as np
 import os
+
+
+def get_cmap(minval=0, maxval=0.8, n=100):
+    cmap = plt.get_cmap('Blues_r')
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+            'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval,
+                                                b=maxval),
+            cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
 
 
 def bar_plot_from_file(source_filename, output_filename, index=None,
