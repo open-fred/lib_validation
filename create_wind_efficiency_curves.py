@@ -206,8 +206,8 @@ def plot_calculated_and_dena():
     knorr_extreme.rename(columns={'efficiency': 'knorr extreme2 wind eff.'},
                          inplace=True)
     fig, ax = plt.subplots()
-    dena_mean_curve.plot(ax=ax, legend=True)
-    knorr_extreme.plot(ax=ax, legend=True)
+    dena_mean_curve.plot(ax=ax, legend=True, linestyle='--')
+    knorr_extreme.plot(ax=ax, legend=True, linestyle='--')
     calculated_curves.plot(ax=ax, legend=True)
     plt.xlabel('Wind speed in m/s')
     plt.ylabel('Efficiency (power or  wind)')
@@ -422,8 +422,8 @@ def evaluate_power_efficiency_curves(years, pickle_filename_add_on,
 
 if __name__ == "__main__":
     load_curves = False
-    plot_curves = False
-    evaluate_curves = True
+    plot_curves = True
+    evaluate_curves = False
 
     if load_curves:
         get_power_efficiency_curves(drop_higher_one=True, pickle_load=False,
