@@ -11,8 +11,9 @@ df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'helper_files',
                               'renewables_energy_2016_ger.csv'),
                  decimal='.', sep=',', index_col=0)
 # Get cmap
-cmap = plots_single_functionalities.get_cmap()
+cmap = plots_single_functionalities.get_cmap(minval=0, maxval=0.8)
 fig, ax = plt.subplots()
+df = df[['hydro', 'onshore wind', 'photovoltaic', 'offshore wind', 'geothermal']]
 df.plot(legend=True, ax=ax, cmap=cmap)
 plt.xlabel('Years')
 plt.ylabel('Gross electricity generation in GWh')
@@ -20,3 +21,4 @@ plt.ylabel('Gross electricity generation in GWh')
 fig.savefig(os.path.join(os.path.dirname(__file__),
                          '../../../User-Shares/Masterarbeit/Latex/inc/images/',
 'renewable_energy_2016_ger.pdf'))
+plt.close()
