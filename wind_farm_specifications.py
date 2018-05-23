@@ -22,6 +22,11 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
         Decision of plotting (or printing) turbine data (True) or not (False).
         Default: False.
 
+    Returns
+    -------
+    turbine_list : list
+        Containing wind turbine objects.
+
     """
     # Turbine data specification - feel free to add
     turbine_dict = {
@@ -97,6 +102,12 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
 
     Data is either loaded from pickle files or specified in this function and
     then dumped with pickle.
+
+    Returns
+    -------
+    wind_farm_data : list
+        Containing dictionaries with a name, a wind turbine fleet and
+        coordinates in the keys 'name', 'wind_turbine_fleet' and 'coordinates'.
 
     """
     pickle_path = os.path.join(save_folder, filename)
@@ -180,7 +191,7 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
                 wind_farm_data = []
                 for i in range(9):
                     wind_farm_data.append({
-                        'object_name': 'BE_{}'.format(i+1),
+                        'name': 'BE_{}'.format(i+1),
                         'wind_turbine_fleet': [{'wind_turbine': v90,
                                                 'number_of_turbines': 1}],
                         'coordinates': []})
@@ -221,6 +232,12 @@ def get_wind_farm_data(filename, save_folder='', pickle_load=False):
 def get_joined_wind_farm_data(filenames, save_folder, pickle_load):
     r"""
     Join the wind farm data of different validation data sets.
+
+    Returns
+    -------
+    wind_farm_data : list
+        Containing wind farm data as in get_wind_farm_data() for several
+        data origins defined in `filenames`.
 
     """
     # Initialize wind farm data list

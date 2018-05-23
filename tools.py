@@ -132,7 +132,7 @@ def annual_energy_output(power_output_series, temporal_resolution=None):
     """
     try:
         power_output_series.index.freq.n
-        if power_output.index.freq.n == 1:
+        if power_output_series.index.freq.n == 1:
             freq = 60
         else:
             freq = power_output_series.index.freq.n
