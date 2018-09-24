@@ -17,9 +17,10 @@ import os
 import pandas as pd
 import numpy as np
 import pickle
+import matplotlib.pyplot as mpl
 
 # ----------------------------- Set parameters ------------------------------ #
-year = 2015
+year = 2016
 time_zone = 'Europe/Berlin'
 pickle_load_merra = True
 pickle_load_open_fred = True
@@ -38,10 +39,13 @@ validation_data_list = [ # TODO: Add other validation data
     ]
 
 output_methods = [
-    'annual_energy_output',
-    'hourly_energy_output',
-    'monthly_energy_output',
-    'power_output'
+    #'feedin_to_csv'
+    #'daily_variability',
+    'weekly_correlation'
+    # 'annual_energy_output',
+    # 'hourly_energy_output',
+    # 'monthly_energy_output',
+    # 'power_output'
     ]
 visualization_methods = [
 #    'box_plots',
@@ -306,6 +310,107 @@ for approach in approach_list:
             # Produce validation sets
             # (one set for each farms list and output method)
             validation_sets = []
+
+            if 'feedin_to_csv' in output_methods:
+                windfarm_list = ['wf_1', 'wf_2', 'wf_3', 'wf_4', 'wf_5']
+                for i in range(len(validation_farms)):
+                    windfarm_name = validation_farms[i].object_name
+                    if windfarm_name in windfarm_list:
+                        calculated = simulation_farms[i].power_output
+                        calculated.name = 'feedin_calculated_{}'.format(
+                            windfarm_name)
+                        measured = validation_farms[i].power_output.resample(
+                            calculated.index.freq).mean()
+                        measured.name = 'feedin_measured_{}'.format(
+                            windfarm_name)
+
+                        df_farm = calculated.to_frame().join(
+                            measured.to_frame(), how='outer')
+
+                        if i == 0:
+                            df = df_farm
+                        else:
+                            df = df.join(df_farm)
+                df.to_csv('feedin_SH_{}_{}.csv'.format(
+                    weather_data_name, year))
+
+            if 'daily_variability' in output_methods:
+                windfarm_list = ['wf_1', 'wf_2', 'wf_3', 'wf_4', 'wf_5']
+                for i in range(len(validation_farms)):
+                    windfarm_name = validation_farms[i].object_name
+                    if windfarm_name in windfarm_list:
+
+                        # get series to compare
+                        calculated = simulation_farms[i].power_output
+                        calculated.name = 'feedin_calculated'
+                        measured = validation_farms[i].power_output.resample(
+                            calculated.index.freq).mean()
+                        measured.name = 'feedin_measured'
+
+                        df = calculated.to_frame().join(
+                            measured.to_frame(), how='outer')
+
+                        # calculate daily and half-daily variability
+                        var_daily = analysis_tools.variability(df, '1D')
+                        var_daily.name = 'daily_variability_{}'.format(
+                            windfarm_name)
+                        var_half_daily = analysis_tools.variability(
+                            df, '12H', min_count=10, base=7)
+                        var_half_daily.name = 'half_daily_variability_{}'.\
+                            format(windfarm_name)
+
+                        # combine to one dataframe to plot
+                        df = var_half_daily.to_frame().join(
+                            var_daily.to_frame(), how='outer')
+                        var_daily.plot(grid=True)
+                        mpl.savefig('daily_variability_{}_{}_{}.png'.format(
+                            windfarm_name, weather_data_name, year))
+                        mpl.clf()
+
+                        if i == 0:
+                            var_df = df
+                        else:
+                            var_df = var_df.join(df)
+
+                var_df.to_csv('daily_variability_SH_{}_{}.csv'.format(
+                    weather_data_name, year))
+
+            if 'weekly_correlation' in output_methods:
+                windfarm_list = ['wf_1', 'wf_2', 'wf_3', 'wf_4', 'wf_5']
+                for i in range(len(validation_farms)):
+                    windfarm_name = validation_farms[i].object_name
+                    if windfarm_name in windfarm_list:
+
+                        # get series to compare
+                        calculated = simulation_farms[i].power_output
+                        calculated.name = 'feedin_calculated'
+                        measured = validation_farms[i].power_output.resample(
+                            calculated.index.freq).mean()
+                        measured.name = 'feedin_measured'
+
+                        df = calculated.to_frame().join(
+                            measured.to_frame(), how='outer')
+
+                        corr = analysis_tools.correlation_tmp(df, '1W')
+                        corr.name = '{}'.format(windfarm_name)
+
+                        corr.plot(grid=True)
+                        mpl.savefig('weekly_correlation_{}_{}_{}.png'.format(
+                            windfarm_name, weather_data_name, year))
+                        mpl.clf()
+
+                        if i == 0:
+                            corr_df = corr.to_frame()
+                        else:
+                            corr_df = corr_df.join(corr.to_frame())
+
+                corr_df.to_csv('weekly_correlation_SH_{}_{}.csv'.format(
+                    weather_data_name, year))
+                corr_df.plot(grid=True)
+                mpl.savefig('weekly_correlation_SH_{}_{}.png'.format(
+                    weather_data_name, year))
+                mpl.clf()
+
             if 'annual_energy_output' in output_methods:
                 validation_sets.append(
                     analysis_tools.evaluate_feedin_time_series(
