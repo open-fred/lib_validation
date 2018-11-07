@@ -1,10 +1,41 @@
 import xarray
 import os
 import pandas as pd
+import numpy as np
 from os.path import expanduser
+from scipy.spatial import cKDTree
 
 import tools
 
+
+def get_closest_coordinates(dataset, coordinates):
+    """
+    Parameters
+    ------------
+    dataset : xarray DataSet
+        xarray DataSet from netcdf file
+    coordinates : list of tuples
+        list of tuples with latitude and longitude values
+
+    Returns
+    --------
+    pandas DataFrame with closest coordinates
+
+    """
+    coords_datset = pd.DataFrame({'lat': dataset.lat.values.flatten(),
+                                  'lon': dataset.lon.values.flatten()})
+    tree = cKDTree(coords_datset)
+    index_list = []
+    for point in coordinates.index:
+        dists, index = tree.query(
+            np.array([coordinates.loc[point, 'lat'],
+                      coordinates.loc[point, 'lon']]), k=1)
+        index_list.append(index)
+    closest_coordinates = pd.DataFrame(
+        {'lat': coords_datset.iloc[index_list].lat,
+         'lon': coords_datset.iloc[index_list].lon})
+    closest_coordinates.set_index(coordinates.index, inplace=True)
+    return closest_coordinates
 
 # ToDo: get upper and lower time bounds
 def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
@@ -150,19 +181,19 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
         'dhi': {
             'path': os.path.join(data_path, 'ASWDIFD_S'),
             'startswith': main_startswith + 'ASWDIFD_S.' + str(year),
-            'filename': 'dhi.csv'
+            'filename': 'dhi-0m.csv'
         },
         # DIRHI
         'dirhi': {
             'path': os.path.join(data_path, 'ASWDIR_S'),
             'startswith': main_startswith + 'ASWDIR_S.' + str(year),
-            'filename': 'dirhi.csv'
+            'filename': 'dirhi-0m.csv'
         },
         # DNI
         'dni': {
             'path': os.path.join(data_path, 'ASWDIR_NS2'),
             'startswith': main_startswith + 'ASWDIR_NS2.' + str(year),
-            'filename': 'dni.csv'
+            'filename': 'dni-0m.csv'
         }
     }
 
@@ -484,42 +515,55 @@ def read_of_weather_df_windpowerlib_from_csv(path, filename, coordinates=None):
 if __name__ == '__main__':
 
     ##########################################################################
+    # get closest coordinates
+    ##########################################################################
+
+    # places = pd.read_csv('data/tim/H2_Bahnhoefe.csv', index_col=[2])
+    # data_path = os.path.join(expanduser("~"), 'rli-daten',
+    #     'open_FRED_Wetterdaten', 'WSS_zlevel')
+    # data = xarray.open_dataset(
+    #     os.path.join(data_path,
+    #                  'oF_00625_MERRA2_expC17.WSS_10M.2015_01.DEplus.nc'))
+    #
+    # closest_coordinates = get_closest_coordinates(data, places)
+    # closest_coordinates.to_csv('closest_coordinates.csv')
+
+    ##########################################################################
     # read open_FRED netcdf files
     ##########################################################################
 
-    # # choose year and area
-    # # SH lat_min = 54.4, lat_max = 54.7, lon_min = 8.9, lon_max = 9.1
-    # # Berlin NW: 52.661962, 13.102158
-    # # Berlin SO: 52.255534, 13.866914
-    # # BB NW: 53.573291, 11.228509
-    # # BB SO: 51.352445, 14.860673
-    # # Detmold 51.935547, 8.879361
-    # # Jakob 51.165691, 10.451526
-    # year = 2015
-    # lat_min = 54.4
-    # lat_max = 54.7
-    # lon_min = 8.9
-    # lon_max = 9.1
-    #
-    # # choose keys from helper_dict for which you want to load open_FRED
-    # # weather_data
-    # # wind data for Sabine
-    # parameter_list = ['wss_10m',
-    #                   'wss_80m', 'wss_100m', 'wss_120m',
-    #                   'temp_10m',
-    #                   'temp_80m', 'temp_100m', 'temp_120m',
-    #                   'pressure_10m', 'pressure_80m', 'pressure_100m',
-    #                   'pressure_120m',
-    #                   'z0',
-    #                   'wind_direction_10m', 'wind_direction_80m',
-    #                   'wind_direction_100m', 'wind_direction_120m'
-    #                   ]
-    # # # radiation data
-    # # parameter_list = ['wss_10m', 'temp_10m', 'dhi', 'dirhi', 'dni']
-    #
-    # get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
-    #                                 parameter_list,
-    #                                 csv_directory='data/Fred/SH_2015')
+    # choose year and area
+    # SH lat_min = 54.4, lat_max = 54.7, lon_min = 8.9, lon_max = 9.1
+    # Berlin NW: 52.661962, 13.102158
+    # Berlin SO: 52.255534, 13.866914
+    # BB NW: 53.573291, 11.228509
+    # BB SO: 51.352445, 14.860673
+
+    year = 2015
+    lat_min = 54.4
+    lat_max = 54.7
+    lon_min = 8.9
+    lon_max = 9.1
+
+    # choose keys from helper_dict for which you want to load open_FRED
+    # weather_data
+    parameter_list = [#'wss_10m',  # 'wss_80m',
+                      #'wss_100m',  # 'wss_120m',
+                      'temp_10m',  # 'temp_80m',
+                      #'temp_100m',  # 'temp_120m',
+                      'pressure_10m',  # 'pressure_80m',
+                      #'pressure_100m',  # 'pressure_120m',
+                      'z0',
+                      # 'wind_direction_10m', 'wind_direction_80m',
+                      # 'wind_direction_100m', 'wind_direction_120m',
+                      'dhi', 'dirhi', 'dni']
+
+    # # radiation data
+    # parameter_list = ['wss_10m', 'temp_10m', 'dhi', 'dirhi', 'dni']
+
+    get_of_weather_data_from_netcdf(
+        year, lat_min, lat_max, lon_min, lon_max, parameter_list)
+
 
     ##########################################################################
     # set up weather dataframe for pvlib from open_FRED csv files

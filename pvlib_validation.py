@@ -626,7 +626,9 @@ def compare_feedin_htw(converters, weather_data_sets):
     gni_dict['MERRA'] = weather_data_dict['MERRA'].gni.to_frame().join(
         htw_weather_data['MERRA'].gni.to_frame(), rsuffix='_htw',
         lsuffix='_merra')
-    weather_data_dict['open_FRED']['gni'] = weather_data_dict['open_FRED']['dni'] + weather_data_dict['open_FRED']['dhi']
+    weather_data_dict['open_FRED']['gni'] = \
+        weather_data_dict['open_FRED']['dni'] + \
+        weather_data_dict['open_FRED']['dhi']
     gni_dict['open_FRED'] = weather_data_dict['open_FRED'].gni.to_frame().join(
         htw_weather_data['open_FRED'].gni.to_frame(), rsuffix='_htw',
         lsuffix='_open_FRED')
@@ -649,6 +651,13 @@ def compare_feedin_htw(converters, weather_data_sets):
                           'gni_open_FRED'].plot(legend=True, grid=True)
     mpl.savefig(os.path.join(plot_directory, '{}_march_week.png'.format(
         'GNI')))
+
+    # dhi_monthly_sums = {}
+    # dhi_monthly_sums['MERRA'] = weather_data_dict['MERRA'].dhi.resample(
+    #     '1M').sum()
+    # dhi_monthly_sums['open_FRED'] = weather_data_dict[
+    #     'open_FRED'].dhi.resample('1H').mean().resample('1M').sum()
+    #htw_weather_data['open_FRED'].gni.resample('1H').mean().resample('1M').sum()
 
     ###########################################################################
     # setup modules

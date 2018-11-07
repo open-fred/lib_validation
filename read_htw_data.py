@@ -78,7 +78,7 @@ def setup_weather_dataframe(weather_data):
     elif weather_data == 'MERRA':
         data = data.resample('60Min', base=30,
                              loffset=timedelta(hours=0.5)).mean()
-    data = data.tz_localize('Etc/GMT-1')
+    data = data.tz_localize('Etc/GMT-1') # GMT+1??
     data = data.tz_convert('Europe/Berlin')
     return data
 
