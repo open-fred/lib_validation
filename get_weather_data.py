@@ -181,8 +181,7 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
                                       (data.lon>=lon_min),
                                       drop=True)
                 # convert to dataframe and reset index
-                data_month = data_sel.to_dataframe().drop(
-                    columns=['time_bnds'])
+                data_month = data_sel.to_dataframe().drop(columns=['time_bnds'])
                 try:
                     data_month.drop(columns=['rotated_pole'], inplace=True)
                 except:
@@ -539,20 +538,49 @@ if __name__ == '__main__':
     # coordinates Altlandsberg = [52.603613, 13.785923]
     # coordinates Cottbus Halde = [51.808207, 14.447661]
     # coordinates Prignitz = [53.132604, 12.106356]
-    coordinates = [52.603613, 13.785923]
-    csv_directory = 'data/Fred/BB_2016'
-    parameter_list = ['wind_speed-10m.csv', 'wind_speed-80m.csv',
-                      'wind_speed-100m.csv', 'wind_speed-120m.csv',
-                      'wind_direction-10m.csv', 'wind_direction-80m.csv',
-                      'wind_direction-100m.csv', 'wind_direction-120m.csv',
-                      'pressure-10m.csv', 'pressure-80m.csv',
-                      'pressure-100m.csv', 'pressure-120m.csv',
-                      'temperature-10m.csv', 'temperature-80m.csv',
-                      'temperature-100m.csv', 'temperature-120m.csv',
-                      'roughness_length-0m.csv']
-    windpowerlib_weather_df = setup_of_weather_df_windpowerlib(
-        coordinates, csv_directory, parameter_list,
-        filename='fred_data_2016_WP_Altlandsberg.csv')
+    # coordinates = [52.603613, 13.785923]
+    # csv_directory = 'data/Fred/BB_2016'
+    # parameter_list = ['wind_speed-10m.csv', 'wind_speed-80m.csv',
+    #                   'wind_speed-100m.csv', 'wind_speed-120m.csv',
+    #                   'wind_direction-10m.csv', 'wind_direction-80m.csv',
+    #                   'wind_direction-100m.csv', 'wind_direction-120m.csv',
+    #                   'pressure-10m.csv', 'pressure-80m.csv',
+    #                   'pressure-100m.csv', 'pressure-120m.csv',
+    #                   'temperature-10m.csv', 'temperature-80m.csv',
+    #                   'temperature-100m.csv', 'temperature-120m.csv',
+    #                   'roughness_length-0m.csv']
+    # windpowerlib_weather_df = setup_of_weather_df_windpowerlib(
+    #     coordinates, csv_directory, parameter_list,
+    #     filename='fred_data_2016_WP_Altlandsberg.csv')
+
+
+    # HTW-Berlin (LH)
+    
+    # parameter_list = ['wss_10m', 'wss_80m', 'wss_100m', 
+    #                   'temp_10m', 'temp_80m', 'temp_100m', 
+    #                   'pressure_10m', 'pressure_80m', 'pressure_100m', 'z0',
+    #                   'wind_direction_10m', 
+    #                   'wind_direction_80m', 
+    #                   'wind_direction_100m', 
+    #                   'dhi', 'dirhi', 'dni' ]
+    
+    year = 2015                
+    parameter_list = ['wss_10m', 'temp_10m', 'wind_direction_10m', 
+                      'pressure_10m', 'dhi', 'dirhi', 'dni']
+    lat_min = 52.3
+    lat_max = 52.6
+    lon_min = 13.3
+    lon_max = 13.6
+    
+    get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
+                    parameter_list,
+                    data_path = r'\\SRV02\Daten_flexibel_01\open_FRED_Wetterdaten',
+                    csv_directory = r'\\C:\temp\FRED_HTW_2015')
+    
+    # coordinates = [52.456032, 13.525282]
+    # csv_directory = 'data/Fred/HTW_2015'
+    # pvlib_weather_df = setup_of_weather_df_pvlib(
+    #     coordinates, csv_directory, filename='fred_data_2015_HTW.csv')
 
     ##########################################################################
     # read multiindex weather dataframe for windpowerlib from csv
