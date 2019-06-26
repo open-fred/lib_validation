@@ -58,9 +58,8 @@ def read_data(filename, **kwargs):
 
     """
     if 'datapath' not in kwargs:
-        kwargs['datapath'] = os.path.join(os.path.dirname(__file__),
+        kwargs['datapath'] = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Arge Netz/Rohdaten_Windparks/'
 
-                                          'data/ArgeNetz')
     if 'usecols' not in kwargs:
         kwargs['usecols'] = None
 
@@ -199,11 +198,11 @@ def get_data(filename_files, year, filename_pickle='pickle_dump.p',
         df.index = df.index.tz_convert('Europe/Berlin')
         if year == 2016:
             # Get one wind farm from different data set
-            file_dir = os.path.join(os.path.dirname(__file__),
-                                'data/ArgeNetz/single_turbines/wf_2')
+            file_dir = os.path.abspath(
+                '/home/sabine/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Arge Netz/Rohdaten_Einzelanlagen/Nordstrand/')
+            #file_dir = os.path.dirname('~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Arge Netz/Rohdaten_Einzelanlagen/Nordstrand/')
             df_wf_2 = pd.DataFrame()
-            filenames = [filename for filename in os.listdir(
-                            os.path.join(sys.path[0], file_dir)) if
+            filenames = [filename for filename in os.listdir(file_dir) if
                          filename.startswith('2016')]
             for filename in filenames:
                 df_part = restructure_data(
@@ -267,8 +266,8 @@ def wf_2_single_data(pickle_filename='single_data.p', pickle_load=False,
         df_wf_2 = pickle.load(open(pickle_filename, 'rb'))
     else:
         # Get data
-        file_dir = os.path.join(os.path.dirname(__file__),
-                                'data/ArgeNetz/single_turbines/wf_2')
+        file_dir = os.path.abspath(
+            '/home/sabine/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Arge Netz/Rohdaten_Einzelanlagen/Nordstrand/')
         df_wf_2 = pd.DataFrame()
         filenames = [filename for filename in os.listdir(
             os.path.join(sys.path[0], file_dir)) if
@@ -401,9 +400,10 @@ def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
         argenetz_df = pd.read_csv(filename.replace('.p', '.csv'))
     else:
         # Load data with get_data(); data frame is dumped in this function
-        argenetz_df = get_data('helper_files/filenames_{0}.txt'.format(year),
-                               year, filename, pickle_load=pickle_load,
-                               filter_interpolated_data=filter_interpolated_data)
+        argenetz_df = get_data(
+            'helper_files/argenetz_filenames_{0}.txt'.format(year),
+            year, filename, pickle_load=pickle_load,
+            filter_interpolated_data=filter_interpolated_data)
     if csv_dump:
         argenetz_df.to_csv(filename.replace('.p', '.csv'))
     if plot:
