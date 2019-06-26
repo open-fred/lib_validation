@@ -23,8 +23,8 @@ from windpowerlib import wind_turbine as wt
 from windpowerlib import power_output
 
 # Imports from lib_validation
-import visualization_tools
-import analysis_tools
+#import visualization_tools
+#import analysis_tools
 import tools
 
 # Other imports
@@ -413,80 +413,80 @@ def get_argenetz_data(year, pickle_load=False, filename='pickle_dump.p',
     return argenetz_df
 
 
-def check_theoretical_power(df, year, start=None, end=None):
-    r"""
-    This function was used to compare the theoretical power of ArgeNetz wind
-    farms with the simulated power when the measured wind speed (of ArgeNetz
-    data) is used.
+# def check_theoretical_power(df, year, start=None, end=None):
+#     r"""
+#     This function was used to compare the theoretical power of ArgeNetz wind
+#     farms with the simulated power when the measured wind speed (of ArgeNetz
+#     data) is used.
+#
+#     As no wind speed is added to the data of 2015 this function can only be
+#     used for the year 2015.
+#
+#     """
+#     wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
+#     wind_turbine_amount = [(0, 16), (4, 13), (0, 22), (0, 14)]
+#     # Turbine data
+#     enerconE70 = {
+#         'turbine_name': 'ENERCON E 70 2300',
+#         'hub_height': 64,  # in m
+#         'rotor_diameter': 71  # in m
+#     }
+#     enerconE66 = {
+#         'turbine_name': 'ENERCON E 66 1800',
+#         'hub_height': 65,  # in m
+#         'rotor_diameter': 70  # in m
+#         }
+#     # Initialize WindTurbine objects
+#     e70 = wt.WindTurbine(**enerconE70)
+#     e66 = wt.WindTurbine(**enerconE66)
+#     for name, turbine_amount in zip(wind_farm_names, wind_turbine_amount):
+#         indices = tools.get_indices_for_series(1, 'Europe/Berlin', year)
+#         power_output_theo = df[name + '_theoretical_power'] / 1000
+#         power_output_theo = pd.Series(data=power_output_theo.values,
+#                                       index=indices)
+#         power_output_by_wind_speed = (
+#             turbine_amount[0] * power_output.power_curve(
+#                 df[name + '_wind_speed'], e66.power_curve['wind_speed'],
+#                 e66.power_curve['power']) +
+#             turbine_amount[1] * power_output.power_curve(
+#                 df[name + '_wind_speed'], e70.power_curve['wind_speed'],
+#                 e70.power_curve['power'])) / (1*10**6)
+#         power_output_by_wind_speed = pd.Series(
+#             data=power_output_by_wind_speed.values, index=indices)
+#         val_obj = analysis_tools.ValidationObject(
+#             'validate_arge_4919', power_output_theo,
+#             power_output_by_wind_speed,
+#             weather_data_name='calculated by wind speed',
+#             validation_name='P_W theoretical')
+#         val_obj.output_method = 'power_output'
+#         visualization_tools.plot_feedin_comparison(
+#             val_obj, filename='../Plots/Test_Arge/{0}_{1}_feedin'.format(
+#                 year, name),
+#             title='{0}'.format(name), start=start, end=end)
+#         visualization_tools.plot_correlation(
+#             val_obj, filename='../Plots/Test_Arge/{0}_{1}_corr'.format(
+#                 year, name),
+#             title='{0}'.format(name))
 
-    As no wind speed is added to the data of 2015 this function can only be
-    used for the year 2015.
 
-    """
-    wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
-    wind_turbine_amount = [(0, 16), (4, 13), (0, 22), (0, 14)]
-    # Turbine data
-    enerconE70 = {
-        'turbine_name': 'ENERCON E 70 2300',
-        'hub_height': 64,  # in m
-        'rotor_diameter': 71  # in m
-    }
-    enerconE66 = {
-        'turbine_name': 'ENERCON E 66 1800',
-        'hub_height': 65,  # in m
-        'rotor_diameter': 70  # in m
-        }
-    # Initialize WindTurbine objects
-    e70 = wt.WindTurbine(**enerconE70)
-    e66 = wt.WindTurbine(**enerconE66)
-    for name, turbine_amount in zip(wind_farm_names, wind_turbine_amount):
-        indices = tools.get_indices_for_series(1, 'Europe/Berlin', year)
-        power_output_theo = df[name + '_theoretical_power'] / 1000
-        power_output_theo = pd.Series(data=power_output_theo.values,
-                                      index=indices)
-        power_output_by_wind_speed = (
-            turbine_amount[0] * power_output.power_curve(
-                df[name + '_wind_speed'], e66.power_curve['wind_speed'],
-                e66.power_curve['power']) +
-            turbine_amount[1] * power_output.power_curve(
-                df[name + '_wind_speed'], e70.power_curve['wind_speed'],
-                e70.power_curve['power'])) / (1*10**6)
-        power_output_by_wind_speed = pd.Series(
-            data=power_output_by_wind_speed.values, index=indices)
-        val_obj = analysis_tools.ValidationObject(
-            'validate_arge_4919', power_output_theo,
-            power_output_by_wind_speed,
-            weather_data_name='calculated by wind speed',
-            validation_name='P_W theoretical')
-        val_obj.output_method = 'power_output'
-        visualization_tools.plot_feedin_comparison(
-            val_obj, filename='../Plots/Test_Arge/{0}_{1}_feedin'.format(
-                year, name),
-            title='{0}'.format(name), start=start, end=end)
-        visualization_tools.plot_correlation(
-            val_obj, filename='../Plots/Test_Arge/{0}_{1}_corr'.format(
-                year, name),
-            title='{0}'.format(name))
-
-
-def correlation_of_wind_speed_and_power(year):
-    # Get ArgeNetz Data
-    pickle_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
-                     'arge_netz_data_{0}.p'.format(year)))
-    arge_netz_data = get_argenetz_data(year, pickle_load=True,
-                                       filename=pickle_path, plot=False)
-    if year == 2015:
-        wind_farm_names = ['wf_1', 'wf_4']
-    if year == 2016:
-        wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
-    for wind_farm_name in wind_farm_names:
-        df = arge_netz_data[['{0}_power_output'.format(wind_farm_name),
-                             '{0}_wind_speed'.format(wind_farm_name)]]
-        df.corr().to_csv(os.path.join(os.path.dirname(__file__),
-                         'Evaluation/argenetz/',
-                         'correlation_wind_speed_power_{0}_{1}.csv'.format(
-                             wind_farm_name, year)))
+# def correlation_of_wind_speed_and_power(year):
+#     # Get ArgeNetz Data
+#     pickle_path = os.path.abspath(
+#         os.path.join(os.path.dirname(__file__), 'dumps/validation_data',
+#                      'arge_netz_data_{0}.p'.format(year)))
+#     arge_netz_data = get_argenetz_data(year, pickle_load=True,
+#                                        filename=pickle_path, plot=False)
+#     if year == 2015:
+#         wind_farm_names = ['wf_1', 'wf_4']
+#     if year == 2016:
+#         wind_farm_names = ['wf_1', 'wf_3', 'wf_4', 'wf_5']
+#     for wind_farm_name in wind_farm_names:
+#         df = arge_netz_data[['{0}_power_output'.format(wind_farm_name),
+#                              '{0}_wind_speed'.format(wind_farm_name)]]
+#         df.corr().to_csv(os.path.join(os.path.dirname(__file__),
+#                          'Evaluation/argenetz/',
+#                          'correlation_wind_speed_power_{0}_{1}.csv'.format(
+#                              wind_farm_name, year)))
 
 if __name__ == "__main__":
     years = [
@@ -511,13 +511,13 @@ if __name__ == "__main__":
     check_theo_power = False  # theoretical power vs wind speed if True
     wf_2_single = False  # Get data of single wind turbines of wf2 (Nordstrand)
 
-    if wf_2_single:
-        wf_2_single_data(
-            pickle_filename=os.path.join(
-                os.path.dirname(__file__), 'dumps/validation_data',
-                'wf_SH_single.p'), filter_interpolated_data=True)
+    # if wf_2_single:
+    #     wf_2_single_data(
+    #         pickle_filename=os.path.join(
+    #             os.path.dirname(__file__), 'dumps/validation_data',
+    #             'wf_SH_single.p'), filter_interpolated_data=True)
 
-    if correlation_wind_power:
-        years = [2015, 2016]
-        for year in years:
-            correlation_of_wind_speed_and_power(year)
+    # if correlation_wind_power:
+    #     years = [2015, 2016]
+    #     for year in years:
+    #         correlation_of_wind_speed_and_power(year)
