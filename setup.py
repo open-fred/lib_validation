@@ -14,4 +14,6 @@ setup(name='lib_validation',
                         'xarray',
                         'scipy',
                         'pvlib >= 0.5.0',
-                        'windpowerlib >= 0.0.6'])
+                        'windpowerlib >= 0.0.6',
+                        'seaborn',
+                        'windrose'])
