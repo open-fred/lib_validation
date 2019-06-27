@@ -33,6 +33,24 @@ import logging
 import math
 
 
+def path_to(where='data', projects_location='~/rl-institut/'):
+    """
+    Creates path to data.
+
+    where : str
+        Specifies where path will point to. Default: 'data'.
+    projects_location : str
+        Location where 04_Projekte of rl-institut is mounted.
+        Default: '~/rl-institut/'.
+
+    """
+    greenwind_location = '04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Daten_Twele/'
+    if where == 'data':
+        add = 'processed_data/'
+    if where == 'errors':
+        add = 'Error codes/'
+    return os.path.join(projects_location, greenwind_location, add)
+
 def read_data(filename):
     r"""
     Fetches data from a csv file.
@@ -47,8 +65,7 @@ def read_data(filename):
     pandas.DataFrame
 
     """
-    df = pd.read_csv(os.path.join(os.path.dirname(__file__),
-                                  'data/GreenWind', filename),
+    df = pd.read_csv(os.path.join(path_to(where='data'), filename),
                      sep=',', decimal='.', index_col=0)
     return df
 
@@ -141,8 +158,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             error_dict = {}
             # Get numbers that do display an error
             error_numbers = pd.read_csv(
-                os.path.join(os.path.dirname(__file__), 'data/GreenWind',
-                             'errors.csv'))['error_numbers'].dropna().values
+                os.path.join(path_to(where='errors'),
+                             'error.csv'))['error_numbers'].dropna().values # todo rename to errors - probleme mit berechtigung in fred ordner
             error_columns = [
                 column_name for column_name in list(greenwind_df) if
                 'error_number' in column_name]
@@ -558,79 +575,79 @@ def evaluate_duplicates(years):
     return duplicates_dict
 
 
-def evaluate_nans(years, before_processing=False, available_time_steps=False,
-                  filename_add_on=''):
-    if before_processing:
-        df = pd.DataFrame()
-        for year in years:
-            df_part_year = pd.DataFrame()
-            filenames = [
-                'WF1_{0}.csv'.format(year),
-                'WF2_{0}.csv'.format(year),
-                'WF3_{0}.csv'.format(year)]
-            for name in filenames:
-                df_part = pd.DataFrame(
-                    read_data(name).isnull().sum()).sort_index()
-                df_part.columns = [year]
-                df_part_year = pd.concat([df_part_year, df_part], axis=0)
-            df = pd.concat([df, df_part_year], axis=1)
-        df.to_csv(os.path.join(
-            os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Daten/Twele/',
-            'nans_evaluation.csv'))
-    else:
-        add_ons = ['wf', 'first_row']
-        for add_on in add_ons:
-            if (add_on == 'wf' and filename_add_on == ''):
-                pass
-            else:
-                df = pd.DataFrame()
-                for year in years:
-                    if add_on == 'wf':
-                        pickle_filename = os.path.join(
-                            os.path.dirname(__file__), 'dumps/validation_data',
-                            'greenwind_data_{0}_raw_resolution.p'.format(year))
-                    else:
-                        pickle_filename = os.path.join(
-                            os.path.dirname(__file__), 'dumps/validation_data',
-                            'greenwind_data_first_row_{0}{1}.p'.format(
-                                year, filename_add_on))
-                    data = pickle.load(open(pickle_filename, 'rb'))
-                    if add_on == 'wf':
-                        keep_cols = ['wf_{}_power_output'.format(wf) for
-                                     wf in ['BE', 'BNW', 'BS']]
-                        selected_data = data[keep_cols]
-                        selected_data.rename(
-                            columns={col: col.replace('wf_', 'WF ').replace(
-                                '_power_output', '') for
-                                col in list(selected_data)}, inplace=True)
-                    else:
-                        selected_data = data.rename(columns={
-                            col: col.replace('wf_', '').replace('_', ' ') for
-                            col in list(data)})
-                    if available_time_steps:
-                        df_part = pd.DataFrame(
-                            selected_data.count()).sort_index()
-                    else:
-                        df_part = pd.DataFrame(
-                            selected_data.isnull().sum()).sort_index()
-                    df_part.columns = [year]
-                    df = pd.concat([df, df_part], axis=1)
-                df.to_csv(os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Latex/Tables/' +
-                    'Evaluation/nans/',
-                    'nans_evaluation_{}{}.csv'.format(add_on,
-                                                      filename_add_on)))
-                df.to_latex(os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Latex/Tables/' +
-                    'Evaluation/nans/',
-                    'nans_evaluation_{}{}.tex'.format(add_on,
-                                                      filename_add_on)),
-                    column_format=latex_tables.create_column_format(
-                        len(df.columns), 'l'), multicolumn_format='c')
-    return df
+# def evaluate_nans(years, before_processing=False, available_time_steps=False,
+#                   filename_add_on=''):
+#     if before_processing:
+#         df = pd.DataFrame()
+#         for year in years:
+#             df_part_year = pd.DataFrame()
+#             filenames = [
+#                 'WF1_{0}.csv'.format(year),
+#                 'WF2_{0}.csv'.format(year),
+#                 'WF3_{0}.csv'.format(year)]
+#             for name in filenames:
+#                 df_part = pd.DataFrame(
+#                     read_data(name).isnull().sum()).sort_index()
+#                 df_part.columns = [year]
+#                 df_part_year = pd.concat([df_part_year, df_part], axis=0)
+#             df = pd.concat([df, df_part_year], axis=1)
+#         df.to_csv(os.path.join(
+#             os.path.dirname(__file__),
+#             '../../../User-Shares/Masterarbeit/Daten/Twele/',
+#             'nans_evaluation.csv'))
+#     else:
+#         add_ons = ['wf', 'first_row']
+#         for add_on in add_ons:
+#             if (add_on == 'wf' and filename_add_on == ''):
+#                 pass
+#             else:
+#                 df = pd.DataFrame()
+#                 for year in years:
+#                     if add_on == 'wf':
+#                         pickle_filename = os.path.join(
+#                             os.path.dirname(__file__), 'dumps/validation_data',
+#                             'greenwind_data_{0}_raw_resolution.p'.format(year))
+#                     else:
+#                         pickle_filename = os.path.join(
+#                             os.path.dirname(__file__), 'dumps/validation_data',
+#                             'greenwind_data_first_row_{0}{1}.p'.format(
+#                                 year, filename_add_on))
+#                     data = pickle.load(open(pickle_filename, 'rb'))
+#                     if add_on == 'wf':
+#                         keep_cols = ['wf_{}_power_output'.format(wf) for
+#                                      wf in ['BE', 'BNW', 'BS']]
+#                         selected_data = data[keep_cols]
+#                         selected_data.rename(
+#                             columns={col: col.replace('wf_', 'WF ').replace(
+#                                 '_power_output', '') for
+#                                 col in list(selected_data)}, inplace=True)
+#                     else:
+#                         selected_data = data.rename(columns={
+#                             col: col.replace('wf_', '').replace('_', ' ') for
+#                             col in list(data)})
+#                     if available_time_steps:
+#                         df_part = pd.DataFrame(
+#                             selected_data.count()).sort_index()
+#                     else:
+#                         df_part = pd.DataFrame(
+#                             selected_data.isnull().sum()).sort_index()
+#                     df_part.columns = [year]
+#                     df = pd.concat([df, df_part], axis=1)
+#                 df.to_csv(os.path.join(
+#                     os.path.dirname(__file__),
+#                     '../../../User-Shares/Masterarbeit/Latex/Tables/' +
+#                     'Evaluation/nans/',
+#                     'nans_evaluation_{}{}.csv'.format(add_on,
+#                                                       filename_add_on)))
+#                 df.to_latex(os.path.join(
+#                     os.path.dirname(__file__),
+#                     '../../../User-Shares/Masterarbeit/Latex/Tables/' +
+#                     'Evaluation/nans/',
+#                     'nans_evaluation_{}{}.tex'.format(add_on,
+#                                                       filename_add_on)),
+#                     column_format=latex_tables.create_column_format(
+#                         len(df.columns), 'l'), multicolumn_format='c')
+#     return df
 
 
 def error_numbers_from_df(df):
@@ -1138,7 +1155,7 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
+    load_data = True
     evaluate_first_row_turbine = False
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
@@ -1149,7 +1166,7 @@ if __name__ == "__main__":
     plot_wind_dir_vs_power = False
     nans_evaluation = False
     duplicates_evaluation = False
-    error_numbers = False
+    error_numbers = True
 
     years = [
         2015,
@@ -1167,12 +1184,9 @@ if __name__ == "__main__":
         # (error code 0 and error codes that are not an error but a warning are
         # not filtered) and whether to print the amount of time steps being
         # filtered
-        filter_errors = True
-        print_error_amount = True
-        print_erroer_amount_total = True
-        # If True: Filter time steps where all measured values of a wind farm
-        # are zero.
-        zero_row_to_nan = True
+        filter_errors = True  # todo change to True when errors.csv is added
+        zero_row_to_nan = True  # Filter time steps where all measured values
+                                # of a wind farm are zero.
         for resample in resample_info:
             for year in years:
                 if resample:
@@ -1185,45 +1199,16 @@ if __name__ == "__main__":
                         'dumps/validation_data',
                         'greenwind_data_{0}_raw_resolution.p'.format(year))
                 error_amount_filename = os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                    path_to(where='errors'),
                     'filtered_error_amount_{}.csv'.format(year))
                 df = get_greenwind_data(
                     year=year, resample=resample,
                     frequency=frequency, threshold=threshold,
                     filename=filename, filter_errors=filter_errors,
-                    print_error_amount=print_error_amount,
+                    print_error_amount=False,
                     error_amount_filename=error_amount_filename,
                     zero_row_to_nan=zero_row_to_nan)
 
-            if print_erroer_amount_total and print_error_amount:
-                # Note: not for both resampling cases
-                filenames = [os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                    'filtered_error_amount_{}.csv'.format(year)) for
-                    year in years]
-                dfs = [pd.read_csv(filename, index_col=0).rename(
-                    columns={'amount': year}) for filename, year in zip(
-                    filenames, years)]
-                df = pd.concat(dfs, axis=1)
-                error_amout_df = df.loc[['wf_BE', 'wf_BS', 'min_periods']]
-                error_amout_df.rename(index={ind: ind.replace('wf_', 'WF ') for
-                                             ind in error_amout_df.index},
-                                      inplace=True)
-                error_amout_df.to_csv(os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Daten/Twele/',
-                    'filtered_error_amount_years.csv'))
-                latex_filename = os.path.join(
-                    os.path.dirname(__file__),
-                    '../../../User-Shares/Masterarbeit/Latex/Tables/',
-                    'filtered_error_amount_years.tex')
-                error_amout_df.to_latex(
-                    buf=latex_filename,
-                    column_format=latex_tables.create_column_format(
-                        len(error_amout_df.columns), 'c'),
-                    multicolumn_format='c')
 
     # ----- First row turbine -----#
     if evaluate_first_row_turbine:
@@ -1237,9 +1222,9 @@ if __name__ == "__main__":
         first_row_resample = True
         first_row_frequency = '30T'
         first_row_threshold = 2
-        first_row_filter_errors = True
+        first_row_filter_errors = False  # todo change to True when errors.csv is added
         first_row_print_error_amount = False
-        first_row_print_erroer_amount_total = False # only with pickle_load_raw_data False!
+        first_row_print_error_amount_total = False # only with pickle_load_raw_data False!
         pickle_load_raw_data = True
         exact_degrees = True
         mean_wind_dir = False  # Use mean wind direction (of correlating wind directions) instead of single turbine wind directions
@@ -1301,7 +1286,7 @@ if __name__ == "__main__":
                     exact_degrees=exact_degrees, mean_wind_dir=mean_wind_dir,
                     add_info=add_info)
 
-        if (first_row_print_erroer_amount_total and
+        if (first_row_print_error_amount_total and
                 first_row_print_error_amount):
             filenames = [os.path.join(
                 os.path.dirname(__file__),
@@ -1348,93 +1333,93 @@ if __name__ == "__main__":
                 year, filename_green_wind, filename=filename,
                 add_info=add_info)
 
-    # ---- Plot wind roses ----#
-    if plot_wind_roses:
-        plot_green_wind_wind_roses()
+    # # ---- Plot wind roses ----#
+    # if plot_wind_roses:
+    #     plot_green_wind_wind_roses()
 
-    # ---- Wind direction correlation ----#
-    if evaluate_wind_direction_corr:
-        corr_mins = [0.6, 0.7, 0.8]
-        frequency = None
-        WT_14 = True
-        folder = os.path.join(
-            os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation',
-            'green_wind_wind_direction')
-        for corr_min in corr_mins:
-            for year in years:
-                evaluate_wind_directions(year=year, save_folder=folder,
-                                         corr_min=corr_min, WT_14=WT_14)
+    # # ---- Wind direction correlation ----#
+    # if evaluate_wind_direction_corr:
+    #     corr_mins = [0.6, 0.7, 0.8]
+    #     frequency = None
+    #     WT_14 = True
+    #     folder = os.path.join(
+    #         os.path.dirname(__file__),
+    #         '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation',
+    #         'green_wind_wind_direction')
+    #     for corr_min in corr_mins:
+    #         for year in years:
+    #             evaluate_wind_directions(year=year, save_folder=folder,
+    #                                      corr_min=corr_min, WT_14=WT_14)
 
-    # ---- Plot wind directions ---- #
-    if plot_wind_direcions:
-        adapt_negatives = [
-            True,
-            False
-        ]
-        for adapt_negative in adapt_negatives:
-            for year in years:
-                plot_wind_directions_of_farms(
-                    year, pickle_load_wind_dir_df=True,
-                    adapt_negative=adapt_negative)
+    # # ---- Plot wind directions ---- #
+    # if plot_wind_direcions:
+    #     adapt_negatives = [
+    #         True,
+    #         False
+    #     ]
+    #     for adapt_negative in adapt_negatives:
+    #         for year in years:
+    #             plot_wind_directions_of_farms(
+    #                 year, pickle_load_wind_dir_df=True,
+    #                 adapt_negative=adapt_negative)
 
-    # ---- Wind direction vs. golden position ----#
-    if wind_dir_vs_gondel_position:
-        corr_min = 0.6
-        folder = os.path.join(
-            os.path.dirname(__file__),
-            '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
-            'gw_wind_dir_vs_gondel_pos')
-        for year in years:
-            evaluate_wind_dir_vs_gondel_position(year=year, save_folder=folder,
-                                                 corr_min=corr_min)
-    # ---- Wind direction vs. power output plots ---- #
-    if plot_wind_dir_vs_power:
-        resolutions = [
-            10,
-            # 30
-        ]
-        xlims = [
-            True,
-            False
-        ]
-        means = [
-            True,
-            # False
-        ]
-        v_std_steps = [
-            # 0.5,
-            # 1.0,
-            3.0
-            # 4.0
-        ]
+    # # ---- Wind direction vs. golden position ----#
+    # if wind_dir_vs_gondel_position:
+    #     corr_min = 0.6
+    #     folder = os.path.join(
+    #         os.path.dirname(__file__),
+    #         '../../../User-Shares/Masterarbeit/Latex/Tables/Evaluation/' +
+    #         'gw_wind_dir_vs_gondel_pos')
+    #     for year in years:
+    #         evaluate_wind_dir_vs_gondel_position(year=year, save_folder=folder)
 
-        for year in years:
-            for resolution in resolutions:
-                for xlim in xlims:
-                    for mean in means:
-                        for v_std_step in v_std_steps:
-                            if (mean and xlim):
-                                pass
-                            elif (not mean and v_std_step != v_std_steps[0]):
-                                pass
-                            else:
-                                plot_wind_dir_vs_power_output(
-                                    year=year, resolution=resolution,
-                                    xlim=xlim, mean=mean,
-                                    v_std_step=v_std_step)
+    # # ---- Wind direction vs. power output plots ---- #
+    # if plot_wind_dir_vs_power:
+    #     resolutions = [
+    #         10,
+    #         # 30
+    #     ]
+    #     xlims = [
+    #         True,
+    #         False
+    #     ]
+    #     means = [
+    #         True,
+    #         # False
+    #     ]
+    #     v_std_steps = [
+    #         # 0.5,
+    #         # 1.0,
+    #         3.0
+    #         # 4.0
+    #     ]
+    #
+    #     for year in years:
+    #         for resolution in resolutions:
+    #             for xlim in xlims:
+    #                 for mean in means:
+    #                     for v_std_step in v_std_steps:
+    #                         if (mean and xlim):
+    #                             pass
+    #                         elif (not mean and v_std_step != v_std_steps[0]):
+    #                             pass
+    #                         else:
+    #                             plot_wind_dir_vs_power_output(
+    #                                 year=year, resolution=resolution,
+    #                                 xlim=xlim, mean=mean,
+    #                                 v_std_step=v_std_step)
 
-    # Evaluation of nans
-    if nans_evaluation:
-        add_ons = ['', '_weather_wind_speed_3']
-        for add_on in add_ons:
-            nans_df = evaluate_nans(years, before_processing=False,
-                                    available_time_steps=True,
-                                    filename_add_on=add_on)
+    # # Evaluation of nans
+    # if nans_evaluation:
+    #     add_ons = ['', '_weather_wind_speed_3']
+    #     for add_on in add_ons:
+    #         nans_df = evaluate_nans(years, before_processing=False,
+    #                                 available_time_steps=True,
+    #                                 filename_add_on=add_on)
 
-    # Evaluation of duplicates
-    if duplicates_evaluation:
-        duplicates_dict = evaluate_duplicates(years)
+    # # Evaluation of duplicates
+    # if duplicates_evaluation:
+    #     duplicates_dict = evaluate_duplicates(years)
 
     # Evaluation of error numbers - decide whether to execute:
     if error_numbers:
@@ -1442,8 +1427,7 @@ if __name__ == "__main__":
         for year in years:
             error_numbers = get_error_numbers(year)
             error_numbers.to_csv(
-                os.path.join(os.path.dirname(__file__),
-                             '../../../User-Shares/Masterarbeit/Daten/Twele/',
+                os.path.join(path_to(where='errors'),
                              'error_numbers_{}.csv'.format(year)))
             error_numbers_total.extend(error_numbers)
         sorted_error_numbers_total = pd.Series(
@@ -1451,6 +1435,5 @@ if __name__ == "__main__":
         sorted_error_numbers_total.index = np.arange(
             len(sorted_error_numbers_total))
         sorted_error_numbers_total.to_csv(
-            os.path.join(os.path.dirname(__file__),
-                         '../../../User-Shares/Masterarbeit/Daten/Twele/',
+            os.path.join(path_to(where='errors'),
                          'error_numbers_total.csv'.format(year)))
