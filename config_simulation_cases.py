@@ -14,7 +14,11 @@ def get_standard_case_of_configuration():
     config_dict = {
         'restriction_list': [],
         'weather_data_list': ['MERRA', 'open_FRED'],
-        'validation_data_list': ['ArgeNetz', 'Enertrag', 'GreenWind'],
+        'validation_data_list': [
+            # 'ArgeNetz',
+            # 'Enertrag',
+            'GreenWind'
+        ],
         'output_methods': ['half_hourly',  # Only if possible
                            'hourly', 'monthly'],
         'visualization_methods': [

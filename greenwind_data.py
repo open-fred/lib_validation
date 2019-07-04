@@ -1155,18 +1155,18 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = True
-    evaluate_first_row_turbine = False
+    load_data = False
+    evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
     plot_wind_roses = False
     evaluate_wind_direction_corr = False
     plot_wind_direcions = False
-    wind_dir_vs_gondel_position = True
+    wind_dir_vs_gondel_position = False
     plot_wind_dir_vs_power = False
     nans_evaluation = False
     duplicates_evaluation = False
-    error_numbers = True
+    error_numbers = False
 
     years = [
         2015,
@@ -1214,22 +1214,22 @@ if __name__ == "__main__":
     if evaluate_first_row_turbine:
         # Parameters
         cases = [
-            'wind_dir_real',
-            'wind_speed_1',
+            # 'wind_dir_real',
+            # 'wind_speed_1',
             'weather_wind_speed_3',
-            'weather_wind_speed_3_real'
+            # 'weather_wind_speed_3_real'
         ]
         first_row_resample = True
         first_row_frequency = '30T'
         first_row_threshold = 2
-        first_row_filter_errors = False  # todo change to True when errors.csv is added
+        first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_error_amount_total = False # only with pickle_load_raw_data False!
         pickle_load_raw_data = True
-        exact_degrees = True
+        exact_degrees = False
         mean_wind_dir = False  # Use mean wind direction (of correlating wind directions) instead of single turbine wind directions
         bias = False
-        add_info = True  # Add info about which turbines were used for the respective time steps
+        add_info = False  # Add info about which turbines were used for the respective time steps
         if add_info:
             resample = False
         for case in cases:
