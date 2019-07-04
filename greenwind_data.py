@@ -159,7 +159,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             # Get numbers that do display an error
             error_numbers = pd.read_csv(
                 os.path.join(path_to(where='errors'),
-                             'error.csv'))['error_numbers'].dropna().values # todo rename to errors - probleme mit berechtigung in fred ordner
+                             'errors.csv'))['error_numbers'].dropna().values
             error_columns = [
                 column_name for column_name in list(greenwind_df) if
                 'error_number' in column_name]
