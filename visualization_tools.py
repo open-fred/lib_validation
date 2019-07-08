@@ -2,7 +2,7 @@
 from windpowerlib import wind_turbine as wt
 
 # Lib validation imports
-from analysis_tools import ValidationObject
+# from analysis_tools import ValidationObject
 
 # Other imports
 from matplotlib import pyplot as plt

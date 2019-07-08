@@ -31,7 +31,7 @@ logging.getLogger().setLevel(logging.INFO)
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
     # ---- Single functions - wind speed ---- # (only open_FRED)
-    # 'wind_speed_1',
+    'wind_speed_1',
     # 'wind_speed_2',
     # 'wind_speed_3',
     # 'wind_speed_4',
@@ -40,7 +40,7 @@ cases = [
     # 'wind_speed_7',  # first row like weather_wind_speed_3
     # 'wind_speed_8',  # first row like weather_wind_speed_3
     # ---- Single functions - wind speed ---- # (only open_FRED)
-    # 'power_output_1',
+    'power_output_1',
     # ---- Single functions - smoothing, density... ---- #
     # 'smoothing_1',
     # 'smoothing_2',
@@ -309,7 +309,7 @@ def run_main(case, parameters, year):
                 old_col: old_col.replace('wf_', '').replace(
                     'power_output', 'measured') for
                 old_col in list(turbine_power_output)}, inplace=True)
-            # Resample the DataFrame columns with `frequency` and add to list
+            # Resample the DataFrame colu'mns with `frequency` and add to list
             threshold = get_threshold(frequency,
                                       turbine_power_output.index.freq.n)
             validation_df_list.append(tools.resample_with_nan_theshold(
@@ -318,9 +318,26 @@ def run_main(case, parameters, year):
         # Join DataFrames - power output in MW - wind speed in m/s
         if 'wind_speed' in case:
             validation_df = pd.concat(validation_df_list, axis=1)
+            col_name = 'wind_speed_val'
         else:
             validation_df = pd.concat(validation_df_list, axis=1) / 1000
-        return validation_df
+            col_name = 'feedin_val'
+
+        # Validation df in db format for new validation tools
+        validation_df_db_format = pd.DataFrame()
+        for col in validation_df.keys():
+            df = pd.DataFrame(validation_df[col]).rename(columns={
+                col: col_name})
+            df['turbine_or_farm'] = col.replace('_measured', '')
+            validation_df_db_format = pd.concat([validation_df_db_format, df])
+
+        # validation_df_db_format = pd.concat(
+        #     [pd.DataFrame([validation_df[name].values,
+        #                    [name for i in range(len(validation_df))],
+        #                    validation_df.index]).transpose().set_index(
+        #         2).rename(columns={0: 'feedin_val', 1: 'turbine_or_farm'}) for
+        #      name in validation_df.keys()])
+        return validation_df, validation_df_db_format
 
     # ---------------------------- Wind farm data --------------------------- #
     def return_wind_farm_data(single=False, gw_wind_speeds=False,
@@ -410,6 +427,8 @@ def run_main(case, parameters, year):
                     pickle_load=False)
         # Initialise calculation_df_list and calculate power output
         calculation_df_list = []
+        # Initialise calculation_df_db_format for new validation tools format
+        calculation_df_db_format = pd.DataFrame()
         # Initialise wind farms
         wind_farm_list = [wf.WindFarm(**wind_farm_data) for
                           wind_farm_data in wind_farm_data_list]
@@ -435,46 +454,60 @@ def run_main(case, parameters, year):
             # approach_list
 
             # --- wind speed calculations --- #
-            if 'logarithmic' in approach_list:
-                calculation_df_list.append(
-                    modelchain_usage.wind_speed_to_hub_height(
-                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                        weather_df=weather, wind_speed_model='logarithmic',
-                        obstacle_height=0).to_frame(
-                        name='{0}_calculated_logarithmic'.format(
-                            wind_farm.name)))
+            # if 'logarithmic' in approach_list:
+            #     calculation_df_list.append(
+            #         modelchain_usage.wind_speed_to_hub_height(
+            #             wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+            #             weather_df=weather, wind_speed_model='logarithmic',
+            #             obstacle_height=0).to_frame(
+            #             name='{0}_calculated_logarithmic'.format(
+            #                 wind_farm.name)))
             if 'log_100' in approach_list:
-                calculation_df_list.append(
-                    modelchain_usage.wind_speed_to_hub_height(
-                        wind_turbine_fleet=wind_farm.wind_turbine_fleet,
-                        weather_df=weather, wind_speed_model='logarithmic',
-                        obstacle_height=0).to_frame(
-                        name='{0}_calculated_log_100'.format(
-                            wind_farm.name)))
+                calculated_value = modelchain_usage.wind_speed_to_hub_height(
+                    wind_turbine_fleet=wind_farm.wind_turbine_fleet,
+                    weather_df=weather, wind_speed_model='logarithmic',
+                    obstacle_height=0)
+                calculation_df_list.append(calculated_value.to_frame(
+                        name='{0}_calculated_log_100'.format(wind_farm.name)))
+                df = calculated_value.to_frame(name='wind_speed')
+                df['turbine_or_farm'] = wind_farm.name
+                df['approach'] = 'log_100'
+                calculation_df_db_format = pd.concat(
+                    [calculation_df_db_format, df], axis=0)
             if 'log_80' in approach_list:
                 modified_weather = weather[['roughness_length', 'wind_speed']]
                 modified_weather.drop([100, 120, 10], axis=1, level=1,
                                       inplace=True)
-                calculation_df_list.append(
-                    modelchain_usage.wind_speed_to_hub_height(
+                calculated_value = modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=modified_weather,
                         wind_speed_model='logarithmic',
-                        obstacle_height=0).to_frame(
+                        obstacle_height=0)
+                calculation_df_list.append(calculated_value.to_frame(
                         name='{0}_calculated_log_80'.format(
                             wind_farm.name)))
+                df = calculated_value.to_frame(name='wind_speed')
+                df['turbine_or_farm'] = wind_farm.name
+                df['approach'] = 'log_80'
+                calculation_df_db_format = pd.concat(
+                    [calculation_df_db_format, df], axis=0)
             if 'log_10' in approach_list:
                 modified_weather = weather[['roughness_length', 'wind_speed']]
                 modified_weather.drop([100, 120, 80], axis=1, level=1,
                                       inplace=True)
-                calculation_df_list.append(
-                    modelchain_usage.wind_speed_to_hub_height(
+                calculated_value = modelchain_usage.wind_speed_to_hub_height(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=modified_weather,
                         wind_speed_model='logarithmic',
-                        obstacle_height=0).to_frame(
+                        obstacle_height=0)
+                calculation_df_list.append(calculated_value.to_frame(
                         name='{0}_calculated_log_10'.format(
                             wind_farm.name)))
+                df = calculated_value.to_frame(name='wind_speed')
+                df['turbine_or_farm'] = wind_farm.name
+                df['approach'] = 'log_10'
+                calculation_df_db_format = pd.concat(
+                    [calculation_df_db_format, df], axis=0)
             # if 'hellman' in approach_list:
             #     calculation_df_list.append(
             #         modelchain_usage.wind_speed_to_hub_height(
@@ -612,8 +645,7 @@ def run_main(case, parameters, year):
                             out_frequency=weather.index.freq,
                             original_resolution=wind_speed.index.freq.n)))
             if 'p-curve' in approach_list:
-                calculation_df_list.append(
-                    modelchain_usage.power_output_simple(
+                calculated_value = modelchain_usage.power_output_simple(
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=weather, wind_speed=wind_speed,
                         wind_speed_model='logarithmic',
@@ -621,9 +653,16 @@ def run_main(case, parameters, year):
                         temperature_model='linear_gradient',
                         power_output_model='power_curve',
                         density_correction=False, obstacle_height=0,
-                        hellman_exp=None).to_frame(
+                        hellman_exp=None)
+                calculation_df_list.append(
+                    calculated_value.to_frame(
                         name='{0}_calculated_p-curve'.format(
                             wind_farm.name)))
+                df = calculated_value.to_frame(name='feedin')
+                df['turbine_or_farm'] = wind_farm.name
+                df['approach'] = 'p-curve'
+                calculation_df_db_format = pd.concat(
+                    [calculation_df_db_format, df], axis=0)
             # if 'cp-curve' in approach_list:
             #     calculation_df_list.append(
             #         modelchain_usage.power_output_simple(
@@ -884,6 +923,8 @@ def run_main(case, parameters, year):
         else:
             calculation_df = pd.concat(
                 calculation_df_list, axis=1) / (1 * 10 ** 6)
+            calculation_df_db_format['feedin'] = (
+                    calculation_df_db_format['feedin'] / (1 * 10 ** 6))
         # Add curtailment for Enertrag wind farm
         # for column_name in list(calculation_df):
         #     if column_name.split('_')[1] == 'BNE':
@@ -896,7 +937,7 @@ def run_main(case, parameters, year):
         #                        axis=1)
         #         calculation_df[column_name] = df[column_name] * df[
         #             'curtail_rel']
-        return calculation_df
+        return calculation_df, calculation_df_db_format
 
     def get_time_series_df(weather_data_name, wind_farm_data_list):
         r"""
@@ -921,49 +962,69 @@ def run_main(case, parameters, year):
             pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         else:
             # Get validation and calculated data
-            calculation_df = get_calculated_data(weather_data_name,
-                                                 wind_farm_data_list)
-            validation_df = get_validation_data(
+            calculation_df, calculation_df_db_format = get_calculated_data(
+                weather_data_name, wind_farm_data_list)
+            validation_df, validation_df_db_format = get_validation_data(
                 frequency=calculation_df.index.freq)
             # Join data frames
             time_series_df = pd.concat([validation_df, calculation_df], axis=1)
+            time_series_df_db_format = pd.merge(
+                calculation_df_db_format.reset_index(),
+                validation_df_db_format.reset_index().rename(
+                    columns={'timeindex': 'time'}),
+                on=['time', 'turbine_or_farm']).set_index('time')
             # Set value of measured series to nan if respective calculated
             # value is nan and the other way round
-            column_name_lists = [
-                [name for name in list(time_series_df) if wf_name in name] for
-                wf_name in wind_farm_names]
-            for column_name in column_name_lists:
-                # Nans of calculated data to measured data
-                time_series_df.loc[:, column_name[0]].loc[
-                    time_series_df.loc[:, column_name[1]].loc[
-                        time_series_df.loc[
-                            :, column_name[1]].isnull() == True].index] = (
-                            np.nan)
-                # Nans of measured data to calculated data
-                for i in range(len(column_name) - 1):
-                    time_series_df.loc[:, column_name[i+1]].loc[
-                        time_series_df.loc[:, column_name[0]].loc[
-                            time_series_df.loc[
-                            :, column_name[0]].isnull() == True].index] = (
-                                np.nan)
-            # Only keep rows within the right year
-            time_series_df['boolean'] = (time_series_df.index.year == year)
-            time_series_df = time_series_df.loc[
-               time_series_df.loc[time_series_df['boolean']].index].drop(
-                    ['boolean'], axis=1)
-            pickle.dump(time_series_df, open(time_series_filename, 'wb'))
+            sim_name = 'wind_speed' if 'wind_speed' in case else 'feedin'
+            val_name = 'wind_speed_val' if 'wind_speed' in case else 'feedin_val'
+            time_series_df_db_format[sim_name].loc[
+                time_series_df_db_format[
+                    val_name].isnull() == True] = np.nan
+            time_series_df_db_format[val_name].loc[
+                time_series_df_db_format[
+                    sim_name].isnull() == True] = np.nan
+            # pickle.dump(time_series_df_db_format,
+            #             open(time_series_filename.replace('.p', 'db_format.p'),
+            #                  'wb'))
+            # todo leave >>>>>>>> for time series df old format
+            # column_name_lists = [
+            #     [name for name in list(time_series_df) if wf_name in name] for
+            #     wf_name in wind_farm_names]
+            # for column_name in column_name_lists:
+            #     # Nans of calculated data to measured data
+            #     time_series_df.loc[:, column_name[0]].loc[
+            #         time_series_df.loc[:, column_name[1]].loc[
+            #             time_series_df.loc[
+            #                 :, column_name[1]].isnull() == True].index] = (
+            #                 np.nan)
+            #     # Nans of measured data to calculated data
+            #     for i in range(len(column_name) - 1):
+            #         time_series_df.loc[:, column_name[i+1]].loc[
+            #             time_series_df.loc[:, column_name[0]].loc[
+            #                 time_series_df.loc[
+            #                 :, column_name[0]].isnull() == True].index] = (
+            #                     np.nan)
+            # # Only keep rows within the right year
+            # time_series_df['boolean'] = (time_series_df.index.year == year)
+            # time_series_df = time_series_df.loc[
+            #    time_series_df.loc[time_series_df['boolean']].index].drop(
+            #         ['boolean'], axis=1)
+            # pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         if csv_dump_time_series_df:
             time_series_df.to_csv(csv_filename.replace('.p', '.csv'))
-        # Drop columns that contain at least one item of `restriction_list` in
-        # their name
-        drop_list = []
-        for restriction in restriction_list:
-            drop_list.extend(
-                [column_name for column_name in list(time_series_df) if
-                 restriction in column_name])
-        time_series_df.drop([column_name for column_name in drop_list],
-                            axis=1, inplace=True)
-        return time_series_df
+            time_series_df_db_format.to_csv(csv_filename.replace(
+                '.p', 'db_format.csv'))
+        # todo leave <<<<<<<<< for time series df old format
+        # # Drop columns that contain at least one item of `restriction_list` in
+        # # their name
+        # drop_list = []
+        # for restriction in restriction_list:
+        #     drop_list.extend(
+        #         [column_name for column_name in list(time_series_df) if
+        #          restriction in column_name])
+        # time_series_df.drop([column_name for column_name in drop_list],
+        #                     axis=1, inplace=True)
+        return time_series_df, time_series_df_db_format
 
     # ---------------------------- Helper functions ------------------------- #
     def initialize_dictionary(dict_type, time_series_pairs=None):
@@ -1014,8 +1075,8 @@ def run_main(case, parameters, year):
     # annual_energy_dicts = {weather_data_name: None
     #                        for weather_data_name in weather_data_list}
     for weather_data_name in weather_data_list:
-        time_series_df = get_time_series_df(weather_data_name,
-                                            wind_farm_data_list)
+        time_series_df, time_series_df_db_format = get_time_series_df(
+            weather_data_name, wind_farm_data_list)
         if time_period is not None:
             time_series_df = tools.select_certain_time_steps(time_series_df,
                                                              time_period)
@@ -1069,243 +1130,243 @@ def run_main(case, parameters, year):
         #                     measured_output * 100)
         #     # Add dictionary to `annual_energy_dicts`
         #     annual_energy_dicts[weather_data_name] = annual_energy_dict_weather
-        for time_series_pair in time_series_pairs:
-            wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
-            approach_string = '_'.join(
-                list(time_series_pair)[1].split('_')[3:])
-            if 'half_hourly' in output_methods:
-                if weather_data_name == 'open_FRED':
-                    val_obj_dict[weather_data_name]['half_hourly'][
-                        approach_string].append(ValidationObject(
-                            name=wf_string, data=time_series_pair,
-                            output_method='half_hourly',
-                            weather_data_name=weather_data_name,
-                            approach=approach_string,
-                            min_periods_pearson=min_periods_pearson))
-            if 'hourly' in output_methods:
-                if weather_data_name == 'open_FRED':
-                    hourly_series = tools.resample_with_nan_theshold(
-                        df=time_series_pair, frequency='H',
-                        threshold=get_threshold('H',
-                                                time_series_pair.index.freq.n))
-                else:
-                    hourly_series = time_series_pair
-                val_obj_dict[weather_data_name]['hourly'][
-                    approach_string].append(ValidationObject(
-                        name=wf_string, data=hourly_series,
-                        output_method='hourly',
-                        weather_data_name=weather_data_name,
-                        approach=approach_string,
-                        min_periods_pearson=min_periods_pearson))
-            if 'monthly' in output_methods:
-                if case not in [
-                        'weather_wind_speed_3', 'wind_speed_5',
-                        'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
-                    monthly_series = tools.resample_with_nan_theshold(
-                        df=time_series_pair, frequency='M',
-                        threshold=get_threshold(
-                            'M', time_series_pair.index.freq.n))
-                    val_obj_dict[weather_data_name]['monthly'][
-                        approach_string].append(ValidationObject(
-                            name=wf_string, data=monthly_series,
-                            output_method='monthly',
-                            weather_data_name=weather_data_name,
-                            approach=approach_string,
-                            min_periods_pearson=min_periods_pearson))
-        # Delete entry in dict if half_hourly resolution not possible
-        if (time_series_pairs[0].index.freq == 'H' and
-                'half_hourly' in val_obj_dict[weather_data_name]):
-            del val_obj_dict[weather_data_name]['half_hourly']
+        # for time_series_pair in time_series_pairs:
+        #     wf_string = '_'.join(list(time_series_pair)[0].split('_')[:2])
+        #     approach_string = '_'.join(
+        #         list(time_series_pair)[1].split('_')[3:])
+        #     if 'half_hourly' in output_methods:
+        #         if weather_data_name == 'open_FRED':
+        #             val_obj_dict[weather_data_name]['half_hourly'][
+        #                 approach_string].append(ValidationObject(
+        #                     name=wf_string, data=time_series_pair,
+        #                     output_method='half_hourly',
+        #                     weather_data_name=weather_data_name,
+        #                     approach=approach_string,
+        #                     min_periods_pearson=min_periods_pearson))
+        #     if 'hourly' in output_methods:
+        #         if weather_data_name == 'open_FRED':
+        #             hourly_series = tools.resample_with_nan_theshold(
+        #                 df=time_series_pair, frequency='H',
+        #                 threshold=get_threshold('H',
+        #                                         time_series_pair.index.freq.n))
+        #         else:
+        #             hourly_series = time_series_pair
+        #         val_obj_dict[weather_data_name]['hourly'][
+        #             approach_string].append(ValidationObject(
+        #                 name=wf_string, data=hourly_series,
+        #                 output_method='hourly',
+        #                 weather_data_name=weather_data_name,
+        #                 approach=approach_string,
+        #                 min_periods_pearson=min_periods_pearson))
+        #     if 'monthly' in output_methods:
+        #         if case not in [
+        #                 'weather_wind_speed_3', 'wind_speed_5',
+        #                 'wind_speed_6', 'wind_speed_7', 'wind_speed_8']:
+        #             monthly_series = tools.resample_with_nan_theshold(
+        #                 df=time_series_pair, frequency='M',
+        #                 threshold=get_threshold(
+        #                     'M', time_series_pair.index.freq.n))
+        #             val_obj_dict[weather_data_name]['monthly'][
+        #                 approach_string].append(ValidationObject(
+        #                     name=wf_string, data=monthly_series,
+        #                     output_method='monthly',
+        #                     weather_data_name=weather_data_name,
+        #                     approach=approach_string,
+        #                     min_periods_pearson=min_periods_pearson))
+        # # Delete entry in dict if half_hourly resolution not possible
+        # if (time_series_pairs[0].index.freq == 'H' and
+        #         'half_hourly' in val_obj_dict[weather_data_name]):
+        #     del val_obj_dict[weather_data_name]['half_hourly']
 
-        ###### Visualization ######
-        # Define folder
-        if ('wind_speed' in case and 'weather' not in case):
-            folder = 'wind_speed'
-        elif ('power_output' in case and 'weather' not in case):
-            folder = 'power_output'
-        elif ('single_turbine' in case and 'weather' not in case):
-            folder = 'single_turbine'
-        # elif 'smoothing' in case:
-        #     folder = 'smoothing'
-        # elif 'wake_losses' in case:
-        #     folder = 'wake_losses'
-        # elif ('wind_farm' in case and 'weather' not in case):
-        #     folder = 'wind_farm'
-        elif 'weather_wind_speed' in case:
-            folder = 'weather_wind_speed'
-        elif 'weather_wind_farm' in case:
-            folder = 'weather_wind_farm'
-        elif (case == 'weather_single_turbine_1' or
-              case == 'weather_single_turbine_2'):
-            folder = 'weather_single_turbine'
-        else:
-            folder = ''
-        # Define y label add on
-        if 'wind_speed' in case:
-            examined_value = 'wind speed'
-            y_label_add_on = '{0} in m/s'.format(examined_value)
-        else:
-            examined_value = 'power output'
-            y_label_add_on = '{0} in MW'.format(examined_value)
-
-        if 'feedin_comparison' in visualization_methods:
-            # time series pair/part and approach string multiple
-            if feedin_comparsion_all_in_one:
-                plot_dfs = time_series_df_parts
-                approach_string = 'multiple'
-                # Bring df into order
-                cols = [col for col in list(plot_dfs[0]) if 'measured' in col]
-                others = [col for col in list(plot_dfs[0]) if
-                          'measured' not in col]
-                cols.extend(others)
-                plot_dfs = [plot_dfs[0][cols]]
-            else:
-                plot_dfs = time_series_pairs
-                approach_string = None
-            for plot_df in plot_dfs:
-                # Specify save folder and title add on
-                if time_period is not None:
-                    add_on = (
-                        '{0}_{1}'.format(time_period[0], time_period[1]))
-                    title_add_on = ' time of day: {0}:00 - {1}:00'.format(
-                        time_period[0], time_period[1])
-                else:
-                    add_on = 'None'
-                    title_add_on = ''
-                save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
-                               'images/Plots/{0}/'.format(folder))
-                for method in output_methods:
-                    # Resample if necessary
-                    if method == 'hourly':
-                        if weather_data_name == 'open_FRED':
-                            plot_df = tools.resample_with_nan_theshold(
-                                df=plot_df, frequency='H',
-                                threshold=get_threshold('H',
-                                                        plot_df.index.freq.n))
-                    if method == 'monthly':
-                        plot_df = tools.resample_with_nan_theshold(
-                            df=plot_df, frequency='M',
-                            threshold=get_threshold('M', plot_df.index.freq.n))
-                    # Set approach string and wind farm name string
-                    if approach_string != 'multiple':
-                        approach_string = '_'.join(list(plot_df)[1].split(
-                            '_')[3:])
-                    wf_string = '_'.join(list(plot_df)[0].split(
-                        '_')[:2])
-                    for start_end in start_end_list:
-                        if (method == 'monthly' and start_end[0] is not None):
-                            # Do not plot
-                            pass
-                        elif (method == 'half_hourly' and
-                                weather_data_name == 'MERRA'):
-                            pass
-                        else:
-                            feedin_filename = (
-                                    save_folder +
-                                    '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
-                                        case, method, wf_string, year,
-                                        weather_data_name, add_on,
-                                        approach_string,
-                                        (start_end[0].split(':')[0] if
-                                         start_end[0] else ''),
-                                        (start_end[1].split(':')[0] if
-                                         start_end[0] else '')))
-                            feedin_title = (
-                                    '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
-                                        method.replace('_', ' '),
-                                        examined_value, wf_string,
-                                        weather_data_name, year,
-                                        approach_string) + title_add_on)
-                            visualization_tools.plot_feedin_comparison(
-                                data=plot_df, method=method,
-                                filename=feedin_filename, title=feedin_title,
-                                tick_label=None, start=start_end[0],
-                                end=start_end[1],
-                                y_label_add_on=y_label_add_on)
-                            # Also plot as pdf
-                            visualization_tools.plot_feedin_comparison(
-                                data=plot_df, method=method,
-                                filename=feedin_filename.replace(
-                                    '.png', '.pdf'), title=feedin_title,
-                                tick_label=None, start=start_end[0],
-                                end=start_end[1],
-                                y_label_add_on=y_label_add_on)
-
-        if 'plot_correlation' in visualization_methods:
-            for time_series_pair in time_series_pairs:
-                # Specify save folder and title add on
-                if time_period is not None:
-                    add_on = (
-                        '{0}_{1}'.format(time_period[0], time_period[1]))
-                    title_add_on = ' time of day: {0}:00 - {1}:00'.format(
-                        time_period[0], time_period[1])
-                else:
-                    add_on = 'None'
-                    title_add_on = ''
-                save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
-                               'images/Plots/{0}/'.format(folder))
-                for method in output_methods:
-                    if (method == 'half_hourly' and
-                            weather_data_name == 'MERRA'):
-                        # Do not plot
-                        pass
-                    elif method == 'monthly':
-                        time_series_pair = tools.resample_with_nan_theshold(
-                            df=time_series_pair, frequency='M',
-                            threshold=get_threshold(
-                                'M', time_series_pair.index.freq.n))
-                    else:
-                        approach_string = '_'.join(
-                            list(time_series_pair)[1].split('_')[3:])
-                        wf_string = '_'.join(
-                            list(time_series_pair)[0].split('_')[:2])
-                        corr_filename = (
-                                save_folder +
-                                '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
-                                    case, method, wf_string, year,
-                                    weather_data_name, approach_string,
-                                    add_on))
-                        corr_title = (
-                                '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
-                                    method.replace('_', ' '), examined_value,
-                                    wf_string, weather_data_name, year,
-                                    approach_string) +
-                                'approach)' + title_add_on)
-                        visualization_tools.plot_correlation(
-                            data=time_series_pair, method=method,
-                            filename=corr_filename, title=corr_title,
-                            color='darkblue', marker_size=3,
-                            y_label_add_on=y_label_add_on)
-                        # Also plot as pdf
-                        visualization_tools.plot_correlation(
-                            data=time_series_pair, method=method,
-                            filename=corr_filename.replace(
-                                '.png', '.pdf'), title=corr_title,
-                            color='darkblue', marker_size=3,
-                            y_label_add_on=y_label_add_on)
-        if 'subplots_correlation' in visualization_methods:
-            if len(approach_list) <= 4:
-                for time_series_df_part in time_series_df_parts:
-                    if weather_data_name == 'open_FRED':
-                        # Resample the DataFrame columns
-                        time_series_df_part = tools.resample_with_nan_theshold(
-                            df=time_series_df_part, frequency='H',
-                            threshold=get_threshold(
-                                'H', time_series_df_part.index.freq.n))
-                    wf_name = '_'.join(list(
-                        time_series_df_part)[0].split('_')[0:2])
-                    sub_filename = os.path.join(
-                            os.path.dirname(__file__),
-                            '../../../User-Shares/Masterarbeit/Latex/inc/' +
-                            'images/correlation_sub',
-                            'Correlation_{}_{}_{}_{}'.format(
-                                case, weather_data_name, year, wf_name))
-                    visualization_tools.correlation_subplot(
-                        time_series_df_part, filename=sub_filename)
-                    # Also plot as pdf
-                    visualization_tools.correlation_subplot(
-                        time_series_df_part, filename=sub_filename.replace(
-                            '.png', '.pdf'))
+        # ###### Visualization ######
+        # # Define folder
+        # if ('wind_speed' in case and 'weather' not in case):
+        #     folder = 'wind_speed'
+        # elif ('power_output' in case and 'weather' not in case):
+        #     folder = 'power_output'
+        # elif ('single_turbine' in case and 'weather' not in case):
+        #     folder = 'single_turbine'
+        # # elif 'smoothing' in case:
+        # #     folder = 'smoothing'
+        # # elif 'wake_losses' in case:
+        # #     folder = 'wake_losses'
+        # # elif ('wind_farm' in case and 'weather' not in case):
+        # #     folder = 'wind_farm'
+        # elif 'weather_wind_speed' in case:
+        #     folder = 'weather_wind_speed'
+        # elif 'weather_wind_farm' in case:
+        #     folder = 'weather_wind_farm'
+        # elif (case == 'weather_single_turbine_1' or
+        #       case == 'weather_single_turbine_2'):
+        #     folder = 'weather_single_turbine'
+        # else:
+        #     folder = ''
+        # # Define y label add on
+        # if 'wind_speed' in case:
+        #     examined_value = 'wind speed'
+        #     y_label_add_on = '{0} in m/s'.format(examined_value)
+        # else:
+        #     examined_value = 'power output'
+        #     y_label_add_on = '{0} in MW'.format(examined_value)
+        #
+        # if 'feedin_comparison' in visualization_methods:
+        #     # time series pair/part and approach string multiple
+        #     if feedin_comparsion_all_in_one:
+        #         plot_dfs = time_series_df_parts
+        #         approach_string = 'multiple'
+        #         # Bring df into order
+        #         cols = [col for col in list(plot_dfs[0]) if 'measured' in col]
+        #         others = [col for col in list(plot_dfs[0]) if
+        #                   'measured' not in col]
+        #         cols.extend(others)
+        #         plot_dfs = [plot_dfs[0][cols]]
+        #     else:
+        #         plot_dfs = time_series_pairs
+        #         approach_string = None
+        #     for plot_df in plot_dfs:
+        #         # Specify save folder and title add on
+        #         if time_period is not None:
+        #             add_on = (
+        #                 '{0}_{1}'.format(time_period[0], time_period[1]))
+        #             title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+        #                 time_period[0], time_period[1])
+        #         else:
+        #             add_on = 'None'
+        #             title_add_on = ''
+        #         save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
+        #                        'images/Plots/{0}/'.format(folder))
+        #         for method in output_methods:
+        #             # Resample if necessary
+        #             if method == 'hourly':
+        #                 if weather_data_name == 'open_FRED':
+        #                     plot_df = tools.resample_with_nan_theshold(
+        #                         df=plot_df, frequency='H',
+        #                         threshold=get_threshold('H',
+        #                                                 plot_df.index.freq.n))
+        #             if method == 'monthly':
+        #                 plot_df = tools.resample_with_nan_theshold(
+        #                     df=plot_df, frequency='M',
+        #                     threshold=get_threshold('M', plot_df.index.freq.n))
+        #             # Set approach string and wind farm name string
+        #             if approach_string != 'multiple':
+        #                 approach_string = '_'.join(list(plot_df)[1].split(
+        #                     '_')[3:])
+        #             wf_string = '_'.join(list(plot_df)[0].split(
+        #                 '_')[:2])
+        #             for start_end in start_end_list:
+        #                 if (method == 'monthly' and start_end[0] is not None):
+        #                     # Do not plot
+        #                     pass
+        #                 elif (method == 'half_hourly' and
+        #                         weather_data_name == 'MERRA'):
+        #                     pass
+        #                 else:
+        #                     feedin_filename = (
+        #                             save_folder +
+        #                             '{0}_{1}_feedin_{2}_{3}_{4}_{5}_{6}_{7}{8}.png'.format(
+        #                                 case, method, wf_string, year,
+        #                                 weather_data_name, add_on,
+        #                                 approach_string,
+        #                                 (start_end[0].split(':')[0] if
+        #                                  start_end[0] else ''),
+        #                                 (start_end[1].split(':')[0] if
+        #                                  start_end[0] else '')))
+        #                     feedin_title = (
+        #                             '{0} {1} of {2} calculated with {3} data\n in {4} ({5} approach)'.format(
+        #                                 method.replace('_', ' '),
+        #                                 examined_value, wf_string,
+        #                                 weather_data_name, year,
+        #                                 approach_string) + title_add_on)
+        #                     visualization_tools.plot_feedin_comparison(
+        #                         data=plot_df, method=method,
+        #                         filename=feedin_filename, title=feedin_title,
+        #                         tick_label=None, start=start_end[0],
+        #                         end=start_end[1],
+        #                         y_label_add_on=y_label_add_on)
+        #                     # Also plot as pdf
+        #                     visualization_tools.plot_feedin_comparison(
+        #                         data=plot_df, method=method,
+        #                         filename=feedin_filename.replace(
+        #                             '.png', '.pdf'), title=feedin_title,
+        #                         tick_label=None, start=start_end[0],
+        #                         end=start_end[1],
+        #                         y_label_add_on=y_label_add_on)
+        #
+        # if 'plot_correlation' in visualization_methods:
+        #     for time_series_pair in time_series_pairs:
+        #         # Specify save folder and title add on
+        #         if time_period is not None:
+        #             add_on = (
+        #                 '{0}_{1}'.format(time_period[0], time_period[1]))
+        #             title_add_on = ' time of day: {0}:00 - {1}:00'.format(
+        #                 time_period[0], time_period[1])
+        #         else:
+        #             add_on = 'None'
+        #             title_add_on = ''
+        #         save_folder = ('../../../User-Shares/Masterarbeit/Latex/inc/' +
+        #                        'images/Plots/{0}/'.format(folder))
+        #         for method in output_methods:
+        #             if (method == 'half_hourly' and
+        #                     weather_data_name == 'MERRA'):
+        #                 # Do not plot
+        #                 pass
+        #             elif method == 'monthly':
+        #                 time_series_pair = tools.resample_with_nan_theshold(
+        #                     df=time_series_pair, frequency='M',
+        #                     threshold=get_threshold(
+        #                         'M', time_series_pair.index.freq.n))
+        #             else:
+        #                 approach_string = '_'.join(
+        #                     list(time_series_pair)[1].split('_')[3:])
+        #                 wf_string = '_'.join(
+        #                     list(time_series_pair)[0].split('_')[:2])
+        #                 corr_filename = (
+        #                         save_folder +
+        #                         '{0}_{1}_Correlation_{1}_{2}_{3}_{4}_{5}_{6}.png'.format(
+        #                             case, method, wf_string, year,
+        #                             weather_data_name, approach_string,
+        #                             add_on))
+        #                 corr_title = (
+        #                         '{0} {1} of {2} calculated with {3} data\n in {4} ({5} '.format(
+        #                             method.replace('_', ' '), examined_value,
+        #                             wf_string, weather_data_name, year,
+        #                             approach_string) +
+        #                         'approach)' + title_add_on)
+        #                 visualization_tools.plot_correlation(
+        #                     data=time_series_pair, method=method,
+        #                     filename=corr_filename, title=corr_title,
+        #                     color='darkblue', marker_size=3,
+        #                     y_label_add_on=y_label_add_on)
+        #                 # Also plot as pdf
+        #                 visualization_tools.plot_correlation(
+        #                     data=time_series_pair, method=method,
+        #                     filename=corr_filename.replace(
+        #                         '.png', '.pdf'), title=corr_title,
+        #                     color='darkblue', marker_size=3,
+        #                     y_label_add_on=y_label_add_on)
+        # if 'subplots_correlation' in visualization_methods:
+        #     if len(approach_list) <= 4:
+        #         for time_series_df_part in time_series_df_parts:
+        #             if weather_data_name == 'open_FRED':
+        #                 # Resample the DataFrame columns
+        #                 time_series_df_part = tools.resample_with_nan_theshold(
+        #                     df=time_series_df_part, frequency='H',
+        #                     threshold=get_threshold(
+        #                         'H', time_series_df_part.index.freq.n))
+        #             wf_name = '_'.join(list(
+        #                 time_series_df_part)[0].split('_')[0:2])
+        #             sub_filename = os.path.join(
+        #                     os.path.dirname(__file__),
+        #                     '../../../User-Shares/Masterarbeit/Latex/inc/' +
+        #                     'images/correlation_sub',
+        #                     'Correlation_{}_{}_{}_{}'.format(
+        #                         case, weather_data_name, year, wf_name))
+        #             visualization_tools.correlation_subplot(
+        #                 time_series_df_part, filename=sub_filename)
+        #             # Also plot as pdf
+        #             visualization_tools.correlation_subplot(
+        #                 time_series_df_part, filename=sub_filename.replace(
+        #                     '.png', '.pdf'))
 
     # ------------------------------ LaTeX Output --------------------------- #
     # path_latex_tables = os.path.join(os.path.dirname(__file__),
