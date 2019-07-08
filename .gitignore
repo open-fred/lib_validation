@@ -17,6 +17,7 @@ dumps/**/*
 Plots/**/*
 Evaluation/**/*
 csv_for_plots/**/*
+validation/
 
 /untitled0.py
 /ergebnis.csv
