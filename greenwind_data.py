@@ -14,7 +14,7 @@ Additionally the sum of the wind farm power output of each wind farm is
 available. Apart from that, 'first row time series' depending on wind
 directions (nacelle positions) can be fetched.
 
-DateTimeIndex in 'Europe/Berlin' time zone.
+DateTimeIndex in 'UTC' time zone.
 
 """
 
@@ -66,7 +66,7 @@ def read_data(filename):
 
     """
     df = pd.read_csv(os.path.join(path_to(where='data'), filename),
-                     sep=',', decimal='.', index_col=0)
+                     sep=',', decimal='.', index_col=0, parse_dates=True)
     return df
 
 
@@ -145,9 +145,9 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 df_part.drop_duplicates(inplace=True)
             # Add to DataFrame
             greenwind_df = pd.concat([greenwind_df, df_part], axis=1)
-        # Convert index to DatetimeIndex and make time zone aware
+        # Convert index to DatetimeIndex and make time zone aware (UTC)
         greenwind_df.index = pd.to_datetime(greenwind_df.index).tz_localize(
-            'UTC').tz_convert('Europe/Berlin')
+            'UTC')
         # Choose time steps of the year only (there are some time steps from
         # the year before or after)
         greenwind_df = greenwind_df.loc[str(year)]
@@ -1155,7 +1155,7 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 if __name__ == "__main__":
     # Select cases: (parameters below in section)
-    load_data = False
+    load_data = True
     evaluate_first_row_turbine = True
     evaluate_highest_wind_speed = False
     evaluate_highest_power_output = False
@@ -1215,8 +1215,8 @@ if __name__ == "__main__":
         # Parameters
         cases = [
             # 'wind_dir_real',
-            # 'wind_speed_1',
-            'weather_wind_speed_3',
+            'wind_speed_1',
+            # 'weather_wind_speed_3',
             # 'weather_wind_speed_3_real'
         ]
         first_row_resample = True

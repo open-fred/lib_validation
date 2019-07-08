@@ -81,7 +81,7 @@ if __name__ == "__main__":
             os.path.dirname(__file__), 'dumps/weather',
             'weather_df_open_FRED_{0}.p'.format(year))
         fred_path = os.path.join(
-            os.path.dirname(__file__), 'data/open_FRED',
+            '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/'
             'fred_data_{0}_sh.csv'.format(year))
         # Get data
         weather_df = get_open_fred_data(filename=fred_path,
