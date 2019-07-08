@@ -64,20 +64,20 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     closest_coordinates = get_closest_coordinates(data_frame, coordinates)
     # print(closest_coordinates)
     data_frame = data_frame
-    data_frame.sortlevel(inplace=True)
+    data_frame.sort_index(inplace=True)
     # Select coordinates from data frame
     weather_df = data_frame.loc[(slice(None),
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]), :].reset_index(
                                     level=[1, 2], drop=True)
-    if weather_data_name == 'open_FRED':
-        # Localize open_FRED data index
-        weather_df.index = weather_df.index.tz_localize('UTC')
+    # if weather_data_name == 'open_FRED':
+    #     # Localize open_FRED data index
+    #     weather_df.index = weather_df.index.tz_localize('UTC')
     # Add frequency attribute
     freq = pd.infer_freq(weather_df.index)
     weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)
-    # Convert index to local time zone
-    weather_df.index = weather_df.index.tz_convert('Europe/Berlin')
+    # # Convert index to local time zone
+    # weather_df.index = weather_df.index.tz_convert('Europe/Berlin')  # note: all in UTC
     return weather_df
 
 

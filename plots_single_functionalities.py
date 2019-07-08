@@ -4,6 +4,9 @@ import pandas as pd
 import os
 
 
+# todo notes: keep this file to maybe use code for plots. It would be wise to store time_series_dfs as done in MA to be able to use plots
+
+
 def bar_plot_from_file(source_filename, output_filename, index=None,
                        index_cols=0, header_cols=0, ylabel=''):
     df = pd.read_csv(source_filename, index_col=index_cols, header=header_cols,
