@@ -18,6 +18,8 @@ from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
 from config_simulation_cases import get_configuration
 # import plots_single_functionalities
 # from create_wind_efficiency_curves import get_power_efficiency_curves
+import validation_tools as val_tools
+
 
 # Other imports
 import os
@@ -104,6 +106,10 @@ wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
 time_series_dump_folder = os.path.join(
     os.path.dirname(__file__),
     'dumps/time_series_dfs')
+
+validation_folder = os.path.join(
+    os.path.dirname(__file__),
+    'validation')
 
 # csv_folder = '../../../User-Shares/Masterarbeit/Latex/csv_for_plots'
 
@@ -1081,6 +1087,25 @@ def run_main(case, parameters, year):
     for weather_data_name in weather_data_list:
         time_series_df, time_series_df_db_format = get_time_series_df(
             weather_data_name, wind_farm_data_list)
+        # if time_period is not None:
+        #     time_series_df = tools.select_certain_time_steps(time_series_df,
+        #                                                      time_period)
+
+        ################ simple validation ####################################
+        if not os.path.exists(validation_folder):
+            os.makedirs(validation_folder, exist_ok=True)
+        filename = os.path.join(os.path.dirname(__file__), validation_folder,
+                                'validation_{}_{}_{}.csv'.format(
+                                    case, weather_data_name,
+                                    year))
+        sim_name = 'wind_speed' if 'wind_speed' in case else 'feedin'
+        val_name = 'wind_speed_val' if 'wind_speed' in case else 'feedin_val'
+        val_tools.calculate_validation_metrics(
+            df=time_series_df_db_format, val_cols=[sim_name, val_name],
+            metrics='standard', filter_cols=['turbine_or_farm', 'approach'],
+            filename=filename)
+
+
         # if time_period is not None:
         #     time_series_df = tools.select_certain_time_steps(time_series_df,
         #                                                      time_period)
