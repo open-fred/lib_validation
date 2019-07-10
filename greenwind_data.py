@@ -75,7 +75,7 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                        frequency='30T', pickle_dump=True, filter_errors=True,
                        print_error_amount=False,
                        error_amount_filename='error_amount.csv',
-                       zero_row_to_nan=True):
+                       zero_row_to_nan=True, csv_dump=False):
     r"""
     Fetches GreenWind data.
 
@@ -114,6 +114,9 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
     zero_row_to_nan : boolean
         If True if turbine data only contains zeros at one time step these
         values are set to nan.
+    csv_dump : boolean
+        If True data is saved in csv file with the file name of `filename`.
+        Default: False.
 
     Returns
     -------
@@ -259,6 +262,8 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
             greenwind_df.index.freq = pd.tseries.frequencies.to_offset(freq)
         if pickle_dump:
             pickle.dump(greenwind_df, open(filename, 'wb'))
+        if csv_dump:
+            greenwind_df.to_csv(filename.replace('.p', '.csv'))
     return greenwind_df
 
 
@@ -271,7 +276,7 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
                                       resample=True, threshold=None,
                                       case='all', exact_degrees=False,
                                       mean_wind_dir=False, bias=False,
-                                      add_info=False):
+                                      add_info=False, csv_dump=False):
     r"""
     Fetches GreenWind data of first row turbine depending on wind direction.
 
@@ -322,6 +327,9 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
         from mean wind direction <= 10°. Default: False.
     add_info : boolean
         If True info for evaulation is added to data frames. Default: False.
+    csv_dump : boolean
+        If True data is saved in csv file with the file name of `filename`.
+        Default: False.
 
     Returns
     -------
@@ -521,6 +529,8 @@ def get_first_row_turbine_time_series(year, filename_raw_data=None,
             first_row_df = pd.concat([first_row_df, green_wind_df[cols]],
                                      axis=1)
         pickle.dump(first_row_df, open(pickle_filename, 'wb'))
+        if csv_dump:
+            first_row_df.to_csv(pickle_filename.replace('.p', '.csv'))
     if resample:
         first_row_df = tools.resample_with_nan_theshold(
             df=first_row_df, frequency=frequency, threshold=threshold)
@@ -1154,6 +1164,7 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
 
 
 if __name__ == "__main__":
+    csv_dump = True
     # Select cases: (parameters below in section)
     load_data = True
     evaluate_first_row_turbine = True
@@ -1184,7 +1195,7 @@ if __name__ == "__main__":
         # (error code 0 and error codes that are not an error but a warning are
         # not filtered) and whether to print the amount of time steps being
         # filtered
-        filter_errors = True  # todo change to True when errors.csv is added
+        filter_errors = True
         zero_row_to_nan = True  # Filter time steps where all measured values
                                 # of a wind farm are zero.
         for resample in resample_info:
@@ -1207,7 +1218,7 @@ if __name__ == "__main__":
                     filename=filename, filter_errors=filter_errors,
                     print_error_amount=False,
                     error_amount_filename=error_amount_filename,
-                    zero_row_to_nan=zero_row_to_nan)
+                    zero_row_to_nan=zero_row_to_nan, csv_dump=csv_dump)
 
 
     # ----- First row turbine -----#
@@ -1254,21 +1265,21 @@ if __name__ == "__main__":
                         os.path.dirname(__file__), 'dumps/validation_data',
                         'greenwind_data_first_row_{0}{1}{2}{3}.p'.format(
                             year, add_on, add_on_2, add_on_3))
-                if case == 'weather_wind_speed_3':
-                    pickle_filename = os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3{1}{2}{3}.p'.format(
-                            year, add_on, add_on_2, add_on_3))
-                if case == 'wind_dir_real':
-                    pickle_filename = os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_wind_dir_real{1}{2}{3}.p'.format(
-                            year, add_on, add_on_2, add_on_3))
-                if case == 'weather_wind_speed_3_real':
-                    pickle_filename = os.path.join(
-                        os.path.dirname(__file__), 'dumps/validation_data',
-                        'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}{2}{3}.p'.format(
-                            year, add_on, add_on_2, add_on_3))
+                # if case == 'weather_wind_speed_3':
+                #     pickle_filename = os.path.join(
+                #         os.path.dirname(__file__), 'dumps/validation_data',
+                #         'greenwind_data_first_row_{0}_weather_wind_speed_3{1}{2}{3}.p'.format(
+                #             year, add_on, add_on_2, add_on_3))
+                # if case == 'wind_dir_real':
+                #     pickle_filename = os.path.join(
+                #         os.path.dirname(__file__), 'dumps/validation_data',
+                #         'greenwind_data_first_row_{0}_wind_dir_real{1}{2}{3}.p'.format(
+                #             year, add_on, add_on_2, add_on_3))
+                # if case == 'weather_wind_speed_3_real':
+                #     pickle_filename = os.path.join(
+                #         os.path.dirname(__file__), 'dumps/validation_data',
+                #         'greenwind_data_first_row_{0}_weather_wind_speed_3_real{1}{2}{3}.p'.format(
+                #             year, add_on, add_on_2, add_on_3))
                 if add_info:
                     pickle_filename = pickle_filename.replace('.p', 'with_info.p')
                 error_amount_filename = os.path.join(
@@ -1284,7 +1295,7 @@ if __name__ == "__main__":
                     frequency=first_row_frequency, resample=first_row_resample,
                     threshold=first_row_threshold, case=case,
                     exact_degrees=exact_degrees, mean_wind_dir=mean_wind_dir,
-                    add_info=add_info)
+                    add_info=add_info, csv_dump=csv_dump)
 
         if (first_row_print_error_amount_total and
                 first_row_print_error_amount):
