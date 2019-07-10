@@ -1021,9 +1021,9 @@ def run_main(case, parameters, year):
             #         ['boolean'], axis=1)
             # pickle.dump(time_series_df, open(time_series_filename, 'wb'))
         if csv_dump_time_series_df:
-            time_series_df.to_csv(csv_filename.replace('.p', '.csv'))
+            time_series_df.to_csv(csv_filename)
             time_series_df_db_format.to_csv(csv_filename.replace(
-                '.p', 'db_format.csv'))
+                '.csv', '_db_format.csv'))
         # todo leave <<<<<<<<< for time series df old format
         # # Drop columns that contain at least one item of `restriction_list` in
         # # their name
