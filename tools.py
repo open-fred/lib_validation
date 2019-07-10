@@ -1,6 +1,5 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_farm as wf
-from windpowerlib import (power_output, wind_speed, density, temperature)
 
 # Imports from lib_validation
 from merra_weather_data import get_merra_data
@@ -13,6 +12,7 @@ from scipy.spatial import cKDTree
 import numpy as np
 import pickle
 import os
+import logging
 
 
 def get_weather_data(weather_data_name, coordinates, pickle_load=False,
@@ -264,3 +264,53 @@ def higher_values_to_nan(df, limit, columns=None):
         indices = df.loc[df[column] > limit].index
         df[column].loc[indices] = np.nan
     return df
+
+
+def add_weather_locations_to_register(register, weather_coordinates):
+    r"""
+    Parameters
+    ------------
+    register : pd.DataFrame
+        Contains location of each power plant in columns 'lat' (latitude) and
+        'lon' (longitude).
+    weather_coordinates : pd.DataFrame
+        Contains columns specified in `column_names` with coordinates of the
+        weather data grid point locations. Columns with other column names are
+        ignored.
+
+    Returns
+    -------
+    register : gpd.GeoDataFrame
+        Input `register` data frame containing additionally the locations of
+        the closest weather data grid points in 'weather_lat' (latitude of
+        weather location) and 'weather_lon' (longitude of weather location).
+
+    """
+    if register[['lat', 'lon']].isnull().values.any():
+        logging.warning("Missing coordinates in power plant register are "
+                        "dropped.")
+        register = register[np.isfinite(register['lon'])]
+        register = register[np.isfinite(register['lat'])]
+    closest_coordinates =  get_closest_coordinates(
+        weather_coordinates, register[['lat', 'lon']]).set_index(
+        register.index)
+    register = register.assign(weather_lat=closest_coordinates['lat'].values,
+                    weather_lon=closest_coordinates['lon'].values)
+
+    return register
+
+
+def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
+    # loading weather data
+    try:
+        weather_df = pd.read_csv(filename,
+                                 header=[0, 1], index_col=[0, 1, 2],
+                                 parse_dates=True)
+    except FileNotFoundError:
+        raise FileNotFoundError("Please adjust the filename incl. path.")
+    # change type of height from str to int by resetting columns
+    weather_df.columns = [weather_df.axes[1].levels[0][
+                              weather_df.axes[1].labels[0]],
+                          weather_df.axes[1].levels[1][
+                              weather_df.axes[1].labels[1]].astype(int)]
+    return weather_df
