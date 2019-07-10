@@ -70,9 +70,9 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]), :].reset_index(
                                     level=[1, 2], drop=True)
-    # if weather_data_name == 'open_FRED':
-    #     # Localize open_FRED data index
-    #     weather_df.index = weather_df.index.tz_localize('UTC')
+    if weather_data_name == 'open_FRED':
+        # Localize open_FRED data index
+        weather_df.index = weather_df.index.tz_localize('UTC')
     # Add frequency attribute
     freq = pd.infer_freq(weather_df.index)
     weather_df.index.freq = pd.tseries.frequencies.to_offset(freq)

@@ -45,6 +45,7 @@ def get_open_fred_data(filename='fred_data_2015_sh.csv',
                               weather_df.axes[1].levels[1][
                                   weather_df.axes[1].labels[1]].astype(int)]
         pickle.dump(weather_df, open(pickle_filename, 'wb'))
+        weather_df.to_csv(pickle_filename.replace('.p', '.csv'))
     return weather_df
 
 
@@ -67,8 +68,7 @@ def join_of_data(path1, paths2, year):
     for path in paths2:
         df2 = get_open_fred_data(filename=path)
         df1 = pd.concat([df1, df2], axis=0)
-    df1.to_csv(os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-                            'fred_data_{0}_sh_.csv'.format(year)))
+    df1.to_csv(path1)
 
 
 if __name__ == "__main__":
@@ -76,31 +76,30 @@ if __name__ == "__main__":
         2015,
         2016
     ]
+    fred_path = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/'
     for year in years:
         pickle_path = os.path.join(
             os.path.dirname(__file__), 'dumps/weather',
             'weather_df_open_FRED_{0}.p'.format(year))
-        fred_path = os.path.join(
-            '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/'
-            'fred_data_{0}_sh.csv'.format(year))
         # Get data
-        weather_df = get_open_fred_data(filename=fred_path,
+        filename = os.path.join(fred_path, 'fred_data_{0}_sh.csv'.format(year))
+        weather_df = get_open_fred_data(filename=filename,
                                         pickle_filename=pickle_path)
 
-    # # Enertrag
+    # Enertrag
     # join_of_data(
     #     os.path.join(os.path.dirname(__file__), 'data/open_FRED',
     #                  'fred_data_2016_sh.csv'),
     #     [os.path.join(os.path.dirname(__file__), 'data/open_FRED',
     #                  'fred_data_2016_Enertrag_Windfarm.csv')], 2016)
 
-    # # GreenWind
+    # GreenWind
     # locations = ['Altlandsberg', 'Cottbus', 'Prignitz']
     # for year in years:
-    #     paths = [
-    #         os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-    #                      'fred_data_{0}_WP_{1}.csv'.format(year, location)) for
-    #              location in locations]
+    #     paths = [os.path.join(
+    #         fred_path,
+    #         'fred_data_{0}_sh.csv'.format(year, location)) for
+    #         location in locations]
+    #     filename = os.path.join(fred_path, 'fred_data_{0}_sh.csv'.format(year))
     #     join_of_data(
-    #         os.path.join(os.path.dirname(__file__), 'data/open_FRED',
-    #                      'fred_data_{}_sh.csv'.format(year)), paths, year)
+    #         filename, paths, year)
