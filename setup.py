@@ -16,4 +16,4 @@ setup(name='lib_validation',
                         'pvlib >= 0.5.0',
                         'windpowerlib >= 0.0.6',
                         'seaborn',
-                        'windrose'])
+                        'windrose']) # todo adapt
