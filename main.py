@@ -67,6 +67,7 @@ pickle_load_time_series_df = False
 
 # pickle_load_merra = False
 pickle_load_open_fred = True
+pickle_load_era5 = False
 # pickle_load_arge = True
 # pickle_load_enertrag = True
 pickle_load_greenwind = True
@@ -427,11 +428,15 @@ def run_main(case, parameters, year):
         #                        filename=filename_weather)
         if weather_data_name == 'open_FRED':
             if not pickle_load_open_fred:
-                fred_path = os.path.join(
-                    os.path.dirname(__file__), 'data/open_FRED',
-                    'fred_data_{0}_sh.csv'.format(year))
+                fred_path = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_{0}_sh.csv'.format(year) # todo adapt
                 get_open_fred_data(
                     filename=fred_path, pickle_filename=filename_weather,
+                    pickle_load=False)
+        if weather_data_name == 'ERA5':
+            if not pickle_load_era5:
+                era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(year)
+                get_open_fred_data(
+                    filename=era5_path, pickle_filename=filename_weather,
                     pickle_load=False)
         # Initialise calculation_df_list and calculate power output
         calculation_df_list = []

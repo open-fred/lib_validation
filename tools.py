@@ -54,15 +54,25 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                 year, heights=temperature_heights,
                 filename=filename, pickle_load=pickle_load)
         if weather_data_name == 'open_FRED':
-            fred_path = os.path.join(
-                os.path.dirname(__file__), 'data/open_FRED',
-                'fred_data_{0}_sh.csv'.format(year))
-            data_frame = get_open_fred_data(
-                year, filename=fred_path, pickle_filename=filename)
-        pickle.dump(data_frame, open(filename, 'rb'))
+            fred_path = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_{0}_sh.csv'.format(year) # todo adapt
+            data_frame = get_open_fred_data(filename=fred_path, pickle_filename=filename)
+        if weather_data_name == 'ERA5':
+            era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(
+                year)
+            data_frame = pd.read_csv(era5_path, header=[0, 1],
+                                     index_col=[0, 1, 2], parse_dates=True)
+            # change type of height from str to int by resetting columns
+            data_frame.columns = [data_frame.axes[1].levels[0][
+                                      data_frame.axes[1].labels[0]],
+                                  data_frame.axes[1].levels[1][
+                                      data_frame.axes[1].labels[1]].astype(
+                                      int)]
+        try:
+            pickle.dump(data_frame, open(filename, 'rb'))
+        except FileNotFoundError:
+            print('pickle dump not possible {}'. format(filename))
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = get_closest_coordinates(data_frame, coordinates)
-    # print(closest_coordinates)
     data_frame = data_frame
     data_frame.sort_index(inplace=True)
     # Select coordinates from data frame
@@ -70,7 +80,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]), :].reset_index(
                                     level=[1, 2], drop=True)
-    if weather_data_name == 'open_FRED':
+    if (weather_data_name == 'open_FRED' or weather_data_name == 'ERA5'):
         # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')
     # Add frequency attribute
