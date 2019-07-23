@@ -24,8 +24,8 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     Parameters
     ----------
     weather_data_name : String
-        String specifying if open_FRED or MERRA data is retrieved in case
-        `pickle_load` is False.
+        String specifying if open_FRED, MERRA or 'ERA5' data is retrieved in
+        case `pickle_load` is False.
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
     pickle_load : Boolean
@@ -93,7 +93,14 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
 
 def return_unique_pairs(df, column_names):
     r"""
-    Returns all unique pairs of values of DataFrame `df`.
+    Returns all unique pairs of `column_names` of DataFrame `df`.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    column_names : list
+        Contains column names to get unique pairs for.
 
     Returns
     -------
@@ -108,13 +115,24 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
     r"""
     Finds the coordinates of a data frame that are closest to `coordinates`.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    coordinates : list of floats
+        Contains coordinates in order ['lat', 'lon'].
+    column_names : list of str
+        Contains column names of coordinates in `df`. Default: ['lat', 'lon'].
+
     Returns
     -------
     pd.Series
         Contains closest coordinates with `column_names`as indices.
 
     """
+    # get unique coordinate pairs
     coordinates_df = return_unique_pairs(df, column_names)
+    # get coordinate clostest to `coordinates`
     tree = cKDTree(coordinates_df)
     dists, index = tree.query(np.array(coordinates), k=1)
     return coordinates_df.iloc[index]
