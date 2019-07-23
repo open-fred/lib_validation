@@ -5,6 +5,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point
 from os.path import join
+import os
 
 # internal imports
 import geometries
@@ -275,57 +276,60 @@ def prepare_pvlib_from_era5(year, data_path=join('data', 'era5_netcdf'),
 
 
 if __name__ == "__main__":
-    era5 = True
-    open_fred = False
+    # choose parameters
 
-    brandenburg_wpl = True
-    uckermark_wpl = True
-    germany_wpl = True
-    germany_pvl = True
+    brandenburg_wpl = True  # for whole Brandenburg windpowerlib data
+    uckermark_wpl = True  # Uckermark windpowerlib data
+    germany_wpl = True  # for whole Germany windpowerlib data
+    germany_pvl = True  # for whole Germany pvlib data
 
     years = [
         2013,
         # 2014, 2015, 2016, 2017
     ]
 
+    data_server = 'Daten_flexibel_01'  # mount data server and set name here
+    dump_folder = os.path.join(
+        os.path.expanduser('~'),
+        'virtualenvs/lib_validation/lib_validation/dumps/weather/')
+
     for year in years:
-        if era5:
-            era5_path = '~/Daten_flexibel_01/Wetterdaten/ERA5/'
-            ds_era5 = load_era5_data(year, era5_path)
-        #
-        if (uckermark_wpl and era5):
+        era5_path = os.path.join(os.path.expanduser('~'),
+                                 '{}/Wetterdaten/ERA5/'.format(
+                                     data_server))
+        ds_era5 = load_era5_data(year, era5_path)
+
+        if uckermark_wpl:
             # select region
             region = geometries.load_polygon('uckermark')
             ws_select = apply_mask(ds_era5, region.loc[0, 'geometry'])
             # format to windpowerlib
             weather = format_windpowerlib(ws_select)
-            weather.to_csv(
-                '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_um_{}.csv'.format(
-                    year))
+            weather.to_csv(os.path.join(dump_folder,
+                             'era5_wind_um_{}.csv'.format(year)))
             # weather = prepare_windpowerlib_from_era5(year=2014, data_path=era5_path, mask_area=region)
 
-        if (brandenburg_wpl and era5):
+        if brandenburg_wpl:
             # select region
             region = geometries.load_polygon('brandenburg')
             ws_select = apply_mask(ds_era5, region.loc[0, 'geometry'])
             # format to windpowerlib
             weather = format_windpowerlib(ws_select)
-            weather.to_csv(
-                '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(
-                    year))
+            weather.to_csv(os.path.join(dump_folder,
+                                        'era5_wind_bb_{}.csv'.format(year)))
 
-        if (germany_wpl and era5) or (germany_pvl and era5):
+        if (germany_wpl or germany_pvl):
             region = geometries.load_polygon('germany')
             ws_select = apply_mask(ds_era5, region.loc[0, 'geometry'])
             if germany_wpl:
                 # format to windpowerlib
                 weather = format_windpowerlib(ws_select)
-                weather.to_csv(
-                    '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_ger_{}.csv'.format(
-                        year))
+                weather.to_csv(os.path.join(dump_folder,
+                                            'era5_wind_ger_{}.csv'.format(
+                                                year)))
+
             if germany_pvl:
                 weather = format_pvlib(ws_select)
-                weather.to_csv(
-                    '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_pv_ger_{}.csv'.format(
-                        year))
-
+                weather.to_csv(os.path.join(dump_folder,
+                                            'era5_pv_ger_{}.csv'.format(
+                                                year)))
