@@ -24,8 +24,8 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     Parameters
     ----------
     weather_data_name : String
-        String specifying if open_FRED or MERRA data is retrieved in case
-        `pickle_load` is False.
+        String specifying if open_FRED, MERRA or 'ERA5' data is retrieved in
+        case `pickle_load` is False.
     coordinates : List
         List of coordinates [lat, lon] of location for loading data.
     pickle_load : Boolean
@@ -54,15 +54,25 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                 year, heights=temperature_heights,
                 filename=filename, pickle_load=pickle_load)
         if weather_data_name == 'open_FRED':
-            fred_path = os.path.join(
-                os.path.dirname(__file__), 'data/open_FRED',
-                'fred_data_{0}_sh.csv'.format(year))
-            data_frame = get_open_fred_data(
-                year, filename=fred_path, pickle_filename=filename)
-        pickle.dump(data_frame, open(filename, 'rb'))
+            fred_path = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_{0}_sh.csv'.format(year) # todo adapt
+            data_frame = get_open_fred_data(filename=fred_path, pickle_filename=filename)
+        if weather_data_name == 'ERA5':
+            era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(
+                year)
+            data_frame = pd.read_csv(era5_path, header=[0, 1],
+                                     index_col=[0, 1, 2], parse_dates=True)
+            # change type of height from str to int by resetting columns
+            data_frame.columns = [data_frame.axes[1].levels[0][
+                                      data_frame.axes[1].labels[0]],
+                                  data_frame.axes[1].levels[1][
+                                      data_frame.axes[1].labels[1]].astype(
+                                      int)]
+        try:
+            pickle.dump(data_frame, open(filename, 'rb'))
+        except FileNotFoundError:
+            print('pickle dump not possible {}'. format(filename))
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = get_closest_coordinates(data_frame, coordinates)
-    # print(closest_coordinates)
     data_frame = data_frame
     data_frame.sort_index(inplace=True)
     # Select coordinates from data frame
@@ -70,7 +80,7 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
                                  [closest_coordinates['lat']],
                                  [closest_coordinates['lon']]), :].reset_index(
                                     level=[1, 2], drop=True)
-    if weather_data_name == 'open_FRED':
+    if (weather_data_name == 'open_FRED' or weather_data_name == 'ERA5'):
         # Localize open_FRED data index
         weather_df.index = weather_df.index.tz_localize('UTC')
     # Add frequency attribute
@@ -81,9 +91,53 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     return weather_df
 
 
+def preload_era5_weather(filename, pickle_filename, pickle_load=False):
+    r"""
+    Reads csv file containing weather data and dumps it as data frame.
+
+    Parameters
+    ----------
+    filename : string
+        Name (including path) of file to load ERA5 data from.
+    pickle_filename : string
+        Name (including path) of file of pickle dump.
+    pickle_load : boolean
+        If True data is loaded from the pickle dump. Default: False.
+    Returns
+    -------
+    data_frame : pd.DataFrame
+        Contains ERA5 weather data.
+
+    """
+    if pickle_load:
+        weather_df = pickle.load(open(pickle_filename, 'rb'))
+    else:
+        # Load data from csv file
+        weather_df = pd.read_csv(filename,
+                                 header=[0, 1], index_col=[0, 1, 2],
+                                 parse_dates=True)
+        # change type of height from str to int by resetting columns
+        weather_df.columns = [weather_df.axes[1].levels[0][
+                                  weather_df.axes[1].labels[0]],
+                              weather_df.axes[1].levels[1][
+                                  weather_df.axes[1].labels[1]].astype(int)]
+
+        weather_df.rename(columns={'wind speed': 'wind_speed'}, inplace=True)  # todo delete after fix in era5
+        pickle.dump(weather_df, open(pickle_filename, 'wb'))
+        weather_df.to_csv(pickle_filename.replace('.p', '.csv'))
+    return weather_df
+
+
 def return_unique_pairs(df, column_names):
     r"""
-    Returns all unique pairs of values of DataFrame `df`.
+    Returns all unique pairs of `column_names` of DataFrame `df`.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    column_names : list
+        Contains column names to get unique pairs for.
 
     Returns
     -------
@@ -98,13 +152,24 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
     r"""
     Finds the coordinates of a data frame that are closest to `coordinates`.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    coordinates : list of floats
+        Contains coordinates in order ['lat', 'lon'].
+    column_names : list of str
+        Contains column names of coordinates in `df`. Default: ['lat', 'lon'].
+
     Returns
     -------
     pd.Series
         Contains closest coordinates with `column_names`as indices.
 
     """
+    # get unique coordinate pairs
     coordinates_df = return_unique_pairs(df, column_names)
+    # get coordinate clostest to `coordinates`
     tree = cKDTree(coordinates_df)
     dists, index = tree.query(np.array(coordinates), k=1)
     return coordinates_df.iloc[index]

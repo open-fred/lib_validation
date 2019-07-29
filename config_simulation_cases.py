@@ -164,7 +164,9 @@ def get_configuration(case=None):
         config_dict['validation_data_list'] = ['gw_wind_speeds']
         config_dict['weather_data_list'] = [
             # 'MERRA',
-            'open_FRED']
+            # 'open_FRED',
+            'ERA5'
+        ]
         config_dict['latex_output'] = ['key_figures_approaches',
                                        'annual_energy_approaches']
         config_dict['output_methods'] = ['hourly', 'monthly']

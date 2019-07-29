@@ -1189,8 +1189,8 @@ if __name__ == "__main__":
         # Decide whether to resample to a certain frequency with a certain
         # threshold
         resample_info = [True, False]
-        frequency = '30T'
-        threshold = 2  # Original resolution is 10 min
+        frequency = 'H'
+        threshold = 3  # Original resolution is 10 min
         # Decide whether to filter out time steps with error codes
         # (error code 0 and error codes that are not an error but a warning are
         # not filtered) and whether to print the amount of time steps being
@@ -1231,8 +1231,8 @@ if __name__ == "__main__":
             # 'weather_wind_speed_3_real'
         ]
         first_row_resample = True
-        first_row_frequency = '30T'
-        first_row_threshold = 2
+        first_row_frequency = 'H'
+        first_row_threshold = 3
         first_row_filter_errors = True
         first_row_print_error_amount = False
         first_row_print_error_amount_total = False # only with pickle_load_raw_data False!
