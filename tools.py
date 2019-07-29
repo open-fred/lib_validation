@@ -175,43 +175,6 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
     return coordinates_df.iloc[index]
 
 
-def annual_energy_output(power_output_series, temporal_resolution=None):
-    r"""
-    Calculate annual energy output from power output time series.
-
-    Parameters
-    ----------
-    power_output_series : pd.Series
-        Power output time series of wind turbine or wind farm.
-    temporal_resolution : Integer
-        Temporal resolution of `power_output` time series in minutes. If the
-        temporal resolution can be called by `power_output.index.freq.n` this
-        parameter is not needed. Default: None
-
-    Return
-    ------
-    Float
-        Annual energy output in Wh, kWh or MWh depending on the
-        unit of `power_output`.
-
-    """
-    try:
-        power_output_series.index.freq.n
-        if power_output_series.index.freq.n == 1:
-            freq = 60
-        else:
-            freq = power_output_series.index.freq.n
-        energy = power_output_series * freq / 60
-    except Exception:
-        if temporal_resolution is not None:
-            energy = power_output_series * temporal_resolution / 60
-        else:
-            raise ValueError("`temporal_resolution` needs to be specified " +
-                             "as the frequency of the time series cannot be " +
-                             "called.")
-    return energy.sum()
-
-
 def select_certain_time_steps(series, time_period):
     r"""
     Selects certain time steps from series by a specified time period.
@@ -232,68 +195,6 @@ def select_certain_time_steps(series, time_period):
                              (series.index.hour <= time_period[1])]
     selected_series.index.freq = pd.tseries.frequencies.to_offset(freq)
     return selected_series
-
-
-def summarize_output_of_farms(farm_list):
-    r"""
-    Summarizes the output of several wind farms and initialises a new farm.
-
-    Power output time series and annual energy output are summarized.
-
-    Parameters
-    ----------
-    farm_list : List
-        Contains :class:`~.windpowerlib.wind_farm.WindFarm` objects.
-
-    Returns
-    -------
-    wind_farm_sum : Object
-        A :class:`~.windpowerlib.wind_farm.WindFarm` object representing a
-        sum of wind farms needed for validation purposes.
-
-    """
-    wind_farm_sum = wf.WindFarm(object_name='Sum',
-                                wind_turbine_fleet=None, coordinates=None)
-    wind_farm_sum.power_output = sum(farm.power_output
-                                     for farm in farm_list)
-    wind_farm_sum.annual_energy_output = sum(farm.annual_energy_output
-                                             for farm in farm_list)
-    return wind_farm_sum
-
-
-def filter_interpolated_data(series, window_size=10, tolerance=0.0011,
-                             replacement_character=np.nan, plot=False):
-    """
-
-    Parameters
-    ----------
-    series : pd.Series
-    replacement_character : Integer, Float or np.nan
-
-    Returns
-    -------
-    corrected_df : pd.DataFrame
-        Corrected data frame with interpolated values set to
-        `replacement_character`.
-
-    """
-    data_corrected = series.copy()
-    # calculate the sum of the gradient of the feed-in data over |window_size|
-    # time steps, if it is about zero over the whole time window the data is
-    # assumed to be interpolated
-    data_gradient_sum = series.diff().diff().rolling(
-        window=window_size, min_periods=window_size).sum()
-    for i, v in data_gradient_sum.iteritems():
-        # if the sum of the gradient is within the set tolerance and
-        if abs(v) <= tolerance:
-            if not (series[i - window_size + 1:i + 1] < 0).all():
-                data_corrected[i - window_size + 1:i + 1] = (
-                    replacement_character)
-    if plot:
-        series.plot()
-        data_corrected.plot()
-        plt.show()
-    return data_corrected
 
 
 def resample_with_nan_theshold(df, frequency, threshold):
