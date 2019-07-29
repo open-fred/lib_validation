@@ -91,6 +91,43 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     return weather_df
 
 
+def preload_era5_weather(filename, pickle_filename, pickle_load=False):
+    r"""
+    Reads csv file containing weather data and dumps it as data frame.
+
+    Parameters
+    ----------
+    filename : string
+        Name (including path) of file to load ERA5 data from.
+    pickle_filename : string
+        Name (including path) of file of pickle dump.
+    pickle_load : boolean
+        If True data is loaded from the pickle dump. Default: False.
+    Returns
+    -------
+    data_frame : pd.DataFrame
+        Contains ERA5 weather data.
+
+    """
+    if pickle_load:
+        weather_df = pickle.load(open(pickle_filename, 'rb'))
+    else:
+        # Load data from csv file
+        weather_df = pd.read_csv(filename,
+                                 header=[0, 1], index_col=[0, 1, 2],
+                                 parse_dates=True)
+        # change type of height from str to int by resetting columns
+        weather_df.columns = [weather_df.axes[1].levels[0][
+                                  weather_df.axes[1].labels[0]],
+                              weather_df.axes[1].levels[1][
+                                  weather_df.axes[1].labels[1]].astype(int)]
+
+        weather_df.rename(columns={'wind speed': 'wind_speed'}, inplace=True)  # todo delete after fix in era5
+        pickle.dump(weather_df, open(pickle_filename, 'wb'))
+        weather_df.to_csv(pickle_filename.replace('.p', '.csv'))
+    return weather_df
+
+
 def return_unique_pairs(df, column_names):
     r"""
     Returns all unique pairs of `column_names` of DataFrame `df`.

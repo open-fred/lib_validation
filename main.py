@@ -4,6 +4,7 @@ from windpowerlib import wind_farm as wf
 # Imports from lib_validation
 # import visualization_tools
 import tools
+from tools import preload_era5_weather
 # import latex_tables
 import modelchain_usage
 from wind_farm_specifications import (get_joined_wind_farm_data,
@@ -435,7 +436,7 @@ def run_main(case, parameters, year):
         if weather_data_name == 'ERA5':
             if not pickle_load_era5:
                 era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(year)
-                get_open_fred_data(
+                preload_era5_weather(
                     filename=era5_path, pickle_filename=filename_weather,
                     pickle_load=False)
         # Initialise calculation_df_list and calculate power output
@@ -489,7 +490,7 @@ def run_main(case, parameters, year):
                 df['approach'] = 'log_100'
                 calculation_df_db_format = pd.concat(
                     [calculation_df_db_format, df], axis=0)
-            if 'log_80' in approach_list:
+            if ('log_80' in approach_list and weather_data_name != 'ERA5'):
                 modified_weather = weather[['roughness_length', 'wind_speed']]
                 modified_weather.drop([100, 120, 10], axis=1, level=1,
                                       inplace=True)
