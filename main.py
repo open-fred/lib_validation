@@ -132,12 +132,21 @@ def run_main(case, parameters, year):
                     validation_pickle_folder,
                     'greenwind_data_{0}.p'.format(year)),
                 case=case)
-            single_data = single_data[[col for
-                                       col in list(single_data) if
-                                       'power_output' in col]].rename(
-                columns={column: column.replace(
-                    'power_output', 'measured').replace(
-                    'wf', 'single') for column in list(single_data)})
+            if 'wind_speed' in case:
+                # Get first row single turbine wind speed and rename columns
+                single_data = single_data[[col for
+                                           col in list(single_data) if
+                                           'wind_speed' in col]].rename(
+                    columns={column: column.replace(
+                        'wind_speed', 'measured').replace(
+                        'wf', 'single') for column in list(single_data)})
+            else:
+                single_data = single_data[[col for
+                                           col in list(single_data) if
+                                           'power_output' in col]].rename(
+                    columns={column: column.replace(
+                        'power_output', 'measured').replace(
+                        'wf', 'single') for column in list(single_data)})
             # Resample the DataFrame columns with `frequency` and add to list
             threshold = get_threshold(temporal_resolution,
                                       single_data.index.freq.n)
