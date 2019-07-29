@@ -17,7 +17,6 @@ import validation_tools as val_tools
 # Other imports
 import os
 import pandas as pd
-import numpy as np
 import pickle
 import logging
 
@@ -124,7 +123,7 @@ def run_main(case, parameters, year):
             filename = os.path.join(
                 os.path.dirname(__file__), validation_pickle_folder,
                 'greenwind_data_first_row_{0}.p'.format(year))
-            single_data = get_first_row_turbine_time_series(  # todo check frequency!!
+            single_data = get_first_row_turbine_time_series(
                 year=year, filter_errors=True, print_error_amount=False,
                 pickle_filename=filename, pickle_load_raw_data=True,
                 pickle_load=pickle_load_greenwind,
@@ -409,7 +408,7 @@ def run_main(case, parameters, year):
         if not 'wind_speed' in case:
             calculation_df_db_format['feedin'] = (
                     calculation_df_db_format['feedin'] / (1 * 10 ** 6))
-        return calculation_df_db_format.dropna()
+        return calculation_df_db_format
 
     def get_time_series_df(weather_data_name, wind_farm_data_list):
         r"""
@@ -439,17 +438,6 @@ def run_main(case, parameters, year):
                 validation_df_db_format.reset_index().rename(
                     columns={'timeindex': 'time'}),
                 on=['time', 'turbine_or_farm']).set_index('time')
-            # Set value of measured series to nan if respective calculated
-            # value is nan and the other way round and drop nans
-            sim_name = 'wind_speed' if 'wind_speed' in case else 'feedin'
-            val_name = 'wind_speed_val' if 'wind_speed' in case else 'feedin_val'
-            time_series_df_db_format[sim_name].loc[
-                time_series_df_db_format[
-                    val_name].isnull() == True] = np.nan
-            time_series_df_db_format[val_name].loc[
-                time_series_df_db_format[
-                    sim_name].isnull() == True] = np.nan
-            time_series_df_db_format.dropna(inplace=True)
         if csv_dump_time_series_df:
             time_series_df_db_format.to_csv(csv_filename)
         return time_series_df_db_format
