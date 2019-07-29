@@ -62,6 +62,9 @@ def power_output_simple(wind_turbine_fleet, weather_df, wind_speed=None,
                 index=wind_speed.index,
                 columns=[np.array(['wind_speed']),
                          np.array([turbine_type['wind_turbine'].hub_height])])
+            # resample weather_df to resolution of wind_speed
+            if not weather_df.index.freq == wind_speed.index.freq:
+                weather_df = weather_df.resample(wind_speed.index.freq).mean()
             weather_df = pd.concat([weather_df, df], axis=1)
         # Initialise ModelChain and run model
         mc = ModelChain(turbine_type['wind_turbine'],

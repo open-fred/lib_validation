@@ -94,9 +94,6 @@ def get_configuration(case=None):
             'open_FRED',
             'ERA5'
         ]
-        config_dict['latex_output'] = ['key_figures_approaches',
-                                       'annual_energy_approaches']
-        config_dict['output_methods'] = ['hourly', 'monthly']
         config_dict['replacement'] = [('p-curve', 'P'), ('_', ' ')]
 
     # ---- Single Turbine Model ---- #
