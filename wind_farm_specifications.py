@@ -34,13 +34,11 @@ def initialize_turbines(turbine_types, plot_wind_turbines=False):
             'name': 'V90/2000',
             'hub_height': 105,  # in m
             'rotor_diameter': 90,  # in m    source: www.wind-turbine-models.com
-            'fetch_curve': 'power_curve'
         },
         'vestasV80': {
             'name': 'V80/2000',
             'hub_height': 60,  # in m
             'rotor_diameter': 80,  # in m    source: www.wind-turbine-models.com
-            'fetch_curve': 'power_curve'
         }
     }
 
