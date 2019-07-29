@@ -58,7 +58,11 @@ cases = [
     # 'weather_wind_farm'
 ]
 
-temporal_resolution = 'H'  # not fully implemented yet - only use 'H'
+temporal_resolution = 'H'  # temporal resolution of time series at validation.
+    # not fully implemented yet - only use 'H'
+    # F.e.: if you enter open_FRED weather with half-hourly resolution -->
+    # feed-in is calulated in half-hourly resolution and resampled to
+    # `temporal_resolution`
 
 min_periods_pearson = None  # Minimum amount of periods for correlation.
 
@@ -68,7 +72,7 @@ pickle_load_time_series_df = False
 
 # pickle_load_merra = False
 pickle_load_open_fred = True
-pickle_load_era5 = False
+pickle_load_era5 = True
 # pickle_load_arge = True
 # pickle_load_enertrag = True
 pickle_load_greenwind = True
@@ -451,10 +455,8 @@ def run_main(case, parameters, year):
             weather = tools.get_weather_data(
                 weather_data_name, wind_farm.coordinates, pickle_load=True,
                 filename=filename_weather, year=year,
-                # temperature_heights=temperature_heights
+                # temperature_heights=temperature_heights,
             )
-            # Resample weather data
-            weather = weather.resample(temporal_resolution).mean()
             # if ('wake_losses' in case or 'wind_farm' in case):
             #     # highest_power_output = False
             #     # file_add_on = ''
@@ -936,11 +938,20 @@ def run_main(case, parameters, year):
         # Join DataFrames - power output in MW - wind speed in m/s
         if 'wind_speed' in case:
             calculation_df = pd.concat(calculation_df_list, axis=1)
+            # If necessary resample to `temporal_resolution`
+            if not calculation_df_db_format.index.freq == temporal_resolution:
+                calculation_df_db_format['wind_speed'] = calculation_df_db_format['wind_speed'].resample(
+                    temporal_resolution).mean()
         else:
             calculation_df = pd.concat(
                 calculation_df_list, axis=1) / (1 * 10 ** 6)
             calculation_df_db_format['feedin'] = (
                     calculation_df_db_format['feedin'] / (1 * 10 ** 6))
+            # If necessary resample to `temporal_resolution`
+            if not calculation_df_db_format.index.freq == temporal_resolution:
+                calculation_df_db_format['feedin'] = calculation_df_db_format['feedin'].resample(
+                    temporal_resolution).mean()
+
         # Add curtailment for Enertrag wind farm
         # for column_name in list(calculation_df):
         #     if column_name.split('_')[1] == 'BNE':
@@ -953,7 +964,7 @@ def run_main(case, parameters, year):
         #                        axis=1)
         #         calculation_df[column_name] = df[column_name] * df[
         #             'curtail_rel']
-        return calculation_df, calculation_df_db_format
+        return calculation_df, calculation_df_db_format.dropna()
 
     def get_time_series_df(weather_data_name, wind_farm_data_list):
         r"""
