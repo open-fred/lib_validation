@@ -2,23 +2,15 @@
 from windpowerlib import wind_farm as wf
 
 # Imports from lib_validation
-# import visualization_tools
 import tools
 from tools import preload_era5_weather
-# import latex_tables
 import modelchain_usage
 from wind_farm_specifications import (get_joined_wind_farm_data,
                                       get_wind_farm_data)
-# from merra_weather_data import get_merra_data
 from open_fred_weather_data import get_open_fred_data
-# from argenetz_data import get_argenetz_data
-# from enertrag_data import get_enertrag_data, get_enertrag_curtailment_data
-# from analysis_tools import ValidationObject
-from greenwind_data import (get_greenwind_data, get_highest_wind_speeds,
+from greenwind_data import (get_greenwind_data,
                             get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
-# import plots_single_functionalities
-# from create_wind_efficiency_curves import get_power_efficiency_curves
 import validation_tools as val_tools
 
 
