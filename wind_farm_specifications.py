@@ -1,5 +1,6 @@
 # Imports from Windpowerlib
 from windpowerlib import wind_turbine as wt
+from windpowerlib import wind_farm as wf
 
 # Imports from lib_validation
 import visualization_tools
@@ -143,6 +144,15 @@ def get_joined_wind_farm_data(filenames, save_folder, pickle_load):
         wind_farm_data += get_wind_farm_data(filename, save_folder,
                                              pickle_load)
     return wind_farm_data
+
+
+def initialize_wind_farms(wind_farm_data_list):
+    wind_farm_list = []
+    for wind_farm_data in wind_farm_data_list:
+        wind_farm = wf.WindFarm(**wind_farm_data)
+        wind_farm.coordinates = wind_farm_data['coordinates']
+        wind_farm_list.append(wind_farm)
+    return wind_farm_list
 
 
 if __name__ == "__main__":
