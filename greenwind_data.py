@@ -231,11 +231,12 @@ def get_greenwind_data(year, pickle_load=False, filename='greenwind_dump.p',
                 print(turbine_name)
                 print(len(indices))
             print('---- Zero-rows filtering of {0} - Done. ----'.format(year))
-        # Set negative values to nan
+        # Set negative values to zero execpt from < 30 W
         power_columns = [column for column in list(greenwind_df) if
                          'power_output' in column]
-        greenwind_df = tools.negative_values_to_nan(greenwind_df,
-                                                    columns=power_columns)
+        greenwind_df = handle_negative_values(greenwind_df,
+                                              columns=power_columns,
+                                              limit=-30)
         # Set power output of turbines above 5% higher of nominal power
         # (all 2 MW) to nan
         greenwind_df = tools.higher_values_to_nan(
@@ -1162,6 +1163,21 @@ def plot_wind_dir_vs_power_output(year, resolution, adapt_negative=True,
                 filename_add_on_2, filename_add_on_3)))
         plt.close()
 
+
+def handle_negative_values(df, columns, limit):
+    """
+    Sets negative values up to `limit` to zero, values below `limit` to nan.
+
+    """
+    if columns is None:
+        columns = [column for column in list(df)]
+    for column in columns:
+        indices = df.loc[df[column] < 0.0].index
+        indices_2 = df[column].loc[indices].loc[df[column] >= limit].index
+        df[column].loc[indices_2] = 0.0
+        indices_3 = indices[~indices.isin(indices_2)]
+        df[column].loc[indices_3] = np.nan
+    return df
 
 if __name__ == "__main__":
     csv_dump = True
