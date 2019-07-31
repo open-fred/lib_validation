@@ -1,12 +1,9 @@
-# Imports from Windpowerlib
-from windpowerlib import wind_farm as wf
-
 # Imports from lib_validation
 import tools
 from tools import preload_era5_weather
 import modelchain_usage
 from wind_farm_specifications import (get_joined_wind_farm_data,
-                                      get_wind_farm_data)
+                                      initialize_wind_farms)
 from open_fred_weather_data import get_open_fred_data
 from greenwind_data import (get_greenwind_data,
                             get_first_row_turbine_time_series)
@@ -274,8 +271,7 @@ def run_main(case, parameters, year):
         # Initialise calculation_df_db_format for new validation tools format
         calculation_df_db_format = pd.DataFrame()
         # Initialise wind farms
-        wind_farm_list = [wf.WindFarm(**wind_farm_data) for
-                          wind_farm_data in wind_farm_data_list]
+        wind_farm_list = initialize_wind_farms(wind_farm_data_list)
         for wind_farm in wind_farm_list:
             # Get weather data for specific coordinates
             weather = tools.get_weather_data(
