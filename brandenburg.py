@@ -86,7 +86,7 @@ def get_weather(start=None, stop=None, weather_data_name='open_FRED'):
                 year)
             df = tools.example_weather_wind(filename).rename(
                 columns={'wind speed': 'wind_speed'})
-            weather_df = pd.concat([weather_df, df], axis=1)
+            weather_df = pd.concat([weather_df, df], axis=0)
         if start:
             weather_df = weather_df[
                 weather_df.index.get_level_values(0).tz_localize('UTC') >=
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     ]
 
     time_series_filename = os.path.join(os.path.dirname(__file__),
-                                        'dumps/time_series_df/brandenburg')
+                                        'dumps/time_series_dfs/brandenburg')
 
     # get register
     register = get_turbine_register().rename(columns={
