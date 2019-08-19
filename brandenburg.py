@@ -7,18 +7,18 @@ DateTimeIndex in 'UTC' time zone.
 
 """
 
-# internal imports
-import tools
-import validation_tools as val_tools
+import pandas as pd
+import numpy as np
+import os
 
 # windpowerlib imports
 from windpowerlib import wind_turbine as wt
 from windpowerlib import wind_farm as wf
 from windpowerlib import turbine_cluster_modelchain as tc_mc
 
-import pandas as pd
-import numpy as np
-import os
+# internal imports
+import tools
+import validation_tools as val_tools
 
 
 def get_turbine_register(**kwargs):
