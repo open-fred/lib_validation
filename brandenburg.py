@@ -46,9 +46,14 @@ def get_turbine_register(**kwargs):
     return df
 
 
-def get_measured_time_series(start=None, stop=None, **kwargs):
+def get_measured_time_series(start=None, stop=None, completeness_limit=95.0,
+                             **kwargs):
     """
-
+    completeness_limit : float
+        Data contains column 'Vollständigkeit' which indicates the percentage
+        of wind turbines of which data could be collected for the respective
+        time step. Time steps with a percentage < `completeness_limit` are
+        neglected.
 ´
     datapath : string (optional)
         Path to open_fred folder. For example '~/rl-institut/04_Projekte/163_Open_FRED/'
@@ -60,7 +65,14 @@ def get_measured_time_series(start=None, stop=None, **kwargs):
         kwargs['datapath'],
         '03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Brandenburg/bb_powerseries.csv')
     df = pd.read_csv(filename, sep=',', decimal='.',
-                     parse_dates=True).rename(columns={'Von': 'time'})
+                     parse_dates=True).rename(columns={'Von': 'time'}).rename(
+        columns={'VollständigkeitDaten': 'Vollstaendigkeit'}).drop(
+        'Regelvorgabe %', axis=1)
+    # remove columns with 'Vollstaendigkeit' <= `completeness_limit`
+    df['Vollstaendigkeit'] = df['Vollstaendigkeit'].apply(
+        lambda x: x.split('%')[0]).apply(float)
+    df = df.loc[df['Vollstaendigkeit'] >= completeness_limit]
+    # get time series
     bb_ts = df.set_index('time')['Leistung kW'].rename(
         columns={'Leistung kW': 'feedin_val'}) * 1000
     bb_ts.index = pd.to_datetime(bb_ts.index, utc=True)
