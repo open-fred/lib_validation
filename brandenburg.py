@@ -100,30 +100,6 @@ def get_weather(start=None, stop=None, weather_data_name='open_FRED'):
     return weather_df
 
 
-def filter_register_by_period(register, start, stop):
-    r"""
-
-    Parameters:
-    -----------
-    register : pd.DataFrame
-        Contains commissioning dates in column 'com_col' and decommissioning
-        dates in 'decom_col'. Make sure there are no missing values!
-    start : int or str (or pd.DatetimeIndex?)
-        Start of period. Power plants decommissioned before this date are
-        neglected.
-    stop : int or str (or pd.DatetimeIndex?)
-        End of period. Power plants installed from this date are neglected.
-
-    """
-    if not isinstance(register['com_col'][0], pd.Timestamp):
-        register['com_col'] = pd.to_datetime(register['com_col'], utc=True)
-    if not isinstance(register['decom_col'][0], pd.Timestamp):
-        register['decom_col'] = pd.to_datetime(register['decom_col'], utc=True)
-    df_1 = register[register['decom_col'] > start]
-    filtered_register = df_1[df_1['com_col'] < stop]
-    return filtered_register
-
-
 def fill_missing_dates(register, com_date=None,
                        decom_date='2050-01-01 00:00:00'):
     r"""
@@ -141,11 +117,13 @@ def fill_missing_dates(register, com_date=None,
         dates in 'decom_col'.
     """
     if com_date:
-        indices = register.loc[register['com_col'].isna() == True].index
-        register.loc[indices]['com_col'] = com_date
+        indices = register.loc[
+            register['commissioning_date'].isna() == True].index
+        register.loc[indices]['commissioning_date'] = com_date
     if decom_date:
-        indices = register.loc[register['decom_col'].isna() == True].index
-        register['decom_col'].loc[indices] = decom_date
+        indices = register.loc[
+            register['decommissioning_date'].isna() == True].index
+        register['decommissioning_date'].loc[indices] = decom_date
     return register
 
 
@@ -244,7 +222,7 @@ if __name__ == "__main__":
                 # get weather and register for period and calculated feedin
                 weather_df = get_weather(start=start, stop=stop,
                                          weather_data_name=weather_data_name)
-                filtered_register = filter_register_by_period(
+                filtered_register = feedinlib_tools.filter_register_by_period(
                     register=register, start=start, stop=stop)
                 feedin_period = calculate_feedin(
                     weather_df=weather_df, register=register,
