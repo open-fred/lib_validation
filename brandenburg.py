@@ -22,12 +22,9 @@ import validation_tools as val_tools
 import settings
 
 
-def get_turbine_register(**kwargs):
+def get_turbine_register():
     """
     Load turbine register from file.
-
-    datapath : string (optional)
-        Path to open_fred folder. For example '~/rl-institut/04_Projekte/163_Open_FRED/'.
 
     Returns
     -------
@@ -35,11 +32,8 @@ def get_turbine_register(**kwargs):
         - capacity in W (as in windpowerlib)
 
     """
-    if 'datapath' not in kwargs:
-        kwargs['datapath'] = '~/rl-institut/04_Projekte/163_Open_FRED/'
     filename = os.path.join(
-        kwargs['datapath'],
-        '03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Brandenburg/bb_turbines.csv')
+        settings.path_brandenburg, 'bb_turbines.csv')
     df = pd.read_csv(filename, sep=',', decimal='.', index_col=0,
                      parse_dates=True)
     # capacity in W
@@ -47,24 +41,17 @@ def get_turbine_register(**kwargs):
     return df
 
 
-def get_measured_time_series(start=None, stop=None, completeness_limit=95.0,
-                             **kwargs):
+def get_measured_time_series(start=None, stop=None, completeness_limit=95.0):
     """
     completeness_limit : float
         Data contains column 'Vollständigkeit' which indicates the percentage
         of wind turbines of which data could be collected for the respective
         time step. Time steps with a percentage < `completeness_limit` are
         neglected.
-´
-    datapath : string (optional)
-        Path to open_fred folder. For example '~/rl-institut/04_Projekte/163_Open_FRED/'
 
     """
-    if 'datapath' not in kwargs:
-        kwargs['datapath'] = '~/rl-institut/04_Projekte/163_Open_FRED/'
     filename = os.path.join(
-        kwargs['datapath'],
-        '03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Brandenburg/bb_powerseries.csv')
+        settings.path_brandenburg, 'bb_powerseries.csv')
     df = pd.read_csv(filename, sep=',', decimal='.',
                      parse_dates=True).rename(columns={'Von': 'time'}).rename(
         columns={'VollständigkeitDaten': 'Vollstaendigkeit'}).drop(

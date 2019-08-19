@@ -21,6 +21,7 @@ DateTimeIndex in 'UTC' time zone.
 # Imports from lib_validation
 import visualization_tools
 import tools
+import settings
 
 # Other imports
 import pandas as pd
@@ -29,23 +30,20 @@ import os
 import pickle
 
 
-def path_to(where='data', projects_location='~/rl-institut/'):
+def path_to(where='data'):
     """
     Creates path to data.
 
     where : str
         Specifies where path will point to. Default: 'data'.
-    projects_location : str
-        Location where 04_Projekte of rl-institut is mounted.
-        Default: '~/rl-institut/'.
 
     """
-    greenwind_location = '04_Projekte/163_Open_FRED/03-Projektinhalte/AP5 Einspeisezeitreihen/5.2 Wind/Daten_Twele/'
+    settings.init()
     if where == 'data':
         add = 'processed_data/'
     if where == 'errors':
         add = 'Error codes/'
-    return os.path.join(projects_location, greenwind_location, add)
+    return os.path.join(settings.path_greenwind, add)
 
 def read_data(filename):
     r"""

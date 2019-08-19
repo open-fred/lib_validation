@@ -56,14 +56,6 @@ validation_pickle_folder = os.path.abspath(os.path.join(
 wind_farm_pickle_folder = os.path.join(os.path.dirname(__file__),
                                        'dumps/wind_farm_data')
 
-time_series_dump_folder = os.path.join(
-    os.path.dirname(__file__),
-    'dumps/time_series_dfs')
-
-validation_folder = os.path.join(
-    os.path.dirname(__file__),
-    'validation')
-
 # Threshold factor. F.e. if threshold_factor is 0.5 resampling is only done, if
 # more than 50 percent of the values are not nan.
 threshold_factor = 0.5
@@ -264,7 +256,8 @@ def run_main(case, parameters, year):
                     pickle_load=False)
         if weather_data_name == 'ERA5':
             if not pickle_load_era5:
-                era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(year)
+                era5_path = os.path.join(settings.weather_data_path,
+                                         'era5_wind_bb_{}.csv'.format(year))
                 preload_era5_weather(
                     filename=era5_path, pickle_filename=filename_weather,
                     pickle_load=False)
@@ -458,8 +451,6 @@ def run_main(case, parameters, year):
         #                                                      time_period)
 
         ################ simple validation ####################################
-        if not os.path.exists(validation_folder):
-            os.makedirs(validation_folder, exist_ok=True)
         filename = os.path.join(os.path.dirname(__file__), validation_folder,
                                 'validation_{}_{}_{}.csv'.format(
                                     case, weather_data_name,
