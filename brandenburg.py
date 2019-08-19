@@ -229,8 +229,7 @@ if __name__ == "__main__":
     validation_path = settings.path_validation_metrics_bb
 
     # get register
-    register = get_turbine_register().rename(columns={
-        'commissioning_date': 'com_col', 'decommissioning_date': 'decom_col'})
+    register = get_turbine_register()
     register = fill_missing_dates(register, com_date=None,
                                   decom_date='2050-01-01 00:00:00')
     # get periods with no change in installed capacity
