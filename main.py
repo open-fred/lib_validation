@@ -382,7 +382,7 @@ def run_main(case, parameters, year):
                         wind_turbine_fleet=wind_farm.wind_turbine_fleet,
                         weather_df=weather, wind_speed=wind_speed,
                         wind_speed_model='logarithmic',
-                        density_model='ideal_gas',
+                        density_model='barometric',
                         temperature_model='linear_gradient',
                         power_output_model='power_curve',
                         density_correction=False, obstacle_height=0,
