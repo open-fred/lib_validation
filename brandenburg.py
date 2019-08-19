@@ -259,9 +259,20 @@ if __name__ == "__main__":
 
     # set parameters
     weather_data_names = [
-        # 'open_FRED',
+        # 'open_FRED',  # todo check resolution
         'ERA5'
     ]
+
+    cases = ['aggregation', 'smoothing', 'wake_losses']
+
+    windpowerlib_parameters = {
+        'aggregation': {'smoothing': False,
+                        'wake_losses_model': None},
+        'smoothing': {'smoothing': True,
+                      'wake_losses_model': None},
+        'wake_losses': {'smoothing': False,
+                        'wake_losses_model': 'dena_mean'}
+    }  # note: default values for remaining parameters
 
     time_series_filename = settings.path_time_series_bb
 
@@ -277,25 +288,37 @@ if __name__ == "__main__":
                                                    stop=2017, scale=None)
     # calculate feed-in for each period and save in data frame
     for weather_data_name in weather_data_names:
-        feedin = pd.Series()
-        for start, stop in zip(periods['start'], periods['stop']):
-            # get weather and register for period and calculated feedin
-            weather_df = get_weather(start=start, stop=stop,
-                                     weather_data_name=weather_data_name)
-            filtered_register = filter_register_by_period(
-                register=register, start=start, stop=stop)
-            feedin_period = calculate_feedin(weather_df=weather_df,
-                                             register=register)
-            feedin = feedin.append(feedin_period)
-        feedin.name, feedin.index.name = 'feedin', 'time'
-        feedin.index = feedin.index.tz_localize('UTC')
+        validation_df = pd.DataFrame()
+        for case in cases:
+            feedin = pd.Series()
+            for start, stop in zip(periods['start'], periods['stop']):
+                # get weather and register for period and calculated feedin
+                weather_df = get_weather(start=start, stop=stop,
+                                         weather_data_name=weather_data_name)
+                filtered_register = filter_register_by_period(
+                    register=register, start=start, stop=stop)
+                feedin_period = calculate_feedin(
+                    weather_df=weather_df, register=register,
+                    **windpowerlib_parameters[case])
+                feedin = feedin.append(feedin_period)
+            feedin.name, feedin.index.name = 'feedin', 'time'
+            feedin.index = feedin.index.tz_localize('UTC')
 
-        # get validation data
-        feedin_val = get_measured_time_series()
+            # get validation data
+            feedin_val = get_measured_time_series()
 
-        # join data frame in the form needed by calculate_validation_metrics()
-        validation_df = pd.merge(left=feedin, right=feedin_val, how='left',
-                                     on=['time'])
+            # resample time series (returns dataframe)
+            feedin_val = tools.resample_with_nan_theshold(
+                pd.DataFrame(feedin_val), frequency='H', threshold=2)
+            if weather_data_name == 'open_FRED':
+                feedin = tools.resample_with_nan_theshold(  # todo check functionality
+                    feedin, frequency='H', threshold=1)
+
+            # join data frame in the form needed by calculate_validation_metrics()
+            validation_df_case = pd.merge(left=feedin, right=feedin_val,
+                                          how='left', on=['time'])
+            validation_df_case['case'] = case
+            validation_df = pd.concat([validation_df, validation_df_case])
 
         # save time series data frame (`validation_df`) to csv
         validation_df.to_csv(os.path.join(
@@ -303,12 +326,9 @@ if __name__ == "__main__":
                 weather_data_name)))
 
         # calculate metrics and save to file
-        validation_path = os.path.join(os.path.dirname(__file__),
-                                       'validation/brandenburg')
-        if not os.path.exists(validation_path):
-            os.makedirs(validation_path, exist_ok=True)
         filename = os.path.join(validation_path,
-            'validation_brandenburg_{}'.format(weather_data_name))
+            'validation_brandenburg_{}.csv'.format(weather_data_name))
         val_tools.calculate_validation_metrics(
             df=validation_df, val_cols=['feedin', 'feedin_val'],
+            filter_cols=['case'],
             metrics='standard', filename=filename)
