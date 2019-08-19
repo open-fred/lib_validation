@@ -19,6 +19,7 @@ from windpowerlib import turbine_cluster_modelchain as tc_mc
 # internal imports
 import tools
 import validation_tools as val_tools
+import settings
 
 
 def get_turbine_register(**kwargs):
@@ -85,13 +86,17 @@ def get_measured_time_series(start=None, stop=None, completeness_limit=95.0,
 
 
 def get_weather(start=None, stop=None, weather_data_name='open_FRED'):
+    r"""
+    Get open_FRED or ERA5 weather data for Uckermark region in specific period.
+
+    """
     if weather_data_name == 'open_FRED':
         pass # todo use feedinlib db.py mit region file
     elif weather_data_name == 'ERA5':
         weather_df = pd.DataFrame()
-        for year in np.arange(start.year, stop.year + 1):  # todo check
-            filename = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_um_{}.csv'.format(
-                year)
+        for year in np.arange(start.year, stop.year + 1):
+            filename = os.path.join(settings.weather_data_path,
+                                    'era5_wind_um_{}.csv'.format(year))
             df = tools.example_weather_wind(filename).rename(
                 columns={'wind speed': 'wind_speed'})
             weather_df = pd.concat([weather_df, df], axis=0)
@@ -250,14 +255,17 @@ def calculate_feedin(register, weather_df, **kwargs):
 
 
 if __name__ == "__main__":
+    settings.init()
+
     # set parameters
     weather_data_names = [
         # 'open_FRED',
         'ERA5'
     ]
 
-    time_series_filename = os.path.join(os.path.dirname(__file__),
-                                        'dumps/time_series_dfs/brandenburg')
+    time_series_filename = settings.path_time_series_bb
+
+    validation_path = settings.path_validation_metrics_bb
 
     # get register
     register = get_turbine_register().rename(columns={
