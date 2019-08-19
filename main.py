@@ -9,7 +9,7 @@ from greenwind_data import (get_greenwind_data,
                             get_first_row_turbine_time_series)
 from config_simulation_cases import get_configuration
 import validation_tools as val_tools
-
+import settings
 
 # Other imports
 import os
@@ -21,9 +21,9 @@ logging.getLogger().setLevel(logging.INFO)
 
 # ----------------------------- Set parameters ------------------------------ #
 cases = [
-    'wind_speed_1',
-    'power_output_1',  #
-    'single_turbine_1'  # Single Turbine Model
+    'wind_speed_1',  # slide 6
+    'power_output_1',  # slide 5
+    'single_turbine_1'  # Single Turbine Model slide 7
 ]
 
 temporal_resolution = 'H'  # temporal resolution of time series at validation.
@@ -71,7 +71,6 @@ def run_main(case, parameters, year):
         case, year))
 
     # Get parameters
-    restriction_list = parameters['restriction_list']
     validation_data_list = parameters['validation_data_list']
     weather_data_list = parameters['weather_data_list']
     approach_list = parameters['approach_list']
@@ -466,9 +465,39 @@ def run_main(case, parameters, year):
         case, year))
 
 if __name__ == "__main__":
+    settings.init()
     for case in cases:
+        # folder settings
+        if case == 'wind_speed_1':
+            time_series_dump_folder = settings.path_time_series_wind_speed
+            validation_folder = settings.path_validation_metrics_wind_speed
+        elif case == 'power_output_1':
+            time_series_dump_folder = settings.path_time_series_power_output
+            validation_folder = settings.path_validation_metrics_power_output
+        elif case == 'single_turbine_1':
+            time_series_dump_folder = settings.path_time_series_single_turbine
+            validation_folder = settings.path_validation_metrics_single_turbine
         # Get parameters from config file (they are set below)
         parameters = get_configuration(case)
         years = parameters['years']
         for year in years:
             run_main(case=case, year=year, parameters=parameters)
+
+        ### join time series and validate joined time series ###
+        weather_data_names = parameters['weather_data_list']
+        for weather_data_name in weather_data_names:
+            files = ['time_series_df_{}_{}_{}.csv'.format(
+                case, weather_data_name, year) for year in years]
+            val_filename = os.path.join(
+                validation_folder, 'validation_{}_{}.csv'.format(
+                    case, weather_data_name))
+            joined_df = tools.join_lib_validation_time_series(
+                files=files, time_series_folder=time_series_dump_folder)
+
+            sim_name = 'wind_speed' if 'wind_speed' in case else 'feedin'
+            val_name = 'wind_speed_val' if 'wind_speed' in case else 'feedin_val'
+            val_tools.calculate_validation_metrics(
+                df=joined_df, val_cols=[sim_name, val_name],
+                metrics='standard',
+                filter_cols=['turbine_or_farm', 'approach'],
+                filename=val_filename)

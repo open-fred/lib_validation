@@ -271,3 +271,12 @@ def example_weather_wind(filename):
     l1 = [int(_[1]) for _ in weather_df.columns]
     weather_df.columns = [l0, l1]
     return weather_df
+
+
+def join_lib_validation_time_series(time_series_folder, files):
+    df = pd.DataFrame()
+    for file_ in files:
+        data = pd.read_csv(os.path.join(time_series_folder, file_),
+                           index_col=0, parse_dates=True)
+        df = pd.concat([df, data], axis=0)
+    return df
