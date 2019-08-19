@@ -175,26 +175,26 @@ def get_closest_coordinates(df, coordinates, column_names=['lat', 'lon']):
     return coordinates_df.iloc[index]
 
 
-def select_certain_time_steps(series, time_period):
-    r"""
-    Selects certain time steps from series by a specified time period.
-
-    Parameters
-    ----------
-    series : pd.Series
-        Time series of which will be selected certain time steps.
-    time_period : Tuple (Int, Int)
-        Indicates time period for selection. Format (h, h) example (9, 12) will
-        select all time steps whose time lies between 9 and 12 o'clock.
-
-    """
-    # Save frequency attribute of `series`
-    freq = series.index.freq
-    # freq = pd.infer_freq(series.index)
-    selected_series = series[(time_period[0] <= series.index.hour) &
-                             (series.index.hour <= time_period[1])]
-    selected_series.index.freq = pd.tseries.frequencies.to_offset(freq)
-    return selected_series
+# def select_certain_time_steps(series, time_period):
+#     r"""
+#     Selects certain time steps from series by a specified time period.
+#
+#     Parameters
+#     ----------
+#     series : pd.Series
+#         Time series of which will be selected certain time steps.
+#     time_period : Tuple (Int, Int)
+#         Indicates time period for selection. Format (h, h) example (9, 12) will
+#         select all time steps whose time lies between 9 and 12 o'clock.
+#
+#     """
+#     # Save frequency attribute of `series`
+#     freq = series.index.freq
+#     # freq = pd.infer_freq(series.index)
+#     selected_series = series[(time_period[0] <= series.index.hour) &
+#                              (series.index.hour <= time_period[1])]
+#     selected_series.index.freq = pd.tseries.frequencies.to_offset(freq)
+#     return selected_series
 
 
 def resample_with_nan_theshold(df, frequency, threshold):
@@ -266,7 +266,7 @@ def add_weather_locations_to_register(register, weather_coordinates):
     return register
 
 
-def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
+def example_weather_wind(filename):
     # loading weather data
     try:
         weather_df = pd.read_csv(filename,
@@ -275,8 +275,7 @@ def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     except FileNotFoundError:
         raise FileNotFoundError("Please adjust the filename incl. path.")
     # change type of height from str to int by resetting columns
-    weather_df.columns = [weather_df.axes[1].levels[0][
-                              weather_df.axes[1].labels[0]],
-                          weather_df.axes[1].levels[1][
-                              weather_df.axes[1].labels[1]].astype(int)]
+    l0 = [_[0] for _ in weather_df.columns]
+    l1 = [int(_[1]) for _ in weather_df.columns]
+    weather_df.columns = [l0, l1]
     return weather_df
