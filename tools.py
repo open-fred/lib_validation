@@ -13,6 +13,7 @@ import numpy as np
 import pickle
 import os
 import logging
+import settings
 
 
 def get_weather_data(weather_data_name, coordinates, pickle_load=False,
@@ -49,28 +50,20 @@ def get_weather_data(weather_data_name, coordinates, pickle_load=False,
     if pickle_load:
         data_frame = pickle.load(open(filename, 'rb'))
     else:
-        if weather_data_name == 'MERRA':
-            data_frame = get_merra_data(
-                year, heights=temperature_heights,
-                filename=filename, pickle_load=pickle_load)
+        settings.init()
+        # if weather_data_name == 'MERRA':
+        #     data_frame = get_merra_data(
+        #         year, heights=temperature_heights,
+        #         filename=filename, pickle_load=pickle_load)
         if weather_data_name == 'open_FRED':
             fred_path = '~/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_{0}_sh.csv'.format(year) # todo adapt
             data_frame = get_open_fred_data(filename=fred_path, pickle_filename=filename)
         if weather_data_name == 'ERA5':
-            era5_path = '~/virtualenvs/lib_validation/lib_validation/dumps/weather/era5_wind_bb_{}.csv'.format(
-                year)
-            data_frame = pd.read_csv(era5_path, header=[0, 1],
-                                     index_col=[0, 1, 2], parse_dates=True)
-            # change type of height from str to int by resetting columns
-            data_frame.columns = [data_frame.axes[1].levels[0][
-                                      data_frame.axes[1].labels[0]],
-                                  data_frame.axes[1].levels[1][
-                                      data_frame.axes[1].labels[1]].astype(
-                                      int)]
-        try:
-            pickle.dump(data_frame, open(filename, 'rb'))
-        except FileNotFoundError:
-            print('pickle dump not possible {}'. format(filename))
+            era5_path = os.path.join(settings.weather_data_path,
+                                     'era5_wind_bb_{}.csv'.format(year))
+            data_frame = preload_era5_weather(
+                filename=era5_path, pickle_filename=filename, pickle_load=False)
+
     # Find closest coordinates to weather data point and create weather_df
     closest_coordinates = get_closest_coordinates(data_frame, coordinates)
     data_frame = data_frame
@@ -117,10 +110,9 @@ def preload_era5_weather(filename, pickle_filename, pickle_load=False):
                                  header=[0, 1], index_col=[0, 1, 2],
                                  parse_dates=True)
         # change type of height from str to int by resetting columns
-        weather_df.columns = [weather_df.axes[1].levels[0][
-                                  weather_df.axes[1].labels[0]],
-                              weather_df.axes[1].levels[1][
-                                  weather_df.axes[1].labels[1]].astype(int)]
+        l0 = [_[0] for _ in weather_df.columns]
+        l1 = [int(_[1]) for _ in weather_df.columns]
+        weather_df.columns = [l0, l1]
 
         weather_df.rename(columns={'wind speed': 'wind_speed'}, inplace=True)  # todo delete after fix in era5
         pickle.dump(weather_df, open(pickle_filename, 'wb'))
@@ -279,3 +271,12 @@ def example_weather_wind(filename):
     l1 = [int(_[1]) for _ in weather_df.columns]
     weather_df.columns = [l0, l1]
     return weather_df
+
+
+def join_lib_validation_time_series(time_series_folder, files):
+    df = pd.DataFrame()
+    for file_ in files:
+        data = pd.read_csv(os.path.join(time_series_folder, file_),
+                           index_col=0, parse_dates=True)
+        df = pd.concat([df, data], axis=0)
+    return df

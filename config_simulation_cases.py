@@ -12,18 +12,11 @@ def get_standard_case_of_configuration():
 
     """
     config_dict = {
-        'restriction_list': [],
         'weather_data_list': [
             'open_FRED',
             'ERA5'
         ],
         'validation_data_list': ['GreenWind'],
-        'visualization_methods': [
-           # 'box_plots',
-           #  'feedin_comparison',
-           #  'plot_correlation',  # This takes a long time for high resolution
-           #  'subplots_correlation'
-           ],
         'replacement': [('_', ' ')],
         'years': [2015, 2016]
     }
@@ -49,23 +42,12 @@ def get_configuration(case=None):
     -----
     Returned dictionary contains the following parameters as keys:
 
-    restriction_list : list
-        Wind farms and approaches that will not be examined also if they are in
-        the time series df
     approach_list : list
         Approaches to be calculated.
     weather_data_list : list
         Weather data to take into consideration.
     validation_data_list : list
         Validation data to take into consideration.
-    output_methods : list
-        Temporal output resolutions to take into consideration.
-    visualization_methods : list
-        Plot applications to take into consideration.
-    latex_output : list
-        Type of latex tables to take into consideration.
-    key_figures_print : list
-        Key figures to be printed if a key figures table in `latex_output`.
 
     """
     # Get standard case that will remain if the entries are not overwritten
