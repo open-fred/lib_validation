@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 import os
 
+from feedinlib import tools as feedinlib_tools
+
 # windpowerlib imports
 from windpowerlib import wind_turbine as wt
 from windpowerlib import wind_farm as wf
@@ -96,45 +98,6 @@ def get_weather(start=None, stop=None, weather_data_name='open_FRED'):
                 weather_df.index.get_level_values(0).tz_localize('UTC') <=
                     stop]
     return weather_df
-
-
-def get_time_periods_with_equal_capacity(register, start=None, stop=None,
-                                         scale=None):
-    r"""
-
-    Parameters:
-    -----------
-    register : pd.DataFrame
-        Contains commissioning dates in column 'com_col' and decommissioning
-        dates in 'decom_col'.
-    start : int or str (or pd.DatetimeIndex?)
-        Specifies the year (int) or date (str) from which the periods of equal
-        capacities are fetched.
-    stop : int or str (or pd.DatetimeIndex?)
-        Specifies the year (int) or date (str) up to which the periods of equal
-        capacities are fetched. If stop is an integer the whole year is
-        fetched.
-    scale :
-        Default: None.
-
-    """
-    if isinstance(start, int):
-        start = '{}-01-01 00:00:00'.format(start)
-    if isinstance(stop, int):
-        stop = '{}-12-31 23:59:59'.format(stop)
-    # find dates with capacity change within start and stop
-    dates = register['com_col']
-    dates = dates.append(register['decom_col']).dropna()
-    dates_filtered = dates[(dates >= start) & (dates <= stop)]
-    start_dates = dates_filtered.append(pd.Series(start)).sort_values()
-    start_dates.index = np.arange(0,len(start_dates))
-    stop_dates = dates_filtered.append(pd.Series(stop)).sort_values()
-    stop_dates.index = np.arange(0, len(stop_dates))
-    periods = pd.DataFrame([start_dates, stop_dates]).transpose().rename(
-        columns={0: 'start', 1: 'stop'})
-    periods['start'] = pd.to_datetime(periods['start'], utc=True)
-    periods['stop'] = pd.to_datetime(periods['stop'], utc=True)
-    return periods
 
 
 def filter_register_by_period(register, start, stop):
@@ -271,8 +234,8 @@ if __name__ == "__main__":
     register = fill_missing_dates(register, com_date=None,
                                   decom_date='2050-01-01 00:00:00')
     # get periods with no change in installed capacity
-    periods = get_time_periods_with_equal_capacity(register, start=2013,
-                                                   stop=2017, scale=None)
+    periods = feedinlib_tools.get_time_periods_with_equal_capacity(
+        register, start=2013, stop=2017)
     # calculate feed-in for each period and save in data frame
     for weather_data_name in weather_data_names:
         validation_df = pd.DataFrame()
