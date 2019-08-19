@@ -21,16 +21,12 @@ DateTimeIndex in 'UTC' time zone.
 # Imports from lib_validation
 import visualization_tools
 import tools
-import latex_tables
-from matplotlib import pyplot as plt
 
 # Other imports
 import pandas as pd
 import numpy as np
 import os
 import pickle
-import logging
-import math
 
 
 def path_to(where='data', projects_location='~/rl-institut/'):
