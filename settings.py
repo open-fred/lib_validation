@@ -29,5 +29,5 @@ def init():
     path_validation_metrics_bb = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_8_brandenburg/'
     path_validation_metrics_wind_speed = path_to_server + '//04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_6_wind_speed/'
     path_validation_metrics_power_output = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_5_power_output/'
-    path_validation_metrics_single_turbine = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_5_single_turbine/'
+    path_validation_metrics_single_turbine = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_7_single_turbine/'
 
