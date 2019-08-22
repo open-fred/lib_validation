@@ -191,7 +191,11 @@ if __name__ == "__main__":
         'ERA5'
     ]
 
-    cases = ['aggregation', 'smoothing', 'wake_losses']
+    cases = [
+        'aggregation',
+        'smoothing',
+        'wake_losses'
+    ]  # todo smoothing + wake losses. 
 
     windpowerlib_parameters = {
         'aggregation': {'smoothing': False,

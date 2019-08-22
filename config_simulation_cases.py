@@ -61,7 +61,7 @@ def get_configuration(case=None):
             'log_100', 'log_80', 'log_10']
         config_dict['validation_data_list'] = ['single']
         config_dict['weather_data_list'] = [
-            'open_FRED',
+            # 'open_FRED',
             'ERA5'
         ]
         config_dict['replacement'] = [('_', ' '), ('log', 'Log')]
