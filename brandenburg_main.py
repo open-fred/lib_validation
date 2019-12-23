@@ -113,18 +113,22 @@ for weather_data_name in weather_data_names:
 ###############################################################################
 metrics = ['rmse_norm', 'rmse_norm_bias_corrected', 'mean_bias', 'rmse',
            'pearson', 'energy_yield_deviation', 'time_step_amount']
+
+complete_df = pd.DataFrame()
 for weather_data_name in weather_data_names:
     for case in cases:
         # load validation data frame
         val_filename = os.path.join(
             val_folder, 'validation_df_{}_{}.csv'.format(
                 weather_data_name, case))
-        validation_df = pd.read_csv(val_filename, parse_dates=True, index_col=0)
-        filename = os.path.join(
-            val_metrics_folder, 'validation_metrics_MW_{weather}_{case}.csv'.format(
-                case=case, weather=weather_data_name))
-        val_tools.calculate_validation_metrics(
-            df=validation_df,
-            val_cols=['feedin', 'feedin_val'], metrics=metrics,
-            unit_factor=1e6, filter_cols=['nuts', 'technology'],
-            filename=filename)
+        validation_df = pd.read_csv(val_filename, parse_dates=True,
+                                    index_col=0)
+        validation_df['weather'] = weather_data_name
+        validation_df['case'] = case
+        complete_df = pd.concat([complete_df, validation_df])
+
+filename = os.path.join(val_metrics_folder, 'validation_metrics_MW.csv')
+val_tools.calculate_validation_metrics(
+    df=complete_df, val_cols=['feedin', 'feedin_val'], metrics=metrics,
+    unit_factor=1e6, filter_cols=['weather', 'case'],
+    filename=filename)
