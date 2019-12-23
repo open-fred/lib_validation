@@ -3,6 +3,7 @@ import os
 def init():
     ## path to server
     path_to_server = '/home/sabine/rl-institut'
+    path_to_data_server = '/home/sabine/Daten_flexibel_01'
 
     ## validation data
     global path_greenwind, path_brandenburg
@@ -31,3 +32,14 @@ def init():
     path_validation_metrics_power_output = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_5_power_output/'
     path_validation_metrics_single_turbine = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/validation_metrics/wind/Folie_7_single_turbine/'
 
+
+    ## Abschlussbericht
+    global brandenburg_ts_bericht, brandenburg_val_metrics_bericht, brandenburg_validation_df_bericht
+    brandenburg_ts_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/time_series'
+    brandenburg_validation_df_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/validation_dfs'
+    brandenburg_val_metrics_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/validation_metrics'
+
+
+    ## geometries
+    global path_geometries
+    path_geometries = path_to_server + '/04_Projekte/163_Open_FRED/03-Projektinhalte/AP7 Community/paper_data/geometries/'
