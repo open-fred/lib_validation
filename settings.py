@@ -34,10 +34,11 @@ def init():
 
 
     ## Abschlussbericht
-    global brandenburg_ts_bericht, brandenburg_val_metrics_bericht, brandenburg_validation_df_bericht
+    global brandenburg_ts_bericht, brandenburg_val_metrics_bericht, brandenburg_validation_df_bericht, brandenburg_plots_bericht
     brandenburg_ts_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/time_series'
     brandenburg_validation_df_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/validation_dfs'
     brandenburg_val_metrics_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/validation_metrics'
+    brandenburg_plots_bericht = path_to_data_server + '/Einspeisezeitreihen_open_FRED_bericht_und_WAM/Brandenburg/plots'
 
 
     ## geometries
