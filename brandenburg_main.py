@@ -104,7 +104,7 @@ for weather_data_name in weather_data_names:
             feedin_df = pd.concat([feedin_df, feedin_year])
 
         validation_df = pd.merge(left=feedin_df, right=val_feedin,
-                                 how='left', on=['time', 'nuts'])
+                                 how='left', on=['time'])
         validation_df.set_index('time').to_csv(os.path.join(
             val_folder, 'validation_df_{}_{}.csv'.format(
                 weather_data_name, case)))
