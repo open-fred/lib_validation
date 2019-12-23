@@ -17,7 +17,7 @@ settings.init()
 # set parameters
 weather_data_names = [
     'open_FRED',  # todo check resolution
-    # 'ERA5'
+    'ERA5'
 ]
 
 years = [
@@ -84,8 +84,7 @@ else:
     val_feedin = pd.DataFrame()
     for year in years:
         val_feedin_year = get_measured_time_series(year=year)
-        val_feedin = pd.concat([val_feedin, val_feedin_year])
-    val_feedin.rename(columns={0: 'feedin_val'}, inplace=True)
+        val_feedin = pd.concat([val_feedin, pd.DataFrame(val_feedin_year)])
     val_feedin.index.name = 'time'
     val_feedin.reset_index('time', inplace=True)
     pickle.dump(val_feedin, open('val_dump.p', 'wb'))
@@ -112,6 +111,8 @@ for weather_data_name in weather_data_names:
 ###############################################################################
 # calculate metrics and save to file (for each case and each weather data)
 ###############################################################################
+metrics = ['rmse_norm', 'rmse_norm_bias_corrected', 'mean_bias', 'rmse',
+           'pearson', 'energy_yield_deviation', 'time_step_amount']
 for weather_data_name in weather_data_names:
     for case in cases:
         # load validation data frame
@@ -120,10 +121,10 @@ for weather_data_name in weather_data_names:
                 weather_data_name, case))
         validation_df = pd.read_csv(val_filename, parse_dates=True, index_col=0)
         filename = os.path.join(
-            val_metrics_folder, 'validation_metrics_{weather}_{case}.csv'.format(
+            val_metrics_folder, 'validation_metrics_MW_{weather}_{case}.csv'.format(
                 case=case, weather=weather_data_name))
         val_tools.calculate_validation_metrics(
             df=validation_df,
-            val_cols=['feedin', 'feedin_val'], metrics='standard',
-            filter_cols=['nuts', 'technology'],
+            val_cols=['feedin', 'feedin_val'], metrics=metrics,
+            unit_factor=1e6, filter_cols=['nuts', 'technology'],
             filename=filename)
