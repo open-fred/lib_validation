@@ -43,15 +43,10 @@ windpowerlib_parameters = {
 
 time_series_filename = settings.path_time_series_bb
 
-# feedin_folder = settings.brandenburg_ts_bericht
-# val_folder = settings.brandenburg_validation_df_bericht
-# val_metrics_folder = settings.brandenburg_val_metrics_bericht
-# plots_folder = settings.brandenburg_plots_bericht
-# todo exchange
-feedin_folder = 'temp'
-val_folder = 'temp'
-val_metrics_folder = 'temp'
-plots_folder = 'temp'
+feedin_folder = settings.brandenburg_ts_bericht
+val_folder = settings.brandenburg_validation_df_bericht
+val_metrics_folder = settings.brandenburg_val_metrics_bericht
+plots_folder = settings.brandenburg_plots_bericht
 
 
 # get region shape
