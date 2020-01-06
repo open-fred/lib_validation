@@ -76,16 +76,12 @@ for weather_data_name in weather_data_names:
                     weather_data_name, year, case)))
 
 # get validation time series for all years
-if os.path.exists('val_dump.p'):
-    val_feedin = pickle.load(open('val_dump.p', 'rb'))
-else:
-    val_feedin = pd.DataFrame()
-    for year in years:
-        val_feedin_year = get_measured_time_series(year=year)
-        val_feedin = pd.concat([val_feedin, pd.DataFrame(val_feedin_year)])
-    val_feedin.index.name = 'time'
-    val_feedin.reset_index('time', inplace=True)
-    pickle.dump(val_feedin, open('val_dump.p', 'wb'))
+val_feedin = pd.DataFrame()
+for year in years:
+    val_feedin_year = get_measured_time_series(year=year)
+    val_feedin = pd.concat([val_feedin, pd.DataFrame(val_feedin_year)])
+val_feedin.index.name = 'time'
+val_feedin.reset_index('time', inplace=True)
 
 
 # load feed-in and validation time series into one data frame
