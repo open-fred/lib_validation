@@ -147,6 +147,9 @@ val_tools.calculate_validation_metrics(
 ###############################################################################
 
 ###### qq plots
+years = [2016, 2017]
+# years = None
+
 for weather_data_name in weather_data_names:
     for case in cases:
         # load validation data frame
@@ -159,16 +162,31 @@ for weather_data_name in weather_data_names:
         validation_df['feedin'] = validation_df['feedin'] / 1e6
         validation_df['feedin_val'] = validation_df['feedin_val'] / 1e6
 
-        filename_plot = os.path.join(
-            plots_folder, 'qq_plot_{}_{}.png'.format(weather_data_name, case))
-        maximum = None
-        plot_title = None
-        plots.plot_correlation(
-            df=validation_df, val_cols=['feedin', 'feedin_val'],
-            filename=filename_plot, title=plot_title,
-            ylabel='Calculated feed-in in MW',
-            xlabel='Validation feed-in in MW', color='darkblue',
-            marker_size=3, maximum=maximum)
+        if years:
+            for year in years:
+                filename_plot = os.path.join(
+                    plots_folder, 'qq_plot_{}_{}_{}.png'.format(
+                        weather_data_name, case, year))
+                maximum = None
+                plot_title = None
+                df_year = validation_df.loc[validation_df.index.year == year]
+                plots.plot_correlation(
+                    df=df_year, val_cols=['feedin', 'feedin_val'],
+                    filename=filename_plot, title=plot_title,
+                    ylabel='Calculated feed-in in MW',
+                    xlabel='Validation feed-in in MW', color='darkblue',
+                    marker_size=3, maximum=maximum)
+        else:
+            filename_plot = os.path.join(
+                plots_folder, 'qq_plot_{}_{}.png'.format(weather_data_name, case))
+            maximum = None
+            plot_title = None
+            plots.plot_correlation(
+                df=validation_df, val_cols=['feedin', 'feedin_val'],
+                filename=filename_plot, title=plot_title,
+                ylabel='Calculated feed-in in MW',
+                xlabel='Validation feed-in in MW', color='darkblue',
+                marker_size=3, maximum=maximum)
 
 ###### Leistungshistogramm / ramps
 freq = 5.0  # for ramps 1.0
