@@ -8,6 +8,7 @@ from feedin_germany import geometries
 from feedin_germany import validation_tools as val_tools
 from feedin_germany import plots
 
+from matplotlib import pyplot as plt
 
 # internal imports
 import settings
@@ -138,8 +139,14 @@ val_tools.calculate_validation_metrics(
 ###############################################################################
 
 ###### qq plots
-years = [2016, 2017]
-# years = None
+# years = [2016, 2017]
+years = None
+print_metrics = True
+
+if print_metrics:
+    # read metrics
+    metrics_df = pd.read_csv(os.path.join(
+        val_metrics_folder, 'validation_metrics_MW.csv'), index_col=0)
 
 for weather_data_name in weather_data_names:
     for case in cases:
@@ -152,6 +159,28 @@ for weather_data_name in weather_data_names:
         # feed-in in MW
         validation_df['feedin'] = validation_df['feedin'] / 1e6
         validation_df['feedin_val'] = validation_df['feedin_val'] / 1e6
+
+        if print_metrics:
+            # select metrics for plot
+            metrics = metrics_df.loc[
+                (metrics_df['case'] == case) &
+                (metrics_df['weather'] == weather_data_name)].drop(
+                ['case', 'weather', 'time_step_amount', 'rmse',
+                 'energy_yield_deviation', 'pearson'], axis=1)
+
+            metrics.rename(columns={'rmse_norm': 'RMSE$_{r}$',
+                                    'rmse_norm_bias_corrected': 'RMSE$_{rbc}$',
+                                    'mean_bias': 'bias'}, inplace=True)
+            metrics_dict = {}
+            for item in metrics.keys():
+                if item == 'bias':
+                    metrics_dict[item] = '{:.2f} MW'.format(
+                        round(metrics[item].values[0], 2))
+                else:
+                    metrics_dict[item] = '{:.2f} %'.format(
+                        round(metrics[item].values[0], 2))
+        else:
+            metrics_dict = None
 
         if years:
             for year in years:
@@ -177,7 +206,7 @@ for weather_data_name in weather_data_names:
                 filename=filename_plot, title=plot_title,
                 ylabel='Calculated feed-in in MW',
                 xlabel='Validation feed-in in MW', color='darkblue',
-                marker_size=3, maximum=maximum)
+                marker_size=3, maximum=maximum, metrics=metrics_dict)
 
 ###### Leistungshistogramm / ramps
 freq = 5.0  # for ramps 1.0
