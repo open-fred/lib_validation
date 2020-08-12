@@ -1,6 +1,6 @@
 # Imports from Windpowerlib
-#from windpowerlib import wind_farm as wf
-#from windpowerlib import (power_output, wind_speed, density, temperature)
+from windpowerlib import wind_farm as wf
+from windpowerlib import (power_output, wind_speed, density, temperature)
 
 # Imports from lib_validation
 from merra_weather_data import get_merra_data

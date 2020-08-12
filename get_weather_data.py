@@ -77,120 +77,140 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
     helper_dict = {
         # wind speed 10 m
         'wss_10m': {
+            'var_name': 'WSS_10M',
             'path': os.path.join(data_path, 'WSS_zlevel'),
             'startswith': main_startswith + 'WSS_10M.' + str(year),
             'filename': 'wind_speed-10m.csv'
         },
         # wind speed 80 m
         'wss_80m': {
+            'var_name': 'WSS',
             'path': os.path.join(data_path, 'WSS_zlevel'),
             'startswith': main_startswith + 'WSS_80M.' + str(year),
             'filename': 'wind_speed-80m.csv'
         },
         # wind speed 100 m
         'wss_100m': {
+            'var_name': 'WSS',
             'path': os.path.join(data_path, 'WSS_zlevel'),
             'startswith': main_startswith + 'WSS_100M.' + str(year),
             'filename': 'wind_speed-100m.csv'
         },
         # wind speed 120 m
         'wss_120m': {
+            'var_name': 'WSS',
             'path': os.path.join(data_path, 'WSS_zlevel'),
             'startswith': main_startswith + 'WSS_120M.' + str(year),
             'filename': 'wind_speed-120m.csv'
         },
         # temperature 10 m
         'temp_10m': {
+            'var_name': 'T',
             'path': os.path.join(data_path, 'T_zlevel'),
             'startswith': main_startswith + 'T_10M.' + str(year),
             'filename': 'temperature-10m.csv'
         },
         # temperature 80 m
         'temp_80m': {
+            'var_name': 'T',
             'path': os.path.join(data_path, 'T_zlevel'),
             'startswith': main_startswith + 'T_80M.' + str(year),
             'filename': 'temperature-80m.csv'
         },
         # temperature 100 m
         'temp_100m': {
+            'var_name': 'T',
             'path': os.path.join(data_path, 'T_zlevel'),
             'startswith': main_startswith + 'T_100M.' + str(year),
             'filename': 'temperature-100m.csv'
         },
         # temperature 120 m
         'temp_120m': {
+            'var_name': 'T',
             'path': os.path.join(data_path, 'T_zlevel'),
             'startswith': main_startswith + 'T_120M.' + str(year),
             'filename': 'temperature-120m.csv'
         },
         # pressure 10 m
         'pressure_10m': {
+            'var_name': 'P',
             'path': os.path.join(data_path, 'P_zlevel'),
             'startswith': main_startswith + 'P_10M.' + str(year),
             'filename': 'pressure-10m.csv'
         },
         # pressure 80 m
         'pressure_80m': {
+            'var_name': 'P',
             'path': os.path.join(data_path, 'P_zlevel'),
             'startswith': main_startswith + 'P_80M.' + str(year),
             'filename': 'pressure-80m.csv'
         },
         # pressure 100 m
         'pressure_100m': {
+            'var_name': 'P',
             'path': os.path.join(data_path, 'P_zlevel'),
             'startswith': main_startswith + 'P_100M.' + str(year),
             'filename': 'pressure-100m.csv'
         },
         # pressure 120 m
         'pressure_120m': {
+            'var_name': 'P',
             'path': os.path.join(data_path, 'P_zlevel'),
             'startswith': main_startswith + 'P_120M.' + str(year),
             'filename': 'pressure-120m.csv'
         },
         # z0
         'z0': {
+            'var_name': 'Z0',
             'path': os.path.join(data_path, 'Z0'),
             'startswith': main_startswith + 'Z0.' + str(year),
             'filename': 'roughness_length-0m.csv'
         },
         # wind_direction 10m
         'wind_direction_10m': {
+            'var_name': 'WDIRlat_10M',
             'path': os.path.join(data_path, 'WDIRlat_zlevel'),
             'startswith': main_startswith + 'WDIRlat_10M.' + str(year),
             'filename': 'wind_direction-10m.csv'
         },
         # wind_direction 80m
         'wind_direction_80m': {
+            'var_name': 'WDIRlat_80M',
             'path': os.path.join(data_path, 'WDIRlat_zlevel'),
             'startswith': main_startswith + 'WDIRlat_80M.' + str(year),
             'filename': 'wind_direction-80m.csv'
         },
         # wind_direction 100m
         'wind_direction_100m': {
+            'var_name': 'WDIRlat_100M',
             'path': os.path.join(data_path, 'WDIRlat_zlevel'),
             'startswith': main_startswith + 'WDIRlat_100M.' + str(year),
             'filename': 'wind_direction-100m.csv'
         },
         # wind_direction 120m
         'wind_direction_120m': {
+            'var_name': 'WDIRlat_120M',
             'path': os.path.join(data_path, 'WDIRlat_zlevel'),
             'startswith': main_startswith + 'WDIRlat_120M.' + str(year),
             'filename': 'wind_direction-120m.csv'
         },
         # DHI
         'dhi': {
+            'var_name': 'ASWDIFD_S',
             'path': os.path.join(data_path, 'ASWDIFD_S'),
             'startswith': main_startswith + 'ASWDIFD_S.' + str(year),
             'filename': 'dhi-0m.csv'
         },
         # DIRHI
         'dirhi': {
+            'var_name': 'ASWDIR_S',
             'path': os.path.join(data_path, 'ASWDIR_S'),
             'startswith': main_startswith + 'ASWDIR_S.' + str(year),
             'filename': 'dirhi-0m.csv'
         },
         # DNI
         'dni': {
+            'var_name': 'ASWDIR_NS2',
             'path': os.path.join(data_path, 'ASWDIR_NS2'),
             'startswith': main_startswith + 'ASWDIR_NS2.' + str(year),
             'filename': 'dni-0m.csv'
@@ -212,20 +232,22 @@ def get_of_weather_data_from_netcdf(year, lat_min, lat_max, lon_min, lon_max,
                                       (data.lon>=lon_min),
                                       drop=True)
                 # convert to dataframe and reset index
-                data_month = data_sel.to_dataframe().drop(columns=['time_bnds'])
+                data_month = data_sel.to_dataframe().drop(
+                    columns=['time_bnds'])
                 try:
                     data_month.drop(columns=['rotated_pole'], inplace=True)
                 except:
                     pass
                 data_month = data_month.set_index(
                     data_month.index.get_level_values('time'))
-                df = df.append(data_month)
+                df = df.append(data_month[data_month[
+                    helper_dict[i]['var_name']].notnull()])
 
         del data, data_sel, data_month
         # drop duplicates
         df = df.reset_index().drop_duplicates().set_index('time')
         # set datetime index
-        df.index.to_datetime()
+        #df.index.to_datetime()
         # sort columns
         data_col = [i for i in df.columns if i not in ['lat', 'lon']][0]
         df = df.reindex_axis([data_col, 'lat', 'lon'], axis=1)
@@ -271,7 +293,8 @@ def setup_of_weather_df_pvlib(coordinates, csv_directory,
 
     """
     filename_list = ['wind_speed-10m.csv', 'temperature-10m.csv',
-                     'dhi.csv', 'dirhi.csv', 'dni.csv', 'pressure-10m.csv']
+                     'dhi-0m.csv', 'dirhi-0m.csv', 'dni-0m.csv']#,
+                     #'pressure-10m.csv']
 
     fred_data = pd.DataFrame()
     counter = 0
